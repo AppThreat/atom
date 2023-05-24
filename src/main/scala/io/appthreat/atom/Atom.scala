@@ -61,19 +61,19 @@ object Atom {
   }
 
   private def run(args: Array[String]): Either[String, String] = {
-    val (parserArgs, frontendArgs) = splitArgs(args)
+    val (parserArgs, _) = splitArgs(args)
     parseConfig(parserArgs) match {
       case Right(config) =>
-        run(config, frontendArgs)
+        run(config)
       case Left(err) => Left(err)
     }
   }
 
-  private def run(config: ParserConfig, frontendArgs: List[String] = List.empty): Either[String, String] =
+  private def run(config: ParserConfig): Either[String, String] =
     for {
       _        <- checkInputPath(config)
       language <- getLanguage(config)
-      _        <- generateAtom(frontendArgs, config, language)
+      _        <- generateAtom(config, language)
       _        <- applyDefaultOverlays(config)
     } yield newCpgCreatedString(config.outputCpgFile)
   private def checkInputPath(config: ParserConfig): Either[String, Unit] = {
@@ -102,7 +102,7 @@ object Atom {
     }
   }
 
-  def generateForLanguage(language: String, config: ParserConfig, args: List[String]): Either[String, String] = {
+  def generateForLanguage(language: String, config: ParserConfig): Either[String, String] = {
     language match {
       case Languages.C | Languages.NEWC =>
         Some(
@@ -159,12 +159,8 @@ object Atom {
     Right("Code property graph generation successful")
   }
 
-  private def generateAtom(
-    frontendArgs: List[String],
-    config: ParserConfig,
-    language: String
-  ): Right[Nothing, String] = {
-    generateForLanguage(language.toUpperCase, config, frontendArgs)
+  private def generateAtom(config: ParserConfig, language: String): Right[Nothing, String] = {
+    generateForLanguage(language.toUpperCase, config)
     Right(s"Code property graph generation successful for $language")
   }
 
