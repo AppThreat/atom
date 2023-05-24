@@ -173,7 +173,7 @@ object Atom {
         val cpg = DefaultOverlays.create(config.outputCpgFile, config.maxNumDef)
         generator.applyPostProcessingPasses(cpg)
         cpg.close()
-      } else {}
+      }
       Right("Code property graph generation successful")
     } catch {
       case err: Throwable => Left(err.getMessage)

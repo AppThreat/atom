@@ -1,5 +1,5 @@
 name := "atom"
-ThisBuild/organization := "io.joern"
+ThisBuild/organization := "io.appthreat"
 ThisBuild/scalaVersion := "2.13.8"
 
 // parsed by project/Versions.scala, updated by updateDependencies.sh
