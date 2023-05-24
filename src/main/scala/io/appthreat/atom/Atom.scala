@@ -1,13 +1,14 @@
 package io.appthreat.atom
 
 import better.files.{File => ScalaFile}
+import io.joern.c2cpg.{C2Cpg, Config => CConfig}
 import io.joern.console.cpgcreation.{CpgGenerator, guessLanguage}
-import io.joern.c2cpg.{Config => CConfig, C2Cpg}
-import io.joern.javasrc2cpg.{Config => JavaConfig, JavaSrc2Cpg}
-import io.joern.jssrc2cpg.{Config => JSConfig, JsSrc2Cpg}
-import io.joern.pysrc2cpg.Py2Cpg
+import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config => JavaConfig}
+import io.joern.jimple2cpg.{Jimple2Cpg, Config => JimpleConfig}
 import io.joern.joerncli.CpgBasedTool.{newCpgCreatedString, splitArgs}
 import io.joern.joerncli.DefaultOverlays
+import io.joern.jssrc2cpg.{JsSrc2Cpg, Config => JSConfig}
+import io.joern.pysrc2cpg.{Py2CpgOnFileSystem, Py2CpgOnFileSystemConfig => PyConfig}
 import io.shiftleft.codepropertygraph.generated.Languages
 
 object Atom {
@@ -20,7 +21,14 @@ object Atom {
   val SBT_JAR_PATH: ScalaFile    = ScalaFile.home / ".ivy2" / "cache"
   val JAR_INFERENCE_PATHS: Set[String] =
     Set(MAVEN_JAR_PATH.pathAsString, GRADLE_JAR_PATH.pathAsString, SBT_JAR_PATH.pathAsString)
-
+  var ANDROID_JAR_PATH     = ""
+  val ANDROID_HOME: String = System.getenv("ANDROID_HOME")
+  if (ANDROID_HOME != null) {
+    val jars = ScalaFile(ANDROID_HOME).glob("**/android.jar")
+    if (jars.nonEmpty) {
+      ANDROID_JAR_PATH = jars.next().pathAsString
+    }
+  }
   def main(args: Array[String]): Unit = {
     run(args) match {
       case Right(msg) => println(msg)
@@ -95,7 +103,7 @@ object Atom {
     language match {
       case Languages.C | Languages.NEWC =>
         Some(
-          C2Cpg().createCpg(
+          new C2Cpg().createCpg(
             CConfig(
               inputPath = config.inputPath,
               outputPath = config.outputCpgFile,
@@ -106,9 +114,19 @@ object Atom {
             )
           )
         )
-      case Languages.JAVA | Languages.JAVASRC =>
+      case Languages.JAVA =>
         Some(
-          JavaSrc2Cpg().createCpg(
+          new Jimple2Cpg().createCpg(
+            new JimpleConfig(
+              inputPath = config.inputPath,
+              outputPath = config.outputCpgFile,
+              android = Some(ANDROID_JAR_PATH)
+            )
+          )
+        )
+      case Languages.JAVASRC =>
+        Some(
+          new JavaSrc2Cpg().createCpg(
             JavaConfig(
               inputPath = config.inputPath,
               outputPath = config.outputCpgFile,
@@ -118,11 +136,22 @@ object Atom {
           )
         )
       case Languages.JSSRC | Languages.JAVASCRIPT =>
-        Some(JsSrc2Cpg().createCpg(JSConfig()))
-      case Languages.PYTHONSRC => None
-      case Languages.PYTHON    => None
-      case Languages.PHP       => None
-      case _                   => None
+        Some(
+          new JsSrc2Cpg().createCpg(
+            new JSConfig(inputPath = config.inputPath, outputPath = config.outputCpgFile, disableDummyTypes = true)
+          )
+        )
+      case Languages.PYTHONSRC | Languages.PYTHON =>
+        Some(
+          new Py2CpgOnFileSystem().createCpg(
+            new PyConfig(
+              inputDir = ScalaFile(config.inputPath).path,
+              outputFile = ScalaFile(config.outputCpgFile).path,
+              disableDummyTypes = true
+            )
+          )
+        )
+      case _ => None
     }
     Right("Code property graph generation successful")
   }
