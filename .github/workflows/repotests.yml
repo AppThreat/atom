@@ -41,7 +41,7 @@ jobs:
           distribution: 'temurin'
           java-version: '19'
       - run: |
-          sbt stage
+          sbt stage astGenDlTask
           ./atom -o /tmp/java.cpg.bin $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
           ./atom -o /tmp/juice.cpg.bin $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
           ./atom -o /tmp/ts.cpg.bin $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml

@@ -19,7 +19,7 @@ jobs:
           distribution: 'temurin'
           java-version: '19'
       - run: |
-          sbt scalafmtCheck stage createDistribution
+          sbt scalafmtCheck stage astGenDlTask createDistribution
           sha512sum target/atom.zip > target/atom.zip.sha512
       - name: Create Release
         id: create_release

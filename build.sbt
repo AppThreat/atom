@@ -1,5 +1,4 @@
-import scala.sys.process.stringToProcess
-import scala.util.Try
+
 
 name := "atom"
 ThisBuild/organization := "io.appthreat"
@@ -159,8 +158,6 @@ cleanFiles ++= Seq(
   baseDirectory.value / "bin" / "astgen",
   (Universal / stagingDirectory).value / "bin" / "astgen"
 ) ++ astGenBinaryNames.value.map(fileName => SimpleCache.encodeFile(s"${astGenDlUrl.value}$fileName"))
-
-Compile / compile := ((Compile / compile) dependsOn astGenDlTask).value
 
 ThisBuild/licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 

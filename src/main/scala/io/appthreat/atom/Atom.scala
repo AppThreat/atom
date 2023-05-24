@@ -53,9 +53,6 @@ object Atom {
     opt[String]("language")
       .text("source language")
       .action((x, c) => c.copy(language = x))
-    opt[Unit]("overlays")
-      .text("apply default overlays")
-      .action((_, c) => c.copy(enhance = true))
     note("Misc")
     help("help").text("display this help message")
   }
@@ -74,7 +71,6 @@ object Atom {
       _        <- checkInputPath(config)
       language <- getLanguage(config)
       _        <- generateAtom(config, language)
-      _        <- applyDefaultOverlays(config)
     } yield newCpgCreatedString(config.outputCpgFile)
   private def checkInputPath(config: ParserConfig): Either[String, Unit] = {
     if (config.inputPath == "") {
@@ -106,53 +102,68 @@ object Atom {
     language match {
       case Languages.C | Languages.NEWC =>
         Some(
-          new C2Cpg().createCpg(
-            CConfig(
-              inputPath = config.inputPath,
-              outputPath = config.outputCpgFile,
-              ignoredFilesRegex = ".*(test|docs|examples|samples|mocks).*".r,
-              includeComments = false,
-              logProblems = false,
-              includePathsAutoDiscovery = false
+          new C2Cpg()
+            .createCpgWithOverlays(
+              CConfig(
+                inputPath = config.inputPath,
+                outputPath = config.outputCpgFile,
+                ignoredFilesRegex = ".*(test|docs|examples|samples|mocks).*".r,
+                includeComments = false,
+                logProblems = false,
+                includePathsAutoDiscovery = false
+              )
             )
-          )
+            .get
+            .close()
         )
       case "jar" | "jimple" | "android" | "apk" | "dex" =>
         Some(
-          new Jimple2Cpg().createCpg(
-            new JimpleConfig(
-              inputPath = config.inputPath,
-              outputPath = config.outputCpgFile,
-              android = Some(ANDROID_JAR_PATH)
+          new Jimple2Cpg()
+            .createCpgWithOverlays(
+              JimpleConfig(
+                inputPath = config.inputPath,
+                outputPath = config.outputCpgFile,
+                android = Some(ANDROID_JAR_PATH)
+              )
             )
-          )
+            .get
+            .close()
         )
       case Languages.JAVA | Languages.JAVASRC =>
         Some(
-          new JavaSrc2Cpg().createCpg(
-            JavaConfig(
-              inputPath = config.inputPath,
-              outputPath = config.outputCpgFile,
-              fetchDependencies = true,
-              inferenceJarPaths = JAR_INFERENCE_PATHS
+          new JavaSrc2Cpg()
+            .createCpgWithOverlays(
+              JavaConfig(
+                inputPath = config.inputPath,
+                outputPath = config.outputCpgFile,
+                fetchDependencies = true,
+                inferenceJarPaths = JAR_INFERENCE_PATHS
+              )
             )
-          )
+            .get
+            .close()
         )
       case Languages.JSSRC | Languages.JAVASCRIPT =>
         Some(
-          new JsSrc2Cpg().createCpg(
-            new JSConfig(inputPath = config.inputPath, outputPath = config.outputCpgFile, disableDummyTypes = true)
-          )
+          new JsSrc2Cpg()
+            .createCpgWithAllOverlays(
+              JSConfig(inputPath = config.inputPath, outputPath = config.outputCpgFile, disableDummyTypes = true)
+            )
+            .get
+            .close()
         )
       case Languages.PYTHONSRC | Languages.PYTHON =>
         Some(
-          new Py2CpgOnFileSystem().createCpg(
-            new PyConfig(
-              inputDir = ScalaFile(config.inputPath).path,
-              outputFile = ScalaFile(config.outputCpgFile).path,
-              disableDummyTypes = true
+          new Py2CpgOnFileSystem()
+            .createCpgWithOverlays(
+              PyConfig(
+                inputDir = ScalaFile(config.inputPath).path,
+                outputFile = ScalaFile(config.outputCpgFile).path,
+                disableDummyTypes = true
+              )
             )
-          )
+            .get
+            .close()
         )
       case _ => None
     }
@@ -162,20 +173,6 @@ object Atom {
   private def generateAtom(config: ParserConfig, language: String): Right[Nothing, String] = {
     generateForLanguage(language.toUpperCase, config)
     Right(s"Code property graph generation successful for $language")
-  }
-
-  private def applyDefaultOverlays(config: ParserConfig): Either[String, String] = {
-    try {
-      if (config.enhance) {
-        println("[+] Applying default overlays")
-        val cpg = DefaultOverlays.create(config.outputCpgFile, config.maxNumDef)
-        generator.applyPostProcessingPasses(cpg)
-        cpg.close()
-      }
-      Right("Code property graph generation successful")
-    } catch {
-      case err: Throwable => Left(err.getMessage)
-    }
   }
 
   case class ParserConfig(
