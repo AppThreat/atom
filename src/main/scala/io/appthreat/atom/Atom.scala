@@ -13,8 +13,6 @@ import io.shiftleft.codepropertygraph.generated.Languages
 import scopt.OptionParser
 
 object Atom {
-  // Special string used to separate opts from frontend-specific opts
-  val ARGS_DELIMITER             = "--frontend-args"
   val DEFAULT_CPG_OUT_FILE       = "cpg.bin"
   var generator: CpgGenerator    = _
   val MAVEN_JAR_PATH: ScalaFile  = ScalaFile.home / ".m2"
@@ -55,7 +53,6 @@ object Atom {
       .action((_, c) => c.copy(enhance = true))
     note("Misc")
     help("help").text("display this help message")
-    note(s"Args specified after the $ARGS_DELIMITER separator will be passed to the front-end verbatim")
   }
 
   private def run(args: Array[String]): Either[String, String] = {
