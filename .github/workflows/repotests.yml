@@ -26,6 +26,10 @@ jobs:
         with:
           repository: 'libexpat/libexpat'
           path: 'repotests/libexpat'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'HooliCorp/DjanGoat'
+          path: 'repotests/DjanGoat'
       - uses: coursier/cache-action@v6
       - name: Set up JDK
         uses: actions/setup-java@v3
