@@ -10,6 +10,7 @@ import io.joern.joerncli.DefaultOverlays
 import io.joern.jssrc2cpg.{JsSrc2Cpg, Config => JSConfig}
 import io.joern.pysrc2cpg.{Py2CpgOnFileSystem, Py2CpgOnFileSystemConfig => PyConfig}
 import io.shiftleft.codepropertygraph.generated.Languages
+import scopt.OptionParser
 
 object Atom {
   // Special string used to separate opts from frontend-specific opts
@@ -38,7 +39,7 @@ object Atom {
     }
   }
 
-  val optionParser = new scopt.OptionParser[ParserConfig]("atom") {
+  val optionParser: OptionParser[ParserConfig] = new scopt.OptionParser[ParserConfig]("atom") {
     arg[String]("input")
       .optional()
       .text("source file or directory")
@@ -114,7 +115,7 @@ object Atom {
             )
           )
         )
-      case Languages.JAVA =>
+      case "jar" | "jimple" | "android" | "apk" | "dex" =>
         Some(
           new Jimple2Cpg().createCpg(
             new JimpleConfig(
@@ -124,7 +125,7 @@ object Atom {
             )
           )
         )
-      case Languages.JAVASRC =>
+      case Languages.JAVA | Languages.JAVASRC =>
         Some(
           new JavaSrc2Cpg().createCpg(
             JavaConfig(
