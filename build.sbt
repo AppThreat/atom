@@ -4,7 +4,7 @@ ThisBuild/scalaVersion := "2.13.8"
 
 // parsed by project/Versions.scala, updated by updateDependencies.sh
 val cpgVersion = "1.3.600"
-val joernVersion = "1.1.1730"
+val joernVersion = "1.1.1731"
 val overflowdbVersion = "1.171"
 
 lazy val atom          = Projects.atom
