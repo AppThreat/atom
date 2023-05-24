@@ -1,17 +1,25 @@
 package io.appthreat.atom
 
-import better.files.File
-import io.joern.console.cpgcreation.{CpgGenerator, cpgGeneratorForLanguage, guessLanguage}
-import io.joern.console.{FrontendConfig, InstallConfig}
+import better.files.{File => ScalaFile}
+import io.joern.console.cpgcreation.{CpgGenerator, guessLanguage}
+import io.joern.c2cpg.{Config => CConfig, C2Cpg}
+import io.joern.javasrc2cpg.{Config => JavaConfig, JavaSrc2Cpg}
+import io.joern.jssrc2cpg.{Config => JSConfig, JsSrc2Cpg}
+import io.joern.pysrc2cpg.Py2Cpg
 import io.joern.joerncli.CpgBasedTool.{newCpgCreatedString, splitArgs}
 import io.joern.joerncli.DefaultOverlays
-import scala.util.{Failure, Success}
+import io.shiftleft.codepropertygraph.generated.Languages
 
 object Atom {
   // Special string used to separate opts from frontend-specific opts
-  val ARGS_DELIMITER          = "--frontend-args"
-  val DEFAULT_CPG_OUT_FILE    = "cpg.bin"
-  var generator: CpgGenerator = _
+  val ARGS_DELIMITER             = "--frontend-args"
+  val DEFAULT_CPG_OUT_FILE       = "cpg.bin"
+  var generator: CpgGenerator    = _
+  val MAVEN_JAR_PATH: ScalaFile  = ScalaFile.home / ".m2"
+  val GRADLE_JAR_PATH: ScalaFile = ScalaFile.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
+  val SBT_JAR_PATH: ScalaFile    = ScalaFile.home / ".ivy2" / "cache"
+  val JAR_INFERENCE_PATHS: Set[String] =
+    Set(MAVEN_JAR_PATH.pathAsString, GRADLE_JAR_PATH.pathAsString, SBT_JAR_PATH.pathAsString)
 
   def main(args: Array[String]): Unit = {
     run(args) match {
@@ -43,30 +51,25 @@ object Atom {
 
   private def run(args: Array[String]): Either[String, String] = {
     val (parserArgs, frontendArgs) = splitArgs(args)
-    val installConfig              = new InstallConfig()
     parseConfig(parserArgs) match {
       case Right(config) =>
-        run(config, frontendArgs, installConfig)
+        run(config, frontendArgs)
       case Left(err) => Left(err)
     }
   }
 
-  private def run(
-    config: ParserConfig,
-    frontendArgs: List[String] = List.empty,
-    installConfig: InstallConfig = InstallConfig()
-  ): Either[String, String] =
+  private def run(config: ParserConfig, frontendArgs: List[String] = List.empty): Either[String, String] =
     for {
       _        <- checkInputPath(config)
       language <- getLanguage(config)
-      _        <- generateAtom(installConfig, frontendArgs, config, language)
+      _        <- generateAtom(frontendArgs, config, language)
       _        <- applyDefaultOverlays(config)
     } yield newCpgCreatedString(config.outputCpgFile)
   private def checkInputPath(config: ParserConfig): Either[String, Unit] = {
     if (config.inputPath == "") {
       println(optionParser.usage)
       Left("Input path required")
-    } else if (!File(config.inputPath).exists) {
+    } else if (!ScalaFile(config.inputPath).exists) {
       Left("Input path does not exist at `" + config.inputPath + "`, exiting.")
     } else {
       Right(())
@@ -88,33 +91,59 @@ object Atom {
     }
   }
 
+  def generateForLanguage(language: String, config: ParserConfig, args: List[String]): Either[String, String] = {
+    language match {
+      case Languages.C | Languages.NEWC =>
+        Some(
+          C2Cpg().createCpg(
+            CConfig(
+              inputPath = config.inputPath,
+              outputPath = config.outputCpgFile,
+              ignoredFilesRegex = ".*(test|docs|examples|samples|mocks).*".r,
+              includeComments = false,
+              logProblems = false,
+              includePathsAutoDiscovery = false
+            )
+          )
+        )
+      case Languages.JAVA | Languages.JAVASRC =>
+        Some(
+          JavaSrc2Cpg().createCpg(
+            JavaConfig(
+              inputPath = config.inputPath,
+              outputPath = config.outputCpgFile,
+              fetchDependencies = true,
+              inferenceJarPaths = JAR_INFERENCE_PATHS
+            )
+          )
+        )
+      case Languages.JSSRC | Languages.JAVASCRIPT =>
+        Some(JsSrc2Cpg().createCpg(JSConfig()))
+      case Languages.PYTHONSRC => None
+      case Languages.PYTHON    => None
+      case Languages.PHP       => None
+      case _                   => None
+    }
+    Right("Code property graph generation successful")
+  }
+
   private def generateAtom(
-    installConfig: InstallConfig,
     frontendArgs: List[String],
     config: ParserConfig,
     language: String
-  ): Either[String, String] = {
-    println(s"Parsing code at: ${config.inputPath} - language: `$language`")
-    println("[+] Running language frontend")
-    generator =
-      cpgGeneratorForLanguage(language.toUpperCase, FrontendConfig(), installConfig.rootPath.path, frontendArgs).get
-    generator.generate(config.inputPath, outputPath = config.outputCpgFile) match {
-      case Success(cmd) => Right(cmd)
-      case Failure(exception) =>
-        Left(
-          s"Could not generate CPG with language = $language and input = ${config.inputPath}: ${exception.getMessage}"
-        )
-    }
+  ): Right[Nothing, String] = {
+    generateForLanguage(language.toUpperCase, config, frontendArgs)
+    Right(s"Code property graph generation successful for $language")
   }
 
   private def applyDefaultOverlays(config: ParserConfig): Either[String, String] = {
     try {
-      println("[+] Applying default overlays")
       if (config.enhance) {
+        println("[+] Applying default overlays")
         val cpg = DefaultOverlays.create(config.outputCpgFile, config.maxNumDef)
         generator.applyPostProcessingPasses(cpg)
         cpg.close()
-      }
+      } else {}
       Right("Code property graph generation successful")
     } catch {
       case err: Throwable => Left(err.getMessage)

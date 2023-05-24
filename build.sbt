@@ -16,7 +16,6 @@ libraryDependencies ++= Seq(
   "io.joern" %% "c2cpg" % Versions.joern,
   "io.joern" %% "x2cpg" % Versions.joern,
   "io.joern" %% "pysrc2cpg" % Versions.joern,
-  "io.joern" %% "php2cpg" % Versions.joern,
   "io.joern" %% "javasrc2cpg" % Versions.joern,
   "io.joern" %% "jssrc2cpg" % Versions.joern,
   "io.joern" %% "jimple2cpg" % Versions.joern,
