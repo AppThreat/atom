@@ -1,0 +1,40 @@
+name: repotests
+on:
+  push:
+    branches:
+      - main
+      - feature/*
+    tags:
+      - 'v*'
+  workflow_dispatch:
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v3
+        with:
+          repository: 'ShiftLeftSecurity/shiftleft-java-example'
+          path: 'repotests/shiftleft-java-example'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'ShiftLeftSecurity/shiftleft-ts-example'
+          path: 'repotests/shiftleft-ts-example'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'libexpat/libexpat'
+          path: 'repotests/libexpat'
+      - uses: coursier/cache-action@v6
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '19'
+      - run: |
+          sbt stage
+          ./atom -o /tmp/java.cpg.bin $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
+          ./atom -o /tmp/ts.cpg.bin $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml
+          ./atom -o /tmp/py.cpg.bin $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml
+          ./atom -o /tmp/c.cpg.bin $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml

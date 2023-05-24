@@ -20,14 +20,19 @@ object Atom {
   val SBT_JAR_PATH: ScalaFile    = ScalaFile.home / ".ivy2" / "cache"
   val JAR_INFERENCE_PATHS: Set[String] =
     Set(MAVEN_JAR_PATH.pathAsString, GRADLE_JAR_PATH.pathAsString, SBT_JAR_PATH.pathAsString)
-  var ANDROID_JAR_PATH     = ""
   val ANDROID_HOME: String = System.getenv("ANDROID_HOME")
-  if (ANDROID_HOME != null) {
-    val jars = ScalaFile(ANDROID_HOME).glob("**/android.jar")
-    if (jars.nonEmpty) {
-      ANDROID_JAR_PATH = jars.next().pathAsString
+  var ANDROID_JAR_PATH: String = Option(ANDROID_HOME) match {
+    case Some(ANDROID_HOME) => {
+      val jars = ScalaFile(ANDROID_HOME).glob("**/android.jar")
+      if (jars.nonEmpty) {
+        jars.next().pathAsString
+      } else {
+        ""
+      }
     }
+    case _ => ""
   }
+
   def main(args: Array[String]): Unit = {
     run(args) match {
       case Right(msg) => println(msg)
