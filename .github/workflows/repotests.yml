@@ -20,6 +20,10 @@ jobs:
           path: 'repotests/shiftleft-java-example'
       - uses: actions/checkout@v3
         with:
+          repository: 'juice-shop/juice-shop'
+          path: 'repotests/juice-shop'
+      - uses: actions/checkout@v3
+        with:
           repository: 'ShiftLeftSecurity/shiftleft-ts-example'
           path: 'repotests/shiftleft-ts-example'
       - uses: actions/checkout@v3
@@ -39,6 +43,7 @@ jobs:
       - run: |
           sbt stage
           ./atom -o /tmp/java.cpg.bin $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
+          ./atom -o /tmp/juice.cpg.bin $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
           ./atom -o /tmp/ts.cpg.bin $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml
           ./atom -o /tmp/py.cpg.bin $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml
           ./atom -o /tmp/c.cpg.bin $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml
