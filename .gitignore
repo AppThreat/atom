@@ -6,3 +6,5 @@ target/
 /workspace
 .local
 bin
+.metals/
+.bloop/

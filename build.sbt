@@ -24,12 +24,10 @@ libraryDependencies ++= Seq(
   "io.joern" %% "javasrc2cpg" % Versions.joern,
   "io.joern" %% "jssrc2cpg" % Versions.joern,
   "io.joern" %% "jimple2cpg" % Versions.joern,
-  "io.joern" %% "semanticcpg" % Versions.joern,
-  "io.joern" %% "semanticcpg" % Versions.joern % Test classifier "tests",
   "org.scalatest" %% "scalatest" % "3.2.15" % Test
 )
 
-Compile / doc / scalacOptions ++= Seq("-doc-title", "semanticcpg apidocs", "-doc-version", version.value)
+Compile / doc / scalacOptions ++= Seq("-doc-title", "atom apidocs", "-doc-version", version.value)
 
 scalacOptions ++= Seq() ++ (
   CrossVersion.partialVersion(scalaVersion.value) match {
@@ -100,7 +98,7 @@ astGenDlUrl := s"https://github.com/joernio/astgen/releases/download/v${astGenVe
 lazy val astGenBinaryNames = taskKey[Seq[String]]("astgen binary names")
 astGenBinaryNames := {
   if (sys.props.get("ALL_PLATFORMS").contains("TRUE")) {
-    Seq(AstgenWin, AstgenLinux, AstgenMacArm)
+    Seq(AstgenWin, AstgenLinux, AstgenMac, AstgenMacArm)
   } else {
     Environment.operatingSystem match {
       case Environment.OperatingSystemType.Windows =>
