@@ -2,15 +2,22 @@ package io.appthreat.atom
 
 import better.files.{File => ScalaFile}
 import io.joern.c2cpg.{C2Cpg, Config => CConfig}
+import io.joern.dataflowengineoss.slicing.SliceMode._
+import io.joern.dataflowengineoss.slicing._
 import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config => JavaConfig}
 import io.joern.jimple2cpg.{Jimple2Cpg, Config => JimpleConfig}
 import io.joern.jssrc2cpg.{JsSrc2Cpg, Config => JSConfig}
 import io.joern.pysrc2cpg.{Py2CpgOnFileSystem, Py2CpgOnFileSystemConfig => PyConfig}
 import io.shiftleft.codepropertygraph.generated.Languages
+import io.shiftleft.codepropertygraph.Cpg
+import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
+import scala.language.postfixOps
 import scopt.OptionParser
+import scala.util.Using
 
 object Atom {
   val DEFAULT_CPG_OUT_FILE       = "cpg.bin"
+  val DEFAULT_SLICE_OUT_FILE     = "slices.json"
   val DEFAULT_MAX_DEFS: Int      = 4000
   val MAVEN_JAR_PATH: ScalaFile  = ScalaFile.home / ".m2"
   val GRADLE_JAR_PATH: ScalaFile = ScalaFile.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
@@ -29,6 +36,9 @@ object Atom {
     }
     case _ => ""
   }
+
+  implicit val sliceModeRead: scopt.Read[SliceModes] =
+    scopt.Read.reads(SliceMode withName)
 
   def main(args: Array[String]): Unit = {
     run(args) match {
@@ -51,6 +61,15 @@ object Atom {
       .text("source language")
       .action((x, c) => c.copy(language = x))
     note("Misc")
+    opt[Unit]('s', "slice")
+      .text("export intra-procedural slices as json")
+      .action((_, c) => c.copy(slice = true))
+    opt[String]("slice-outfile")
+      .text("slice output filename")
+      .action((x, c) => c.copy(outputSliceFile = x))
+    opt[SliceModes]('m', "mode")
+      .text(s"the kind of slicing to perform - defaults to `DataFlow`. Options: [${SliceMode.values.mkString(", ")}]")
+      .action((x, c) => c.copy(sliceMode = x))
     help("help").text("display this help message")
   }
 
@@ -73,6 +92,7 @@ object Atom {
       _        <- checkInputPath(config)
       language <- getLanguage(config)
       _        <- generateAtom(config, language)
+      -        <- generateSlice(config)
     } yield newCpgCreatedString(config.outputCpgFile)
   private def checkInputPath(config: ParserConfig): Either[String, Unit] = {
     if (config.inputPath == "") {
@@ -165,6 +185,66 @@ object Atom {
     Right("Code property graph generation successful")
   }
 
+  private def saveSlice(outFile: ScalaFile, programSlice: ProgramSlice): Unit = {
+
+    val finalOutputPath =
+      ScalaFile(outFile.pathAsString)
+        .createFileIfNotExists()
+        .write(programSlice.toJson)
+        .pathAsString
+    println(s"Slices have been successfully generated and written to $finalOutputPath")
+  }
+
+  /** Load code property graph from overflowDB
+    *
+    * @param filename
+    *   name of the file that stores the CPG
+    */
+  def loadFromOdb(filename: String): Cpg = {
+    val odbConfig = overflowdb.Config.withDefaults().withStorageLocation(filename)
+    val config    = CpgLoaderConfig().withOverflowConfig(odbConfig).doNotCreateIndexesOnLoad
+    io.shiftleft.codepropertygraph.cpgloading.CpgLoader.loadFromOverflowDb(config)
+  }
+
+  private def generateSlice(config: ParserConfig): Either[String, String] = {
+    def sliceCpg(cpg: Cpg): ProgramSlice = {
+      val sliceConfig = SliceConfig(
+        inputPath = ScalaFile(config.inputPath),
+        outFile = ScalaFile(config.outputSliceFile),
+        sliceMode = config.sliceMode,
+        excludeOperatorCalls = true,
+        typeRecoveryDummyTypes = false,
+        sliceDepth = 20,
+        minNumCalls = 1
+      )
+      config.sliceMode match {
+        case DataFlow => DataFlowSlicing.calculateDataFlowSlice(cpg, sliceConfig)
+        case Usages   => UsageSlicing.calculateUsageSlice(cpg, sliceConfig)
+      }
+
+    }
+
+    try {
+      if (config.slice) {
+        saveSlice(
+          ScalaFile(config.outputSliceFile),
+          (
+            Using.resource(loadFromOdb(config.outputCpgFile)) { cpg =>
+              {
+                val slice = sliceCpg(cpg)
+                cpg.close()
+                slice
+              }
+            }
+          )
+        )
+      }
+      Right("CPG sliced successfully")
+    } catch {
+      case err: Throwable => Left(err.getMessage)
+    }
+  }
+
   private def generateAtom(config: ParserConfig, language: String): Right[Nothing, String] = {
     generateForLanguage(language.toUpperCase, config)
     Right(s"Code property graph generation successful for $language")
@@ -173,7 +253,9 @@ object Atom {
   case class ParserConfig(
     inputPath: String = "",
     outputCpgFile: String = DEFAULT_CPG_OUT_FILE,
-    enhance: Boolean = false,
+    outputSliceFile: String = DEFAULT_SLICE_OUT_FILE,
+    slice: Boolean = false,
+    sliceMode: SliceModes = DataFlow,
     language: String = "",
     maxNumDef: Int = DEFAULT_MAX_DEFS
   )
