@@ -25,7 +25,6 @@ libraryDependencies ++= Seq(
   "io.joern" %% "javasrc2cpg" % Versions.joern,
   "io.joern" %% "jssrc2cpg" % Versions.joern,
   "io.joern" %% "jimple2cpg" % Versions.joern,
-  "io.joern" %% "joern-cli" % Versions.joern,
   "io.joern" %% "semanticcpg" % Versions.joern,
   "io.joern" %% "semanticcpg" % Versions.joern % Test classifier "tests",
   "org.scalatest" %% "scalatest" % "3.2.15" % Test

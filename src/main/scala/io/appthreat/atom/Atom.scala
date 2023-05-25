@@ -2,11 +2,8 @@ package io.appthreat.atom
 
 import better.files.{File => ScalaFile}
 import io.joern.c2cpg.{C2Cpg, Config => CConfig}
-import io.joern.console.cpgcreation.{CpgGenerator, guessLanguage}
 import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config => JavaConfig}
 import io.joern.jimple2cpg.{Jimple2Cpg, Config => JimpleConfig}
-import io.joern.joerncli.CpgBasedTool.{newCpgCreatedString, splitArgs}
-import io.joern.joerncli.DefaultOverlays
 import io.joern.jssrc2cpg.{JsSrc2Cpg, Config => JSConfig}
 import io.joern.pysrc2cpg.{Py2CpgOnFileSystem, Py2CpgOnFileSystemConfig => PyConfig}
 import io.shiftleft.codepropertygraph.generated.Languages
@@ -14,7 +11,7 @@ import scopt.OptionParser
 
 object Atom {
   val DEFAULT_CPG_OUT_FILE       = "cpg.bin"
-  var generator: CpgGenerator    = _
+  val DEFAULT_MAX_DEFS: Int      = 4000
   val MAVEN_JAR_PATH: ScalaFile  = ScalaFile.home / ".m2"
   val GRADLE_JAR_PATH: ScalaFile = ScalaFile.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
   val SBT_JAR_PATH: ScalaFile    = ScalaFile.home / ".ivy2" / "cache"
@@ -58,12 +55,17 @@ object Atom {
   }
 
   private def run(args: Array[String]): Either[String, String] = {
-    val (parserArgs, _) = splitArgs(args)
+    val parserArgs = args.toList
     parseConfig(parserArgs) match {
       case Right(config) =>
         run(config)
       case Left(err) => Left(err)
     }
+  }
+
+  def newCpgCreatedString(path: String): String = {
+    val absolutePath = ScalaFile(path).path.toAbsolutePath
+    s"CPG created successfully at $absolutePath\n"
   }
 
   private def run(config: ParserConfig): Either[String, String] =
@@ -85,14 +87,7 @@ object Atom {
 
   private def getLanguage(config: ParserConfig): Either[String, String] = {
     if (config.language.isEmpty) {
-      val inputPath = config.inputPath
-      guessLanguage(inputPath) match {
-        case Some(guess) => Right(guess)
-        case None =>
-          Left(
-            s"Could not guess language from input path $inputPath. Please specify a language using the --language option."
-          )
-      }
+      Left(s"Please specify a language using the --language option.")
     } else {
       Right(config.language)
     }
@@ -180,7 +175,7 @@ object Atom {
     outputCpgFile: String = DEFAULT_CPG_OUT_FILE,
     enhance: Boolean = false,
     language: String = "",
-    maxNumDef: Int = DefaultOverlays.defaultMaxNumberOfDefinitions
+    maxNumDef: Int = DEFAULT_MAX_DEFS
   )
 
   private def parseConfig(parserArgs: List[String]): Either[String, ParserConfig] = {
