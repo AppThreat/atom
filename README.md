@@ -25,11 +25,11 @@ export ATOM_HOME=/opt/atom-1.0.0
 ```shell
 Usage: atom [options] [input]
 
-  input                 source file or directory
-  -o, --output <value>  output filename
-  --language <value>    source language
+  input                   source file or directory
+  -o, --output <value>    output filename
+  -l, --language <value>  source language
 Misc
-  --help                display this help message
+  --help                  display this help message
 ```
 
 ## License

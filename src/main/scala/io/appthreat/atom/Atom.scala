@@ -47,7 +47,7 @@ object Atom {
     opt[String]('o', "output")
       .text("output filename")
       .action((x, c) => c.copy(outputCpgFile = x))
-    opt[String]("language")
+    opt[String]('l', "language")
       .text("source language")
       .action((x, c) => c.copy(language = x))
     note("Misc")
@@ -138,7 +138,7 @@ object Atom {
             .get
             .close()
         )
-      case Languages.JSSRC | Languages.JAVASCRIPT =>
+      case Languages.JSSRC | Languages.JAVASCRIPT | "js" | "ts" | "typescript" =>
         Some(
           new JsSrc2Cpg()
             .createCpgWithAllOverlays(
@@ -147,7 +147,7 @@ object Atom {
             .get
             .close()
         )
-      case Languages.PYTHONSRC | Languages.PYTHON =>
+      case Languages.PYTHONSRC | Languages.PYTHON | "py" =>
         Some(
           new Py2CpgOnFileSystem()
             .createCpgWithOverlays(
