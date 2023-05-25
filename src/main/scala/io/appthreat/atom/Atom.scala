@@ -192,7 +192,7 @@ object Atom {
         .createFileIfNotExists()
         .write(programSlice.toJson)
         .pathAsString
-    println(s"Slices have been successfully generated and written to $finalOutputPath")
+    println(s"Slices have been successfully written to $finalOutputPath")
   }
 
   /** Load code property graph from overflowDB
