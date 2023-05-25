@@ -101,7 +101,7 @@ astGenDlUrl := s"https://github.com/joernio/astgen/releases/download/v${astGenVe
 lazy val astGenBinaryNames = taskKey[Seq[String]]("astgen binary names")
 astGenBinaryNames := {
   if (sys.props.get("ALL_PLATFORMS").contains("TRUE")) {
-    Seq(AstgenWin, AstgenLinux, AstgenLinuxArm, AstgenMac, AstgenMacArm)
+    Seq(AstgenWin, AstgenLinux, AstgenMacArm)
   } else {
     Environment.operatingSystem match {
       case Environment.OperatingSystemType.Windows =>
