@@ -29,7 +29,10 @@ Usage: atom [options] [input]
   -o, --output <value>    output filename
   -l, --language <value>  source language
 Misc
-  --help                  display this help message
+  -s, --slice              export intra-procedural slices as json
+  --slice-outfile <value>  slice output filename
+  -m, --mode <value>       the kind of slicing to perform - defaults to `DataFlow`. Options: [DataFlow, Usages]
+  --help                   display this help message
 ```
 
 ## Languages supported
