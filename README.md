@@ -32,6 +32,16 @@ Misc
   --help                  display this help message
 ```
 
+## Languages supported
+
+- C/C++
+- Java
+- Jar
+- Android APK
+- JavaScript
+- TypeScript
+- Python
+
 ## License
 
 Apache-2.0
