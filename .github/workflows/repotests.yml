@@ -10,6 +10,10 @@ on:
 jobs:
   testing:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        java-version: ['11', '17', '19']
     steps:
       - uses: actions/checkout@v3
         with:
@@ -39,7 +43,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '${{ matrix.java-version }}
       - run: |
           sbt stage astGenDlTask
           ./atom -o /tmp/java.cpg.bin -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
