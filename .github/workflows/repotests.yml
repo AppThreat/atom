@@ -43,7 +43,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '${{ matrix.java-version }}
+          java-version: ${{ matrix.java-version }}
       - run: |
           sbt stage astGenDlTask
           ./atom -o /tmp/java.cpg.bin -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
