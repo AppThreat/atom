@@ -26,6 +26,7 @@ libraryDependencies ++= Seq(
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.osgi"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.equinox.app"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.equinox.preferences"),
+    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.core.filebuffers"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.core.jobs"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.core.resources")
   ),
