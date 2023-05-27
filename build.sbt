@@ -23,7 +23,11 @@ libraryDependencies ++= Seq(
     ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface.text"),
-    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.osgi")
+    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.osgi"),
+    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.equinox.app"),
+    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.equinox.preferences"),
+    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.core.jobs"),
+    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.core.resources")
   ),
   "io.joern" %% "dataflowengineoss" % Versions.joern,
   "io.joern" %% "pysrc2cpg" % Versions.joern,
