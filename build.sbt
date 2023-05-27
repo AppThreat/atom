@@ -17,18 +17,12 @@ val astGenVersion = "3.0.0"
 libraryDependencies ++= Seq(
   "com.github.pathikrit" %% "better-files" % "3.9.2",
   "com.github.scopt" %% "scopt" % "4.1.0",
-  "org.apache.logging.log4j" % "log4j-core"        % "2.20.0" % Optional,
-  "org.apache.logging.log4j" % "log4j-slf4j2-impl" % "2.20.0" % Optional,
+  "org.apache.logging.log4j" % "log4j-core"        % "2.19.0" % Optional,
+  "org.apache.logging.log4j" % "log4j-slf4j2-impl" % "2.19.0" % Optional,
   "io.joern" %% "c2cpg" % Versions.joern excludeAll(
     ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface"),
-    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface.text"),
-    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.osgi"),
-    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.equinox.app"),
-    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.equinox.preferences"),
-    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.core.filebuffers"),
-    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.core.jobs"),
-    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.core.resources")
+    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface.text")
   ),
   "io.joern" %% "dataflowengineoss" % Versions.joern,
   "io.joern" %% "pysrc2cpg" % Versions.joern,
