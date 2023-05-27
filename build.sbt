@@ -19,7 +19,11 @@ libraryDependencies ++= Seq(
   "com.github.scopt" %% "scopt" % "4.1.0",
   "org.apache.logging.log4j" % "log4j-core"        % "2.19.0" % Optional,
   "org.apache.logging.log4j" % "log4j-slf4j2-impl" % "2.19.0" % Optional,
-  "io.joern" %% "c2cpg" % Versions.joern,
+  "io.joern" %% "c2cpg" % Versions.joern excludeAll(
+    ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
+    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface"),
+    ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface.text")
+  ),
   "io.joern" %% "dataflowengineoss" % Versions.joern,
   "io.joern" %% "pysrc2cpg" % Versions.joern,
   "io.joern" %% "javasrc2cpg" % Versions.joern,
@@ -104,7 +108,10 @@ astGenBinaryNames := {
       case Environment.OperatingSystemType.Windows =>
         Seq(AstgenWin)
       case Environment.OperatingSystemType.Linux =>
-        Seq(AstgenLinux)
+        Environment.architecture match {
+          case Environment.ArchitectureType.X86 => Seq(AstgenLinux)
+          case Environment.ArchitectureType.ARM => Seq(AstgenLinuxArm)
+        }
       case Environment.OperatingSystemType.Mac =>
         Environment.architecture match {
           case Environment.ArchitectureType.X86 => Seq(AstgenMac)

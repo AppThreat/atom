@@ -63,3 +63,4 @@ jobs:
           ./atom -o /tmp/ts.cpg.bin -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/ts.usages.json -m Usages
           ./atom -o /tmp/py.cpg.bin -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/py.usages.json -m Usages
           ./atom -o /tmp/c.cpg.bin -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/c.usages.json -m Usages
+          ls -lh /tmp/*.cpg.bin /tmp/*.json
