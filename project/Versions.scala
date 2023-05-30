@@ -1,13 +1,12 @@
-import scala.util.Using
-
 object Versions {
   val cpg        = parseVersion("cpgVersion")
   val joern      = parseVersion("joernVersion")
   val overflowdb = parseVersion("overflowdbVersion")
   private def parseVersion(key: String): String = {
     val versionRegexp = s""".*val $key += ?"(.*?)"""".r
-    val versions: List[String] = Using
-      .resource(scala.io.Source.fromFile("build.sbt"))(_.getLines())
+    val versions: List[String] = scala.io.Source
+      .fromFile("build.sbt")
+      .getLines()
       .filter(_.contains(s"val $key"))
       .collect { case versionRegexp(version) => version }
       .toList
