@@ -3,7 +3,7 @@
 name := "atom"
 ThisBuild/organization := "io.appthreat"
 ThisBuild/version      := "1.0.0"
-ThisBuild/scalaVersion := "2.13.8"
+ThisBuild/scalaVersion := "3.2.2"
 
 // parsed by project/Versions.scala, updated by updateDependencies.sh
 val cpgVersion = "1.3.600"

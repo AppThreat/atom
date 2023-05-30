@@ -8,34 +8,26 @@ import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config => JavaConfig}
 import io.joern.jimple2cpg.{Jimple2Cpg, Config => JimpleConfig}
 import io.joern.jssrc2cpg.{JsSrc2Cpg, Config => JSConfig}
 import io.joern.pysrc2cpg.{Py2CpgOnFileSystem, Py2CpgOnFileSystemConfig => PyConfig}
-import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
-import scala.language.postfixOps
+import io.shiftleft.codepropertygraph.generated.Languages
 import scopt.OptionParser
-import scala.util.Using
+
+import scala.language.postfixOps
+import scala.util.{Failure, Success, Using}
 
 object Atom {
-  val DEFAULT_CPG_OUT_FILE       = "cpg.bin"
-  val DEFAULT_SLICE_OUT_FILE     = "slices.json"
-  val DEFAULT_MAX_DEFS: Int      = 4000
-  val MAVEN_JAR_PATH: ScalaFile  = ScalaFile.home / ".m2"
-  val GRADLE_JAR_PATH: ScalaFile = ScalaFile.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
-  val SBT_JAR_PATH: ScalaFile    = ScalaFile.home / ".ivy2" / "cache"
-  val JAR_INFERENCE_PATHS: Set[String] =
+  private val DEFAULT_CPG_OUT_FILE       = "cpg.bin"
+  private val DEFAULT_SLICE_OUT_FILE     = "slices.json"
+  private val DEFAULT_MAX_DEFS: Int      = 4000
+  private val MAVEN_JAR_PATH: ScalaFile  = ScalaFile.home / ".m2"
+  private val GRADLE_JAR_PATH: ScalaFile = ScalaFile.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
+  private val SBT_JAR_PATH: ScalaFile    = ScalaFile.home / ".ivy2" / "cache"
+  private val JAR_INFERENCE_PATHS: Set[String] =
     Set(MAVEN_JAR_PATH.pathAsString, GRADLE_JAR_PATH.pathAsString, SBT_JAR_PATH.pathAsString)
-  val ANDROID_HOME: String = System.getenv("ANDROID_HOME")
-  var ANDROID_JAR_PATH: String = Option(ANDROID_HOME) match {
-    case Some(ANDROID_HOME) => {
-      val jars = ScalaFile(ANDROID_HOME).glob("**/android.jar")
-      if (jars.nonEmpty) {
-        jars.next().pathAsString
-      } else {
-        ""
-      }
-    }
-    case _ => ""
-  }
+  private val ANDROID_JAR_PATH: Option[String] = Option(System.getenv("ANDROID_HOME")).flatMap(androidHome =>
+    ScalaFile(androidHome).glob("**/android.jar").map(_.pathAsString).toSeq.headOption
+  )
 
   implicit val sliceModeRead: scopt.Read[SliceModes] =
     scopt.Read.reads(SliceMode withName)
@@ -113,76 +105,61 @@ object Atom {
     }
   }
 
-  def generateForLanguage(language: String, config: ParserConfig): Either[String, String] = {
-    language match {
+  private def generateForLanguage(language: String, config: ParserConfig): Either[String, String] = {
+    (language match {
       case Languages.C | Languages.NEWC =>
-        Some(
-          new C2Cpg()
-            .createCpgWithOverlays(
-              CConfig(
-                inputPath = config.inputPath,
-                outputPath = config.outputCpgFile,
-                ignoredFilesRegex = ".*(test|docs|examples|samples|mocks).*".r,
-                includeComments = false,
-                logProblems = false,
-                includePathsAutoDiscovery = false
-              )
+        new C2Cpg()
+          .createCpgWithOverlays(
+            CConfig(
+              inputPath = config.inputPath,
+              outputPath = config.outputCpgFile,
+              ignoredFilesRegex = ".*(test|docs|examples|samples|mocks).*".r,
+              includeComments = false,
+              logProblems = false,
+              includePathsAutoDiscovery = false
             )
-            .get
-            .close()
-        )
+          )
+          .map(_.close())
       case "jar" | "jimple" | "android" | "apk" | "dex" =>
-        Some(
-          new Jimple2Cpg()
-            .createCpgWithOverlays(
-              JimpleConfig(
-                inputPath = config.inputPath,
-                outputPath = config.outputCpgFile,
-                android = Some(ANDROID_JAR_PATH)
-              )
-            )
-            .get
-            .close()
-        )
+        new Jimple2Cpg()
+          .createCpgWithOverlays(
+            JimpleConfig(inputPath = config.inputPath, outputPath = config.outputCpgFile, android = ANDROID_JAR_PATH)
+          )
+          .map(_.close())
       case Languages.JAVA | Languages.JAVASRC =>
-        Some(
-          new JavaSrc2Cpg()
-            .createCpgWithOverlays(
-              JavaConfig(
-                inputPath = config.inputPath,
-                outputPath = config.outputCpgFile,
-                fetchDependencies = true,
-                inferenceJarPaths = JAR_INFERENCE_PATHS
-              )
+        new JavaSrc2Cpg()
+          .createCpgWithOverlays(
+            JavaConfig(
+              inputPath = config.inputPath,
+              outputPath = config.outputCpgFile,
+              fetchDependencies = true,
+              inferenceJarPaths = JAR_INFERENCE_PATHS
             )
-            .get
-            .close()
-        )
+          )
+          .map(_.close())
       case Languages.JSSRC | Languages.JAVASCRIPT | "js" | "ts" | "typescript" =>
-        Some(
-          new JsSrc2Cpg()
-            .createCpgWithAllOverlays(
-              JSConfig(inputPath = config.inputPath, outputPath = config.outputCpgFile, disableDummyTypes = true)
-            )
-            .get
-            .close()
-        )
+        new JsSrc2Cpg()
+          .createCpgWithAllOverlays(
+            JSConfig(inputPath = config.inputPath, outputPath = config.outputCpgFile, disableDummyTypes = true)
+          )
+          .map(_.close())
       case Languages.PYTHONSRC | Languages.PYTHON | "py" =>
-        Some(
-          new Py2CpgOnFileSystem()
-            .createCpgWithOverlays(
-              PyConfig(
-                inputDir = ScalaFile(config.inputPath).path,
-                outputFile = ScalaFile(config.outputCpgFile).path,
-                disableDummyTypes = true
-              )
+        new Py2CpgOnFileSystem()
+          .createCpgWithOverlays(
+            PyConfig(
+              inputDir = ScalaFile(config.inputPath).path,
+              outputFile = ScalaFile(config.outputCpgFile).path,
+              disableDummyTypes = true
             )
-            .get
-            .close()
-        )
-      case _ => None
+          )
+          .map(_.close())
+      case _ => Failure(new RuntimeException(s"No language frontend supported for language '$language'"))
+    }) match {
+      case Failure(exception) =>
+        Left(exception.getMessage)
+      case Success(_) =>
+        Right("Code property graph generation successful")
     }
-    Right("Code property graph generation successful")
   }
 
   private def saveSlice(outFile: ScalaFile, programSlice: ProgramSlice): Unit = {
@@ -200,7 +177,7 @@ object Atom {
     * @param filename
     *   name of the file that stores the CPG
     */
-  def loadFromOdb(filename: String): Cpg = {
+  private def loadFromOdb(filename: String): Cpg = {
     val odbConfig = overflowdb.Config.withDefaults().withStorageLocation(filename)
     val config    = CpgLoaderConfig().withOverflowConfig(odbConfig).doNotCreateIndexesOnLoad
     io.shiftleft.codepropertygraph.cpgloading.CpgLoader.loadFromOverflowDb(config)
