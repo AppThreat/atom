@@ -1,35 +1,33 @@
-
-
-name := "atom"
-ThisBuild/organization := "io.appthreat"
-ThisBuild/version      := "1.0.0"
-ThisBuild/scalaVersion := "3.2.2"
+name                     := "atom"
+ThisBuild / organization := "io.appthreat"
+ThisBuild / version      := "1.0.0"
+ThisBuild / scalaVersion := "3.2.2"
 
 // parsed by project/Versions.scala, updated by updateDependencies.sh
-val cpgVersion = "1.3.600"
-val joernVersion = "1.1.1735"
+val cpgVersion        = "1.3.600"
+val joernVersion      = "1.1.1735"
 val overflowdbVersion = "1.171"
 
-lazy val atom          = Projects.atom
+lazy val atom = Projects.atom
 
 val astGenVersion = "3.0.0"
 
 libraryDependencies ++= Seq(
-  "com.github.pathikrit" %% "better-files" % "3.9.2",
-  "com.github.scopt" %% "scopt" % "4.1.0",
+  "com.github.pathikrit"    %% "better-files"      % "3.9.2",
+  "com.github.scopt"        %% "scopt"             % "4.1.0",
   "org.apache.logging.log4j" % "log4j-core"        % "2.19.0" % Optional,
   "org.apache.logging.log4j" % "log4j-slf4j2-impl" % "2.19.0" % Optional,
-  "io.joern" %% "c2cpg" % Versions.joern excludeAll(
+  "io.joern"                %% "c2cpg"             % Versions.joern excludeAll (
     ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface.text")
   ),
-  "io.joern" %% "dataflowengineoss" % Versions.joern,
-  "io.joern" %% "pysrc2cpg" % Versions.joern,
-  "io.joern" %% "javasrc2cpg" % Versions.joern,
-  "io.joern" %% "jssrc2cpg" % Versions.joern,
-  "io.joern" %% "jimple2cpg" % Versions.joern,
-  "org.scalatest" %% "scalatest" % "3.2.15" % Test
+  "io.joern"      %% "dataflowengineoss" % Versions.joern,
+  "io.joern"      %% "pysrc2cpg"         % Versions.joern,
+  "io.joern"      %% "javasrc2cpg"       % Versions.joern,
+  "io.joern"      %% "jssrc2cpg"         % Versions.joern,
+  "io.joern"      %% "jimple2cpg"        % Versions.joern,
+  "org.scalatest" %% "scalatest"         % "3.2.15" % Test
 )
 
 Compile / doc / scalacOptions ++= Seq("-doc-title", "atom apidocs", "-doc-version", version.value)
@@ -90,11 +88,11 @@ ThisBuild / compile / javacOptions ++= Seq(
 
 enablePlugins(JavaAppPackaging)
 
-lazy val AstgenWin    = "astgen-win.exe"
-lazy val AstgenLinux  = "astgen-linux"
-lazy val AstgenLinuxArm  = "astgen-linux-arm"
-lazy val AstgenMac    = "astgen-macos"
-lazy val AstgenMacArm = "astgen-macos-arm"
+lazy val AstgenWin      = "astgen-win.exe"
+lazy val AstgenLinux    = "astgen-linux"
+lazy val AstgenLinuxArm = "astgen-linux-arm"
+lazy val AstgenMac      = "astgen-macos"
+lazy val AstgenMacArm   = "astgen-macos-arm"
 
 lazy val astGenDlUrl = settingKey[String]("astgen download url")
 astGenDlUrl := s"https://github.com/joernio/astgen/releases/download/v${astGenVersion}/"
@@ -162,9 +160,9 @@ cleanFiles ++= Seq(
   (Universal / stagingDirectory).value / "bin" / "astgen"
 ) ++ astGenBinaryNames.value.map(fileName => SimpleCache.encodeFile(s"${astGenDlUrl.value}$fileName"))
 
-ThisBuild/licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
+ThisBuild / licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 
-Global/onChangedBuildSource := ReloadOnSourceChanges
+Global / onChangedBuildSource := ReloadOnSourceChanges
 
 maintainer := "prabhu@appthreat.com"
 
@@ -183,7 +181,7 @@ ThisBuild / resolvers ++= Seq(
   "Atlassian" at "https://packages.atlassian.com/mvn/maven-atlassian-external",
   "Gradle Releases" at "https://repo.gradle.org/gradle/libs-releases/"
 )
-ThisBuild / Test / fork := true
-Global / onChangedBuildSource := ReloadOnSourceChanges
-Compile/doc/sources := Seq.empty
-Compile/packageDoc/publishArtifact := false
+ThisBuild / Test / fork                := true
+Global / onChangedBuildSource          := ReloadOnSourceChanges
+Compile / doc / sources                := Seq.empty
+Compile / packageDoc / publishArtifact := false
