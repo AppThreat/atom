@@ -51,7 +51,7 @@ jobs:
           ./atom -o /tmp/ts.cpg.bin -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example
           ./atom -o /tmp/py.cpg.bin -l python $GITHUB_WORKSPACE/repotests/DjanGoat
           ./atom -o /tmp/c.cpg.bin -l c $GITHUB_WORKSPACE/repotests/libexpat
-          ls -lh /tmp/*.cpg.bin /tmp/*.json
+          ls -lh /tmp/*.cpg.bin
 
           ./atom -o /tmp/java2.cpg.bin -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example --slice --slice-outfile /tmp/java.slices.json
           ./atom -o /tmp/juice2.cpg.bin -l js $GITHUB_WORKSPACE/repotests/juice-shop --slice --slice-outfile /tmp/juice.slices.json
