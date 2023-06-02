@@ -107,7 +107,7 @@ object Atom {
 
   private def generateForLanguage(language: String, config: ParserConfig): Either[String, String] = {
     (language match {
-      case Languages.C | Languages.NEWC =>
+      case Languages.C | Languages.NEWC | "cpp" | "c++" =>
         new C2Cpg()
           .createCpgWithOverlays(
             CConfig(

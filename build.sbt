@@ -4,7 +4,7 @@ ThisBuild / version      := "1.0.0"
 ThisBuild / scalaVersion := "3.2.2"
 
 val cpgVersion        = "1.3.606"
-val joernVersion      = "1.1.1735"
+val joernVersion      = "1.1.1742"
 val overflowdbVersion = "1.171"
 
 lazy val atom = Projects.atom
