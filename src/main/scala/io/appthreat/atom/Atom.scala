@@ -107,7 +107,7 @@ object Atom {
 
   private def generateForLanguage(language: String, config: ParserConfig): Either[String, String] = {
     (language match {
-      case Languages.C | Languages.NEWC | "cpp" | "c++" =>
+      case Languages.C | Languages.NEWC | "CPP" | "C++" =>
         new C2Cpg()
           .createCpgWithOverlays(
             CConfig(
@@ -120,7 +120,7 @@ object Atom {
             )
           )
           .map(_.close())
-      case "jar" | "jimple" | "android" | "apk" | "dex" =>
+      case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
         new Jimple2Cpg()
           .createCpgWithOverlays(
             JimpleConfig(inputPath = config.inputPath, outputPath = config.outputCpgFile, android = ANDROID_JAR_PATH)
@@ -137,13 +137,13 @@ object Atom {
             )
           )
           .map(_.close())
-      case Languages.JSSRC | Languages.JAVASCRIPT | "js" | "ts" | "typescript" =>
+      case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
         new JsSrc2Cpg()
           .createCpgWithAllOverlays(
             JSConfig(inputPath = config.inputPath, outputPath = config.outputCpgFile, disableDummyTypes = true)
           )
           .map(_.close())
-      case Languages.PYTHONSRC | Languages.PYTHON | "py" =>
+      case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
         new Py2CpgOnFileSystem()
           .createCpgWithOverlays(
             PyConfig(
