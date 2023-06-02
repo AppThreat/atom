@@ -119,13 +119,11 @@ object Atom {
               includePathsAutoDiscovery = false
             )
           )
-          .map(_.close())
       case "jar" | "jimple" | "android" | "apk" | "dex" =>
         new Jimple2Cpg()
           .createCpgWithOverlays(
             JimpleConfig(inputPath = config.inputPath, outputPath = config.outputCpgFile, android = ANDROID_JAR_PATH)
           )
-          .map(_.close())
       case Languages.JAVA | Languages.JAVASRC =>
         new JavaSrc2Cpg()
           .createCpgWithOverlays(
@@ -136,13 +134,11 @@ object Atom {
               inferenceJarPaths = JAR_INFERENCE_PATHS
             )
           )
-          .map(_.close())
       case Languages.JSSRC | Languages.JAVASCRIPT | "js" | "ts" | "typescript" =>
         new JsSrc2Cpg()
           .createCpgWithAllOverlays(
             JSConfig(inputPath = config.inputPath, outputPath = config.outputCpgFile, disableDummyTypes = true)
           )
-          .map(_.close())
       case Languages.PYTHONSRC | Languages.PYTHON | "py" =>
         new Py2CpgOnFileSystem()
           .createCpgWithOverlays(
@@ -152,7 +148,6 @@ object Atom {
               disableDummyTypes = true
             )
           )
-          .map(_.close())
       case _ => Failure(new RuntimeException(s"No language frontend supported for language '$language'"))
     }) match {
       case Failure(exception) =>
