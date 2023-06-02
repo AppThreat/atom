@@ -12,12 +12,19 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - uses: actions/checkout@v3
+        with:
+          repository: 'AppThreat/codepropertygraph'
+          path: 'codepropertygraph'
       - uses: coursier/cache-action@v6
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '19'
+      - run: |
+          cd codepropertygraph
+          sbt publishLocal
       - run: |
           sbt scalafmtCheck stage astGenDlTask createDistribution
           sha512sum target/atom.zip > target/atom.zip.sha512
