@@ -2,15 +2,19 @@ package io.appthreat.atom
 
 import better.files.{File => ScalaFile}
 import io.joern.c2cpg.{C2Cpg, Config => CConfig}
+import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
 import io.joern.dataflowengineoss.slicing.SliceMode._
 import io.joern.dataflowengineoss.slicing._
 import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config => JavaConfig}
 import io.joern.jimple2cpg.{Jimple2Cpg, Config => JimpleConfig}
 import io.joern.jssrc2cpg.{JsSrc2Cpg, Config => JSConfig}
+import io.joern.jssrc2cpg.passes.{JavaScriptInheritanceNamePass, ConstClosurePass}
 import io.joern.pysrc2cpg.{Py2CpgOnFileSystem, Py2CpgOnFileSystemConfig => PyConfig}
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
 import io.shiftleft.codepropertygraph.generated.Languages
+import io.shiftleft.semanticcpg.layers.LayerCreatorContext
+
 import scopt.OptionParser
 
 import scala.language.postfixOps
@@ -19,7 +23,7 @@ import scala.util.{Failure, Success, Using}
 object Atom {
   private val DEFAULT_ATOM_OUT_FILE      = "app.atom"
   private val DEFAULT_SLICE_OUT_FILE     = "slices.json"
-  private val DEFAULT_MAX_DEFS: Int      = 1000
+  private val DEFAULT_MAX_DEFS: Int      = 2000
   private val MAVEN_JAR_PATH: ScalaFile  = ScalaFile.home / ".m2"
   private val GRADLE_JAR_PATH: ScalaFile = ScalaFile.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
   private val SBT_JAR_PATH: ScalaFile    = ScalaFile.home / ".ivy2" / "cache"
@@ -63,7 +67,7 @@ object Atom {
       .text(s"the kind of slicing to perform - defaults to `DataFlow`. Options: [${SliceMode.values.mkString(", ")}]")
       .action((x, c) => c.copy(sliceMode = x))
     opt[Int]("max-num-def")
-      .text("Maximum number of definitions in per-method data flow calculation")
+      .text("Maximum number of definitions in per-method data flow calculation. Default 2000")
       .action((x, c) => c.copy(maxNumDef = x))
     help("help").text("display this help message")
   }
@@ -142,9 +146,15 @@ object Atom {
           .map(_.close())
       case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
         new JsSrc2Cpg()
-          .createCpgWithAllOverlays(
+          .createCpgWithOverlays(
             JSConfig(inputPath = config.inputPath, outputPath = config.outputAtomFile, disableDummyTypes = true)
           )
+          .map { cpg =>
+            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef)).run(new LayerCreatorContext(cpg))
+            new JavaScriptInheritanceNamePass(cpg)
+            new ConstClosurePass(cpg)
+            cpg
+          }
           .map(_.close())
       case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
         new Py2CpgOnFileSystem()
