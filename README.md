@@ -25,13 +25,14 @@ export ATOM_HOME=/opt/atom-1.0.0
 ```shell
 Usage: atom [options] [input]
 
-  input                   source file or directory
-  -o, --output <value>    output filename
-  -l, --language <value>  source language
+  input                    source file or directory
+  -o, --output <value>     output filename. Default app.atom
+  -l, --language <value>   source language
 Misc
   -s, --slice              export intra-procedural slices as json
   --slice-outfile <value>  slice output filename
   -m, --mode <value>       the kind of slicing to perform - defaults to `DataFlow`. Options: [DataFlow, Usages]
+  --max-num-def <value>    Maximum number of definitions in per-method data flow calculation
   --help                   display this help message
 ```
 
