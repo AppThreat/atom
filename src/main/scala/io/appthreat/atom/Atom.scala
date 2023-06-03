@@ -19,7 +19,7 @@ import scala.util.{Failure, Success, Using}
 object Atom {
   private val DEFAULT_CPG_OUT_FILE       = "cpg.bin"
   private val DEFAULT_SLICE_OUT_FILE     = "slices.json"
-  private val DEFAULT_MAX_DEFS: Int      = 4000
+  private val DEFAULT_MAX_DEFS: Int      = 1000
   private val MAVEN_JAR_PATH: ScalaFile  = ScalaFile.home / ".m2"
   private val GRADLE_JAR_PATH: ScalaFile = ScalaFile.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
   private val SBT_JAR_PATH: ScalaFile    = ScalaFile.home / ".ivy2" / "cache"
@@ -62,6 +62,9 @@ object Atom {
     opt[SliceModes]('m', "mode")
       .text(s"the kind of slicing to perform - defaults to `DataFlow`. Options: [${SliceMode.values.mkString(", ")}]")
       .action((x, c) => c.copy(sliceMode = x))
+    opt[Int]("max-num-def")
+      .text("Maximum number of definitions in per-method data flow calculation")
+      .action((x, c) => c.copy(maxNumDef = x))
     help("help").text("display this help message")
   }
 
