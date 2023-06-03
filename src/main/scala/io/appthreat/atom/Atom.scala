@@ -65,7 +65,7 @@ object Atom {
       .text("slice output filename")
       .action((x, c) => c.copy(outputSliceFile = x))
     opt[Int]("slice-depth")
-      .text("the max depth to traverse the DDG for the data-flow slice (for `DataFlow` mode) - defaults to 10")
+      .text("the max depth to traverse the DDG for the data-flow slice (for `DataFlow` mode) - defaults to 3")
       .action((x, c) => c.copy(sliceDepth = x))
     opt[SliceModes]('m', "mode")
       .text(s"the kind of slicing to perform - defaults to `DataFlow`. Options: [${SliceMode.values.mkString(", ")}]")
