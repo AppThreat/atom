@@ -23,6 +23,7 @@ import scala.util.{Failure, Success, Using}
 object Atom {
   private val DEFAULT_ATOM_OUT_FILE      = "app.atom"
   private val DEFAULT_SLICE_OUT_FILE     = "slices.json"
+  private val DEFAULT_SLICE_DEPTH        = 3
   private val DEFAULT_MAX_DEFS: Int      = 2000
   private val MAVEN_JAR_PATH: ScalaFile  = ScalaFile.home / ".m2"
   private val GRADLE_JAR_PATH: ScalaFile = ScalaFile.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
@@ -63,11 +64,14 @@ object Atom {
     opt[String]("slice-outfile")
       .text("slice output filename")
       .action((x, c) => c.copy(outputSliceFile = x))
+    opt[Int]("slice-depth")
+      .text("the max depth to traverse the DDG for the data-flow slice (for `DataFlow` mode) - defaults to 10")
+      .action((x, c) => c.copy(sliceDepth = x))
     opt[SliceModes]('m', "mode")
       .text(s"the kind of slicing to perform - defaults to `DataFlow`. Options: [${SliceMode.values.mkString(", ")}]")
       .action((x, c) => c.copy(sliceMode = x))
     opt[Int]("max-num-def")
-      .text("Maximum number of definitions in per-method data flow calculation. Default 2000")
+      .text("maximum number of definitions in per-method data flow calculation. Default 2000")
       .action((x, c) => c.copy(maxNumDef = x))
     help("help").text("display this help message")
   }
@@ -150,7 +154,8 @@ object Atom {
             JSConfig(inputPath = config.inputPath, outputPath = config.outputAtomFile, disableDummyTypes = true)
           )
           .map { cpg =>
-            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef)).run(new LayerCreatorContext(cpg))
+            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef))
+              .run(new LayerCreatorContext(cpg))
             new JavaScriptInheritanceNamePass(cpg)
             new ConstClosurePass(cpg)
             cpg
@@ -204,7 +209,7 @@ object Atom {
         sliceMode = config.sliceMode,
         excludeOperatorCalls = true,
         typeRecoveryDummyTypes = false,
-        sliceDepth = 20,
+        sliceDepth = config.sliceDepth,
         minNumCalls = 1
       )
       config.sliceMode match {
@@ -246,6 +251,7 @@ object Atom {
     outputSliceFile: String = DEFAULT_SLICE_OUT_FILE,
     slice: Boolean = false,
     sliceMode: SliceModes = DataFlow,
+    sliceDepth: Int = DEFAULT_SLICE_DEPTH,
     language: String = "",
     maxNumDef: Int = DEFAULT_MAX_DEFS
   )

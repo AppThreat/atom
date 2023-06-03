@@ -31,8 +31,9 @@ Usage: atom [options] [input]
 Misc
   -s, --slice              export intra-procedural slices as json
   --slice-outfile <value>  slice output filename
+  --slice-depth <value>    the max depth to traverse the DDG for the data-flow slice (for `DataFlow` mode) - defaults to 3
   -m, --mode <value>       the kind of slicing to perform - defaults to `DataFlow`. Options: [DataFlow, Usages]
-  --max-num-def <value>    Maximum number of definitions in per-method data flow calculation
+  --max-num-def <value>    maximum number of definitions in per-method data flow calculation
   --help                   display this help message
 ```
 
