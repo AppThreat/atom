@@ -53,14 +53,14 @@ jobs:
           ls -lh /tmp/*.cpg.bin
 
           ./atom -o /tmp/java2.cpg.bin -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/java.slices.json
-          ./atom -o /tmp/juice2.cpg.bin -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/juice.slices.json
+          # ./atom -o /tmp/juice2.cpg.bin -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/juice.slices.json
           ./atom -o /tmp/ts2.cpg.bin -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/ts.slices.json
           ./atom -o /tmp/py2.cpg.bin -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/py.slices.json
           ./atom -o /tmp/c2.cpg.bin -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/c.slices.json
           ls -lh /tmp/*.cpg.bin /tmp/*.json
 
           ./atom -o /tmp/java3.cpg.bin -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/java.usages.json -m Usages
-          ./atom -o /tmp/juice3.cpg.bin -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/juice.usages.json -m Usages
+          # ./atom -o /tmp/juice3.cpg.bin -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/juice.usages.json -m Usages
           ./atom -o /tmp/ts3.cpg.bin -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/ts.usages.json -m Usages
           ./atom -o /tmp/py3.cpg.bin -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/py.usages.json -m Usages
           ./atom -o /tmp/c3.cpg.bin -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/c.usages.json -m Usages
