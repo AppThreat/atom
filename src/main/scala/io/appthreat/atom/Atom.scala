@@ -17,7 +17,7 @@ import scala.language.postfixOps
 import scala.util.{Failure, Success, Using}
 
 object Atom {
-  private val DEFAULT_CPG_OUT_FILE       = "cpg.bin"
+  private val DEFAULT_ATOM_OUT_FILE      = "app.atom"
   private val DEFAULT_SLICE_OUT_FILE     = "slices.json"
   private val DEFAULT_MAX_DEFS: Int      = 1000
   private val MAVEN_JAR_PATH: ScalaFile  = ScalaFile.home / ".m2"
@@ -47,8 +47,8 @@ object Atom {
       .text("source file or directory")
       .action((x, c) => c.copy(inputPath = x))
     opt[String]('o', "output")
-      .text("output filename")
-      .action((x, c) => c.copy(outputCpgFile = x))
+      .text("output filename. Default app.atom")
+      .action((x, c) => c.copy(outputAtomFile = x))
     opt[String]('l', "language")
       .text("source language")
       .action((x, c) => c.copy(language = x))
@@ -79,7 +79,7 @@ object Atom {
 
   def newCpgCreatedString(path: String): String = {
     val absolutePath = ScalaFile(path).path.toAbsolutePath
-    s"CPG created successfully at $absolutePath\n"
+    s"Atom created successfully at $absolutePath\n"
   }
 
   private def run(config: ParserConfig): Either[String, String] =
@@ -88,7 +88,7 @@ object Atom {
       language <- getLanguage(config)
       _        <- generateAtom(config, language)
       -        <- generateSlice(config)
-    } yield newCpgCreatedString(config.outputCpgFile)
+    } yield newCpgCreatedString(config.outputAtomFile)
   private def checkInputPath(config: ParserConfig): Either[String, Unit] = {
     if (config.inputPath == "") {
       println(optionParser.usage)
@@ -115,7 +115,7 @@ object Atom {
           .createCpgWithOverlays(
             CConfig(
               inputPath = config.inputPath,
-              outputPath = config.outputCpgFile,
+              outputPath = config.outputAtomFile,
               ignoredFilesRegex = ".*(test|docs|examples|samples|mocks).*".r,
               includeComments = false,
               logProblems = false,
@@ -126,7 +126,7 @@ object Atom {
       case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
         new Jimple2Cpg()
           .createCpgWithOverlays(
-            JimpleConfig(inputPath = config.inputPath, outputPath = config.outputCpgFile, android = ANDROID_JAR_PATH)
+            JimpleConfig(inputPath = config.inputPath, outputPath = config.outputAtomFile, android = ANDROID_JAR_PATH)
           )
           .map(_.close())
       case Languages.JAVA | Languages.JAVASRC =>
@@ -134,7 +134,7 @@ object Atom {
           .createCpgWithOverlays(
             JavaConfig(
               inputPath = config.inputPath,
-              outputPath = config.outputCpgFile,
+              outputPath = config.outputAtomFile,
               fetchDependencies = true,
               inferenceJarPaths = JAR_INFERENCE_PATHS
             )
@@ -143,7 +143,7 @@ object Atom {
       case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
         new JsSrc2Cpg()
           .createCpgWithAllOverlays(
-            JSConfig(inputPath = config.inputPath, outputPath = config.outputCpgFile, disableDummyTypes = true)
+            JSConfig(inputPath = config.inputPath, outputPath = config.outputAtomFile, disableDummyTypes = true)
           )
           .map(_.close())
       case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
@@ -151,7 +151,7 @@ object Atom {
           .createCpgWithOverlays(
             PyConfig(
               inputDir = ScalaFile(config.inputPath).path,
-              outputFile = ScalaFile(config.outputCpgFile).path,
+              outputFile = ScalaFile(config.outputAtomFile).path,
               disableDummyTypes = true
             )
           )
@@ -161,7 +161,7 @@ object Atom {
       case Failure(exception) =>
         Left(exception.getMessage)
       case Success(_) =>
-        Right("Code property graph generation successful")
+        Right("Atom generation successful")
     }
   }
 
@@ -209,7 +209,7 @@ object Atom {
         saveSlice(
           ScalaFile(config.outputSliceFile),
           (
-            Using.resource(loadFromOdb(config.outputCpgFile)) { cpg =>
+            Using.resource(loadFromOdb(config.outputAtomFile)) { cpg =>
               {
                 val slice = sliceCpg(cpg)
                 cpg.close()
@@ -219,7 +219,7 @@ object Atom {
           )
         )
       }
-      Right("CPG sliced successfully")
+      Right("Atom sliced successfully")
     } catch {
       case err: Throwable => Left(err.getMessage)
     }
@@ -227,12 +227,12 @@ object Atom {
 
   private def generateAtom(config: ParserConfig, language: String): Right[Nothing, String] = {
     generateForLanguage(language.toUpperCase, config)
-    Right(s"Code property graph generation successful for $language")
+    Right(s"Atom generation successful for $language")
   }
 
   case class ParserConfig(
     inputPath: String = "",
-    outputCpgFile: String = DEFAULT_CPG_OUT_FILE,
+    outputAtomFile: String = DEFAULT_ATOM_OUT_FILE,
     outputSliceFile: String = DEFAULT_SLICE_OUT_FILE,
     slice: Boolean = false,
     sliceMode: SliceModes = DataFlow,
