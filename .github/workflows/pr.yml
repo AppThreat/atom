@@ -41,4 +41,8 @@ jobs:
       - run: |
           sbt stage astGenDlTask
           ./atom -o /tmp/java.cpg.bin -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
-          ls -lh /tmp/*.cpg.bin /tmp/*.json
+          ./atom -o /tmp/juice.cpg.bin -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
+          ./atom -o /tmp/ts.cpg.bin -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml
+          ./atom -o /tmp/py.cpg.bin -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml
+          ./atom -o /tmp/c.cpg.bin -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml
+          ls -lh /tmp/*
