@@ -21,7 +21,7 @@ import scala.language.postfixOps
 import scala.util.{Failure, Success, Using}
 
 object Atom {
-  private val DEFAULT_ATOM_OUT_FILE      = "app.atom"
+  private val DEFAULT_ATOM_OUT_FILE      = "app.⚛"
   private val DEFAULT_SLICE_OUT_FILE     = "slices.json"
   private val DEFAULT_SLICE_DEPTH        = 3
   private val DEFAULT_MAX_DEFS: Int      = 2000

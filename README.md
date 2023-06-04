@@ -1,4 +1,4 @@
-# Atom
+# Atom (⚛)
 
 ```shell
  █████╗ ████████╗ ██████╗ ███╗   ███╗
@@ -26,7 +26,7 @@ export ATOM_HOME=/opt/atom-1.0.0
 Usage: atom [options] [input]
 
   input                    source file or directory
-  -o, --output <value>     output filename. Default app.atom
+  -o, --output <value>     output filename. Default app.⚛
   -l, --language <value>   source language
 Misc
   -s, --slice              export intra-procedural slices as json
