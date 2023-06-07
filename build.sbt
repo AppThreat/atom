@@ -26,7 +26,10 @@ libraryDependencies ++= Seq(
   "io.joern"      %% "javasrc2cpg"       % Versions.joern,
   "io.joern"      %% "jssrc2cpg"         % Versions.joern,
   "io.joern"      %% "jimple2cpg"        % Versions.joern,
-  "org.scalatest" %% "scalatest"         % "3.2.15" % Test
+  "io.joern"      %% "semanticcpg"       % Versions.joern % Test classifier "tests",
+  "io.joern"      %% "x2cpg"             % Versions.joern % Test classifier "tests",
+  "io.joern"      %% "pysrc2cpg"         % Versions.joern % Test classifier "tests",
+  "org.scalatest" %% "scalatest"         % "3.2.15"       % Test
 )
 
 Compile / doc / scalacOptions ++= Seq("-doc-title", "atom apidocs", "-doc-version", version.value)
