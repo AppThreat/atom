@@ -1,4 +1,4 @@
-package io.appthreat.atom
+package io.appthreat.atom.depscan
 
 import better.files.File as BFile
 import io.joern.dataflowengineoss.language.*
@@ -11,20 +11,20 @@ import overflowdb.traversal.*
 
 import java.io.File as JFile
 import scala.annotation.tailrec
-object PythonDependencyScanner {
+object PythonDependencyScanner extends XDependencyScanner {
 
   implicit val engineContext: EngineContext = EngineContext()
 
-  def scan(cpg: Cpg): Set[String] = scanSetupPy(cpg) ++ scanImports(cpg)
+  def scan(cpg: Cpg): DependencySlice = DependencySlice(scanSetupPy(cpg) ++ scanImports(cpg))
 
   private def scanSetupPy(cpg: Cpg): Set[String] = {
     val requirementsPattern = "([\\w_]+)(=>|<=|==|>=|=<).*".r
 
-    val dataSourcesToRequires = (cpg.literal ++ cpg.identifier)
+    def dataSourcesToRequires = (cpg.literal ++ cpg.identifier)
       .where(_.file.name(".*setup.py"))
       .where(_.argumentName("install_requires"))
       .collectAll[CfgNode]
-    val setupCall = cpg.call("setup").where(_.file.name(".*setup.py"))
+    def setupCall = cpg.call("setup").where(_.file.name(".*setup.py"))
 
     def findOriginalDeclaration(xs: Traversal[CfgNode]): Iterable[Literal] =
       xs.flatMap {
