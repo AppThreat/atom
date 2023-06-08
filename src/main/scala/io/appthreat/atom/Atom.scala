@@ -1,26 +1,40 @@
 package io.appthreat.atom
 
-import better.files.{File => ScalaFile}
-import io.joern.c2cpg.{C2Cpg, Config => CConfig}
+import better.files.File as ScalaFile
+import io.appthreat.atom.Atom.loadFromOdb
+import io.joern.c2cpg.{C2Cpg, Config as CConfig}
 import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
-import io.joern.dataflowengineoss.slicing.SliceMode._
-import io.joern.dataflowengineoss.slicing._
-import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config => JavaConfig}
-import io.joern.jimple2cpg.{Jimple2Cpg, Config => JimpleConfig}
-import io.joern.jssrc2cpg.{JsSrc2Cpg, Config => JSConfig}
-import io.joern.jssrc2cpg.passes.{JavaScriptInheritanceNamePass, ConstClosurePass}
-import io.joern.pysrc2cpg.{Py2CpgOnFileSystem, Py2CpgOnFileSystemConfig => PyConfig}
+import io.joern.dataflowengineoss.slicing.*
+import io.joern.dataflowengineoss.slicing.SliceMode.*
+import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
+import io.joern.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
+import io.joern.jssrc2cpg.passes.{ConstClosurePass, JavaScriptInheritanceNamePass}
+import io.joern.jssrc2cpg.{JsSrc2Cpg, Config as JSConfig}
+import io.joern.pysrc2cpg.{
+  DynamicTypeHintFullNamePass,
+  Py2CpgOnFileSystem,
+  PythonInheritanceNamePass,
+  PythonTypeHintCallLinker,
+  PythonTypeRecoveryPass,
+  ImportsPass as PythonImportsPass,
+  Py2CpgOnFileSystemConfig as PyConfig
+}
+import io.joern.x2cpg.passes.base.AstLinkerPass
+import io.joern.x2cpg.passes.callgraph.NaiveCallLinker
+import io.joern.x2cpg.passes.frontend.XTypeRecoveryConfig
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
 import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
-
 import scopt.OptionParser
 
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Using}
 
 object Atom {
+
+  import parsedeps.*
+
   private val DEFAULT_ATOM_OUT_FILE      = "app.⚛"
   private val DEFAULT_SLICE_OUT_FILE     = "slices.json"
   private val DEFAULT_SLICE_DEPTH        = 3
@@ -39,7 +53,8 @@ object Atom {
 
   def main(args: Array[String]): Unit = {
     run(args) match {
-      case Right(msg) => println(msg)
+      case Right(msg) =>
+        println(msg)
       case Left(errMsg) =>
         println(s"Failure: $errMsg")
         System.exit(1)
@@ -57,6 +72,8 @@ object Atom {
     opt[String]('l', "language")
       .text("source language")
       .action((x, c) => c.copy(language = x))
+    cmd("parsedeps")
+      .action((_, c) => c.copy(parsedeps = true))
     note("Misc")
     opt[Unit]('s', "slice")
       .text("export intra-procedural slices as json")
@@ -79,9 +96,8 @@ object Atom {
   private def run(args: Array[String]): Either[String, String] = {
     val parserArgs = args.toList
     parseConfig(parserArgs) match {
-      case Right(config) =>
-        run(config)
-      case Left(err) => Left(err)
+      case Right(config) => run(config)
+      case Left(err)     => Left(err)
     }
   }
 
@@ -97,6 +113,7 @@ object Atom {
       _        <- generateAtom(config, language)
       -        <- generateSlice(config)
     } yield newCpgCreatedString(config.outputAtomFile)
+
   private def checkInputPath(config: ParserConfig): Either[String, Unit] = {
     if (config.inputPath == "") {
       println(optionParser.usage)
@@ -170,6 +187,10 @@ object Atom {
               disableDummyTypes = true
             )
           )
+          .map { cpg =>
+            new PythonImportsPass(cpg).createAndApply()
+            cpg
+          }
           .map(_.close())
       case _ => Failure(new RuntimeException(s"No language frontend supported for language '$language'"))
     }) match {
@@ -180,12 +201,11 @@ object Atom {
     }
   }
 
-  private def saveSlice(outFile: ScalaFile, programSlice: ProgramSlice): Unit = {
-
+  private def saveSlice(outFile: ScalaFile, programSlice: String): Unit = {
     val finalOutputPath =
       ScalaFile(outFile.pathAsString)
         .createFileIfNotExists()
-        .write(programSlice.toJson)
+        .write(programSlice)
         .pathAsString
     println(s"Slices have been successfully written to $finalOutputPath")
   }
@@ -223,32 +243,30 @@ object Atom {
       if (config.slice) {
         saveSlice(
           ScalaFile(config.outputSliceFile),
-          (
-            Using.resource(loadFromOdb(config.outputAtomFile)) { cpg =>
-              {
-                val slice = sliceCpg(cpg)
-                cpg.close()
-                slice
-              }
-            }
-          )
+          Using.resource(loadFromOdb(config.outputAtomFile))(sliceCpg).toJson
         )
+      }
+      if (config.parsedeps) {
+        Using.resource(loadFromOdb(config.outputAtomFile))(parseDependencies).map(_.toJson) match {
+          case Left(err)    => return Left(err)
+          case Right(slice) => saveSlice(ScalaFile(config.outputSliceFile), slice)
+        }
       }
       Right("Atom sliced successfully")
     } catch {
-      case err: Throwable => Left(err.getMessage)
+      case err: Throwable if err.getMessage == null => Left(err.getCause.toString)
+      case err: Throwable                           => Left(err.getMessage)
     }
   }
 
-  private def generateAtom(config: ParserConfig, language: String): Right[Nothing, String] = {
+  private def generateAtom(config: ParserConfig, language: String): Either[String, String] =
     generateForLanguage(language.toUpperCase, config)
-    Right(s"Atom generation successful for $language")
-  }
 
   case class ParserConfig(
     inputPath: String = "",
     outputAtomFile: String = DEFAULT_ATOM_OUT_FILE,
     outputSliceFile: String = DEFAULT_SLICE_OUT_FILE,
+    parsedeps: Boolean = false,
     slice: Boolean = false,
     sliceMode: SliceModes = DataFlow,
     sliceDepth: Int = DEFAULT_SLICE_DEPTH,
