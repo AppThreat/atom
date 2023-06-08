@@ -11,29 +11,27 @@
 
 ## Installation
 
-Download the pre-built distribution from the [releases](https://github.com/AppThreat/atom/releases)
-
-```bash
-curl -LO https://github.com/AppThreat/atom/releases/latest/download/atom.zip
-unzip -q atom.zip -d /opt/
-ln -s /opt/atom-1.0.0/bin/atom /usr/local/bin/atom
-export ATOM_HOME=/opt/atom-1.0.0
+```shell
+npm install @appthreat/atom
+# sudo npm install -g @appthreat/atom
 ```
 
 ## Usage
 
 ```shell
-Usage: atom [options] [input]
+Usage: atom [parsedeps] [options] [input]
 
   input                    source file or directory
   -o, --output <value>     output filename. Default app.⚛
   -l, --language <value>   source language
+Command: parsedeps
+
 Misc
   -s, --slice              export intra-procedural slices as json
   --slice-outfile <value>  slice output filename
   --slice-depth <value>    the max depth to traverse the DDG for the data-flow slice (for `DataFlow` mode) - defaults to 3
   -m, --mode <value>       the kind of slicing to perform - defaults to `DataFlow`. Options: [DataFlow, Usages]
-  --max-num-def <value>    maximum number of definitions in per-method data flow calculation
+  --max-num-def <value>    maximum number of definitions in per-method data flow calculation. Default 2000
   --help                   display this help message
 ```
 

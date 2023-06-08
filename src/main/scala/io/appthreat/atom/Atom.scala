@@ -67,7 +67,7 @@ object Atom {
       .text("source file or directory")
       .action((x, c) => c.copy(inputPath = x))
     opt[String]('o', "output")
-      .text("output filename. Default app.atom")
+      .text("output filename. Default app.⚛")
       .action((x, c) => c.copy(outputAtomFile = x))
     opt[String]('l', "language")
       .text("source language")
