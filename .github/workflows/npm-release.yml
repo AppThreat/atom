@@ -1,0 +1,42 @@
+name: Release npm package
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+jobs:
+  pkg:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
+        registry-url: https://registry.npmjs.org/
+    - uses: coursier/cache-action@v6
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '19'
+    - name: Release
+      run: |
+        sbt scalafmtCheck stage astGenDlTask createDistribution
+        sha512sum target/atom.zip > target/atom.zip.sha512
+        npm config set //npm.pkg.github.com/:_authToken=$GITHUB_TOKEN
+        npm config set //registry.npmjs.org/:_authToken=$NPMJS_AUTH_TOKEN
+        cd wrapper/nodejs
+        bash build.sh
+        echo "appthreat:registry=https://npm.pkg.github.com" > ~/.npmrc
+        npm publish --access=public --@appthreat:registry='https://npm.pkg.github.com'
+        echo "appthreat:registry=https://registry.npmjs.org" > ~/.npmrc
+        npm publish --access=public --@appthreat:registry='https://registry.npmjs.org'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NPMJS_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        NODE_OPTIONS: --max_old_space_size=4096
