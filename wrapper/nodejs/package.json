@@ -1,0 +1,34 @@
+{
+  "name": "@appthreat/atom",
+  "version": "0.7.1",
+  "description": "Create atom (⚛) representation for your application, packages and libraries",
+  "main": "index.js",
+  "bin": {
+    "atom": "./plugins/atom-1.0.0/bin/atom"
+  },
+  "scripts": {
+    "pretty": "prettier --write *.js --trailing-comma=none"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AppThreat/atom.git"
+  },
+  "keywords": [
+    "code",
+    "analysis",
+    "threat",
+    "sbom",
+    "supply",
+    "chain"
+  ],
+  "author": "Team AppThreat <cloud@appthreat.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/AppThreat/atom/issues"
+  },
+  "homepage": "https://github.com/AppThreat/atom#readme",
+  "files": [
+    "*.js",
+    "plugins/"
+  ]
+}

@@ -9,7 +9,7 @@ val overflowdbVersion = "1.178"
 
 lazy val atom = Projects.atom
 
-val astGenVersion = "3.0.0"
+val astGenVersion = "3.1.0"
 
 libraryDependencies ++= Seq(
   "com.github.pathikrit"    %% "better-files"      % "3.9.2",
