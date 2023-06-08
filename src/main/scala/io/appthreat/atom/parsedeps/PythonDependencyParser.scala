@@ -1,4 +1,4 @@
-package io.appthreat.atom.depscan
+package io.appthreat.atom.parsedeps
 
 import better.files.File as BFile
 import io.joern.dataflowengineoss.language.*
@@ -11,13 +11,13 @@ import overflowdb.traversal.*
 
 import java.io.File as JFile
 import scala.annotation.tailrec
-object PythonDependencyScanner extends XDependencyScanner {
+object PythonDependencyParser extends XDependencyParser {
 
   implicit val engineContext: EngineContext = EngineContext()
 
-  def scan(cpg: Cpg): DependencySlice = DependencySlice(scanSetupPy(cpg) ++ scanImports(cpg))
+  override def parse(cpg: Cpg): DependencySlice = DependencySlice(parseSetupPy(cpg) ++ parseImports(cpg))
 
-  private def scanSetupPy(cpg: Cpg): Set[String] = {
+  private def parseSetupPy(cpg: Cpg): Set[String] = {
     val requirementsPattern = "([\\w_]+)(=>|<=|==|>=|=<).*".r
 
     def dataSourcesToRequires = (cpg.literal ++ cpg.identifier)
@@ -50,7 +50,7 @@ object PythonDependencyScanner extends XDependencyScanner {
       .toSet
   }
 
-  private def scanImports(cpg: Cpg): Set[String] = {
+  private def parseImports(cpg: Cpg): Set[String] = {
     val root = BFile(cpg.metaData.root.headOption.getOrElse(JFile.separator))
     // Get a set of local modules to exclude from imports
     val localModuleNames =

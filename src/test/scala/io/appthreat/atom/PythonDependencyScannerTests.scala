@@ -1,6 +1,6 @@
 package io.appthreat.atom
 
-import io.appthreat.atom.depscan.PythonDependencyScanner
+import io.appthreat.atom.parsedeps.PythonDependencyParser
 import io.joern.pysrc2cpg.PySrc2CpgFixture
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -187,7 +187,7 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = tr
     )
 
     "have the modules scanned successfully" in {
-      val scanResult = PythonDependencyScanner.scan(cpg)
+      val scanResult = PythonDependencyParser.parse(cpg)
       scanResult.modules shouldBe Set("idna", "os", "charset_normalizer", "certifi", "socket", "urllib3")
     }
   }

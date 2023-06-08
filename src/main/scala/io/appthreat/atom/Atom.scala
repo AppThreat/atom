@@ -33,7 +33,7 @@ import scala.util.{Failure, Success, Using}
 
 object Atom {
 
-  import depscan.*
+  import parsedeps.*
 
   private val DEFAULT_ATOM_OUT_FILE      = "app.⚛"
   private val DEFAULT_SLICE_OUT_FILE     = "slices.json"
@@ -72,8 +72,8 @@ object Atom {
     opt[String]('l', "language")
       .text("source language")
       .action((x, c) => c.copy(language = x))
-    cmd("depscan")
-      .action((_, c) => c.copy(depscan = true))
+    cmd("parsedeps")
+      .action((_, c) => c.copy(parsedeps = true))
     note("Misc")
     opt[Unit]('s', "slice")
       .text("export intra-procedural slices as json")
@@ -189,15 +189,6 @@ object Atom {
           )
           .map { cpg =>
             new PythonImportsPass(cpg).createAndApply()
-            new PythonInheritanceNamePass(cpg).createAndApply()
-            new DynamicTypeHintFullNamePass(cpg).createAndApply()
-            new PythonTypeRecoveryPass(cpg, XTypeRecoveryConfig(enabledDummyTypes = false)).createAndApply()
-            new PythonTypeHintCallLinker(cpg).createAndApply()
-            new NaiveCallLinker(cpg).createAndApply()
-
-            // Some of passes above create new methods, so, we
-            // need to run the ASTLinkerPass one more time
-            new AstLinkerPass(cpg).createAndApply()
             cpg
           }
           .map(_.close())
@@ -255,28 +246,27 @@ object Atom {
           Using.resource(loadFromOdb(config.outputAtomFile))(sliceCpg).toJson
         )
       }
-      if (config.depscan) {
-        Using.resource(loadFromOdb(config.outputAtomFile))(dependencyScan).map(_.toJson) match {
+      if (config.parsedeps) {
+        Using.resource(loadFromOdb(config.outputAtomFile))(parseDependencies).map(_.toJson) match {
           case Left(err)    => return Left(err)
           case Right(slice) => saveSlice(ScalaFile(config.outputSliceFile), slice)
         }
       }
       Right("Atom sliced successfully")
     } catch {
-      case err: Throwable => Left(err.getMessage)
+      case err: Throwable if err.getMessage == null => Left(err.getCause.toString)
+      case err: Throwable                           => Left(err.getMessage)
     }
   }
 
-  private def generateAtom(config: ParserConfig, language: String): Right[Nothing, String] = {
+  private def generateAtom(config: ParserConfig, language: String): Either[String, String] =
     generateForLanguage(language.toUpperCase, config)
-    Right(s"Atom generation successful for $language")
-  }
 
   case class ParserConfig(
     inputPath: String = "",
     outputAtomFile: String = DEFAULT_ATOM_OUT_FILE,
     outputSliceFile: String = DEFAULT_SLICE_OUT_FILE,
-    depscan: Boolean = false,
+    parsedeps: Boolean = false,
     slice: Boolean = false,
     sliceMode: SliceModes = DataFlow,
     sliceDepth: Int = DEFAULT_SLICE_DEPTH,
