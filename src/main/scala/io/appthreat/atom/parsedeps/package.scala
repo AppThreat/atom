@@ -22,7 +22,7 @@ package object parsedeps {
   implicit val dependencySliceEncoder: Encoder[DependencySlice] = Encoder.forProduct1("modules")(x => x.modules)
   implicit val dependencySliceDecoder: Decoder[DependencySlice] = Decoder.forProduct1("modules")(DependencySlice.apply)
 
-  case class DependencySlice(modules: Set[String]) extends AtomSlice {
+  case class DependencySlice(modules: Seq[String]) extends AtomSlice {
     override def toJson: String = this.asJson.spaces2
   }
 

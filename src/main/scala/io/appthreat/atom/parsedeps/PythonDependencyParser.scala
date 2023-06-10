@@ -15,7 +15,7 @@ object PythonDependencyParser extends XDependencyParser {
 
   implicit val engineContext: EngineContext = EngineContext()
 
-  override def parse(cpg: Cpg): DependencySlice = DependencySlice(parseSetupPy(cpg) ++ parseImports(cpg))
+  override def parse(cpg: Cpg): DependencySlice = DependencySlice((parseSetupPy(cpg) ++ parseImports(cpg)).toSeq.sorted)
 
   private def parseSetupPy(cpg: Cpg): Set[String] = {
     val requirementsPattern = "([\\w_]+)(=>|<=|==|>=|=<).*".r
@@ -51,15 +51,20 @@ object PythonDependencyParser extends XDependencyParser {
   }
 
   private def parseImports(cpg: Cpg): Set[String] = {
-    val root = BFile(cpg.metaData.root.headOption.getOrElse(JFile.separator))
+    val root = BFile(cpg.metaData.root.headOption.getOrElse(JFile.separator)).pathAsString
     // Get a set of local modules to exclude from imports
-    val localModuleNames =
-      cpg.file.name
-        .filterNot(_ == "N/A")
-        .map(x => BFile(x))
-        .flatMap(_.parentOption.map(_.name))
-        .filterNot(_ == root.name)
-        .toSet
+    val localModuleNames = cpg.file.name
+      .filterNot(_ == "N/A")
+      .map(x => BFile(x))
+      .flatMap(_.parentOption.map(_.pathAsString))
+      .filterNot(_ == root)
+      .flatMap(_.stripPrefix(s"$root${JFile.separatorChar}").split(JFile.separatorChar).headOption)
+      .toSet
+    val fileList = cpg.file.name
+      .filterNot(_ == "N/A")
+      .map(x => BFile(x))
+      .l
+    val parentList = fileList.flatMap(_.parentOption.map(_.pathAsString))
     cpg.imports
       .whereNot(_.call.file.name(".*setup.py"))
       .filterNot {
