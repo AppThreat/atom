@@ -188,7 +188,7 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = tr
 
     "have the modules scanned successfully" in {
       val scanResult = PythonDependencyParser.parse(cpg)
-      scanResult.modules shouldBe Set("idna", "os", "charset_normalizer", "certifi", "socket", "urllib3")
+      scanResult.modules shouldBe Seq("certifi", "charset_normalizer", "idna", "os", "socket", "urllib3")
     }
   }
 
