@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
 const isWin = require("os").platform() === "win32";
+const LOG4J_CONFIG = path.join(__dirname, "plugins", "log4j2.xml");
 const ATOM_HOME = path.join(__dirname, "plugins", "atom-1.0.0");
 const APP_LIB_DIR = path.join(__dirname, "plugins", "atom-1.0.0", "lib");
 const freeMemoryGB = Math.floor(os.freemem() / 1024 / 1024 / 1024);
@@ -51,7 +52,13 @@ const getAllFiles = (dir, extn, files, result, regex) => {
 
 const atomLibs = getAllFiles(APP_LIB_DIR, ".jar", undefined, [APP_CLASSPATH]);
 const argv = process.argv.slice(2);
-const args = ["-cp", atomLibs.join(path.delimiter), APP_MAIN_CLASS, ...argv];
+const args = [
+  "-cp",
+  atomLibs.join(path.delimiter),
+  `-Dlog4j.configurationFile=${LOG4J_CONFIG}`,
+  APP_MAIN_CLASS,
+  ...argv
+];
 const env = {
   ...process.env,
   JAVA_OPTS
@@ -61,6 +68,6 @@ spawnSync(JAVACMD, args, {
   encoding: "utf-8",
   env,
   cwd,
-  stdio: 'inherit',
-  stderr: 'inherit'
+  stdio: "inherit",
+  stderr: "inherit"
 });

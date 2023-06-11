@@ -48,11 +48,11 @@ jobs:
           sha512sum target/atom.zip > target/atom.zip.sha512
           cd wrapper/nodejs
           bash build.sh
-          node index.js -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
-          node index.js -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
-          node index.js -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml
-          node index.js -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml
-          node index.js -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml
+          node index.js -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example
+          node index.js -l js $GITHUB_WORKSPACE/repotests/juice-shop
+          node index.js -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example
+          node index.js -l python $GITHUB_WORKSPACE/repotests/DjanGoat
+          node index.js -l c $GITHUB_WORKSPACE/repotests/libexpat
 
   nodejs-testing-windows:
     runs-on: windows-latest
@@ -98,8 +98,8 @@ jobs:
           sbt stage astGenDlTask createDistribution
           cd wrapper\\nodejs
           .\build.ps1
-          node index.js -l java $GITHUB_WORKSPACE\\repotests\\shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
-          node index.js -l js $GITHUB_WORKSPACE\\repotests\\juice-shop -Dlog4j.configurationFile=log4j2.xml
-          node index.js -l js $GITHUB_WORKSPACE\\repotests\\shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml
-          node index.js -l python $GITHUB_WORKSPACE\\repotests\\DjanGoat -Dlog4j.configurationFile=log4j2.xml
-          node index.js -l c $GITHUB_WORKSPACE\\repotests\\libexpat -Dlog4j.configurationFile=log4j2.xml
+          node index.js -l java $GITHUB_WORKSPACE\\repotests\\shiftleft-java-example
+          node index.js -l js $GITHUB_WORKSPACE\\repotests\\juice-shop
+          node index.js -l js $GITHUB_WORKSPACE\\repotests\\shiftleft-ts-example
+          node index.js -l python $GITHUB_WORKSPACE\\repotests\\DjanGoat
+          node index.js -l c $GITHUB_WORKSPACE\\repotests\\libexpat
