@@ -1,0 +1,105 @@
+name: nodejstests
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  nodejs-testing:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        java-version: ['19']
+        node-version: [16.x, 18.x, 20.x]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v3
+        with:
+          repository: 'ShiftLeftSecurity/shiftleft-java-example'
+          path: 'repotests/shiftleft-java-example'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'juice-shop/juice-shop'
+          path: 'repotests/juice-shop'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'ShiftLeftSecurity/shiftleft-ts-example'
+          path: 'repotests/shiftleft-ts-example'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'libexpat/libexpat'
+          path: 'repotests/libexpat'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'HooliCorp/DjanGoat'
+          path: 'repotests/DjanGoat'
+      - uses: coursier/cache-action@v6
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+      - run: |
+          # sudo apt install -y rpm rpm-common dpkg dpkg-dev dpkg-sig dpkg-cross lintian fakeroot
+          sbt stage astGenDlTask createDistribution
+          sha512sum target/atom.zip > target/atom.zip.sha512
+          cd wrapper/nodejs
+          bash build.sh
+          node index.js -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
+          node index.js -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
+          node index.js -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml
+          node index.js -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml
+          node index.js -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml
+
+  nodejs-testing-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        java-version: ['19']
+        node-version: [16.x, 18.x, 20.x]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v3
+        with:
+          repository: 'ShiftLeftSecurity/shiftleft-java-example'
+          path: 'repotests/shiftleft-java-example'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'juice-shop/juice-shop'
+          path: 'repotests/juice-shop'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'ShiftLeftSecurity/shiftleft-ts-example'
+          path: 'repotests/shiftleft-ts-example'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'libexpat/libexpat'
+          path: 'repotests/libexpat'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'HooliCorp/DjanGoat'
+          path: 'repotests/DjanGoat'
+      - uses: coursier/cache-action@v6
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+      - name: test
+        shell: pwsh
+        run: |
+          sbt stage astGenDlTask createDistribution
+          cd wrapper\\nodejs
+          .\build.ps1
+          node index.js -l java $GITHUB_WORKSPACE\\repotests\\shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
+          node index.js -l js $GITHUB_WORKSPACE\\repotests\\juice-shop -Dlog4j.configurationFile=log4j2.xml
+          node index.js -l js $GITHUB_WORKSPACE\\repotests\\shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml
+          node index.js -l python $GITHUB_WORKSPACE\\repotests\\DjanGoat -Dlog4j.configurationFile=log4j2.xml
+          node index.js -l c $GITHUB_WORKSPACE\\repotests\\libexpat -Dlog4j.configurationFile=log4j2.xml

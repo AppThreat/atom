@@ -7,7 +7,7 @@ on:
       - 'v*'
   workflow_dispatch:
 jobs:
-  testing:
+  jvm-testing:
     runs-on: ubuntu-latest
     strategy:
       matrix:

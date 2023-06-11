@@ -1,11 +1,8 @@
 {
   "name": "@appthreat/atom",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Create atom (⚛) representation for your application, packages and libraries",
   "main": "index.js",
-  "bin": {
-    "atom": "./plugins/atom-1.0.0/bin/atom"
-  },
   "scripts": {
     "pretty": "prettier --write *.js --trailing-comma=none"
   },

@@ -3,9 +3,7 @@ ThisBuild / organization := "io.appthreat"
 ThisBuild / version      := "1.0.0"
 ThisBuild / scalaVersion := "3.3.0"
 
-val cpgVersion        = "1.3.612"
 val joernVersion      = "1.1.1742"
-val overflowdbVersion = "1.178"
 
 lazy val atom = Projects.atom
 
@@ -166,7 +164,16 @@ ThisBuild / licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-maintainer := "prabhu@appthreat.com"
+maintainer := "Team AppThreat <cloud@appthreat.com>"
+packageSummary := "Create atom (⚛) representation"
+packageDescription := """Create atom (⚛) representation for your application, packages and libraries."""
+debianPackageDependencies := Seq("java17-runtime-headless")
+rpmVendor := "AppThreat"
+
+enablePlugins(UniversalPlugin)
+enablePlugins(LinuxPlugin)
+enablePlugins(DebianPlugin)
+enablePlugins(RpmPlugin)
 
 lazy val createDistribution = taskKey[File]("Create a complete atom distribution")
 createDistribution := {
