@@ -1,7 +1,5 @@
 object Versions {
-  val cpg        = parseVersion("cpgVersion")
   val joern      = parseVersion("joernVersion")
-  val overflowdb = parseVersion("overflowdbVersion")
   private def parseVersion(key: String): String = {
     val versionRegexp = s""".*val $key += ?"(.*?)"""".r
     val versions: List[String] = scala.io.Source

@@ -9,3 +9,11 @@ npm install @appthreat/atom
 ```
 
 Ensure Java 17/19 is available in the PATH.
+
+## Troubleshooting
+
+For large projects, atom requires more heap memory which could be passed via `JAVA_OPTS` environment variable.
+
+```
+export JAVA_OPTS="-Xms8G -Xmx16G"
+```
