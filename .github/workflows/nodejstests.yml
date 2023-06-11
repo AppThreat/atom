@@ -1,5 +1,6 @@
 name: repotests
 on:
+  pull_request:
   workflow_dispatch:
 jobs:
   nodejs-testing:
