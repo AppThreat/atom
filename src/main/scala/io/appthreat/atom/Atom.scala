@@ -178,7 +178,10 @@ object Atom {
       case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
         new Py2CpgOnFileSystem()
           .createCpgWithOverlays(
-            PyConfig(disableDummyTypes = true).withInputPath(config.inputPath).withOutputPath(config.outputAtomFile)
+            PyConfig(disableDummyTypes = true)
+              .withInputPath(config.inputPath)
+              .withOutputPath(config.outputAtomFile)
+              .withIgnoredFilesRegex(".*(test|tests|unittests).*")
           )
           .map { cpg =>
             new PythonImportsPass(cpg).createAndApply()
