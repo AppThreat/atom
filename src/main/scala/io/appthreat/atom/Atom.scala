@@ -5,7 +5,6 @@ import io.appthreat.atom.Atom.loadFromOdb
 import io.joern.c2cpg.{C2Cpg, Config as CConfig}
 import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
 import io.joern.dataflowengineoss.slicing.*
-import io.joern.dataflowengineoss.slicing.SliceMode.*
 import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.joern.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
 import io.joern.jssrc2cpg.passes.{ConstClosurePass, JavaScriptInheritanceNamePass}
@@ -48,9 +47,6 @@ object Atom {
     ScalaFile(androidHome).glob("**/android.jar").map(_.pathAsString).toSeq.headOption
   )
 
-  implicit val sliceModeRead: scopt.Read[SliceModes] =
-    scopt.Read.reads(SliceMode withName)
-
   def main(args: Array[String]): Unit = {
     run(args) match {
       case Right(msg) =>
@@ -60,6 +56,8 @@ object Atom {
         System.exit(1)
     }
   }
+
+  private val sliceModes = Set("dataflow", "usages")
 
   val optionParser: OptionParser[ParserConfig] = new scopt.OptionParser[ParserConfig]("atom") {
     arg[String]("input")
@@ -84,9 +82,13 @@ object Atom {
     opt[Int]("slice-depth")
       .text("the max depth to traverse the DDG for the data-flow slice (for `DataFlow` mode) - defaults to 3")
       .action((x, c) => c.copy(sliceDepth = x))
-    opt[SliceModes]('m', "mode")
-      .text(s"the kind of slicing to perform - defaults to `DataFlow`. Options: [${SliceMode.values.mkString(", ")}]")
-      .action((x, c) => c.copy(sliceMode = x))
+    opt[String]('m', "mode")
+      .text(s"the kind of slicing to perform - defaults to `dataflow`. Options: [${sliceModes.mkString(", ")}]")
+      .validate { x =>
+        if (sliceModes.contains(x.toLowerCase)) success
+        else failure(s"Value <mode> must be one of [${sliceModes.mkString(", ")}]")
+      }
+      .action((x, c) => c.copy(sliceMode = x.toLowerCase))
     opt[Int]("max-num-def")
       .text("maximum number of definitions in per-method data flow calculation. Default 2000")
       .action((x, c) => c.copy(maxNumDef = x))
@@ -138,37 +140,32 @@ object Atom {
       case Languages.C | Languages.NEWC | "CPP" | "C++" =>
         new C2Cpg()
           .createCpgWithOverlays(
-            CConfig(
-              inputPath = config.inputPath,
-              outputPath = config.outputAtomFile,
-              ignoredFilesRegex = ".*(test|docs|examples|samples|mocks).*".r,
-              includeComments = false,
-              logProblems = false,
-              includePathsAutoDiscovery = false
-            )
+            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = false)
+              .withInputPath(config.inputPath)
+              .withOutputPath(config.outputAtomFile)
+              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks).*")
           )
           .map(_.close())
       case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
         new Jimple2Cpg()
           .createCpgWithOverlays(
-            JimpleConfig(inputPath = config.inputPath, outputPath = config.outputAtomFile, android = ANDROID_JAR_PATH)
+            JimpleConfig(android = ANDROID_JAR_PATH)
+              .withInputPath(config.inputPath)
+              .withOutputPath(config.outputAtomFile)
           )
           .map(_.close())
       case Languages.JAVA | Languages.JAVASRC =>
         new JavaSrc2Cpg()
           .createCpgWithOverlays(
-            JavaConfig(
-              inputPath = config.inputPath,
-              outputPath = config.outputAtomFile,
-              fetchDependencies = true,
-              inferenceJarPaths = JAR_INFERENCE_PATHS
-            )
+            JavaConfig(fetchDependencies = true, inferenceJarPaths = JAR_INFERENCE_PATHS)
+              .withInputPath(config.inputPath)
+              .withOutputPath(config.outputAtomFile)
           )
           .map(_.close())
       case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
         new JsSrc2Cpg()
           .createCpgWithOverlays(
-            JSConfig(inputPath = config.inputPath, outputPath = config.outputAtomFile, disableDummyTypes = true)
+            JSConfig(disableDummyTypes = true).withInputPath(config.inputPath).withOutputPath(config.outputAtomFile)
           )
           .map { cpg =>
             new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef))
@@ -181,11 +178,10 @@ object Atom {
       case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
         new Py2CpgOnFileSystem()
           .createCpgWithOverlays(
-            PyConfig(
-              inputDir = ScalaFile(config.inputPath).path,
-              outputFile = ScalaFile(config.outputAtomFile).path,
-              disableDummyTypes = true
-            )
+            PyConfig(disableDummyTypes = true)
+              .withInputPath(config.inputPath)
+              .withOutputPath(config.outputAtomFile)
+              .withIgnoredFilesRegex(".*(test|tests|unittests).*")
           )
           .map { cpg =>
             new PythonImportsPass(cpg).createAndApply()
@@ -201,14 +197,15 @@ object Atom {
     }
   }
 
-  private def saveSlice(outFile: ScalaFile, programSlice: String): Unit = {
-    val finalOutputPath =
-      ScalaFile(outFile.pathAsString)
-        .createFileIfNotExists()
-        .write(programSlice)
-        .pathAsString
-    println(s"Slices have been successfully written to $finalOutputPath")
-  }
+  private def saveSlice(outFile: ScalaFile, programSlice: Option[String]): Unit =
+    programSlice.foreach { slice =>
+      val finalOutputPath =
+        ScalaFile(outFile.pathAsString)
+          .createFileIfNotExists()
+          .write(slice)
+          .pathAsString
+      println(s"Slices have been successfully written to $finalOutputPath")
+    }
 
   /** Load code property graph from overflowDB
     *
@@ -222,34 +219,41 @@ object Atom {
   }
 
   private def generateSlice(config: ParserConfig): Either[String, String] = {
-    def sliceCpg(cpg: Cpg): ProgramSlice = {
-      val sliceConfig = SliceConfig(
-        inputPath = ScalaFile(config.inputPath),
-        outFile = ScalaFile(config.outputSliceFile),
-        sliceMode = config.sliceMode,
-        excludeOperatorCalls = true,
-        typeRecoveryDummyTypes = false,
-        sliceDepth = config.sliceDepth,
-        minNumCalls = 1
-      )
+    def sliceCpg(cpg: Cpg): Option[ProgramSlice] =
       config.sliceMode match {
-        case DataFlow => DataFlowSlicing.calculateDataFlowSlice(cpg, sliceConfig)
-        case Usages   => UsageSlicing.calculateUsageSlice(cpg, sliceConfig)
+        case "dataflow" =>
+          val dataFlowConfig = DataFlowConfig(
+            ScalaFile(config.inputPath),
+            ScalaFile(config.outputSliceFile),
+            false,
+            None,
+            config.sliceDepth
+          )
+          DataFlowSlicing.calculateDataFlowSlice(cpg, dataFlowConfig)
+        case "usages" =>
+          val usagesConfig = UsagesConfig(
+            ScalaFile(config.inputPath),
+            ScalaFile(config.outputSliceFile),
+            false,
+            None,
+            excludeOperatorCalls = true,
+            excludeMethodSource = true
+          )
+          Option(UsageSlicing.calculateUsageSlice(cpg, usagesConfig))
+        case _ => None
       }
-
-    }
 
     try {
       if (config.slice) {
         saveSlice(
           ScalaFile(config.outputSliceFile),
-          Using.resource(loadFromOdb(config.outputAtomFile))(sliceCpg).toJson
+          Using.resource(loadFromOdb(config.outputAtomFile))(sliceCpg).map(_.toJson)
         )
       }
       if (config.parsedeps) {
         Using.resource(loadFromOdb(config.outputAtomFile))(parseDependencies).map(_.toJson) match {
           case Left(err)    => return Left(err)
-          case Right(slice) => saveSlice(ScalaFile(config.outputSliceFile), slice)
+          case Right(slice) => saveSlice(ScalaFile(config.outputSliceFile), Option(slice))
         }
       }
       Right("Atom sliced successfully")
@@ -268,7 +272,7 @@ object Atom {
     outputSliceFile: String = DEFAULT_SLICE_OUT_FILE,
     parsedeps: Boolean = false,
     slice: Boolean = false,
-    sliceMode: SliceModes = DataFlow,
+    sliceMode: String = "dataflow",
     sliceDepth: Int = DEFAULT_SLICE_DEPTH,
     language: String = "",
     maxNumDef: Int = DEFAULT_MAX_DEFS
