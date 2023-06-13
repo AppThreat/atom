@@ -170,10 +170,7 @@ packageDescription := """Create atom (⚛) representation for your application, 
 debianPackageDependencies := Seq("java17-runtime-headless")
 rpmVendor := "AppThreat"
 
-enablePlugins(UniversalPlugin)
-enablePlugins(LinuxPlugin)
-enablePlugins(DebianPlugin)
-enablePlugins(RpmPlugin)
+enablePlugins(ClasspathJarPlugin)
 
 lazy val createDistribution = taskKey[File]("Create a complete atom distribution")
 createDistribution := {
