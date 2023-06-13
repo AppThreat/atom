@@ -184,6 +184,8 @@ object Atom {
               .withIgnoredFilesRegex(".*(test|tests|unittests).*")
           )
           .map { cpg =>
+            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef))
+              .run(new LayerCreatorContext(cpg))
             new PythonImportsPass(cpg).createAndApply()
             cpg
           }
