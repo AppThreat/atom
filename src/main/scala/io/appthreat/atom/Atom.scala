@@ -28,13 +28,13 @@ import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 import scopt.OptionParser
 
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Using}
+import scala.util.{Failure, Properties, Success, Using}
 
 object Atom {
 
   import parsedeps.*
 
-  private val DEFAULT_ATOM_OUT_FILE      = "app.⚛"
+  private val DEFAULT_ATOM_OUT_FILE      = if (Properties.isWin) "app.atom" else "app.⚛"
   private val DEFAULT_SLICE_OUT_FILE     = "slices.json"
   private val DEFAULT_SLICE_DEPTH        = 3
   private val DEFAULT_MAX_DEFS: Int      = 2000
@@ -65,7 +65,7 @@ object Atom {
       .text("source file or directory")
       .action((x, c) => c.copy(inputPath = x))
     opt[String]('o', "output")
-      .text("output filename. Default app.⚛")
+      .text("output filename. Default app.⚛ or app.atom in windows")
       .action((x, c) => c.copy(outputAtomFile = x))
     opt[String]('l', "language")
       .text("source language")
