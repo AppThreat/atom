@@ -50,8 +50,8 @@ jobs:
           cd wrapper/nodejs
           bash build.sh
           sudo npm install -g .
-          curl -L https://github.com/joernio/astgen/releases/latest/download/astgen-linux -o /usr/local/bin/astgen-linux
-          chmod +x /usr/local/bin/astgen-linux
+          curl -L https://github.com/joernio/astgen/releases/latest/download/astgen-linux -o /usr/local/bin/astgen
+          chmod +x /usr/local/bin/astgen
           atom -l java -o $GITHUB_WORKSPACE/repotests/shiftleft-java-example/cpg_out $GITHUB_WORKSPACE/repotests/shiftleft-java-example
           atom -l js -o $GITHUB_WORKSPACE/repotests/juice-shop/cpg_out $GITHUB_WORKSPACE/repotests/juice-shop
           atom -l js -o $GITHUB_WORKSPACE/repotests/shiftleft-ts-example/cpg_out $GITHUB_WORKSPACE/repotests/shiftleft-ts-example
