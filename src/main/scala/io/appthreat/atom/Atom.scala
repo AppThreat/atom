@@ -3,7 +3,7 @@ package io.appthreat.atom
 import better.files.File as ScalaFile
 import io.appthreat.atom.Atom.loadFromOdb
 import io.joern.c2cpg.{C2Cpg, Config as CConfig}
-import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
+import io.appthreat.atom.dataflows.{OssDataFlow, OssDataFlowOptions}
 import io.joern.dataflowengineoss.slicing.*
 import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.joern.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
@@ -170,8 +170,9 @@ object Atom {
           .map { cpg =>
             new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef))
               .run(new LayerCreatorContext(cpg))
-            new JavaScriptInheritanceNamePass(cpg)
-            new ConstClosurePass(cpg)
+            new JavaScriptInheritanceNamePass(cpg).createAndApply()
+            new ConstClosurePass(cpg).createAndApply()
+            new NaiveCallLinker(cpg).createAndApply()
             cpg
           }
           .map(_.close())
