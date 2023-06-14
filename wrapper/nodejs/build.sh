@@ -7,3 +7,4 @@ if [ -e "../../target/atom.zip" ]; then
 else
     echo "Build the atom project using 'sbt createDistribution' before running this script"
 fi
+npm install
