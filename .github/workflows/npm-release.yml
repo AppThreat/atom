@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js
@@ -35,8 +36,7 @@ jobs:
         echo "appthreat:registry=https://npm.pkg.github.com" > ~/.npmrc
         npm publish --access=public --@appthreat:registry='https://npm.pkg.github.com'
         echo "appthreat:registry=https://registry.npmjs.org" > ~/.npmrc
-        npm publish --access=public --@appthreat:registry='https://registry.npmjs.org'
+        npm publish --provenance --access=public --@appthreat:registry='https://registry.npmjs.org'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         NPMJS_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        NODE_OPTIONS: --max_old_space_size=4096

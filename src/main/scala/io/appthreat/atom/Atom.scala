@@ -182,7 +182,10 @@ object Atom {
             PyConfig(disableDummyTypes = true)
               .withInputPath(config.inputPath)
               .withOutputPath(config.outputAtomFile)
-              .withIgnoredFilesRegex(".*(test|tests|unittests).*")
+              .withDefaultIgnoredFilesRegex(List("\\..*".r))
+              .withIgnoredFilesRegex(
+                ".*(samples|examples|test|tests|unittests|docs|virtualenvs|venv|benchmarks|tutorials).*"
+              )
           )
           .map { cpg =>
             new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef))
