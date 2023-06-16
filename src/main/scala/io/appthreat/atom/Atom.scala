@@ -152,6 +152,7 @@ object Atom {
             JimpleConfig(android = ANDROID_JAR_PATH)
               .withInputPath(config.inputPath)
               .withOutputPath(config.outputAtomFile)
+              .withFullResolver(true)
           )
           .map(_.close())
       case Languages.JAVA | Languages.JAVASRC =>

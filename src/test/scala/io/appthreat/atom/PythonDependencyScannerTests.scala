@@ -56,6 +56,10 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = tr
         |    "idna>=2.5,<4",
         |    "urllib3>=1.21.1,<3",
         |    "certifi>=2017.4.17",
+        |    "packageA>=1.4.2,<1.9,!=1.5.*,!=1.6.*",
+        |    "packageB>=0.5.0,< 0.7.0",
+        |    "PickyThing<1.6,>1.9,!=1.9.6,<2.0a0,==2.4c1",
+        |    "PackageC==1.2.0.dev1+hg.5.b11e5e6f0b0b",
         |]
         |test_requirements = [
         |    "pytest-httpbin==2.0.0",
@@ -188,7 +192,7 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = tr
 
     "have the modules scanned successfully" in {
       val scanResult = PythonDependencyParser.parse(cpg)
-      scanResult.modules shouldBe Seq("certifi", "charset_normalizer", "idna", "os", "socket", "urllib3")
+      scanResult.modules shouldBe Seq("PackageC", "PickyThing", "certifi", "charset_normalizer", "idna", "os", "packageA", "packageB", "socket", "urllib3")
     }
   }
 

@@ -1,18 +1,14 @@
 package io.appthreat.atom
 
-import io.circe.*
-import io.circe.syntax.*
-import io.circe.generic.semiauto.*
-import io.joern.dataflowengineoss.layers.dataflows.{OssDataFlow, OssDataFlowOptions}
+import io.circe.{Encoder, Decoder}
+import io.circe.syntax.EncoderOps
 import io.shiftleft.codepropertygraph.generated.{Cpg, Languages}
-import io.shiftleft.semanticcpg.language.*
-import io.shiftleft.semanticcpg.layers.LayerCreatorContext
+import io.shiftleft.semanticcpg.language.{toNodeTypeStarters, toMetaDataTraversalExtGen, toTraversalSugarExt}
 
 package object parsedeps {
 
   trait XDependencyParser {
     def parse(cpg: Cpg): DependencySlice
-
   }
 
   trait AtomSlice {
@@ -27,10 +23,6 @@ package object parsedeps {
   }
 
   def parseDependencies(cpg: Cpg): Either[String, DependencySlice] = {
-    if (!cpg.metaData.overlays.toSet.contains(OssDataFlow.overlayName)) {
-      println("Data-flow overlay is not detected, applying now")
-      new OssDataFlow(new OssDataFlowOptions()).run(new LayerCreatorContext(cpg))
-    }
     cpg.metaData.language.map(_.toUpperCase).headOption match
       case Some(language) if Set(Languages.PYTHONSRC, Languages.PYTHON, "PY").contains(language) =>
         Right(PythonDependencyParser.parse(cpg))

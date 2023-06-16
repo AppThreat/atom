@@ -51,6 +51,8 @@ Apache-2.0
 
 ## Developing / Contributing
 
+Install Java 17 or 19
+
 ```shell
 sbt scalafmt
 sbt stage

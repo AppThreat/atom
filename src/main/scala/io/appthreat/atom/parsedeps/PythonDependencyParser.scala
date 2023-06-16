@@ -1,6 +1,6 @@
 package io.appthreat.atom.parsedeps
 
-import better.files.File as BFile
+import better.files.File as ScalaFile
 import io.joern.dataflowengineoss.language.*
 import io.joern.dataflowengineoss.queryengine.{Engine, EngineContext}
 import io.joern.x2cpg.X2Cpg
@@ -18,7 +18,7 @@ object PythonDependencyParser extends XDependencyParser {
   override def parse(cpg: Cpg): DependencySlice = DependencySlice((parseSetupPy(cpg) ++ parseImports(cpg)).toSeq.sorted)
 
   private def parseSetupPy(cpg: Cpg): Set[String] = {
-    val requirementsPattern = "([\\w_]+)(=>|<=|==|>=|=<).*".r
+    val requirementsPattern = "([\\w_]+)(=>|<=|==|>=|=<|<|>).*".r
 
     def dataSourcesToRequires = (cpg.literal ++ cpg.identifier)
       .where(_.file.name(".*setup.py"))
@@ -51,18 +51,18 @@ object PythonDependencyParser extends XDependencyParser {
   }
 
   private def parseImports(cpg: Cpg): Set[String] = {
-    val root = BFile(cpg.metaData.root.headOption.getOrElse(JFile.separator)).pathAsString
+    val root = ScalaFile(cpg.metaData.root.headOption.getOrElse(JFile.separator)).pathAsString
     // Get a set of local modules to exclude from imports
     val localModuleNames = cpg.file.name
       .filterNot(_ == "N/A")
-      .map(x => BFile(x))
+      .map(x => ScalaFile(x))
       .flatMap(_.parentOption.map(_.pathAsString))
       .filterNot(_ == root)
       .flatMap(_.stripPrefix(s"$root${JFile.separatorChar}").split(JFile.separatorChar).headOption)
       .toSet
     val fileList = cpg.file.name
       .filterNot(_ == "N/A")
-      .map(x => BFile(x))
+      .map(x => ScalaFile(x))
       .l
     val parentList = fileList.flatMap(_.parentOption.map(_.pathAsString))
     cpg.imports
