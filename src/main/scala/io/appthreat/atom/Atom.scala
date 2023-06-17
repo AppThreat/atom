@@ -9,17 +9,8 @@ import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.joern.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
 import io.joern.jssrc2cpg.passes.{ConstClosurePass, JavaScriptInheritanceNamePass}
 import io.joern.jssrc2cpg.{JsSrc2Cpg, Config as JSConfig}
-import io.joern.pysrc2cpg.{
-  DynamicTypeHintFullNamePass,
-  Py2CpgOnFileSystem,
-  PythonInheritanceNamePass,
-  PythonTypeHintCallLinker,
-  PythonTypeRecoveryPass,
-  ImportsPass as PythonImportsPass,
-  Py2CpgOnFileSystemConfig as PyConfig
-}
+import io.joern.pysrc2cpg.{Py2CpgOnFileSystem, ImportsPass as PythonImportsPass, Py2CpgOnFileSystemConfig as PyConfig}
 import io.joern.x2cpg.passes.base.AstLinkerPass
-import io.joern.x2cpg.passes.callgraph.NaiveCallLinker
 import io.joern.x2cpg.passes.frontend.XTypeRecoveryConfig
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
@@ -143,8 +134,14 @@ object Atom {
             CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = false)
               .withInputPath(config.inputPath)
               .withOutputPath(config.outputAtomFile)
+              .withDefaultIgnoredFilesRegex(List("\\..*".r))
               .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks).*")
           )
+          .map { cpg =>
+            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef))
+              .run(new LayerCreatorContext(cpg))
+            cpg
+          }
           .map(_.close())
       case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
         new Jimple2Cpg()
@@ -154,6 +151,11 @@ object Atom {
               .withOutputPath(config.outputAtomFile)
               .withFullResolver(true)
           )
+          .map { cpg =>
+            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef))
+              .run(new LayerCreatorContext(cpg))
+            cpg
+          }
           .map(_.close())
       case Languages.JAVA | Languages.JAVASRC =>
         new JavaSrc2Cpg()
@@ -162,6 +164,11 @@ object Atom {
               .withInputPath(config.inputPath)
               .withOutputPath(config.outputAtomFile)
           )
+          .map { cpg =>
+            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef))
+              .run(new LayerCreatorContext(cpg))
+            cpg
+          }
           .map(_.close())
       case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
         new JsSrc2Cpg()
@@ -173,7 +180,6 @@ object Atom {
               .run(new LayerCreatorContext(cpg))
             new JavaScriptInheritanceNamePass(cpg).createAndApply()
             new ConstClosurePass(cpg).createAndApply()
-            new NaiveCallLinker(cpg).createAndApply()
             cpg
           }
           .map(_.close())

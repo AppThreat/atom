@@ -1,3 +1,5 @@
+import DebianConstants._
+
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
 ThisBuild / version      := "1.0.0"
@@ -86,7 +88,7 @@ ThisBuild / compile / javacOptions ++= Seq(
   Nil
 }
 
-enablePlugins(JavaAppPackaging)
+enablePlugins(JavaAppPackaging, ClasspathJarPlugin, DebianPlugin, RpmPlugin, JDebPackaging)
 
 lazy val AstgenWin      = "astgen-win.exe"
 lazy val AstgenLinux    = "astgen-linux"
@@ -168,9 +170,16 @@ maintainer := "Team AppThreat <cloud@appthreat.com>"
 packageSummary := "Create atom (⚛) representation"
 packageDescription := """Create atom (⚛) representation for your application, packages and libraries."""
 debianPackageDependencies := Seq("java17-runtime-headless")
+Rpm / packageName  := "appthreat-atom"
+Rpm / version := "1.0.0"
 rpmVendor := "AppThreat"
+rpmLicense := Some("Apache-2.0")
+rpmBrpJavaRepackJars := true
+rpmRelease := "1"
+Debian / name := "appthreat-atom"
+Debian / version := "1.0.0"
 
-enablePlugins(ClasspathJarPlugin)
+debianPackageDependencies := Seq("java17-runtime-headless")
 
 lazy val createDistribution = taskKey[File]("Create a complete atom distribution")
 createDistribution := {

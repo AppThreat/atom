@@ -19,7 +19,7 @@ jobs:
           distribution: 'temurin'
           java-version: '19'
       - run: |
-          sbt scalafmtCheck stage astGenDlTask createDistribution
+          sbt scalafmtCheck stage astGenDlTask createDistribution debian:packageBin rpm:packageBin universal:packageXzTarball
           sha512sum target/atom.zip > target/atom.zip.sha512
       - name: Create Release
         id: create_release
@@ -33,3 +33,8 @@ jobs:
           files: |
             target/atom.zip
             target/atom.zip.sha512
+            target/atom_1.0.0_all.deb
+            target/atom_1.0.0_all.changes
+            target/rpm/RPMS/noarch/atom-1.0.0-1.noarch.rpm
+            target/universal/atom-1.0.0.txz
+

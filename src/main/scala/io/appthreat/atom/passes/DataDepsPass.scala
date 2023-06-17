@@ -25,6 +25,13 @@ class DataDepsPass(cpg: Cpg, maxNumberOfDefinitions: Int = 2000)(implicit s: Sem
   override def generateParts(): Array[Method] = cpg.method.toArray
 
   override def runOnPart(dstGraph: DiffGraphBuilder, method: Method): Unit = {
+    if (
+      method.isExternal || method.parameter.isEmpty || method.methodReturn.typeFullName
+        .toLowerCase()
+        .contains("boolean")
+    ) {
+      return
+    }
     val problem = ReachingDefProblem.create(method)
     if (shouldBailOut(method, problem)) {
       return
