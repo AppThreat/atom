@@ -95,7 +95,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
-      - name: test
+      - name: build
         shell: pwsh
         run: |
           sbt stage createDistribution
@@ -105,9 +105,18 @@ jobs:
           get-command atom
           get-command astgen
           astgen --version
+      - name: test
+        shell: pwsh
+        run: |
           atom -l java -o $env:GITHUB_WORKSPACE\\repotests\\shiftleft-java-example\\app.atom $env:GITHUB_WORKSPACE\\repotests\\shiftleft-java-example
-          atom -l js -o $env:GITHUB_WORKSPACE\\repotests\\juice-shop\\app.atom $env:GITHUB_WORKSPACE\\repotests\\juice-shop
-          atom -l js -o $env:GITHUB_WORKSPACE\\repotests\\shiftleft-ts-example\\app.atom $env:GITHUB_WORKSPACE\\repotests\\shiftleft-ts-example
           atom -l python -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\DjanGoat
           atom parsedeps -l python -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\DjanGoat
           atom -l c -o $env:GITHUB_WORKSPACE\\repotests\\libexpat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\libexpat
+      - name: test2
+        shell: cmd
+        run: |
+          atom -l js -o %GITHUB_WORKSPACE%\\repotests\\juice-shop\\app.atom %GITHUB_WORKSPACE%\\repotests\\juice-shop
+      - name: test3
+        shell: cmd
+        run: |
+          atom -l js -o %GITHUB_WORKSPACE%\\repotests\\shiftleft-ts-example\\app.atom %GITHUB_WORKSPACE%\\repotests\\shiftleft-ts-example
