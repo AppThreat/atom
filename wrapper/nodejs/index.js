@@ -8,9 +8,9 @@ const LOG4J_CONFIG = path.join(__dirname, "plugins", "log4j2.xml");
 const ATOM_HOME = path.join(__dirname, "plugins", "atom-1.0.0");
 const APP_LIB_DIR = path.join(ATOM_HOME, "lib");
 const freeMemoryGB = Math.floor(os.freemem() / 1024 / 1024 / 1024);
-const JAVA_OPTS = `${
-  process.env.JAVA_OPTS || ""
-} -Xms${freeMemoryGB}G -Xmx${freeMemoryGB}G`;
+const JAVA_OPTS = `${process.env.JAVA_OPTS || ""} -Xms${Math.round(
+  Math.floor(freeMemoryGB / 2)
+)}G -Xmx${freeMemoryGB}G -XX:+UseG1GC -XX:+ExplicitGCInvokesConcurrent -XX:+ParallelRefProcEnabled -XX:+UseStringDeduplication -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:+UnlockDiagnosticVMOptions -XX:G1SummarizeRSetStatsPeriod=1`;
 const APP_MAIN_CLASS = "io.appthreat.atom.Atom";
 let APP_CLASSPATH = path.join(
   APP_LIB_DIR,
@@ -27,16 +27,17 @@ if (process.env.JAVA_HOME) {
 
 const atomLibs = [APP_CLASSPATH];
 const argv = process.argv.slice(2);
-const args = [
-  "-cp",
-  atomLibs.join(path.delimiter),
-  `-Dlog4j.configurationFile=${LOG4J_CONFIG}`,
-  APP_MAIN_CLASS,
-  ...argv
-];
+let args = JAVA_OPTS.trim()
+  .split(" ")
+  .concat([
+    "-cp",
+    atomLibs.join(path.delimiter),
+    `-Dlog4j.configurationFile=${LOG4J_CONFIG}`,
+    APP_MAIN_CLASS,
+    ...argv
+  ]);
 const env = {
   ...process.env,
-  JAVA_OPTS,
   ATOM_HOME
 };
 const cwd = process.env.ATOM_CWD || process.cwd();
@@ -45,5 +46,6 @@ spawnSync(JAVACMD, args, {
   env,
   cwd,
   stdio: "inherit",
-  stderr: "inherit"
+  stderr: "inherit",
+  timeout: undefined
 });
