@@ -71,7 +71,7 @@ object Atom {
       .text("source language")
       .action((x, c) => c.copy(language = x))
     opt[Unit]("withDataDeps")
-      .text("generate the CPG with data-dependencies - defaults to `false`")
+      .text("generate the atom with data-dependencies - defaults to `false`")
       .action((_, c) => c.copy(withDataDeps = true))
     cmd("parsedeps")
       .action((_, c) => c.copy(parsedeps = true))
@@ -91,7 +91,7 @@ object Atom {
         if (sliceModes.contains(x.toLowerCase)) success
         else failure(s"Value <mode> must be one of [${sliceModes.mkString(", ")}]")
       }
-      .action((x, c) => c.copy(sliceMode = x.toLowerCase))
+      .action((x, c) => c.copy(sliceMode = x.toLowerCase, withDataDeps = c.withDataDeps || x.toLowerCase == "dataflow"))
     opt[Int]("max-num-def")
       .text("maximum number of definitions in per-method data flow calculation. Default 2000")
       .action((x, c) => c.copy(maxNumDef = x))
