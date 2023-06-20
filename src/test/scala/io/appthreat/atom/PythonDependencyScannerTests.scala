@@ -1,11 +1,12 @@
 package io.appthreat.atom
 
-import io.appthreat.atom.parsedeps.PythonDependencyParser
+import io.appthreat.atom.parsedeps.{ModuleWithVersion, PythonDependencyParser}
 import io.joern.pysrc2cpg.PySrc2CpgFixture
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 import java.io.File
+
 class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = true) {
 
   "dependencies from the `requests` library" should {
@@ -192,7 +193,19 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = tr
 
     "have the modules scanned successfully" in {
       val scanResult = PythonDependencyParser.parse(cpg)
-      scanResult.modules shouldBe Seq("PackageC", "PickyThing", "certifi", "charset_normalizer", "idna", "os", "packageA", "packageB", "socket", "urllib3")
+      scanResult.modules shouldBe List(
+        ModuleWithVersion("PackageC", "1.2.0.dev1+hg.5.b11e5e6f0b0b"),
+        ModuleWithVersion("PickyThing", "2.4c1", "<1.6,>1.9,!=1.9.6,<2.0a0"),
+        ModuleWithVersion("certifi", "", ">=2017.4.17"),
+        ModuleWithVersion("charset_normalizer", "", ">=2,<4"),
+        ModuleWithVersion("idna", "", ">=2.5,<4"),
+        ModuleWithVersion("os"),
+        ModuleWithVersion("packageA", "", ">=1.4.2,<1.9,!=1.5.*,!=1.6.*"),
+        ModuleWithVersion("packageB", "", ">=0.5.0,< 0.7.0"),
+        ModuleWithVersion("socket"),
+        ModuleWithVersion("urllib3"),
+        ModuleWithVersion("urllib3", "", ">=1.21.1,<3")
+      )
     }
   }
 

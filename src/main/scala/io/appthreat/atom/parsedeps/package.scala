@@ -1,9 +1,9 @@
 package io.appthreat.atom
 
-import io.circe.{Encoder, Decoder}
 import io.circe.syntax.EncoderOps
+import io.circe.{Decoder, Encoder, HCursor, Json}
 import io.shiftleft.codepropertygraph.generated.{Cpg, Languages}
-import io.shiftleft.semanticcpg.language.{toNodeTypeStarters, toMetaDataTraversalExtGen, toTraversalSugarExt}
+import io.shiftleft.semanticcpg.language.{toMetaDataTraversalExtGen, toNodeTypeStarters, toTraversalSugarExt}
 
 package object parsedeps {
 
@@ -15,12 +15,28 @@ package object parsedeps {
     def toJson: String
   }
 
-  implicit val dependencySliceEncoder: Encoder[DependencySlice] = Encoder.forProduct1("modules")(x => x.modules)
-  implicit val dependencySliceDecoder: Decoder[DependencySlice] = Decoder.forProduct1("modules")(DependencySlice.apply)
+  implicit val dependencySliceEncoder: Decoder[DependencySlice] =
+    (c: HCursor) =>
+      for {
+        modules <- c.downField("modules").as[List[ModuleWithVersion]]
+      } yield {
+        DependencySlice(modules)
+      }
+  implicit val dependencySliceDecoder: Encoder[DependencySlice] =
+    Encoder.instance { case DependencySlice(modules) =>
+      Json.obj("modules" -> modules.asJson)
+    }
 
-  case class DependencySlice(modules: Seq[String]) extends AtomSlice {
+  case class DependencySlice(modules: Seq[ModuleWithVersion]) extends AtomSlice {
     override def toJson: String = this.asJson.spaces2
   }
+
+  implicit val moduleWithVersionEncoder: Encoder[ModuleWithVersion] =
+    Encoder.forProduct3("name", "version", "versionSpecifiers")(x => (x.name, x.version, x.versionSpecifiers))
+  implicit val moduleWithVersionDecoder: Decoder[ModuleWithVersion] =
+    Decoder.forProduct3("name", "version", "versionSpecifiers")(ModuleWithVersion.apply)
+
+  case class ModuleWithVersion(name: String, version: String = "", versionSpecifiers: String = "")
 
   def parseDependencies(cpg: Cpg): Either[String, DependencySlice] = {
     cpg.metaData.language.map(_.toUpperCase).headOption match
