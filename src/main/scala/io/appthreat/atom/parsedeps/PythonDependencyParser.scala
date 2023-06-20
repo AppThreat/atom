@@ -1,6 +1,7 @@
 package io.appthreat.atom.parsedeps
 
 import better.files.File as ScalaFile
+import io.appthreat.atom.dataflows.OssDataFlow
 import io.joern.dataflowengineoss.language.*
 import io.joern.dataflowengineoss.queryengine.{Engine, EngineContext}
 import io.joern.x2cpg.X2Cpg
@@ -14,17 +15,22 @@ import scala.annotation.tailrec
 
 object PythonDependencyParser extends XDependencyParser {
 
+  implicit val engineContext: EngineContext = EngineContext()
+
   override def parse(cpg: Cpg): DependencySlice = DependencySlice(
     (parseSetupPy(cpg) ++ parseImports(cpg)).toSeq.sortBy(_.name)
   )
 
   private def parseSetupPy(cpg: Cpg): Set[ModuleWithVersion] = {
+    val dataFlowEnabled     = cpg.metaData.overlays.contains(OssDataFlow.overlayName)
     val requirementsPattern = "([\\w_]+)((=>|<=|==|>=|=<|<|>|!=).*)".r
 
     def dataSourcesToRequires = (cpg.literal ++ cpg.identifier)
       .where(_.file.name(".*setup.py"))
       .where(_.argumentName("install_requires"))
       .collectAll[CfgNode]
+
+    def setupCall = cpg.call("setup").where(_.file.name(".*setup.py"))
 
     def findOriginalDeclaration(xs: Traversal[CfgNode]): Iterable[Literal] =
       xs.flatMap {
@@ -40,7 +46,8 @@ object PythonDependencyParser extends XDependencyParser {
       }.collectAll[Literal]
         .to(Iterable)
 
-    findOriginalDeclaration(dataSourcesToRequires)
+    val initialTraversal = if (dataFlowEnabled) setupCall.reachableBy(dataSourcesToRequires) else dataSourcesToRequires
+    findOriginalDeclaration(initialTraversal)
       .map(x => X2Cpg.stripQuotes(x.code))
       .map {
         case requirementsPattern(name, versionSpecifiers, _) if versionSpecifiers.contains("==") =>
