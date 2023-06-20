@@ -14,8 +14,6 @@ import scala.annotation.tailrec
 
 object PythonDependencyParser extends XDependencyParser {
 
-  implicit val engineContext: EngineContext = EngineContext()
-
   override def parse(cpg: Cpg): DependencySlice = DependencySlice(
     (parseSetupPy(cpg) ++ parseImports(cpg)).toSeq.sortBy(_.name)
   )
@@ -27,8 +25,6 @@ object PythonDependencyParser extends XDependencyParser {
       .where(_.file.name(".*setup.py"))
       .where(_.argumentName("install_requires"))
       .collectAll[CfgNode]
-
-    def setupCall = cpg.call("setup").where(_.file.name(".*setup.py"))
 
     def findOriginalDeclaration(xs: Traversal[CfgNode]): Iterable[Literal] =
       xs.flatMap {
@@ -44,7 +40,7 @@ object PythonDependencyParser extends XDependencyParser {
       }.collectAll[Literal]
         .to(Iterable)
 
-    findOriginalDeclaration(setupCall.reachableBy(dataSourcesToRequires))
+    findOriginalDeclaration(dataSourcesToRequires)
       .map(x => X2Cpg.stripQuotes(x.code))
       .map {
         case requirementsPattern(name, versionSpecifiers, _) if versionSpecifiers.contains("==") =>

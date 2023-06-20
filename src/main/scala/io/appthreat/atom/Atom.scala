@@ -70,6 +70,9 @@ object Atom {
     opt[String]('l', "language")
       .text("source language")
       .action((x, c) => c.copy(language = x))
+    opt[Unit]("withDataDeps")
+      .text("generate the CPG with data-dependencies - defaults to `false`")
+      .action((_, c) => c.copy(withDataDeps = true))
     cmd("parsedeps")
       .action((_, c) => c.copy(parsedeps = true))
     note("Misc")
@@ -169,8 +172,10 @@ object Atom {
             JSConfig(disableDummyTypes = true).withInputPath(config.inputPath).withOutputPath(config.outputAtomFile)
           )
           .map { cpg =>
-            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef))
-              .run(new LayerCreatorContext(cpg))
+            if (config.withDataDeps) {
+              new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef))
+                .run(new LayerCreatorContext(cpg))
+            }
             new JavaScriptInheritanceNamePass(cpg).createAndApply()
             new ConstClosurePass(cpg).createAndApply()
             new NaiveCallLinker(cpg).createAndApply()
@@ -189,8 +194,10 @@ object Atom {
               )
           )
           .map { cpg =>
-            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef))
-              .run(new LayerCreatorContext(cpg))
+            if (config.withDataDeps) {
+              new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = config.maxNumDef))
+                .run(new LayerCreatorContext(cpg))
+            }
             new PythonImportsPass(cpg).createAndApply()
             cpg
           }
@@ -277,6 +284,7 @@ object Atom {
     inputPath: String = "",
     outputAtomFile: String = DEFAULT_ATOM_OUT_FILE,
     outputSliceFile: String = DEFAULT_SLICE_OUT_FILE,
+    withDataDeps: Boolean = false,
     parsedeps: Boolean = false,
     slice: Boolean = false,
     sliceMode: String = "dataflow",
