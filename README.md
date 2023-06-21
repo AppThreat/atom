@@ -24,6 +24,7 @@ Usage: atom [parsedeps] [options] [input]
   input                    source file or directory
   -o, --output <value>     output filename. Default app.⚛ or app.atom in windows
   -l, --language <value>   source language
+  --withDataDeps           generate the atom with data-dependencies - defaults to `false`
 Command: parsedeps
 
 Misc
