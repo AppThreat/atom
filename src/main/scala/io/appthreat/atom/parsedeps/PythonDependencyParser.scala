@@ -1,6 +1,7 @@
 package io.appthreat.atom.parsedeps
 
 import better.files.File as ScalaFile
+import io.appthreat.atom.dataflows.OssDataFlow
 import io.joern.dataflowengineoss.language.*
 import io.joern.dataflowengineoss.queryengine.{Engine, EngineContext}
 import io.joern.x2cpg.X2Cpg
@@ -21,6 +22,7 @@ object PythonDependencyParser extends XDependencyParser {
   )
 
   private def parseSetupPy(cpg: Cpg): Set[ModuleWithVersion] = {
+    val dataFlowEnabled     = cpg.metaData.overlays.contains(OssDataFlow.overlayName)
     val requirementsPattern = "([\\w_]+)((=>|<=|==|>=|=<|<|>|!=).*)".r
 
     def dataSourcesToRequires = (cpg.literal ++ cpg.identifier)
@@ -44,7 +46,8 @@ object PythonDependencyParser extends XDependencyParser {
       }.collectAll[Literal]
         .to(Iterable)
 
-    findOriginalDeclaration(setupCall.reachableBy(dataSourcesToRequires))
+    val initialTraversal = if (dataFlowEnabled) setupCall.reachableBy(dataSourcesToRequires) else dataSourcesToRequires
+    findOriginalDeclaration(initialTraversal)
       .map(x => X2Cpg.stripQuotes(x.code))
       .map {
         case requirementsPattern(name, versionSpecifiers, _) if versionSpecifiers.contains("==") =>

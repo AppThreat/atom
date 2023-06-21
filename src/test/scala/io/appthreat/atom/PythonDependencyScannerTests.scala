@@ -7,7 +7,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import java.io.File
 
-class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = true) {
+class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = false) {
 
   "dependencies from the `requests` library" should {
     lazy val cpg = code(
