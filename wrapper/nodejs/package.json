@@ -1,11 +1,12 @@
 {
   "name": "@appthreat/atom",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "description": "Create atom (⚛) representation for your application, packages and libraries",
-  "main": "index.js",
+  "exports": "./index.js",
+  "type": "module",
   "scripts": {
-    "pretty": "prettier --write *.js --trailing-comma=none",
-    "lint": "eslint *.js"
+    "pretty": "prettier --write *.mjs *.js --trailing-comma=none",
+    "lint": "eslint *.mjs *.js"
   },
   "dependencies": {
     "@babel/parser": "^7.22.5",
@@ -42,6 +43,7 @@
   "homepage": "https://github.com/AppThreat/atom#readme",
   "files": [
     "*.js",
+    "*.mjs",
     "plugins/"
   ]
 }

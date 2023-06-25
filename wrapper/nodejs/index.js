@@ -1,51 +1,58 @@
 #!/usr/bin/env node
 
-const os = require("os");
-const path = require("path");
-const { spawnSync } = require("child_process");
-const isWin = require("os").platform() === "win32";
-const LOG4J_CONFIG = path.join(__dirname, "plugins", "log4j2.xml");
-const ATOM_HOME = path.join(__dirname, "plugins", "atom-1.0.0");
-const APP_LIB_DIR = path.join(ATOM_HOME, "lib");
-const freeMemoryGB = Math.floor(os.freemem() / 1024 / 1024 / 1024);
+import { freemem, platform as _platform } from "node:os";
+import { dirname, join, delimiter } from "node:path";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
+const isWin = _platform() === "win32";
+let url = import.meta.url;
+if (!url.startsWith("file://")) {
+  url = new URL(`file://${import.meta.url}`).toString();
+}
+const dirName = import.meta ? dirname(fileURLToPath(url)) : __dirname;
+
+const LOG4J_CONFIG = join(dirName, "plugins", "log4j2.xml");
+const ATOM_HOME = join(dirName, "plugins", "atom-1.0.0");
+const APP_LIB_DIR = join(ATOM_HOME, "lib");
+const freeMemoryGB = Math.floor(freemem() / 1024 / 1024 / 1024);
+const JVM_ARGS =
+  "-XX:+UseG1GC -XX:+ExplicitGCInvokesConcurrent -XX:+ParallelRefProcEnabled -XX:+UseStringDeduplication -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:+UnlockDiagnosticVMOptions -XX:G1SummarizeRSetStatsPeriod=1";
 const JAVA_OPTS = `${process.env.JAVA_OPTS || ""} -Xms${Math.round(
   Math.floor(freeMemoryGB / 2)
-)}G -Xmx${freeMemoryGB}G -XX:+UseG1GC -XX:+ExplicitGCInvokesConcurrent -XX:+ParallelRefProcEnabled -XX:+UseStringDeduplication -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:+UnlockDiagnosticVMOptions -XX:G1SummarizeRSetStatsPeriod=1`;
+)}G -Xmx${freeMemoryGB}G ${JVM_ARGS}`;
 const APP_MAIN_CLASS = "io.appthreat.atom.Atom";
-let APP_CLASSPATH = path.join(
-  APP_LIB_DIR,
-  "io.appthreat.atom-1.0.0-classpath.jar"
-);
+let APP_CLASSPATH = join(APP_LIB_DIR, "io.appthreat.atom-1.0.0-classpath.jar");
 let JAVACMD = "java";
 if (process.env.JAVA_HOME) {
-  JAVACMD = path.join(
-    process.env.JAVA_HOME,
-    "bin",
-    "java" + (isWin ? ".exe" : "")
-  );
+  JAVACMD = join(process.env.JAVA_HOME, "bin", "java" + (isWin ? ".exe" : ""));
 }
 
 const atomLibs = [APP_CLASSPATH];
 const argv = process.argv.slice(2);
-let args = JAVA_OPTS.trim()
-  .split(" ")
-  .concat([
-    "-cp",
-    atomLibs.join(path.delimiter),
-    `-Dlog4j.configurationFile=${LOG4J_CONFIG}`,
-    APP_MAIN_CLASS,
-    ...argv
-  ]);
-const env = {
-  ...process.env,
-  ATOM_HOME
+
+const executeAtom = (atomArgs) => {
+  let args = JAVA_OPTS.trim()
+    .split(" ")
+    .concat([
+      "-cp",
+      atomLibs.join(delimiter),
+      `-Dlog4j.configurationFile=${LOG4J_CONFIG}`,
+      APP_MAIN_CLASS,
+      ...atomArgs
+    ]);
+  const env = {
+    ...process.env,
+    ATOM_HOME
+  };
+  const cwd = process.env.ATOM_CWD || process.cwd();
+  spawnSync(JAVACMD, args, {
+    encoding: "utf-8",
+    env,
+    cwd,
+    stdio: "inherit",
+    stderr: "inherit",
+    timeout: process.env.ATOM_TIMEOUT
+  });
 };
-const cwd = process.env.ATOM_CWD || process.cwd();
-spawnSync(JAVACMD, args, {
-  encoding: "utf-8",
-  env,
-  cwd,
-  stdio: "inherit",
-  stderr: "inherit",
-  timeout: undefined
-});
+executeAtom(argv);
