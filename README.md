@@ -30,7 +30,7 @@ Command: parsedeps
 Misc
   -s, --slice              export intra-procedural slices as json
   --slice-outfile <value>  slice output filename
-  --slice-depth <value>    the max depth to traverse the DDG for the data-flow slice (for `DataFlow` mode) - defaults to 3
+  --slice-depth <value>    the max depth to traverse the DDG for the data-flow slice (for `dataflow` mode) - defaults to 3
   -m, --mode <value>       the kind of slicing to perform - defaults to `dataflow`. Options: [dataflow, usages]
   --max-num-def <value>    maximum number of definitions in per-method data flow calculation. Default 2000
   --help                   display this help message

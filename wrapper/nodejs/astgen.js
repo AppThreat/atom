@@ -1,84 +1,35 @@
 #!/usr/bin/env node
 
-const path = require("path");
-const yargs = require("yargs");
-const { hideBin } = require("yargs/helpers");
-const babelParser = require("@babel/parser");
-const tsc = require("typescript");
-const fs = require("fs");
+import { join, dirname } from "path";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
+import { parse } from "@babel/parser";
+import {
+  createProgram,
+  ScriptTarget,
+  ModuleKind,
+  TypeFormatFlags,
+  isSetAccessor,
+  isGetAccessor,
+  isConstructSignatureDeclaration,
+  isMethodDeclaration,
+  isFunctionDeclaration,
+  isConstructorDeclaration,
+  isFunctionLike,
+  SignatureKind,
+  forEachChild
+} from "typescript";
+import {
+  readFileSync,
+  mkdirSync,
+  writeFileSync,
+  accessSync,
+  constants,
+  existsSync
+} from "fs";
+import { getAllFiles } from "./utils.mjs";
 
 const ASTGEN_VERSION = "3.1.0";
-
-const IGNORE_DIRS = [
-  "node_modules",
-  "venv",
-  "docs",
-  "test",
-  "tests",
-  "e2e",
-  "e2e-beta",
-  "examples",
-  "cypress",
-  "jest-cache",
-  "eslint-rules",
-  "codemods",
-  "flow-typed",
-  "i18n",
-  "vendor",
-  "www",
-  "dist",
-  "build"
-];
-
-const IGNORE_FILE_PATTERN = new RegExp(
-  "(conf|test|spec|\\.d)\\.(js|ts|jsx|tsx)$",
-  "i"
-);
-
-const getAllFiles = (dir, extn, files, result, regex) => {
-  files = files || fs.readdirSync(dir);
-  result = result || [];
-  regex = regex || new RegExp(`\\${extn}$`);
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    if (
-      file.startsWith(".") ||
-      file.startsWith("__") ||
-      IGNORE_FILE_PATTERN.test(file)
-    ) {
-      continue;
-    }
-    const fileWithDir = path.join(dir, file);
-    if (fs.statSync(fileWithDir).isDirectory()) {
-      // Ignore directories
-      const dirName = path.basename(fileWithDir);
-      if (
-        dirName.startsWith(".") ||
-        dirName.startsWith("__") ||
-        IGNORE_DIRS.includes(dirName.toLowerCase())
-      ) {
-        continue;
-      }
-      try {
-        result = getAllFiles(
-          fileWithDir,
-          extn,
-          fs.readdirSync(fileWithDir),
-          result,
-          regex
-        );
-      } catch (error) {
-        // ignore
-      }
-    } else {
-      if (regex.test(fileWithDir)) {
-        result.push(fileWithDir);
-      }
-    }
-  }
-  return result;
-};
 
 const babelParserOptions = {
   sourceType: "unambiguous",
@@ -138,15 +89,9 @@ const getAllSrcJSAndTSFiles = (src) =>
  */
 const fileToJsAst = (file) => {
   try {
-    return babelParser.parse(
-      fs.readFileSync(file, "utf-8"),
-      babelParserOptions
-    );
+    return parse(readFileSync(file, "utf-8"), babelParserOptions);
   } catch {
-    return babelParser.parse(
-      fs.readFileSync(file, "utf-8"),
-      babelSafeParserOptions
-    );
+    return parse(readFileSync(file, "utf-8"), babelSafeParserOptions);
   }
 };
 
@@ -155,9 +100,9 @@ const fileToJsAst = (file) => {
  */
 const codeToJsAst = (code) => {
   try {
-    return babelParser.parse(code, babelParserOptions);
+    return parse(code, babelParserOptions);
   } catch {
-    return babelParser.parse(code, babelSafeParserOptions);
+    return parse(code, babelSafeParserOptions);
   }
 };
 
@@ -171,7 +116,7 @@ const vuePropRegex = /\s([.:@])([a-zA-Z]*?=)/gi;
  * Convert a single vue file to AST
  */
 const toVueAst = (file) => {
-  const code = fs.readFileSync(file, "utf-8");
+  const code = readFileSync(file, "utf-8");
   const cleanedCode = code
     .replace(vueCommentRegex, function (match) {
       return match.replaceAll(/\S/g, " ");
@@ -193,9 +138,9 @@ const toVueAst = (file) => {
 
 function createTsc(srcFiles) {
   try {
-    const program = tsc.createProgram(srcFiles, {
-      target: tsc.ScriptTarget.ES2020,
-      module: tsc.ModuleKind.CommonJS,
+    const program = createProgram(srcFiles, {
+      target: ScriptTarget.ES2020,
+      module: ModuleKind.CommonJS,
       allowJs: true,
       allowUnreachableCode: true,
       allowUnusedLabels: true,
@@ -216,7 +161,7 @@ function createTsc(srcFiles) {
       try {
         return typeChecker.typeToString(
           node,
-          tsc.TypeFormatFlags.NoTruncation | tsc.TypeFormatFlags.InTypeAlias
+          TypeFormatFlags.NoTruncation | TypeFormatFlags.InTypeAlias
         );
       } catch (err) {
         return "any";
@@ -228,7 +173,7 @@ function createTsc(srcFiles) {
         return typeChecker.typeToString(
           node,
           context,
-          tsc.TypeFormatFlags.NoTruncation | tsc.TypeFormatFlags.InTypeAlias
+          TypeFormatFlags.NoTruncation | TypeFormatFlags.InTypeAlias
         );
       } catch (err) {
         return "any";
@@ -238,21 +183,21 @@ function createTsc(srcFiles) {
     const addType = (node) => {
       let typeStr;
       if (
-        tsc.isSetAccessor(node) ||
-        tsc.isGetAccessor(node) ||
-        tsc.isConstructSignatureDeclaration(node) ||
-        tsc.isMethodDeclaration(node) ||
-        tsc.isFunctionDeclaration(node) ||
-        tsc.isConstructorDeclaration(node)
+        isSetAccessor(node) ||
+        isGetAccessor(node) ||
+        isConstructSignatureDeclaration(node) ||
+        isMethodDeclaration(node) ||
+        isFunctionDeclaration(node) ||
+        isConstructorDeclaration(node)
       ) {
         const signature = typeChecker.getSignatureFromDeclaration(node);
         const returnType = typeChecker.getReturnTypeOfSignature(signature);
         typeStr = safeTypeToString(returnType);
-      } else if (tsc.isFunctionLike(node)) {
+      } else if (isFunctionLike(node)) {
         const funcType = typeChecker.getTypeAtLocation(node);
         const funcSignature = typeChecker.getSignaturesOfType(
           funcType,
-          tsc.SignatureKind.Call
+          SignatureKind.Call
         )[0];
         if (funcSignature) {
           typeStr = safeTypeToString(funcSignature.getReturnType());
@@ -270,7 +215,7 @@ function createTsc(srcFiles) {
       }
       if (!["any", "unknown", "any[]", "unknown[]"].includes(typeStr))
         seenTypes.set(node.getStart(), typeStr);
-      tsc.forEachChild(node, addType);
+      forEachChild(node, addType);
     };
 
     return {
@@ -307,7 +252,7 @@ const createJSAst = async (options) => {
       if (ts) {
         try {
           const tsAst = ts.program.getSourceFile(file);
-          tsc.forEachChild(tsAst, ts.addType);
+          forEachChild(tsAst, ts.addType);
           writeTypesFile(file, ts.seenTypes, options);
           ts.seenTypes.clear();
         } catch (err) {
@@ -358,25 +303,22 @@ const getCircularReplacer = () => {
  */
 const writeAstFile = (file, ast, options) => {
   const relativePath = file.replace(new RegExp("^" + options.src + "/"), "");
-  const outAstFile = path.join(options.output, relativePath + ".json");
+  const outAstFile = join(options.output, relativePath + ".json");
   const data = {
     fullName: file,
     relativeName: relativePath,
     ast: ast
   };
-  fs.mkdirSync(path.dirname(outAstFile), { recursive: true });
-  fs.writeFileSync(
-    outAstFile,
-    JSON.stringify(data, getCircularReplacer(), "  ")
-  );
+  mkdirSync(dirname(outAstFile), { recursive: true });
+  writeFileSync(outAstFile, JSON.stringify(data, getCircularReplacer(), "  "));
   console.log("Converted AST for", relativePath, "to", outAstFile);
 };
 
 const writeTypesFile = (file, seenTypes, options) => {
   const relativePath = file.replace(new RegExp("^" + options.src + "/"), "");
-  const outTypeFile = path.join(options.output, relativePath + ".typemap");
-  fs.mkdirSync(path.dirname(outTypeFile), { recursive: true });
-  fs.writeFileSync(
+  const outTypeFile = join(options.output, relativePath + ".typemap");
+  mkdirSync(dirname(outTypeFile), { recursive: true });
+  writeFileSync(
     outTypeFile,
     JSON.stringify(Object.fromEntries(seenTypes), undefined, "  ")
   );
@@ -386,14 +328,14 @@ const writeTypesFile = (file, seenTypes, options) => {
 const createXAst = async (options) => {
   const src_dir = options.src;
   try {
-    fs.accessSync(src_dir, fs.constants.R_OK);
+    accessSync(src_dir, constants.R_OK);
   } catch (err) {
     console.error(src_dir, "is invalid");
     process.exit(1);
   }
   if (
-    fs.existsSync(path.join(src_dir, "package.json")) ||
-    fs.existsSync(path.join(src_dir, "rush.json"))
+    existsSync(join(src_dir, "package.json")) ||
+    existsSync(join(src_dir, "rush.json"))
   ) {
     return await createJSAst(options);
   }
@@ -463,7 +405,7 @@ async function main(argvs) {
 
   try {
     if (args.output === "ast_out") {
-      args.output = path.join(args.src, args.output);
+      args.output = join(args.src, args.output);
     }
     await start(args);
   } catch (e) {
