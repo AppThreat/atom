@@ -4,6 +4,7 @@ import { freemem, platform as _platform } from "node:os";
 import { dirname, join, delimiter } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { detectJava } from "./utils.mjs";
 
 const isWin = _platform() === "win32";
 let url = import.meta.url;
@@ -32,6 +33,22 @@ const atomLibs = [APP_CLASSPATH];
 const argv = process.argv.slice(2);
 
 const executeAtom = (atomArgs) => {
+  if (!detectJava()) {
+    // If we couldn't detect java but there is a JAVA_HOME defined then
+    // try fixing the PATH manually. Usually required for windows users
+    if (process.env.JAVA_HOME) {
+      process.env.PATH =
+        process.env.PATH +
+        delimiter +
+        join(process.env.JAVA_HOME, "bin") +
+        delimiter;
+    } else {
+      console.warn(
+        "A Java JDK is not installed or can't be found. Please install JDK version 17 or higher before running atom."
+      );
+      return false;
+    }
+  }
   let args = JAVA_OPTS.trim()
     .split(" ")
     .concat([

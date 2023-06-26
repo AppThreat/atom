@@ -1,5 +1,6 @@
 import { join, basename } from "node:path";
 import { readdirSync, statSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 
 const IGNORE_DIRS = [
   "node_modules",
@@ -70,4 +71,14 @@ export const getAllFiles = (dir, extn, files, result, regex) => {
     }
   }
   return result;
+};
+
+export const detectJava = () => {
+  let result = spawnSync(process.env.JAVA_CMD || "java", ["-version"], {
+    encoding: "utf-8"
+  });
+  if (result.status !== 0 || result.error) {
+    return false;
+  }
+  return true;
 };
