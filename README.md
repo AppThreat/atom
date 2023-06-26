@@ -9,6 +9,10 @@
 ╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝     ╚═╝
 ```
 
+[![release](https://github.com/appthreat/atom/actions/workflows/npm-release.yml/badge.svg)](https://github.com/appthreat/atom/actions/workflows/npm-release.yml)
+![npm](https://img.shields.io/npm/dw/@appthreat/atom)
+[![Discord](https://img.shields.io/badge/-Discord-lime?style=for-the-badge&logo=discord&logoColor=white&color=black)](https://discord.gg/tmmtjCEHNV)
+
 ## Installation
 
 ```shell
