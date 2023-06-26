@@ -4,21 +4,7 @@ import { join, dirname } from "path";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { parse } from "@babel/parser";
-import {
-  createProgram,
-  ScriptTarget,
-  ModuleKind,
-  TypeFormatFlags,
-  isSetAccessor,
-  isGetAccessor,
-  isConstructSignatureDeclaration,
-  isMethodDeclaration,
-  isFunctionDeclaration,
-  isConstructorDeclaration,
-  isFunctionLike,
-  SignatureKind,
-  forEachChild
-} from "typescript";
+import tsc from "typescript";
 import {
   readFileSync,
   mkdirSync,
@@ -138,9 +124,9 @@ const toVueAst = (file) => {
 
 function createTsc(srcFiles) {
   try {
-    const program = createProgram(srcFiles, {
-      target: ScriptTarget.ES2020,
-      module: ModuleKind.CommonJS,
+    const program = tsc.createProgram(srcFiles, {
+      target: tsc.ScriptTarget.ES2020,
+      module: tsc.ModuleKind.CommonJS,
       allowJs: true,
       allowUnreachableCode: true,
       allowUnusedLabels: true,
@@ -161,7 +147,7 @@ function createTsc(srcFiles) {
       try {
         return typeChecker.typeToString(
           node,
-          TypeFormatFlags.NoTruncation | TypeFormatFlags.InTypeAlias
+          tsc.TypeFormatFlags.NoTruncation | tsc.TypeFormatFlags.InTypeAlias
         );
       } catch (err) {
         return "any";
@@ -173,7 +159,7 @@ function createTsc(srcFiles) {
         return typeChecker.typeToString(
           node,
           context,
-          TypeFormatFlags.NoTruncation | TypeFormatFlags.InTypeAlias
+          tsc.TypeFormatFlags.NoTruncation | tsc.TypeFormatFlags.InTypeAlias
         );
       } catch (err) {
         return "any";
@@ -183,21 +169,21 @@ function createTsc(srcFiles) {
     const addType = (node) => {
       let typeStr;
       if (
-        isSetAccessor(node) ||
-        isGetAccessor(node) ||
-        isConstructSignatureDeclaration(node) ||
-        isMethodDeclaration(node) ||
-        isFunctionDeclaration(node) ||
-        isConstructorDeclaration(node)
+        tsc.isSetAccessor(node) ||
+        tsc.isGetAccessor(node) ||
+        tsc.isConstructSignatureDeclaration(node) ||
+        tsc.isMethodDeclaration(node) ||
+        tsc.isFunctionDeclaration(node) ||
+        tsc.isConstructorDeclaration(node)
       ) {
         const signature = typeChecker.getSignatureFromDeclaration(node);
         const returnType = typeChecker.getReturnTypeOfSignature(signature);
         typeStr = safeTypeToString(returnType);
-      } else if (isFunctionLike(node)) {
+      } else if (tsc.isFunctionLike(node)) {
         const funcType = typeChecker.getTypeAtLocation(node);
         const funcSignature = typeChecker.getSignaturesOfType(
           funcType,
-          SignatureKind.Call
+          tsc.SignatureKind.Call
         )[0];
         if (funcSignature) {
           typeStr = safeTypeToString(funcSignature.getReturnType());
@@ -215,7 +201,7 @@ function createTsc(srcFiles) {
       }
       if (!["any", "unknown", "any[]", "unknown[]"].includes(typeStr))
         seenTypes.set(node.getStart(), typeStr);
-      forEachChild(node, addType);
+      tsc.forEachChild(node, addType);
     };
 
     return {
@@ -252,7 +238,7 @@ const createJSAst = async (options) => {
       if (ts) {
         try {
           const tsAst = ts.program.getSourceFile(file);
-          forEachChild(tsAst, ts.addType);
+          tsc.forEachChild(tsAst, ts.addType);
           writeTypesFile(file, ts.seenTypes, options);
           ts.seenTypes.clear();
         } catch (err) {
