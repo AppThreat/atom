@@ -36,7 +36,21 @@ package object parsedeps {
   implicit val moduleWithVersionDecoder: Decoder[ModuleWithVersion] =
     Decoder.forProduct3("name", "version", "versionSpecifiers")(ModuleWithVersion.apply)
 
-  case class ModuleWithVersion(name: String, version: String = "", versionSpecifiers: String = "")
+  case class ModuleWithVersion(name: String, version: String = "", versionSpecifiers: String = "") {
+
+    def versions: Set[String] =
+      (if (!version.isBlank) Set(s"==$version") else Set.empty) ++ versionSpecifiers.split(',').filterNot(_.isBlank)
+
+    def merge(x: ModuleWithVersion): ModuleWithVersion = {
+      val vs = this.versions ++ x.versions
+      vs.find(_.startsWith("==")) match
+        case Some(exactVersion) =>
+          ModuleWithVersion(name, exactVersion.stripPrefix("=="), (vs diff Set(exactVersion)).mkString(","))
+        case None => ModuleWithVersion(name, versionSpecifiers = vs.mkString(","))
+
+    }
+
+  }
 
   def parseDependencies(cpg: Cpg): Either[String, DependencySlice] = {
     cpg.metaData.language.map(_.toUpperCase).headOption match

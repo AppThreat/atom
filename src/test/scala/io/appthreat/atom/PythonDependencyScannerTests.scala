@@ -203,7 +203,6 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = fa
         ModuleWithVersion("packageA", "", ">=1.4.2,<1.9,!=1.5.*,!=1.6.*"),
         ModuleWithVersion("packageB", "", ">=0.5.0,< 0.7.0"),
         ModuleWithVersion("socket"),
-        ModuleWithVersion("urllib3"),
         ModuleWithVersion("urllib3", "", ">=1.21.1,<3")
       )
     }

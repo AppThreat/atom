@@ -18,7 +18,11 @@ object PythonDependencyParser extends XDependencyParser {
   implicit val engineContext: EngineContext = EngineContext()
 
   override def parse(cpg: Cpg): DependencySlice = DependencySlice(
-    (parseSetupPy(cpg) ++ parseImports(cpg)).toSeq.sortBy(_.name)
+    (parseSetupPy(cpg) ++ parseImports(cpg))
+      .groupBy(_.name)
+      .map { case (x, slices) => slices.reduce((a, b) => a.merge(b)) }
+      .toSeq
+      .sortBy(_.name)
   )
 
   private def parseSetupPy(cpg: Cpg): Set[ModuleWithVersion] = {
