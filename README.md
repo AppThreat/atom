@@ -22,21 +22,35 @@ npm install @appthreat/atom
 
 ## Usage
 
-```shell
-Usage: atom [parsedeps] [options] [input]
+```
+Usage: atom [parsedeps|data-flow|usages] [options] [input]
 
   input                    source file or directory
   -o, --output <value>     output filename. Default app.⚛ or app.atom in windows
+  --slice-outfile <value>  export intra-procedural slices as json
   -l, --language <value>   source language
-  --withDataDeps           generate the atom with data-dependencies - defaults to `false`
+  --with-data-deps         generate the atom with data-dependencies - defaults to `false`
+  --file-filter <value>    the name of the source file to generate slices from.
+  --method-name-filter <value>
+                           filters in slices that go through specific methods by names. Uses regex.
+  --method-parameter-filter <value>
+                           filters in slices that go through methods with specific types on the method parameters. Uses regex.
+  --method-annotation-filter <value>
+                           filters in slices that go through methods with specific annotations on the methods. Uses regex.
+  --max-num-def <value>    maximum number of definitions in per-method data flow calculation - defaults to 2000
 Command: parsedeps
-
-Misc
-  -s, --slice              export intra-procedural slices as json
-  --slice-outfile <value>  slice output filename
-  --slice-depth <value>    the max depth to traverse the DDG for the data-flow slice (for `dataflow` mode) - defaults to 3
-  -m, --mode <value>       the kind of slicing to perform - defaults to `dataflow`. Options: [dataflow, usages]
-  --max-num-def <value>    maximum number of definitions in per-method data flow calculation. Default 2000
+Extract dependencies from the build file and imports
+Command: data-flow [options]
+Extract backward data-flow slices
+  --slice-depth <value>    the max depth to traverse the DDG for the data-flow slice - defaults to 3.
+  --sink-filter <value>    filters on the sink's `code` property. Uses regex.
+  --end-at-external-method
+                           all slices must end at an external method - defaults to false.
+Command: usages [options]
+Extract local variable and parameter usages
+  --min-num-calls <value>  the minimum number of calls required for a usage slice - defaults to 1.
+  --exclude-operators      excludes operator calls in the slices - defaults to false.
+  --exclude-source         excludes method source code in the slices - defaults to false.
   --help                   display this help message
 ```
 
