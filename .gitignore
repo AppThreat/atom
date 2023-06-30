@@ -15,3 +15,5 @@ wrapper/nodejs/plugins/atom-1.0.0/
 atom.zip
 atom.zip.sha512
 node_modules/
+app.⚛
+slices.json

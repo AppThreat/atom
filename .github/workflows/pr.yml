@@ -43,16 +43,16 @@ jobs:
           ./atom -o /tmp/py.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml
           ./atom -o /tmp/c.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml
 
-          ./atom -o /tmp/java2.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/java.slices.json
-          # ./atom -o /tmp/juice2.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/juice.slices.json
-          # ./atom -o /tmp/ts2.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/ts.slices.json
-          ./atom -o /tmp/py2.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/py.slices.json
-          ./atom -o /tmp/c2.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/c.slices.json
+          ./atom data-flow --sink-filter ".*print.*" -o /tmp/java2.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java.slices.json
+          # ./atom data-flow -o /tmp/juice2.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/juice.slices.json
+          ./atom data-flow --sink-filter ".*print.*" -o /tmp/ts2.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/ts.slices.json
+          ./atom data-flow --sink-filter ".*print.*" -o /tmp/py2.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py.slices.json
+          ./atom data-flow --sink-filter ".*print.*" -o /tmp/c2.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/c.slices.json
           ls -lh /tmp/*.atom /tmp/*.json
 
-          ./atom -o /tmp/java3.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/java.usages.json -m Usages
-          ./atom -o /tmp/juice3.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/juice.usages.json -m Usages
-          ./atom -o /tmp/ts3.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/ts.usages.json -m Usages
-          ./atom -o /tmp/py3.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/py.usages.json -m Usages
-          ./atom -o /tmp/c3.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice --slice-outfile /tmp/c.usages.json -m Usages
+          ./atom usages -o /tmp/java3.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java.usages.json 
+          ./atom usages -o /tmp/juice3.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/juice.usages.json 
+          ./atom usages -o /tmp/ts3.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/ts.usages.json 
+          ./atom usages -o /tmp/py3.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py.usages.json 
+          ./atom usages -o /tmp/c3.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/c.usages.json 
           ls -lh /tmp/*.atom /tmp/*.json
