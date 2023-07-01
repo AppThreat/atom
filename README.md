@@ -49,17 +49,29 @@ Extract backward data-flow slices
 Command: usages [options]
 Extract local variable and parameter usages
   --min-num-calls <value>  the minimum number of calls required for a usage slice - defaults to 1.
-  --exclude-operators      excludes operator calls in the slices - defaults to false.
-  --exclude-source         excludes method source code in the slices - defaults to false.
+  --exclude-operators      excludes operator calls in the slices - defaults to true.
+  --include-source         includes method source code in the slices - defaults to false.
   --help                   display this help message
+```
+
+## Sample Invocations
+
+### Create data-flow slice for a java project.
+
+```shell
+atom data-flow -o app.atom --slice-outfile df.json -l java .
+```
+
+```shell
+atom usages -o app.atom --slice-outfile usages.json -l java .
 ```
 
 ## Languages supported
 
-- C/C++
-- Java
+- C/C++ (Requires Java 17 or above)
+- Java (Requires compilation)
 - Jar
-- Android APK
+- Android APK (Requires Android SDK. Set the environment variable `ANDROID_HOME`)
 - JavaScript
 - TypeScript
 - Python
@@ -70,7 +82,7 @@ Apache-2.0
 
 ## Developing / Contributing
 
-Install Java 17 or 19
+Install Java 17 or 19 (Recommended)
 
 ```shell
 sbt scalafmt

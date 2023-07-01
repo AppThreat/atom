@@ -6,7 +6,7 @@ import io.joern.dataflowengineoss.language.*
 import io.joern.dataflowengineoss.queryengine.{Engine, EngineContext}
 import io.joern.x2cpg.X2Cpg
 import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.*
+import io.shiftleft.codepropertygraph.generated.nodes.{Call, CfgNode, Identifier, Literal}
 import io.shiftleft.semanticcpg.language.*
 import overflowdb.traversal.*
 

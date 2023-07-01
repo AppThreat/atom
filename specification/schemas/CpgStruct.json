@@ -1,0 +1,598 @@
+{
+    "$id": "CpgStruct",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/CpgStruct",
+    "definitions": {
+        "CpgStruct": {
+            "properties": {
+                "node": {
+                    "items": {
+                        "$ref": "#/definitions/atom.CpgStruct.Node"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                },
+                "edge": {
+                    "items": {
+                        "$ref": "#/definitions/atom.CpgStruct.Edge"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Cpg Struct"
+        },
+        "atom.BoolList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "boolean"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Bool List"
+        },
+        "atom.ContainedRefs": {
+            "properties": {
+                "local_name": {
+                    "type": "string"
+                },
+                "refs": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Contained Refs"
+        },
+        "atom.CpgStruct.Edge": {
+            "properties": {
+                "src": {
+                    "type": "string",
+                    "description": "Source node."
+                },
+                "dst": {
+                    "type": "string",
+                    "description": "Destination node."
+                },
+                "type": {
+                    "enum": [
+                        "UNKNOWN_EDGE_TYPE",
+                        0,
+                        "AST",
+                        3,
+                        "CALL",
+                        6,
+                        "REF",
+                        10,
+                        "TAGGED_BY",
+                        11,
+                        "PARAMETER_LINK",
+                        12,
+                        "CFG",
+                        19,
+                        "EVAL_TYPE",
+                        21,
+                        "BINDS_TO",
+                        22,
+                        "INHERITS_FROM",
+                        23,
+                        "CONTAINS",
+                        28,
+                        "CAPTURE",
+                        40,
+                        "CAPTURED_BY",
+                        41,
+                        "RECEIVER",
+                        55,
+                        "CONDITION",
+                        56,
+                        "REACHING_DEF",
+                        137,
+                        "ALIAS_OF",
+                        138,
+                        "BINDS",
+                        155,
+                        "ARGUMENT",
+                        156,
+                        "SOURCE_FILE",
+                        157,
+                        "DOMINATE",
+                        181,
+                        "POST_DOMINATE",
+                        182,
+                        "CDG",
+                        183,
+                        "IMPORTS",
+                        23663,
+                        "IS_CALL_FOR_IMPORT",
+                        23664
+                    ],
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ],
+                    "title": "Edge Type",
+                    "description": "Edge type."
+                },
+                "property": {
+                    "items": {
+                        "$ref": "#/definitions/atom.CpgStruct.Edge.Property"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Edge"
+        },
+        "atom.CpgStruct.Edge.Property": {
+            "properties": {
+                "name": {
+                    "enum": [
+                        "UNKNOWN_EDGE_PROPERTY",
+                        0,
+                        "VARIABLE",
+                        11
+                    ],
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ],
+                    "title": "Edge Property Name"
+                },
+                "value": {
+                    "$ref": "#/definitions/atom.PropertyValue",
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Property",
+            "description": "Edge properties."
+        },
+        "atom.CpgStruct.Node": {
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "UNKNOWN_NODE_TYPE",
+                        0,
+                        "METHOD",
+                        1,
+                        "METHOD_RETURN",
+                        3,
+                        "ANNOTATION",
+                        5,
+                        "ANNOTATION_PARAMETER_ASSIGN",
+                        6,
+                        "ANNOTATION_PARAMETER",
+                        7,
+                        "LITERAL",
+                        8,
+                        "MEMBER",
+                        9,
+                        "ARRAY_INITIALIZER",
+                        14,
+                        "CALL",
+                        15,
+                        "LOCAL",
+                        23,
+                        "TAG",
+                        24,
+                        "LOCATION",
+                        25,
+                        "IDENTIFIER",
+                        27,
+                        "RETURN",
+                        30,
+                        "BLOCK",
+                        31,
+                        "METHOD_PARAMETER_OUT",
+                        33,
+                        "METHOD_PARAMETER_IN",
+                        34,
+                        "DEPENDENCY",
+                        35,
+                        "FILE",
+                        38,
+                        "META_DATA",
+                        39,
+                        "NAMESPACE",
+                        40,
+                        "NAMESPACE_BLOCK",
+                        41,
+                        "UNKNOWN",
+                        44,
+                        "TYPE",
+                        45,
+                        "TYPE_DECL",
+                        46,
+                        "TYPE_PARAMETER",
+                        47,
+                        "TYPE_ARGUMENT",
+                        48,
+                        "ANNOTATION_LITERAL",
+                        49,
+                        "CONFIG_FILE",
+                        50,
+                        "BINDING",
+                        146,
+                        "TAG_NODE_PAIR",
+                        208,
+                        "FINDING",
+                        214,
+                        "KEY_VALUE_PAIR",
+                        217,
+                        "MODIFIER",
+                        300,
+                        "METHOD_REF",
+                        333,
+                        "CLOSURE_BINDING",
+                        334,
+                        "TYPE_REF",
+                        335,
+                        "CONTROL_STRUCTURE",
+                        339,
+                        "JUMP_TARGET",
+                        340,
+                        "JUMP_LABEL",
+                        341,
+                        "TEMPLATE_DOM",
+                        417,
+                        "COMMENT",
+                        511,
+                        "FIELD_IDENTIFIER",
+                        2001081
+                    ],
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ],
+                    "title": "Node Type",
+                    "description": "Logical node type."
+                },
+                "property": {
+                    "items": {
+                        "$ref": "#/definitions/atom.CpgStruct.Node.Property"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Node"
+        },
+        "atom.CpgStruct.Node.Property": {
+            "properties": {
+                "name": {
+                    "enum": [
+                        "UNKNOWN_NODE_PROPERTY",
+                        0,
+                        "LINE_NUMBER",
+                        2,
+                        "PARSER_TYPE_NAME",
+                        3,
+                        "ORDER",
+                        4,
+                        "NAME",
+                        5,
+                        "FULL_NAME",
+                        6,
+                        "IS_EXTERNAL",
+                        7,
+                        "VALUE",
+                        8,
+                        "COLUMN_NUMBER",
+                        11,
+                        "LINE_NUMBER_END",
+                        12,
+                        "VERSION",
+                        13,
+                        "EVALUATION_STRATEGY",
+                        15,
+                        "COLUMN_NUMBER_END",
+                        16,
+                        "LANGUAGE",
+                        19,
+                        "CONTENT",
+                        20,
+                        "CODE",
+                        21,
+                        "SIGNATURE",
+                        22,
+                        "DISPATCH_TYPE",
+                        25,
+                        "MODIFIER_TYPE",
+                        26,
+                        "CONTROL_STRUCTURE_TYPE",
+                        27,
+                        "ARGUMENT_INDEX",
+                        40,
+                        "CLOSURE_BINDING_ID",
+                        50,
+                        "TYPE_FULL_NAME",
+                        51,
+                        "TYPE_DECL_FULL_NAME",
+                        52,
+                        "INHERITS_FROM_TYPE_FULL_NAME",
+                        53,
+                        "METHOD_FULL_NAME",
+                        54,
+                        "AST_PARENT_TYPE",
+                        56,
+                        "AST_PARENT_FULL_NAME",
+                        57,
+                        "DEPENDENCY_GROUP_ID",
+                        58,
+                        "SYMBOL",
+                        100,
+                        "METHOD_SHORT_NAME",
+                        102,
+                        "PACKAGE_NAME",
+                        103,
+                        "CLASS_NAME",
+                        104,
+                        "NODE_LABEL",
+                        105,
+                        "FILENAME",
+                        106,
+                        "OVERLAYS",
+                        118,
+                        "HASH",
+                        120,
+                        "ARGUMENT_NAME",
+                        130,
+                        "KEY",
+                        131,
+                        "CLASS_SHORT_NAME",
+                        132,
+                        "ALIAS_TYPE_FULL_NAME",
+                        158,
+                        "CLOSURE_ORIGINAL_NAME",
+                        159,
+                        "IS_VARIADIC",
+                        221,
+                        "ROOT",
+                        1199,
+                        "DYNAMIC_TYPE_HINT_FULL_NAME",
+                        1591,
+                        "INDEX",
+                        2223,
+                        "CANONICAL_NAME",
+                        2001092,
+                        "CONTAINED_REF",
+                        2007161
+                    ],
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ],
+                    "title": "Atom v1.0.0 specification is currently compatible with Joern CPG v1.1 specification with 1 modification\n - imports edges are not hidden in atom\n https://cpg.joern.io",
+                    "description": "Atom v1.0.0 specification is currently compatible with Joern CPG v1.1 specification with 1 modification - imports edges are not hidden in atom https://cpg.joern.io"
+                },
+                "value": {
+                    "$ref": "#/definitions/atom.PropertyValue",
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Property",
+            "description": "Node properties."
+        },
+        "atom.DoubleList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Double List"
+        },
+        "atom.FloatList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Float List"
+        },
+        "atom.IntList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "integer"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Int List"
+        },
+        "atom.LongList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Long List"
+        },
+        "atom.PropertyValue": {
+            "properties": {
+                "string_value": {
+                    "type": "string"
+                },
+                "bool_value": {
+                    "type": "boolean"
+                },
+                "int_value": {
+                    "type": "integer"
+                },
+                "long_value": {
+                    "type": "string"
+                },
+                "float_value": {
+                    "type": "number"
+                },
+                "double_value": {
+                    "type": "number"
+                },
+                "string_list": {
+                    "$ref": "#/definitions/atom.StringList",
+                    "additionalProperties": false
+                },
+                "bool_list": {
+                    "$ref": "#/definitions/atom.BoolList",
+                    "additionalProperties": false
+                },
+                "int_list": {
+                    "$ref": "#/definitions/atom.IntList",
+                    "additionalProperties": false
+                },
+                "long_list": {
+                    "$ref": "#/definitions/atom.LongList",
+                    "additionalProperties": false
+                },
+                "float_list": {
+                    "$ref": "#/definitions/atom.FloatList",
+                    "additionalProperties": false
+                },
+                "double_list": {
+                    "$ref": "#/definitions/atom.DoubleList",
+                    "additionalProperties": false
+                },
+                "contained_refs": {
+                    "$ref": "#/definitions/atom.ContainedRefs",
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "oneOf": [
+                {
+                    "required": [
+                        "string_value"
+                    ]
+                },
+                {
+                    "required": [
+                        "bool_value"
+                    ]
+                },
+                {
+                    "required": [
+                        "int_value"
+                    ]
+                },
+                {
+                    "required": [
+                        "long_value"
+                    ]
+                },
+                {
+                    "required": [
+                        "float_value"
+                    ]
+                },
+                {
+                    "required": [
+                        "double_value"
+                    ]
+                },
+                {
+                    "required": [
+                        "string_list"
+                    ]
+                },
+                {
+                    "required": [
+                        "bool_list"
+                    ]
+                },
+                {
+                    "required": [
+                        "int_list"
+                    ]
+                },
+                {
+                    "required": [
+                        "long_list"
+                    ]
+                },
+                {
+                    "required": [
+                        "float_list"
+                    ]
+                },
+                {
+                    "required": [
+                        "double_list"
+                    ]
+                },
+                {
+                    "required": [
+                        "contained_refs"
+                    ]
+                }
+            ],
+            "title": "Property Value"
+        },
+        "atom.StringList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "String List"
+        }
+    }
+}
