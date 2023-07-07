@@ -1,0 +1,49 @@
+# JSON Schema
+
+## Definitions
+
+- **`AdditionalEdgeProperty`** *(object)*: Cannot contain additional properties.
+  - **`edge_id`** *(string)*
+  - **`property`**: Cannot contain additional properties. Refer to *#/definitions/atom.CpgStruct.Edge.Property*.
+  - **`out_node_key`** *(string)*
+  - **`in_node_key`** *(string)*
+  - **`edge_type`**: Edge type. Must be one of: `['UNKNOWN_EDGE_TYPE', 0, 'AST', 3, 'CALL', 6, 'REF', 10, 'TAGGED_BY', 11, 'PARAMETER_LINK', 12, 'CFG', 19, 'EVAL_TYPE', 21, 'BINDS_TO', 22, 'INHERITS_FROM', 23, 'CONTAINS', 28, 'CAPTURE', 40, 'CAPTURED_BY', 41, 'RECEIVER', 55, 'CONDITION', 56, 'REACHING_DEF', 137, 'ALIAS_OF', 138, 'BINDS', 155, 'ARGUMENT', 156, 'SOURCE_FILE', 157, 'DOMINATE', 181, 'POST_DOMINATE', 182, 'CDG', 183, 'IMPORTS', 23663, 'IS_CALL_FOR_IMPORT', 23664]`.
+- **`atom.BoolList`** *(object)*: Cannot contain additional properties.
+  - **`values`** *(array)*
+    - **Items** *(boolean)*
+- **`atom.ContainedRefs`** *(object)*: Cannot contain additional properties.
+  - **`local_name`** *(string)*
+  - **`refs`** *(array)*
+    - **Items** *(string)*
+- **`atom.CpgStruct.Edge.Property`** *(object)*: Edge properties. Cannot contain additional properties.
+  - **`name`**: Must be one of: `['UNKNOWN_EDGE_PROPERTY', 0, 'VARIABLE', 11]`.
+  - **`value`**: Cannot contain additional properties. Refer to *#/definitions/atom.PropertyValue*.
+- **`atom.DoubleList`** *(object)*: Cannot contain additional properties.
+  - **`values`** *(array)*
+    - **Items** *(number)*
+- **`atom.FloatList`** *(object)*: Cannot contain additional properties.
+  - **`values`** *(array)*
+    - **Items** *(number)*
+- **`atom.IntList`** *(object)*: Cannot contain additional properties.
+  - **`values`** *(array)*
+    - **Items** *(integer)*
+- **`atom.LongList`** *(object)*: Cannot contain additional properties.
+  - **`values`** *(array)*
+    - **Items** *(string)*
+- **`atom.PropertyValue`** *(object)*: Cannot contain additional properties.
+  - **`string_value`** *(string)*
+  - **`bool_value`** *(boolean)*
+  - **`int_value`** *(integer)*
+  - **`long_value`** *(string)*
+  - **`float_value`** *(number)*
+  - **`double_value`** *(number)*
+  - **`string_list`**: Cannot contain additional properties. Refer to *#/definitions/atom.StringList*.
+  - **`bool_list`**: Cannot contain additional properties. Refer to *#/definitions/atom.BoolList*.
+  - **`int_list`**: Cannot contain additional properties. Refer to *#/definitions/atom.IntList*.
+  - **`long_list`**: Cannot contain additional properties. Refer to *#/definitions/atom.LongList*.
+  - **`float_list`**: Cannot contain additional properties. Refer to *#/definitions/atom.FloatList*.
+  - **`double_list`**: Cannot contain additional properties. Refer to *#/definitions/atom.DoubleList*.
+  - **`contained_refs`**: Cannot contain additional properties. Refer to *#/definitions/atom.ContainedRefs*.
+- **`atom.StringList`** *(object)*: Cannot contain additional properties.
+  - **`values`** *(array)*
+    - **Items** *(string)*

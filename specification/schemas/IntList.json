@@ -1,0 +1,20 @@
+{
+    "$id": "IntList",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/IntList",
+    "definitions": {
+        "IntList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "integer"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Int List"
+        }
+    }
+}

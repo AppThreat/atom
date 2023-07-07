@@ -3,6 +3,7 @@ package io.appthreat.atom
 import better.files.File
 import io.appthreat.atom.Atom.loadFromOdb
 import io.appthreat.atom.dataflows.{OssDataFlow, OssDataFlowOptions}
+import io.appthreat.atom.parsedeps.{AtomSlice, parseDependencies}
 import io.joern.c2cpg.{C2Cpg, Config as CConfig}
 import io.joern.dataflowengineoss.slicing.{UsageSlicing, *}
 import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
@@ -32,15 +33,13 @@ import scala.util.{Failure, Properties, Success, Using}
 
 object Atom {
 
-  import parsedeps.*
-
-  val DEFAULT_ATOM_OUT_FILE: String  = if (Properties.isWin) "app.atom" else "app.⚛"
-  private val DEFAULT_SLICE_OUT_FILE = "slices.json"
-  private val DEFAULT_SLICE_DEPTH    = 3
-  private val DEFAULT_MAX_DEFS: Int  = 2000
-  private val MAVEN_JAR_PATH: File   = File.home / ".m2"
-  private val GRADLE_JAR_PATH: File  = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
-  private val SBT_JAR_PATH: File     = File.home / ".ivy2" / "cache"
+  val DEFAULT_ATOM_OUT_FILE: String = if (Properties.isWin) "app.atom" else "app.⚛"
+  val DEFAULT_SLICE_OUT_FILE        = "slices.json"
+  val DEFAULT_SLICE_DEPTH           = 3
+  val DEFAULT_MAX_DEFS: Int         = 2000
+  private val MAVEN_JAR_PATH: File  = File.home / ".m2"
+  private val GRADLE_JAR_PATH: File = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
+  private val SBT_JAR_PATH: File    = File.home / ".ivy2" / "cache"
   private val JAR_INFERENCE_PATHS: Set[String] =
     Set(MAVEN_JAR_PATH.pathAsString, GRADLE_JAR_PATH.pathAsString, SBT_JAR_PATH.pathAsString)
   private val ANDROID_JAR_PATH: Option[String] = Option(System.getenv("ANDROID_HOME")).flatMap(androidHome =>
@@ -158,18 +157,18 @@ object Atom {
             }
           ),
         opt[Unit]("exclude-operators")
-          .text(s"excludes operator calls in the slices - defaults to false.")
+          .text(s"excludes operator calls in the slices - defaults to true.")
           .action((_, c) =>
             c match {
               case c: AtomUsagesConfig => c.copy(excludeOperatorCalls = true)
               case _                   => c
             }
           ),
-        opt[Unit]("exclude-source")
-          .text(s"excludes method source code in the slices - defaults to false.")
+        opt[Unit]("include-source")
+          .text(s"includes method source code in the slices - defaults to false.")
           .action((_, c) =>
             c match {
-              case c: AtomUsagesConfig => c.copy(excludeMethodSource = true)
+              case c: AtomUsagesConfig => c.copy(includeMethodSource = true)
               case _                   => c
             }
           )
@@ -301,7 +300,7 @@ object Atom {
       case config: AtomDataFlowConfig =>
         DataFlowConfig(config.sinkPatternFilter, config.mustEndAtExternalMethod, config.sliceDepth)
       case config: AtomUsagesConfig =>
-        UsagesConfig(config.minNumCalls, config.excludeOperatorCalls, config.excludeMethodSource)
+        UsagesConfig(config.minNumCalls, config.excludeOperatorCalls, !config.includeMethodSource)
       case _ => x
     }).withInputPath(x.inputPath)
       .withOutputSliceFile(x.outputSliceFile)
@@ -351,7 +350,9 @@ object Atom {
   private def parseConfig(parserArgs: List[String]): Either[String, BaseConfig] = {
     optionParser.parse(
       parserArgs,
-      DefaultAtomConfig().withOutputAtomFile(File("atom.⚛")).withOutputSliceFile(File(DEFAULT_SLICE_OUT_FILE))
+      DefaultAtomConfig()
+        .withOutputAtomFile(File(DEFAULT_ATOM_OUT_FILE))
+        .withOutputSliceFile(File(DEFAULT_SLICE_OUT_FILE))
     ) match {
       case Some(config) =>
         Right(config)
