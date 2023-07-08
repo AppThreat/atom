@@ -3,7 +3,7 @@ package io.appthreat
 import better.files.File
 import io.appthreat.atom.Atom.*
 import io.circe.{Encoder, Json}
-import io.joern.dataflowengineoss.slicing.*
+import io.appthreat.atom.slicing.*
 
 package object atom {
 
@@ -42,7 +42,8 @@ package object atom {
 
   case class AtomDataFlowConfig(
     sinkPatternFilter: Option[String] = None,
-    mustEndAtExternalMethod: Boolean = false,
+    excludeOperatorCalls: Boolean = true,
+    mustEndAtExternalMethod: Boolean = true,
     sliceDepth: Int = DEFAULT_SLICE_DEPTH
   ) extends AtomConfig
 
@@ -52,7 +53,7 @@ package object atom {
     includeMethodSource: Boolean = false
   ) extends AtomConfig
 
-  import io.joern.dataflowengineoss.slicing._
+  import io.appthreat.atom.slicing._
   import io.circe.generic.auto._
   import io.circe.syntax.EncoderOps
 
