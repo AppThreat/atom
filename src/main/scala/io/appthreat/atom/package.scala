@@ -43,8 +43,7 @@ package object atom {
   case class AtomDataFlowConfig(
     sinkPatternFilter: Option[String] = None,
     mustEndAtExternalMethod: Boolean = false,
-    sliceDepth: Int = DEFAULT_SLICE_DEPTH,
-    unrollPaths: Boolean = false
+    sliceDepth: Int = DEFAULT_SLICE_DEPTH
   ) extends AtomConfig
 
   case class AtomUsagesConfig(

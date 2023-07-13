@@ -142,14 +142,6 @@ object Atom {
               case c: AtomDataFlowConfig => c.copy(mustEndAtExternalMethod = true)
               case _                     => c
             }
-          ),
-        opt[Unit]('u', "unroll-paths")
-          .text(s"unrolls the data-flow graph-style representation as a 'paths' attribute")
-          .action((_, c) =>
-            c match {
-              case c: AtomDataFlowConfig => c.copy(unrollPaths = true)
-              case _                     => c
-            }
           )
       )
     cmd("usages")
@@ -340,10 +332,7 @@ object Atom {
           val dataFlowSlice =
             Using.resource(loadFromOdb(outputAtomFile))(sliceCpg).collect { case x: DataFlowSlice => x }
           val atomDataFlowSliceJson =
-            config match
-              case x: AtomDataFlowConfig if x.unrollPaths =>
-                dataFlowSlice.map(x => AtomDataFlowSlice(x, DataFlowGraph.buildFromSlice(x).paths).toJson)
-              case _ => dataFlowSlice.map(x => AtomDataFlowSlice(x).toJson)
+            dataFlowSlice.map(x => AtomDataFlowSlice(x, DataFlowGraph.buildFromSlice(x).paths).toJson)
           saveSlice(config.outputSliceFile, atomDataFlowSliceJson)
         case _: UsagesConfig =>
           saveSlice(config.outputSliceFile, Using.resource(loadFromOdb(outputAtomFile))(sliceCpg).map(_.toJson))
