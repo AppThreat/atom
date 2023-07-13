@@ -2,6 +2,7 @@ package io.appthreat
 
 import better.files.File
 import io.appthreat.atom.Atom.*
+import io.circe.{Encoder, Json}
 import io.joern.dataflowengineoss.slicing.*
 
 package object atom {
@@ -50,5 +51,20 @@ package object atom {
     excludeOperatorCalls: Boolean = true,
     includeMethodSource: Boolean = false
   ) extends AtomConfig
+
+  import io.joern.dataflowengineoss.slicing._
+  import io.circe.generic.auto._
+  import io.circe.syntax.EncoderOps
+
+  implicit val encodeDataFlowSlice: Encoder[AtomDataFlowSlice] = Encoder.instance {
+    case AtomDataFlowSlice(dataFlowSlice, paths) =>
+      Json.obj("graph" -> dataFlowSlice.asJson, "paths" -> paths.asJson)
+  }
+
+  case class AtomDataFlowSlice(graph: DataFlowSlice, paths: Set[List[Long]] = Set.empty) {
+
+    def toJson: String = this.asJson.toString()
+
+  }
 
 }

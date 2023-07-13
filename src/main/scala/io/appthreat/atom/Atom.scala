@@ -2,7 +2,7 @@ package io.appthreat.atom
 
 import better.files.File
 import io.appthreat.atom.Atom.loadFromOdb
-import io.appthreat.atom.dataflows.{OssDataFlow, OssDataFlowOptions}
+import io.appthreat.atom.dataflows.{DataFlowGraph, OssDataFlow, OssDataFlowOptions}
 import io.appthreat.atom.parsedeps.{AtomSlice, parseDependencies}
 import io.joern.c2cpg.{C2Cpg, Config as CConfig}
 import io.joern.dataflowengineoss.slicing.{UsageSlicing, *}
@@ -263,7 +263,7 @@ object Atom {
         Left(exception.getMessage)
       case Success(cpg) =>
         config match {
-          case x: AtomConfig if x.dataDeps =>
+          case x: AtomConfig if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] =>
             println("Generating data-flow dependencies")
             new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
               .run(new LayerCreatorContext(cpg))
@@ -328,7 +328,13 @@ object Atom {
 
     try {
       migrateAtomConfigToSliceConfig(config) match {
-        case _: UsagesConfig | _: DataFlowConfig =>
+        case _: DataFlowConfig =>
+          val dataFlowSlice =
+            Using.resource(loadFromOdb(outputAtomFile))(sliceCpg).collect { case x: DataFlowSlice => x }
+          val atomDataFlowSliceJson =
+            dataFlowSlice.map(x => AtomDataFlowSlice(x, DataFlowGraph.buildFromSlice(x).paths).toJson)
+          saveSlice(config.outputSliceFile, atomDataFlowSliceJson)
+        case _: UsagesConfig =>
           saveSlice(config.outputSliceFile, Using.resource(loadFromOdb(outputAtomFile))(sliceCpg).map(_.toJson))
         case x: AtomParseDepsConfig =>
           Using.resource(loadFromOdb(outputAtomFile))(parseDependencies).map(_.toJson) match {
@@ -339,7 +345,7 @@ object Atom {
       }
       Right("Atom sliced successfully")
     } catch {
-      case err: Throwable if err.getMessage == null => Left(err.getCause.toString)
+      case err: Throwable if err.getMessage == null => Left(err.getStackTrace.take(7).mkString("\n"))
       case err: Throwable                           => Left(err.getMessage)
     }
   }
