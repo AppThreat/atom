@@ -32,12 +32,13 @@ private class DataFlowGraph(nodes: Set[DFNode]) {
     nMap: Map[Long, DFNode],
     finalSet: mutable.Set[Path]
   ): Unit = {
-    outNodes.filterNot(currPath.contains).foreach { x =>
-      val path = currPath :+ x.id
-      if (x.out.isEmpty && !isSubList(path)) {
-        finalSet.add(path)
+    outNodes.foreach { x =>
+      val path  = currPath :+ x.id
+      val queue = x.out.filterNot(currPath.contains)
+      if (queue.isEmpty) {
+        if (!isSubList(path)) finalSet.add(path)
       } else {
-        follow(path, x.out.flatMap(nMap.get))
+        follow(path, queue.flatMap(nMap.get))
       }
     }
   }

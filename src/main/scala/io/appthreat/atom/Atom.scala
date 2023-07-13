@@ -345,7 +345,7 @@ object Atom {
       }
       Right("Atom sliced successfully")
     } catch {
-      case err: Throwable if err.getMessage == null => Left(err.getStackTrace.mkString("\n"))
+      case err: Throwable if err.getMessage == null => Left(err.getStackTrace.take(7).mkString("\n"))
       case err: Throwable                           => Left(err.getMessage)
     }
   }
