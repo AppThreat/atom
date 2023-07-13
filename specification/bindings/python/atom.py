@@ -8,172 +8,182 @@ import betterproto
 
 
 class NodePropertyName(betterproto.Enum):
+    """Enum for the name of a node property"""
+
     UNKNOWN_NODE_PROPERTY = 0
-    # This optional field provides the line number of the program
-    # constructrepresented by the node.
+    # This optional field provides the line number of the program construct
+    # represented by the node.
     LINE_NUMBER = 2
     # AST node type name emitted by parser.
     PARSER_TYPE_NAME = 3
-    # This integer indicates the position of the node amongits siblings in the
-    # AST. The left-most child has anorder of 0.
+    # This integer indicates the position of the node among its siblings in the
+    # AST. The left-most child has an order of 0.
     ORDER = 4
     # Name of represented object, e.g., method name (e.g. "run")
     NAME = 5
-    # This is the fully-qualified name of an entity, e.g., the fully-
-    # qualifiedname of a method or type. The details of what constitutes a fully-
-    # qualifiedname are language specific. This field SHOULD be human readable.
+    # This is the fully-qualified name of an entity, e.g., the fully-qualified
+    # name of a method or type. The details of what constitutes a fully-qualified
+    # name are language specific. This field SHOULD be human readable.
     FULL_NAME = 6
-    # Indicates that the construct (METHOD or TYPE_DECL) is external, that is,it
-    # is referenced but not defined in the code (applies both to insularparsing
+    # Indicates that the construct (METHOD or TYPE_DECL) is external, that is, it
+    # is referenced but not defined in the code (applies both to insular parsing
     # and to library functions where we have header files only)
     IS_EXTERNAL = 7
     # This property denotes a string value as used in a key-value pair.
     VALUE = 8
-    # This optional fields provides the column number of the program
-    # constructrepresented by the node.
+    # This optional fields provides the column number of the program construct
+    # represented by the node.
     COLUMN_NUMBER = 11
     # This optional fields provides the line number at which the program
-    # constructrepresented by the node ends.
+    # construct represented by the node ends.
     LINE_NUMBER_END = 12
-    # A version, given as a string. Used, for example, in the META_DATA node
-    # toindicate which version of the CPG spec this CPG conforms to
+    # A version, given as a string. Used, for example, in the META_DATA node to
+    # indicate which version of the CPG spec this CPG conforms to.
     VERSION = 13
     # For formal method input parameters, output parameters, and return
-    # parameters,this field holds the evaluation strategy, which is one of the
-    # following:1) `BY_REFERENCE` indicates that the parameter is passed by
-    # reference, 2)`BY_VALUE` indicates that it is passed by value, that is, a
-    # copy is made,3) `BY_SHARING` the parameter is a pointer/reference and it is
-    # shared withthe caller/callee. While a copy of the pointer is made, a copy
-    # of the objectthat it points to is not made.
+    # parameters, this field holds the evaluation strategy, which is one of the
+    # following: 1) `BY_REFERENCE` indicates that the parameter is passed by
+    # reference, 2) `BY_VALUE` indicates that it is passed by value, that is, a
+    # copy is made, 3) `BY_SHARING` the parameter is a pointer/reference and it
+    # is shared with the caller/callee. While a copy of the pointer is made, a
+    # copy of the object that it points to is not made.
     EVALUATION_STRATEGY = 15
     # This optional fields provides the column number at which the program
-    # constructrepresented by the node ends.
+    # construct represented by the node ends.
     COLUMN_NUMBER_END = 16
-    # This field indicates which CPG language frontend generated the CPG.Frontend
-    # developers may freely choose a value that describes their frontendso long
-    # as it is not used by an existing frontend. Reserved values are to date:C,
-    # LLVM, GHIDRA, PHP.
+    # This field indicates which CPG language frontend generated the CPG.
+    # Frontend developers may freely choose a value that describes their frontend
+    # so long as it is not used by an existing frontend. Reserved values are to
+    # date: C, LLVM, GHIDRA, PHP.
     LANGUAGE = 19
-    # Certain files, e.g., configuration files, may be included in the CPG as-
-    # is.For such files, the `CONTENT` field contains the files content.
+    # Certain files, e.g., configuration files, may be included in the CPG as-is.
+    # For such files, the `CONTENT` field contains the files content.
     CONTENT = 20
     # This field holds the code snippet that the node represents.
     CODE = 21
-    # The method signature encodes the types of parameters in a string.The string
-    # SHOULD be human readable and suitable for differentiating methodswith
-    # different parameter types sufficiently to allow for resolving offunction
-    # overloading. The present specification does not enforce a strictformat for
-    # the signature, that is, it can be chosen by the frontendimplementor to fit
-    # the source language.
+    # The method signature encodes the types of parameters in a string. The
+    # string SHOULD be human readable and suitable for differentiating methods
+    # with different parameter types sufficiently to allow for resolving of
+    # function overloading. The present specification does not enforce a strict
+    # format for the signature, that is, it can be chosen by the frontend
+    # implementor to fit the source language.
     SIGNATURE = 22
     # This field holds the dispatch type of a call, which is either
-    # `STATIC_DISPATCH` or`DYNAMIC_DISPATCH`. For statically dispatched method
-    # calls, the call target is knownat compile time while for dynamically
-    # dispatched calls, it can only be determined atruntime as it may depend on
-    # the type of an object (as is the case for virtual methodcalls) or
+    # `STATIC_DISPATCH` or `DYNAMIC_DISPATCH`. For statically dispatched method
+    # calls, the call target is known at compile time while for dynamically
+    # dispatched calls, it can only be determined at runtime as it may depend on
+    # the type of an object (as is the case for virtual method calls) or
     # calculation of an offset.
     DISPATCH_TYPE = 25
     # The modifier type is a free-form string. The following are known modifier
-    # types:`STATIC`, `PUBLIC`, `PROTECTED`, `PRIVATE`, `ABSTRACT`, `NATIVE`,
+    # types: `STATIC`, `PUBLIC`, `PROTECTED`, `PRIVATE`, `ABSTRACT`, `NATIVE`,
     # `CONSTRUCTOR`, `VIRTUAL`.
     MODIFIER_TYPE = 26
     # The `CONTROL_STRUCTURE_TYPE` field indicates which kind of control
-    # structurea `CONTROL_STRUCTURE` node represents. The available types are the
-    # following:BREAK, CONTINUE, DO, WHILE, FOR, GOTO, IF, ELSE, TRY, THROW and
-    # SWITCH.
+    # structure a `CONTROL_STRUCTURE` node represents. The available types are
+    # the following: BREAK, CONTINUE, DO, WHILE, FOR, GOTO, IF, ELSE, TRY, THROW
+    # and SWITCH.
     CONTROL_STRUCTURE_TYPE = 27
-    # AST-children of CALL nodes have an argument index, that is used to
-    # matchcall-site arguments with callee parameters. Explicit parameters are
-    # numberedfrom 1 to N, while index 0 is reserved for implicit self / this
-    # parameter.CALLs without implicit parameter therefore have arguments
-    # starting with index 1.AST-children of BLOCK nodes may have an argument
-    # index as well; in this case,the last argument index determines the return
-    # expression of a BLOCK expression.If the `PARAMETER_NAME` field is set, then
-    # the `ARGUMENT_INDEX` field isignored. It is suggested to set it to -1.
+    # AST-children of CALL nodes have an argument index, that is used to match
+    # call-site arguments with callee parameters. Explicit parameters are
+    # numbered from 1 to N, while index 0 is reserved for implicit self / this
+    # parameter. CALLs without implicit parameter therefore have arguments
+    # starting with index 1. AST-children of BLOCK nodes may have an argument
+    # index as well; in this case, the last argument index determines the return
+    # expression of a BLOCK expression. If the `PARAMETER_NAME` field is set,
+    # then the `ARGUMENT_INDEX` field is ignored. It is suggested to set it to
+    # -1.
     ARGUMENT_INDEX = 40
     # Identifier which uniquely describes a CLOSURE_BINDING. This property is
     # used to match captured LOCAL nodes with the corresponding CLOSURE_BINDING
-    # nodes
+    # nodes.
     CLOSURE_BINDING_ID = 50
-    # This field contains the fully-qualified static type name of the
-    # programconstruct represented by a node. It is the name of an instantiated
-    # type, e.g.,`java.util.List<Integer>`, rather than `java.util.List[T]`. If
-    # the typecannot be determined, this field should be set to the empty string.
+    # This field contains the fully-qualified static type name of the program
+    # construct represented by a node. It is the name of an instantiated type,
+    # e.g., `java.util.List<Integer>`, rather than `java.util.List[T]`. If the
+    # type cannot be determined, this field should be set to the empty string.
     TYPE_FULL_NAME = 51
     # The static type decl of a TYPE. This property is matched against the
-    # FULL_NAMEof TYPE_DECL nodes. It is required to have exactly one TYPE_DECL
-    # for eachdifferent TYPE_DECL_FULL_NAME
+    # FULL_NAME of TYPE_DECL nodes. It is required to have exactly one TYPE_DECL
+    # for each different TYPE_DECL_FULL_NAME.
     TYPE_DECL_FULL_NAME = 52
     # The static types a TYPE_DECL inherits from. This property is matched
-    # against theFULL_NAME of TYPE nodes and thus it is required to have at least
-    # one TYPE nodefor each TYPE_FULL_NAME
+    # against the FULL_NAME of TYPE nodes and thus it is required to have at
+    # least one TYPE node for each TYPE_FULL_NAME.
     INHERITS_FROM_TYPE_FULL_NAME = 53
     # The FULL_NAME of a method. Used to link CALL and METHOD nodes. It is
-    # requiredto have exactly one METHOD node for each METHOD_FULL_NAME
+    # required to have exactly one METHOD node for each METHOD_FULL_NAME.
     METHOD_FULL_NAME = 54
     # The type of the AST parent. Since this is only used in some parts of the
-    # graph,the list does not include all possible parents by intention.Possible
-    # parents: METHOD, TYPE_DECL, NAMESPACE_BLOCK.
+    # graph, the list does not include all possible parents by intention.
+    # Possible parents: METHOD, TYPE_DECL, NAMESPACE_BLOCK.
     AST_PARENT_TYPE = 56
     # This field holds the FULL_NAME of the AST parent of an entity.
     AST_PARENT_FULL_NAME = 57
     # The group ID for a dependency
     DEPENDENCY_GROUP_ID = 58
+    # Symbols
     SYMBOL = 100
+    # Method short name.
     METHOD_SHORT_NAME = 102
+    # Method package name.
     PACKAGE_NAME = 103
+    # Method class name.
     CLASS_NAME = 104
+    # Label for the node which could be code.
     NODE_LABEL = 105
     # The path of the source file this node was generated from, relative to the
-    # rootpath in the meta data node. This field must be set but may be set to
-    # the value `<unknown>` toindicate that no source file can be associated with
-    # the node, e.g., because the node representsan entity known to exist because
-    # it is referenced, but for which the file that is is declared inis unknown.
+    # root path in the meta data node. This field must be set but may be set to
+    # the value `<unknown>` to indicate that no source file can be associated
+    # with the node, e.g., because the node represents an entity known to exist
+    # because it is referenced, but for which the file that is is declared in is
+    # unknown.
     FILENAME = 106
     # The field contains the names of the overlays applied to this CPG, in order
-    # of theirapplication. Names are free-form strings, that is, this
-    # specification does notdictate them but rather requires tool producers and
-    # consumers to communicate thembetween each other.
+    # of their application. Names are free-form strings, that is, this
+    # specification does not dictate them but rather requires tool producers and
+    # consumers to communicate them between each other.
     OVERLAYS = 118
-    # This property contains a hash value in the form of a string.Hashes can be
-    # used to summarize data, e.g., to summarize thecontents of source files or
-    # sub graphs. Such summaries are usefulto determine whether code has already
-    # been analyzed in incrementalanalysis pipelines. This property is optional
-    # to allow its calculationto be deferred or skipped if the hash is not
+    # This property contains a hash value in the form of a string. Hashes can be
+    # used to summarize data, e.g., to summarize the contents of source files or
+    # sub graphs. Such summaries are useful to determine whether code has already
+    # been analyzed in incremental analysis pipelines. This property is optional
+    # to allow its calculation to be deferred or skipped if the hash is not
     # needed.
     HASH = 120
-    # For calls involving named parameters, the `ARGUMENT_NAME` field holds
-    # thename of the parameter initialized by the expression. For all other
-    # calls,this field is unset.
+    # For calls involving named parameters, the `ARGUMENT_NAME` field holds the
+    # name of the parameter initialized by the expression. For all other calls,
+    # this field is unset.
     ARGUMENT_NAME = 130
     # This property denotes a key of a key-value pair.
     KEY = 131
+    # Class short name
     CLASS_SHORT_NAME = 132
-    # This property holds the fully qualified name of the type that the node isa
+    # This property holds the fully qualified name of the type that the node is a
     # type alias of.
     ALIAS_TYPE_FULL_NAME = 158
     # The original name of the (potentially mangled) captured variable
     CLOSURE_ORIGINAL_NAME = 159
     # Specifies whether a parameter is the variadic argument handling parameter
-    # ofa variadic method. Only one parameter of a method is allowed to have
-    # thisproperty set to true.
+    # of a variadic method. Only one parameter of a method is allowed to have
+    # this property set to true.
     IS_VARIADIC = 221
     # The path to the root directory of the source/binary this CPG is generated
     # from.
     ROOT = 1199
-    # Type hint for the dynamic type
+    # Type hint for the dynamic type.
     DYNAMIC_TYPE_HINT_FULL_NAME = 1591
-    # Specifies an index, e.g., for a parameter or argument.Explicit parameters
-    # are numbered from 1 to N, while index 0 is reserved for implicitself / this
-    # parameter.
+    # Specifies an index, e.g., for a parameter or argument. Explicit parameters
+    # are numbered from 1 to N, while index 0 is reserved for implicit self /
+    # this parameter.
     INDEX = 2223
     # This field holds the canonical name of a `FIELD_IDENTIFIER`. It is
-    # typicallyidentical to the CODE field, but canonicalized according to source
-    # languagesemantics. Human readable names are preferable. `FIELD_IDENTIFIER`
-    # nodes mustshare identical `CANONICAL_NAME` if andonly if they alias, e.g.,
-    # in C-style unions (if the aliasing relationship isunknown or there are
-    # partial overlaps, then one must make a reasonable guess,and trade off
-    # between false negatives and false positives).
+    # typically identical to the CODE field, but canonicalized according to
+    # source language semantics. Human readable names are preferable.
+    # `FIELD_IDENTIFIER` nodes must share identical `CANONICAL_NAME` if and only
+    # if they alias, e.g., in C-style unions (if the aliasing relationship is
+    # unknown or there are partial overlaps, then one must make a reasonable
+    # guess, and trade off between false negatives and false positives).
     CANONICAL_NAME = 2001092
     # References to other nodes. This is not a real property; it exists here for
     # the sake of proto serialization only. valueType and cardinality are
@@ -182,6 +192,8 @@ class NodePropertyName(betterproto.Enum):
 
 
 class EdgePropertyName(betterproto.Enum):
+    """Enum for the name of an edge"""
+
     UNKNOWN_EDGE_PROPERTY = 0
     # This edge property represents the variable propagated by a reaching
     # definition edge.
@@ -189,6 +201,10 @@ class EdgePropertyName(betterproto.Enum):
 
 
 class ModifierTypes(betterproto.Enum):
+    """
+    Enum for the possible modifier types for symbols, methods and class nodes
+    """
+
     UNKNOWN_MODIFIER_TYPE = 0
     # The static modifier
     STATIC = 1
@@ -215,18 +231,31 @@ class ModifierTypes(betterproto.Enum):
 
 
 class LANGUAGES(betterproto.Enum):
+    """Enum to represent the frontend language"""
+
+    # Unknown language
     UNKNOWN_LANGUAGE = 0
+    # Java
     JAVA = 1
+    # JavaScript and TypeScript
     JAVASCRIPT = 2
+    # Go
     GOLANG = 3
+    # csharp / dotnet
     CSHARP = 4
+    # C/C++
     C = 5
+    # Python
     PYTHON = 6
+    # llvm
     LLVM = 7
+    # PHP
     PHP = 8
+    # Test
     FUZZY_TEST_LANG = 9
     # generic reverse engineering framework
     GHIDRA = 10
+    # Kotlin
     KOTLIN = 11
     # Eclipse CDT based parser for C/C++
     NEWC = 12
@@ -243,6 +272,11 @@ class LANGUAGES(betterproto.Enum):
 
 
 class EvaluationStrategies(betterproto.Enum):
+    """
+    Enum representing the evaluation strategy of the underlying parameter or
+    method or literal.
+    """
+
     UNKNOWN_EVALUATION_STRATEGY = 0
     # A parameter or return of a function is passed by reference which means an
     # address is used behind the scenes
@@ -257,6 +291,8 @@ class EvaluationStrategies(betterproto.Enum):
 
 
 class DispatchTypes(betterproto.Enum):
+    """Enum representing the dispatch types"""
+
     UNKNOWN_DISPATCH_TYPE = 0
     # For statically dispatched calls the call target is known before program
     # execution
@@ -268,12 +304,14 @@ class DispatchTypes(betterproto.Enum):
 
 
 class CONTROL_STRUCTURE_TYPES(betterproto.Enum):
+    """Enum representing the control structure types"""
+
     UNKNOWN_CONTROL_STRUCTURE_TYPE = 0
     # Represents a break statement. Labeled breaks are expected to have a
-    # JUMP_LABELnode AST child with ORDER 1
+    # JUMP_LABEL node AST child with ORDER 1
     BREAK = 1
     # Represents a continue statement. Labeled continues are expected to have a
-    # JUMP_LABELnode AST child with ORDER 1
+    # JUMP_LABEL node AST child with ORDER 1
     CONTINUE = 2
     # Represents a while statement
     WHILE = 3
@@ -299,50 +337,258 @@ class CONTROL_STRUCTURE_TYPES(betterproto.Enum):
     YIELD = 13
 
 
-class CpgStructNodeNodeType(betterproto.Enum):
+class NodeType(betterproto.Enum):
+    """
+    * Programming languages offer many closely-related concepts for describing
+    blocks of code that can be executed with input parameters and return output
+    parameters, possibly causing side effects. In the CPG specification, we
+    refer to all of these concepts (procedures, functions, methods, etc.) as
+    methods. A single METHOD node must exist for each method found in the
+    source program. The `FULL_NAME` field specifies the method's fully-
+    qualified name, including information about the namespace it is contained
+    in if applicable, the name field is the function's short name. The field
+    `IS_EXTERNAL` indicates whether it was possible to identify a method body
+    for the method. This is true for methods that are defined in the source
+    program, and false for methods that are dynamically linked to the program,
+    that is, methods that exist in an external dependency. Line and column
+    number information is specified in the optional fields `LINE_NUMBER`,
+    `COLUMN_NUMBER`, `LINE_NUMBER_END`, and `COLUMN_NUMBER_END` and the name of
+    the source file is specified in `FILENAME`. An optional hash value MAY be
+    calculated over the function contents and included in the `HASH` field.
+    Finally, the fully qualified name of the program constructs that the method
+    is immediately contained in is stored in the `AST_PARENT_FULL_NAME` field
+    and its type is indicated in the `AST_PARENT_TYPE` field to be one of
+    `METHOD`, `TYPE_DECL` or `NAMESPACE_BLOCK`.
+    """
+
     UNKNOWN_NODE_TYPE = 0
+    # Method Nodes
     METHOD = 1
+    # This node represents an (unnamed) formal method return parameter. It
+    # carries its fully qualified type name in `TYPE_FULL_NAME`. The `CODE` field
+    # MAY be set freely, e.g., to the constant `RET`, however, subsequent layer
+    # creators MUST NOT depend on this value.
     METHOD_RETURN = 3
+    # A method annotation. The semantics of the FULL_NAME property on this node
+    # differ from the usual FULL_NAME semantics in the sense that FULL_NAME
+    # describes the represented annotation class/interface itself and not the
+    # ANNOTATION node.
     ANNOTATION = 5
+    # Assignment of annotation argument to annotation parameter
     ANNOTATION_PARAMETER_ASSIGN = 6
+    # Formal annotation parameter
     ANNOTATION_PARAMETER = 7
+    # This node represents a literal such as an integer or string constant.
+    # Literals are symbols included in the code in verbatim form and which are
+    # immutable. The `TYPE_FULL_NAME` field stores the literal's fully-qualified
+    # type name, e.g., `java.lang.Integer`.
     LITERAL = 8
+    # This node represents a type member of a class, struct or union, e.g., for
+    # the type declaration `class Foo{ int i ; }`, it represents the declaration
+    # of the variable `i`.
     MEMBER = 9
+    # Initialization construct for arrays
     ARRAY_INITIALIZER = 14
+    # A (function/method/procedure) call. The `METHOD_FULL_NAME` property is the
+    # name of the invoked method (the callee) while the `TYPE_FULL_NAME` is its
+    # return type, and therefore, the return type of the call when viewing it as
+    # an expression. For languages like Javascript, it is common that we may know
+    # the (short-) name of the invoked method, but we do not know at compile time
+    # which method will actually be invoked, e.g., because it depends on a
+    # dynamic import. In this case, we leave `METHOD_FULL_NAME` blank but at
+    # least fill out `NAME`, which contains the method's (short-) name and
+    # `SIGNATURE`, which contains any information we may have about the types of
+    # arguments and return value.
     CALL = 15
+    # This node represents a local variable. Its fully qualified type name is
+    # stored in the `TYPE_FULL_NAME` field and its name in the `NAME` field. The
+    # `CODE` field contains the entire local variable declaration without
+    # initialization, e.g., for `int x = 10;`, it contains `int x`.
     LOCAL = 23
+    # This node represents a tag.
     TAG = 24
+    # A location node summarizes a source code location.
     LOCATION = 25
+    # This node represents an identifier as used when referring to a variable by
+    # name. It holds the identifier's name in the `NAME` field and its fully-
+    # qualified type name in `TYPE_FULL_NAME`.
     IDENTIFIER = 27
+    # This node represents a return instruction, e.g., `return x`. Note that it
+    # does NOT represent a formal return parameter as formal return parameters
+    # are represented via `METHOD_RETURN` nodes.
     RETURN = 30
+    # This node represents a compound statement. Compound statements are used in
+    # many languages to allow grouping a sequence of statements. For example, in
+    # C and Java, compound statements are statements enclosed by curly braces.
+    # Function/Method bodies are compound statements. We do not use the term
+    # "compound statement" because "statement" would imply that the block does
+    # not yield a value upon evaluation, that is, that it is not an expression.
+    # This is true in languages such as C and Java, but not for languages such as
+    # Scala where the value of the block is given by that of the last expression
+    # it contains. In fact, the Scala grammar uses the term "BlockExpr" (short
+    # for "block expression") to describe what in the CPG we call "Block".
     BLOCK = 31
+    # This node represents a formal output parameter. Corresponding output
+    # parameters for input parameters MUST NOT be created by the frontend as they
+    # are automatically created upon first loading the CPG.
     METHOD_PARAMETER_OUT = 33
+    # This node represents a formal input parameter. The field `NAME` contains
+    # its name, while the field `TYPE_FULL_NAME` contains the fully qualified
+    # type name.
     METHOD_PARAMETER_IN = 34
+    # This node represents a dependency
     DEPENDENCY = 35
+    # * File nodes represent source files or a shared objects from which the CPG
+    # was generated. File nodes serve as indices, that is, they allow looking up
+    # all elements of the code by file. For each file, the graph MUST contain
+    # exactly one File node. As file nodes are root nodes of abstract syntax
+    # tress, they are AstNodes and their order field is set to 0. This is because
+    # they have no sibling nodes, not because they are the first node of the AST.
+    # Each CPG MUST contain a special file node with name set to `<unknown>`.
+    # This node is a placeholder used in cases where a file cannot be determined
+    # at compile time. As an example, consider external library functions. As
+    # their code is not available on CPG construction, the file name is unknown.
+    # File nodes MUST NOT be created by the language frontend. Instead, the
+    # language frontend is assumed to fill out the `FILENAME` field wherever
+    # possible, allowing File nodes to be created automatically upon first
+    # loading the CPG.
     FILE = 38
+    # This node contains the CPG meta data. Exactly one node of this type MUST
+    # exist per CPG. The `HASH` property MAY contain a hash value calculated over
+    # the source files this CPG was generated from. The `VERSION` MUST be set to
+    # the version of the specification ("1.1"). The language field indicates
+    # which language frontend was used to generate the CPG and the list property
+    # `OVERLAYS` specifies which overlays have been applied to the CPG.
     META_DATA = 39
+    # This node represents a namespace. Similar to FILE nodes, NAMESPACE nodes
+    # serve as indices that allow all definitions inside a namespace to be
+    # obtained by following outgoing edges from a NAMESPACE node. NAMESPACE nodes
+    # MUST NOT be created by language frontends. Instead, they are generated from
+    # NAMESPACE_BLOCK nodes automatically upon first loading of the CPG.
     NAMESPACE = 40
+    # * A reference to a namespace. We borrow the concept of a "namespace block"
+    # from C++, that is, a namespace block is a block of code that has been
+    # placed in the same namespace by a programmer. This block may be introduced
+    # via a `package` statement in Java or a `namespace{ }` statement in C++. The
+    # `FULL_NAME` field contains a unique identifier to represent the namespace
+    # block itself not just the namespace it references. So in addition to the
+    # namespace name it can be useful to use the containing file name to derive a
+    # unique identifier. The `NAME` field contains the namespace name in a human-
+    # readable format. The name should be given in dot-separated form where a dot
+    # indicates that the right hand side is a sub namespace of the left hand
+    # side, e.g., `foo.bar` denotes the namespace `bar` contained in the
+    # namespace `foo`.
     NAMESPACE_BLOCK = 41
+    # Any AST node that the frontend would like to include in the AST but for
+    # which no suitable AST node is specified in the CPG specification may be
+    # included using a node of type `UNKNOWN`.
     UNKNOWN = 44
+    # This node represents a type instance, that is, a concrete instantiation of
+    # a type declaration.
     TYPE = 45
+    # * This node represents a type declaration as for example given by a class-,
+    # struct-, or union declaration. In contrast to a `TYPE` node, this node does
+    # not represent a concrete instantiation of a type, e.g., for the
+    # parametrized type `List[T]`, it represents `List[T]`, but not
+    # `List[Integer]` where `Integer` is a concrete type. The language frontend
+    # MUST create type declarations for all types declared in the source program
+    # and MAY provide type declarations for types that are not declared but
+    # referenced by the source program. If a declaration is present in the source
+    # program, the field `IS_EXTERNAL` is set to `false`. Otherwise, it is set to
+    # `true`. The `FULL_NAME` field specifies the type's fully-qualified name,
+    # including information about the namespace it is contained in if applicable,
+    # the name field is the type's short name. Line and column number information
+    # is specified in the optional fields `LINE_NUMBER`, `COLUMN_NUMBER`,
+    # `LINE_NUMBER_END`, and `COLUMN_NUMBER_END` and the name of the source file
+    # is specified in `FILENAME`. Base types can be specified via the
+    # `INHERITS_FROM_TYPE_FULL_NAME` list, where each entry contains the fully-
+    # qualified name of a base type. If the type is known to be an alias of
+    # another type (as for example introduced via the C `typedef` statement), the
+    # name of the alias is stored in `ALIAS_TYPE_FULL_NAME`. Finally, the fully
+    # qualified name of the program constructs that the type declaration is
+    # immediately contained in is stored in the `AST_PARENT_FULL_NAME` field and
+    # its type is indicated in the `AST_PARENT_TYPE` field to be one of `METHOD`,
+    # `TYPE_DECL` or `NAMESPACE_BLOCK`.
     TYPE_DECL = 46
+    # This node represents a formal type parameter, that is, the type parameter
+    # as given in a type-parametrized method or type declaration. Examples for
+    # languages that support type parameters are Java (via Generics) and C++ (via
+    # templates). Apart from the standard fields of AST nodes, the type parameter
+    # carries only a `NAME` field that holds the parameters name.
     TYPE_PARAMETER = 47
+    # An (actual) type argument as used to instantiate a parametrized type, in
+    # the same way an (actual) arguments provides concrete values for a parameter
+    # at method call sites. As it true for arguments, the method is not expected
+    # to  interpret the type argument. It MUST however store its code in the
+    # `CODE` field.
     TYPE_ARGUMENT = 48
+    # A literal value assigned to an ANNOTATION_PARAMETER
     ANNOTATION_LITERAL = 49
+    # This node type represent a configuration file, where `NAME` is the name of
+    # the file and `content` is its content. The exact representation of the name
+    # is left undefined and can be chosen as required by consumers of the
+    # corresponding configuration files.
     CONFIG_FILE = 50
+    # `BINDING` nodes represent name-signature pairs that can be resolved at a
+    # type declaration (`TYPE_DECL`). They are connected to `TYPE_DECL` nodes via
+    # incoming `BINDS` edges. The bound method is either associated with an
+    # outgoing `REF` edge to a `METHOD` or with the `METHOD_FULL_NAME` property.
+    # The `REF` edge if present has priority.
     BINDING = 146
+    # This node contains an arbitrary node and an associated tag node.
     TAG_NODE_PAIR = 208
+    # Finding nodes may be used to store analysis results in the graph that are
+    # to be exposed to an end-user, e.g., information about potential
+    # vulnerabilities or dangerous programming practices. A Finding node may
+    # contain an abitrary list of key value pairs that characterize the finding,
+    # as well as a list of nodes that serve as evidence for the finding.
     FINDING = 214
+    # This node represents a key value pair, where both the key and the value are
+    # strings.
     KEY_VALUE_PAIR = 217
+    # This field represents a (language-dependent) modifier such as `static`,
+    # `private` or `public`. Unlike most other AST nodes, it is NOT an
+    # expression, that is, it cannot be evaluated and cannot be passed as an
+    # argument in function calls.
     MODIFIER = 300
+    # This node represents a reference to a method/function/procedure as it
+    # appears when a method is passed as an argument in a call. The
+    # `METHOD_FULL_NAME` field holds the fully-qualified name of the referenced
+    # method and the `TYPE_FULL_NAME` holds its fully-qualified type name.
     METHOD_REF = 333
+    # Represents the binding of a LOCAL or METHOD_PARAMETER_IN into the closure
+    # of a method
     CLOSURE_BINDING = 334
+    # Reference to a type/class
     TYPE_REF = 335
+    # In addition to the `CONTROL_STRUCTURE_TYPE` field, the `PARSER_TYPE_NAME`
+    # field MAY be used by frontends to store the name of the control structure
+    # as emitted by the parser or disassembler, however, the value of this field
+    # is not relevant for construction of the control flow layer.
     CONTROL_STRUCTURE = 339
+    # A jump target is any location in the code that has been specifically marked
+    # as the target of a jump, e.g., via a label. The `NAME` field holds the name
+    # of the label while the `PARSER_TYPE_NAME` field holds the name of language
+    # construct that this jump target is created from, e.g., "Label".
     JUMP_TARGET = 340
+    # A jump label specifies the label and thus the JUMP_TARGET of control
+    # structures BREAK and CONTINUE. The `NAME` field holds the name of the label
+    # while the `PARSER_TYPE_NAME` field holds the name of language construct
+    # that this jump label is created from, e.g., "Label".
     JUMP_LABEL = 341
+    # This node represents a DOM node used in template languages, e.g., JSX/TSX
     TEMPLATE_DOM = 417
+    # A source code comment
     COMMENT = 511
+    # This node represents the field accessed in a field access, e.g., in `a.b`,
+    # it represents `b`. The field name as it occurs in the code is stored in the
+    # `CODE` field. This may mean that the `CODE` field holds an expression. The
+    # `CANONICAL_NAME` field MAY contain the same value is the `CODE` field but
+    # SHOULD contain the normalized name that results from evaluating `CODE` as
+    # an expression if such an evaluation is possible for the language frontend.
+    # The objective is to store an identifier in `CANONICAL_NAME` that is the
+    # same for two nodes iff they refer to the same field, regardless of whether
+    # they use the same expression to reference it.
     FIELD_IDENTIFIER = 2001081
 
 
@@ -374,8 +620,21 @@ class CpgStructEdgeEdgeType(betterproto.Enum):
     IS_CALL_FOR_IMPORT = 23664
 
 
+class UsageSliceLabelType(betterproto.Enum):
+    ANY = 0
+    LOCAL = 1
+    LITERAL = 2
+    PARAM = 3
+    CALL = 4
+    IDENTIFIER = 5
+    TYPE_REF = 6
+    UNKNOWN = 10
+
+
 @dataclass
 class PropertyValue(betterproto.Message):
+    """Message to store the property values such as string or int values"""
+
     string_value: str = betterproto.string_field(1, group="value")
     bool_value: bool = betterproto.bool_field(2, group="value")
     int_value: int = betterproto.int32_field(3, group="value")
@@ -429,6 +688,21 @@ class DoubleList(betterproto.Message):
 
 @dataclass
 class CpgStruct(betterproto.Message):
+    """
+    * This is the CORE structure that represents a Code Property Graph for the
+    given language This structure must be serialized as bytes and stored in a
+    zip file (such as app.atom) with the name "cpg.proto" Example code snippet
+    in Python ```python atom_struct = atom.CpgStruct(node=[method]) with
+    ZipFile(file_name, "w") as zip_file:     zip_file.writestr("cpg.proto",
+    bytes(atom_struct)) ``` Example code snippet in TypeScript ```typescript
+    const methodFullName = new atom.CpgStruct.Node.Property({  name:
+    atom.NodePropertyName.FULL_NAME,  value: new atom.PropertyValue({
+    string_value: "main" }), }); const method = new atom.CpgStruct.Node({
+    key: 1,   type: atom.NodeType.METHOD,   property: [methodFullName], });
+    const atomStruct = new atom.CpgStruct({ node: [method] }); const
+    serializedBytes = atomStruct.serialize(); ```
+    """
+
     node: List["CpgStructNode"] = betterproto.message_field(1)
     edge: List["CpgStructEdge"] = betterproto.message_field(2)
 
@@ -436,7 +710,7 @@ class CpgStruct(betterproto.Message):
 @dataclass
 class CpgStructNode(betterproto.Message):
     key: int = betterproto.int64_field(1)
-    type: "CpgStructNodeNodeType" = betterproto.enum_field(2)
+    type: "NodeType" = betterproto.enum_field(2)
     property: List["CpgStructNodeProperty"] = betterproto.message_field(3)
 
 
@@ -450,6 +724,8 @@ class CpgStructNodeProperty(betterproto.Message):
 
 @dataclass
 class CpgStructEdge(betterproto.Message):
+    """Represents a directed edge of a graph"""
+
     # Source node.
     src: int = betterproto.int64_field(1)
     # Destination node.
@@ -553,3 +829,248 @@ class DiffGraphEntry(betterproto.Message):
     remove_edge_property: "DiffGraphRemoveEdgeProperty" = betterproto.message_field(
         8, group="value"
     )
+
+
+@dataclass
+class UsageSlice(betterproto.Message):
+    """
+    * The usages slice describes how a variable interacts within its procedure.
+    This is perhaps a more "descriptive" slice in some ways. The variables are
+    locals and parameters and the referencing identifiers are tracked to find
+    what the variable calls and what calls it forms an argument of. There are
+    two lists. There is a list of MethodUsageSlice with key "objectSlices" and
+    a list of UserDefinedTypes with key "userDefinedTypes"
+    """
+
+    object_slices: List["UsageSliceMethodUsageSlice"] = betterproto.message_field(1)
+    user_defined_types: List["UsageSliceUserDefinedTypes"] = betterproto.message_field(
+        2
+    )
+
+
+@dataclass
+class UsageSliceTargetObj(betterproto.Message):
+    """
+    Represents a source of data-generation, i.e., where data is defined and can
+    be assigned to some variable or used in an argument.
+    """
+
+    # variable or parameter name
+    name: str = betterproto.string_field(1)
+    # Fullname of the data type
+    type_full_name: str = betterproto.string_field(2)
+    # Position of the parameter or argument
+    position: int = betterproto.uint32_field(3)
+    # Line number in the file
+    line_number: int = betterproto.uint32_field(4)
+    # Column number
+    column_number: int = betterproto.uint32_field(5)
+    label: "UsageSliceLabelType" = betterproto.enum_field(6)
+
+
+@dataclass
+class UsageSliceDefinedBy(betterproto.Message):
+    """Places where the given symbol is defined"""
+
+    # variable or parameter name
+    name: str = betterproto.string_field(1)
+    # Fullname of the data type
+    type_full_name: str = betterproto.string_field(2)
+    # Method name
+    resolved_method: str = betterproto.string_field(3)
+    # Position
+    position: int = betterproto.uint32_field(4)
+    # Line number
+    line_number: int = betterproto.uint32_field(5)
+    # Column number
+    column_number: int = betterproto.uint32_field(6)
+    # Label describing the resolved method or position
+    label: str = betterproto.string_field(7)
+
+
+@dataclass
+class UsageSliceInvokedCalls(betterproto.Message):
+    """The calls this object is observed to call."""
+
+    # Call method name
+    call_name: str = betterproto.string_field(1)
+    # Full name of the resolved method
+    resolved_method: str = betterproto.string_field(2)
+    # Types of the parameters
+    param_types: List[str] = betterproto.string_field(3)
+    # Return type
+    return_type: str = betterproto.string_field(4)
+    # Line number
+    line_number: int = betterproto.uint32_field(5)
+    # Column number
+    column_number: int = betterproto.uint32_field(6)
+
+
+@dataclass
+class UsageSliceArgToCalls(betterproto.Message):
+    """The calls this object is observed to be an argument of."""
+
+    # Call method name
+    call_name: str = betterproto.string_field(1)
+    # Full name of the resolved method
+    resolved_method: str = betterproto.string_field(2)
+    # Types of the parameters
+    param_types: List[str] = betterproto.string_field(3)
+    # Return type
+    return_type: str = betterproto.string_field(4)
+    # Argument position
+    position: int = betterproto.uint32_field(5)
+    # Line number
+    line_number: int = betterproto.uint32_field(6)
+    # Column number
+    column_number: int = betterproto.uint32_field(7)
+
+
+@dataclass
+class UsageSliceObjectUsageSlice(betterproto.Message):
+    """Describes where and how the given external object/type is used"""
+
+    target_obj: "UsageSliceTargetObj" = betterproto.message_field(1)
+    defined_by: "UsageSliceDefinedBy" = betterproto.message_field(2)
+    invoked_calls: List["UsageSliceInvokedCalls"] = betterproto.message_field(3)
+    arg_to_calls: List["UsageSliceArgToCalls"] = betterproto.message_field(4)
+
+
+@dataclass
+class UsageSliceMethodUsageSlice(betterproto.Message):
+    """
+    Packages the object usage slices along with location and an optional method
+    source code.
+    """
+
+    # Raw source code of the method
+    code: str = betterproto.string_field(1)
+    # Method full name
+    full_name: str = betterproto.string_field(2)
+    # File name
+    file_name: str = betterproto.string_field(3)
+    # Line number
+    line_number: int = betterproto.uint32_field(4)
+    # Column number
+    column_number: int = betterproto.uint32_field(5)
+    usages: List["UsageSliceObjectUsageSlice"] = betterproto.message_field(6)
+
+
+@dataclass
+class UsageSliceFields(betterproto.Message):
+    """
+    Represents a local transfer of data via aliasing. The data defined is via
+    some alias.
+    """
+
+    # Name of the local variable
+    name: str = betterproto.string_field(1)
+    # Full name of the type
+    type_full_name: str = betterproto.string_field(2)
+    # Line number
+    line_number: int = betterproto.uint32_field(3)
+    # Column number
+    column_number: int = betterproto.uint32_field(4)
+    # Type of the definition. Usually LOCAL
+    label: "UsageSliceLabelType" = betterproto.enum_field(5)
+
+
+@dataclass
+class UsageSliceProcedures(betterproto.Message):
+    """Details related to an observed call."""
+
+    # Name of the method or call
+    call_name: str = betterproto.string_field(1)
+    # Full name of the resolved method
+    resolved_method: str = betterproto.string_field(2)
+    # Types of the parameters
+    param_types: List[str] = betterproto.string_field(3)
+    # Type of the return value
+    return_type: str = betterproto.string_field(4)
+    # Line number
+    line_number: int = betterproto.uint32_field(5)
+    # Column number
+    column_number: int = betterproto.uint32_field(6)
+
+
+@dataclass
+class UsageSliceUserDefinedTypes(betterproto.Message):
+    """Describes custom types defined within the application."""
+
+    # Name of the type
+    name: str = betterproto.string_field(1)
+    fields: List["UsageSliceFields"] = betterproto.message_field(2)
+    procedures: List["UsageSliceProcedures"] = betterproto.message_field(3)
+    # File name
+    file_name: str = betterproto.string_field(4)
+    # Line number
+    line_number: int = betterproto.uint32_field(5)
+    # Column number
+    column_number: int = betterproto.uint32_field(6)
+
+
+@dataclass
+class DataFlowSlice(betterproto.Message):
+    """
+    * DataFlow slices offers a list of nodes and edges exported from data
+    dependency graph
+    """
+
+    graph: "DataFlowSliceGraph" = betterproto.message_field(1)
+    path: "DataFlowSlicePaths" = betterproto.message_field(2)
+
+
+@dataclass
+class DataFlowSliceNodes(betterproto.Message):
+    # Id of the node
+    id: int = betterproto.uint32_field(1)
+    # Label
+    label: "NodeType" = betterproto.enum_field(2)
+    # Name of the call or identifier or parameter
+    name: str = betterproto.string_field(3)
+    # Full name of the call
+    full_name: str = betterproto.string_field(4)
+    # Method signature of the call
+    signature: str = betterproto.string_field(5)
+    # Boolean to indicate if this call belongs to an external method
+    is_external: bool = betterproto.bool_field(6)
+    # Source code
+    code: str = betterproto.string_field(7)
+    # Type full name
+    type_full_name: str = betterproto.string_field(8)
+    # Parent method
+    parent_method: str = betterproto.string_field(9)
+    # Parent filename
+    parent_file: str = betterproto.string_field(10)
+    # Line number
+    line_number: int = betterproto.uint32_field(11)
+    # Column number
+    column_number: int = betterproto.uint32_field(12)
+
+
+@dataclass
+class DataFlowSliceEdges(betterproto.Message):
+    # Source node id
+    src: int = betterproto.uint32_field(1)
+    # Destination node id
+    dst: int = betterproto.uint32_field(2)
+    # Edge type
+    label: "CpgStructEdgeEdgeType" = betterproto.enum_field(3)
+
+
+@dataclass
+class DataFlowSliceFlows(betterproto.Message):
+    # Node id
+    id: List[int] = betterproto.uint32_field(1)
+
+
+@dataclass
+class DataFlowSlicePaths(betterproto.Message):
+    # Flows from source to sink
+    flows: List["DataFlowSliceFlows"] = betterproto.message_field(1)
+
+
+@dataclass
+class DataFlowSliceGraph(betterproto.Message):
+    nodes: List["DataFlowSliceNodes"] = betterproto.message_field(1)
+    edges: List["DataFlowSliceEdges"] = betterproto.message_field(2)

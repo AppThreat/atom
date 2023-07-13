@@ -1,6 +1,6 @@
 package io.appthreat.atom.dataflows
 
-import io.joern.dataflowengineoss.slicing.{DataFlowSlice, SliceNode}
+import io.appthreat.atom.slicing.{DataFlowSlice, SliceNode}
 import io.shiftleft.codepropertygraph.generated.EdgeTypes
 
 import scala.collection.mutable

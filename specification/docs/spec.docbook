@@ -1,0 +1,3595 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article>
+  <title>Protocol Documentation</title>
+  
+  <section>
+    <title>atom.proto</title>
+    <para></para>
+    
+    <section id="atom.AdditionalEdgeProperty">
+      <title>AdditionalEdgeProperty</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>AdditionalEdgeProperty</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>edge_id</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>property</entry>
+              <entry><link linkend="atom.CpgStruct.Edge.Property">CpgStruct.Edge.Property</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>out_node_key</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>in_node_key</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>edge_type</entry>
+              <entry><link linkend="atom.CpgStruct.Edge.EdgeType">CpgStruct.Edge.EdgeType</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.AdditionalNodeProperty">
+      <title>AdditionalNodeProperty</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>AdditionalNodeProperty</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>node_id</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>property</entry>
+              <entry><link linkend="atom.CpgStruct.Node.Property">CpgStruct.Node.Property</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.BoolList">
+      <title>BoolList</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>BoolList</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>values</entry>
+              <entry><link linkend="bool">bool</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.ContainedRefs">
+      <title>ContainedRefs</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>ContainedRefs</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>local_name</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>refs</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.CpgOverlay">
+      <title>CpgOverlay</title>
+      <para>Overlays can be stacked onto each other, therefor their node ids must be globally unique.</para>
+      
+      <table frame="all">
+        <title><classname>CpgOverlay</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>node</entry>
+              <entry><link linkend="atom.CpgStruct.Node">CpgStruct.Node</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>edge</entry>
+              <entry><link linkend="atom.CpgStruct.Edge">CpgStruct.Edge</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>node_property</entry>
+              <entry><link linkend="atom.AdditionalNodeProperty">AdditionalNodeProperty</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>edge_property</entry>
+              <entry><link linkend="atom.AdditionalEdgeProperty">AdditionalEdgeProperty</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.CpgStruct">
+      <title>CpgStruct</title>
+      <para>This is the CORE structure that represents a Code Property Graph for the given language</para><para>This structure must be serialized as bytes and stored in a zip file (such as app.atom) with the name "cpg.proto"</para><para>Example code snippet in Python</para><para>```python</para><para>atom_struct = atom.CpgStruct(node=[method])</para><para>with ZipFile(file_name, "w") as zip_file:</para><para>zip_file.writestr("cpg.proto", bytes(atom_struct))</para><para>```</para><para>Example code snippet in TypeScript</para><para>```typescript</para><para>const methodFullName = new atom.CpgStruct.Node.Property({</para><para>name: atom.NodePropertyName.FULL_NAME,</para><para>value: new atom.PropertyValue({ string_value: "main" }),</para><para>});</para><para>const method = new atom.CpgStruct.Node({</para><para>key: 1,</para><para>type: atom.NodeType.METHOD,</para><para>property: [methodFullName],</para><para>});</para><para>const atomStruct = new atom.CpgStruct({ node: [method] });</para><para>const serializedBytes = atomStruct.serialize();</para><para>```</para>
+      
+      <table frame="all">
+        <title><classname>CpgStruct</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>node</entry>
+              <entry><link linkend="atom.CpgStruct.Node">CpgStruct.Node</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>edge</entry>
+              <entry><link linkend="atom.CpgStruct.Edge">CpgStruct.Edge</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.CpgStruct.Edge">
+      <title>CpgStruct.Edge</title>
+      <para>Represents a directed edge of a graph</para>
+      
+      <table frame="all">
+        <title><classname>CpgStruct.Edge</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>src</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para>Source node.</para></entry>
+            </row>
+            
+            <row>
+              <entry>dst</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para>Destination node.</para></entry>
+            </row>
+            
+            <row>
+              <entry>type</entry>
+              <entry><link linkend="atom.CpgStruct.Edge.EdgeType">CpgStruct.Edge.EdgeType</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>property</entry>
+              <entry><link linkend="atom.CpgStruct.Edge.Property">CpgStruct.Edge.Property</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.CpgStruct.Edge.Property">
+      <title>CpgStruct.Edge.Property</title>
+      <para>Edge properties.</para>
+      
+      <table frame="all">
+        <title><classname>CpgStruct.Edge.Property</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>name</entry>
+              <entry><link linkend="atom.EdgePropertyName">EdgePropertyName</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>value</entry>
+              <entry><link linkend="atom.PropertyValue">PropertyValue</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.CpgStruct.Node">
+      <title>CpgStruct.Node</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>CpgStruct.Node</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>key</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>type</entry>
+              <entry><link linkend="atom.NodeType">NodeType</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>property</entry>
+              <entry><link linkend="atom.CpgStruct.Node.Property">CpgStruct.Node.Property</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.CpgStruct.Node.Property">
+      <title>CpgStruct.Node.Property</title>
+      <para>Node properties.</para>
+      
+      <table frame="all">
+        <title><classname>CpgStruct.Node.Property</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>name</entry>
+              <entry><link linkend="atom.NodePropertyName">NodePropertyName</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>value</entry>
+              <entry><link linkend="atom.PropertyValue">PropertyValue</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DataFlowSlice">
+      <title>DataFlowSlice</title>
+      <para>DataFlow slices offers a list of nodes and edges exported from data dependency graph</para>
+      
+      <table frame="all">
+        <title><classname>DataFlowSlice</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>graph</entry>
+              <entry><link linkend="atom.DataFlowSlice.Graph">DataFlowSlice.Graph</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>path</entry>
+              <entry><link linkend="atom.DataFlowSlice.Paths">DataFlowSlice.Paths</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DataFlowSlice.Edges">
+      <title>DataFlowSlice.Edges</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>DataFlowSlice.Edges</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>src</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Source node id</para></entry>
+            </row>
+            
+            <row>
+              <entry>dst</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Destination node id</para></entry>
+            </row>
+            
+            <row>
+              <entry>label</entry>
+              <entry><link linkend="atom.CpgStruct.Edge.EdgeType">CpgStruct.Edge.EdgeType</link></entry>
+              <entry></entry>
+              <entry><para>Edge type</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DataFlowSlice.Flows">
+      <title>DataFlowSlice.Flows</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>DataFlowSlice.Flows</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>id</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry>repeated</entry>
+              <entry><para>Node id</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DataFlowSlice.Graph">
+      <title>DataFlowSlice.Graph</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>DataFlowSlice.Graph</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>nodes</entry>
+              <entry><link linkend="atom.DataFlowSlice.Nodes">DataFlowSlice.Nodes</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>edges</entry>
+              <entry><link linkend="atom.DataFlowSlice.Edges">DataFlowSlice.Edges</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DataFlowSlice.Nodes">
+      <title>DataFlowSlice.Nodes</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>DataFlowSlice.Nodes</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>id</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Id of the node</para></entry>
+            </row>
+            
+            <row>
+              <entry>label</entry>
+              <entry><link linkend="atom.NodeType">NodeType</link></entry>
+              <entry></entry>
+              <entry><para>Label</para></entry>
+            </row>
+            
+            <row>
+              <entry>name</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Name of the call or identifier or parameter</para></entry>
+            </row>
+            
+            <row>
+              <entry>fullName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Full name of the call</para></entry>
+            </row>
+            
+            <row>
+              <entry>signature</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Method signature of the call</para></entry>
+            </row>
+            
+            <row>
+              <entry>isExternal</entry>
+              <entry><link linkend="bool">bool</link></entry>
+              <entry></entry>
+              <entry><para>Boolean to indicate if this call belongs to an external method</para></entry>
+            </row>
+            
+            <row>
+              <entry>code</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Source code</para></entry>
+            </row>
+            
+            <row>
+              <entry>typeFullName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Type full name</para></entry>
+            </row>
+            
+            <row>
+              <entry>parentMethod</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Parent method</para></entry>
+            </row>
+            
+            <row>
+              <entry>parentFile</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Parent filename</para></entry>
+            </row>
+            
+            <row>
+              <entry>lineNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Line number</para></entry>
+            </row>
+            
+            <row>
+              <entry>columnNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Column number</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DataFlowSlice.Paths">
+      <title>DataFlowSlice.Paths</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>DataFlowSlice.Paths</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>flows</entry>
+              <entry><link linkend="atom.DataFlowSlice.Flows">DataFlowSlice.Flows</link></entry>
+              <entry>repeated</entry>
+              <entry><para>Flows from source to sink</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DiffGraph">
+      <title>DiffGraph</title>
+      <para>DiffGraphs can be created independently of each other and therefor when _adding_ nodes|edges,</para><para>each DiffGraph has its own ID space. However, when removing nodes|edges, the nodeIds refer to the</para><para>globally unique graph id space.</para>
+      
+      <table frame="all">
+        <title><classname>DiffGraph</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>entries</entry>
+              <entry><link linkend="atom.DiffGraph.Entry">DiffGraph.Entry</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DiffGraph.Entry">
+      <title>DiffGraph.Entry</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>DiffGraph.Entry</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>node</entry>
+              <entry><link linkend="atom.CpgStruct.Node">CpgStruct.Node</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>edge</entry>
+              <entry><link linkend="atom.CpgStruct.Edge">CpgStruct.Edge</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>node_property</entry>
+              <entry><link linkend="atom.AdditionalNodeProperty">AdditionalNodeProperty</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>edge_property</entry>
+              <entry><link linkend="atom.AdditionalEdgeProperty">AdditionalEdgeProperty</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>remove_node</entry>
+              <entry><link linkend="atom.DiffGraph.RemoveNode">DiffGraph.RemoveNode</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>remove_node_property</entry>
+              <entry><link linkend="atom.DiffGraph.RemoveNodeProperty">DiffGraph.RemoveNodeProperty</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>remove_edge</entry>
+              <entry><link linkend="atom.DiffGraph.RemoveEdge">DiffGraph.RemoveEdge</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>remove_edge_property</entry>
+              <entry><link linkend="atom.DiffGraph.RemoveEdgeProperty">DiffGraph.RemoveEdgeProperty</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DiffGraph.RemoveEdge">
+      <title>DiffGraph.RemoveEdge</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>DiffGraph.RemoveEdge</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>out_node_key</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>in_node_key</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>edge_type</entry>
+              <entry><link linkend="atom.CpgStruct.Edge.EdgeType">CpgStruct.Edge.EdgeType</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>propertiesHash</entry>
+              <entry><link linkend="bytes">bytes</link></entry>
+              <entry></entry>
+              <entry><para>used to identify edges (since our edges don't have ids)</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DiffGraph.RemoveEdgeProperty">
+      <title>DiffGraph.RemoveEdgeProperty</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>DiffGraph.RemoveEdgeProperty</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>out_node_key</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>in_node_key</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>edge_type</entry>
+              <entry><link linkend="atom.CpgStruct.Edge.EdgeType">CpgStruct.Edge.EdgeType</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>propertiesHash</entry>
+              <entry><link linkend="bytes">bytes</link></entry>
+              <entry></entry>
+              <entry><para>used to identify edges (since our edges don't have ids)</para></entry>
+            </row>
+            
+            <row>
+              <entry>property_name</entry>
+              <entry><link linkend="atom.EdgePropertyName">EdgePropertyName</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DiffGraph.RemoveNode">
+      <title>DiffGraph.RemoveNode</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>DiffGraph.RemoveNode</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>key</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DiffGraph.RemoveNodeProperty">
+      <title>DiffGraph.RemoveNodeProperty</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>DiffGraph.RemoveNodeProperty</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>key</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>name</entry>
+              <entry><link linkend="atom.NodePropertyName">NodePropertyName</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>local_name</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.DoubleList">
+      <title>DoubleList</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>DoubleList</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>values</entry>
+              <entry><link linkend="double">double</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.FloatList">
+      <title>FloatList</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>FloatList</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>values</entry>
+              <entry><link linkend="float">float</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.IntList">
+      <title>IntList</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>IntList</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>values</entry>
+              <entry><link linkend="int32">int32</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.LongList">
+      <title>LongList</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>LongList</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>values</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.PropertyValue">
+      <title>PropertyValue</title>
+      <para>Message to store the property values such as string or int values</para>
+      
+      <table frame="all">
+        <title><classname>PropertyValue</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>string_value</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>bool_value</entry>
+              <entry><link linkend="bool">bool</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>int_value</entry>
+              <entry><link linkend="int32">int32</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>long_value</entry>
+              <entry><link linkend="int64">int64</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>float_value</entry>
+              <entry><link linkend="float">float</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>double_value</entry>
+              <entry><link linkend="double">double</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>string_list</entry>
+              <entry><link linkend="atom.StringList">StringList</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>bool_list</entry>
+              <entry><link linkend="atom.BoolList">BoolList</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>int_list</entry>
+              <entry><link linkend="atom.IntList">IntList</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>long_list</entry>
+              <entry><link linkend="atom.LongList">LongList</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>float_list</entry>
+              <entry><link linkend="atom.FloatList">FloatList</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>double_list</entry>
+              <entry><link linkend="atom.DoubleList">DoubleList</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>contained_refs</entry>
+              <entry><link linkend="atom.ContainedRefs">ContainedRefs</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.StringList">
+      <title>StringList</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>StringList</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>values</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.UsageSlice">
+      <title>UsageSlice</title>
+      <para>The usages slice describes how a variable interacts within its procedure. This is perhaps a more "descriptive" slice in some ways. The variables are locals and parameters and the referencing identifiers are tracked to find what the variable calls and what calls it forms an argument of.</para><para>There are two lists. There is a list of MethodUsageSlice with key "objectSlices" and a list of UserDefinedTypes with key "userDefinedTypes"</para>
+      
+      <table frame="all">
+        <title><classname>UsageSlice</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>objectSlices</entry>
+              <entry><link linkend="atom.UsageSlice.MethodUsageSlice">UsageSlice.MethodUsageSlice</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>userDefinedTypes</entry>
+              <entry><link linkend="atom.UsageSlice.UserDefinedTypes">UsageSlice.UserDefinedTypes</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.UsageSlice.ArgToCalls">
+      <title>UsageSlice.ArgToCalls</title>
+      <para>The calls this object is observed to be an argument of.</para>
+      
+      <table frame="all">
+        <title><classname>UsageSlice.ArgToCalls</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>callName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Call method name</para></entry>
+            </row>
+            
+            <row>
+              <entry>resolvedMethod</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Full name of the resolved method</para></entry>
+            </row>
+            
+            <row>
+              <entry>paramTypes</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry>repeated</entry>
+              <entry><para>Types of the parameters</para></entry>
+            </row>
+            
+            <row>
+              <entry>returnType</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Return type</para></entry>
+            </row>
+            
+            <row>
+              <entry>position</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Argument position</para></entry>
+            </row>
+            
+            <row>
+              <entry>lineNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Line number</para></entry>
+            </row>
+            
+            <row>
+              <entry>columnNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Column number</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.UsageSlice.DefinedBy">
+      <title>UsageSlice.DefinedBy</title>
+      <para>Places where the given symbol is defined</para>
+      
+      <table frame="all">
+        <title><classname>UsageSlice.DefinedBy</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>name</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>variable or parameter name</para></entry>
+            </row>
+            
+            <row>
+              <entry>typeFullName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Fullname of the data type</para></entry>
+            </row>
+            
+            <row>
+              <entry>resolvedMethod</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Method name</para></entry>
+            </row>
+            
+            <row>
+              <entry>position</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Position</para></entry>
+            </row>
+            
+            <row>
+              <entry>lineNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Line number</para></entry>
+            </row>
+            
+            <row>
+              <entry>columnNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Column number</para></entry>
+            </row>
+            
+            <row>
+              <entry>label</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Label describing the resolved method or position</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.UsageSlice.Fields">
+      <title>UsageSlice.Fields</title>
+      <para>Represents a local transfer of data via aliasing. The data defined is via some alias.</para>
+      
+      <table frame="all">
+        <title><classname>UsageSlice.Fields</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>name</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Name of the local variable</para></entry>
+            </row>
+            
+            <row>
+              <entry>typeFullName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Full name of the type</para></entry>
+            </row>
+            
+            <row>
+              <entry>lineNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Line number</para></entry>
+            </row>
+            
+            <row>
+              <entry>columnNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Column number</para></entry>
+            </row>
+            
+            <row>
+              <entry>label</entry>
+              <entry><link linkend="atom.UsageSlice.LabelType">UsageSlice.LabelType</link></entry>
+              <entry></entry>
+              <entry><para>Type of the definition. Usually LOCAL</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.UsageSlice.InvokedCalls">
+      <title>UsageSlice.InvokedCalls</title>
+      <para>The calls this object is observed to call.</para>
+      
+      <table frame="all">
+        <title><classname>UsageSlice.InvokedCalls</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>callName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Call method name</para></entry>
+            </row>
+            
+            <row>
+              <entry>resolvedMethod</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Full name of the resolved method</para></entry>
+            </row>
+            
+            <row>
+              <entry>paramTypes</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry>repeated</entry>
+              <entry><para>Types of the parameters</para></entry>
+            </row>
+            
+            <row>
+              <entry>returnType</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Return type</para></entry>
+            </row>
+            
+            <row>
+              <entry>lineNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Line number</para></entry>
+            </row>
+            
+            <row>
+              <entry>columnNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Column number</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.UsageSlice.MethodUsageSlice">
+      <title>UsageSlice.MethodUsageSlice</title>
+      <para>Packages the object usage slices along with location and an optional method source code.</para>
+      
+      <table frame="all">
+        <title><classname>UsageSlice.MethodUsageSlice</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>code</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Raw source code of the method</para></entry>
+            </row>
+            
+            <row>
+              <entry>fullName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Method full name</para></entry>
+            </row>
+            
+            <row>
+              <entry>fileName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>File name</para></entry>
+            </row>
+            
+            <row>
+              <entry>lineNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Line number</para></entry>
+            </row>
+            
+            <row>
+              <entry>columnNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Column number</para></entry>
+            </row>
+            
+            <row>
+              <entry>usages</entry>
+              <entry><link linkend="atom.UsageSlice.ObjectUsageSlice">UsageSlice.ObjectUsageSlice</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.UsageSlice.ObjectUsageSlice">
+      <title>UsageSlice.ObjectUsageSlice</title>
+      <para>Describes where and how the given external object/type is used</para>
+      
+      <table frame="all">
+        <title><classname>UsageSlice.ObjectUsageSlice</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>targetObj</entry>
+              <entry><link linkend="atom.UsageSlice.TargetObj">UsageSlice.TargetObj</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>definedBy</entry>
+              <entry><link linkend="atom.UsageSlice.DefinedBy">UsageSlice.DefinedBy</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>invokedCalls</entry>
+              <entry><link linkend="atom.UsageSlice.InvokedCalls">UsageSlice.InvokedCalls</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>argToCalls</entry>
+              <entry><link linkend="atom.UsageSlice.ArgToCalls">UsageSlice.ArgToCalls</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.UsageSlice.Procedures">
+      <title>UsageSlice.Procedures</title>
+      <para>Details related to an observed call.</para>
+      
+      <table frame="all">
+        <title><classname>UsageSlice.Procedures</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>callName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Name of the method or call</para></entry>
+            </row>
+            
+            <row>
+              <entry>resolvedMethod</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Full name of the resolved method</para></entry>
+            </row>
+            
+            <row>
+              <entry>paramTypes</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry>repeated</entry>
+              <entry><para>Types of the parameters</para></entry>
+            </row>
+            
+            <row>
+              <entry>returnType</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Type of the return value</para></entry>
+            </row>
+            
+            <row>
+              <entry>lineNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Line number</para></entry>
+            </row>
+            
+            <row>
+              <entry>columnNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Column number</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.UsageSlice.TargetObj">
+      <title>UsageSlice.TargetObj</title>
+      <para>Represents a source of data-generation, i.e., where data is defined and can be assigned to some variable or used in an argument.</para>
+      
+      <table frame="all">
+        <title><classname>UsageSlice.TargetObj</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>name</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>variable or parameter name</para></entry>
+            </row>
+            
+            <row>
+              <entry>typeFullName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Fullname of the data type</para></entry>
+            </row>
+            
+            <row>
+              <entry>position</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Position of the parameter or argument</para></entry>
+            </row>
+            
+            <row>
+              <entry>lineNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Line number in the file</para></entry>
+            </row>
+            
+            <row>
+              <entry>columnNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Column number</para></entry>
+            </row>
+            
+            <row>
+              <entry>label</entry>
+              <entry><link linkend="atom.UsageSlice.LabelType">UsageSlice.LabelType</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.UsageSlice.UserDefinedTypes">
+      <title>UsageSlice.UserDefinedTypes</title>
+      <para>Describes custom types defined within the application.</para>
+      
+      <table frame="all">
+        <title><classname>UsageSlice.UserDefinedTypes</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>name</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Name of the type</para></entry>
+            </row>
+            
+            <row>
+              <entry>fields</entry>
+              <entry><link linkend="atom.UsageSlice.Fields">UsageSlice.Fields</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>procedures</entry>
+              <entry><link linkend="atom.UsageSlice.Procedures">UsageSlice.Procedures</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>fileName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>File name</para></entry>
+            </row>
+            
+            <row>
+              <entry>lineNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Line number</para></entry>
+            </row>
+            
+            <row>
+              <entry>columnNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Column number</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    
+    <section id="atom.CONTROL_STRUCTURE_TYPES">
+      <title>CONTROL_STRUCTURE_TYPES</title>
+      <para>Enum representing the control structure types</para>
+      <table frame="all">
+        <title><classname>CONTROL_STRUCTURE_TYPES</classname> Values</title>
+        <tgroup cols="3">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Name</entry>
+              <entry>Number</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>UNKNOWN_CONTROL_STRUCTURE_TYPE</entry>
+              <entry>0</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>BREAK</entry>
+              <entry>1</entry>
+              <entry><para>Represents a break statement. Labeled breaks are expected to have a JUMP_LABEL node AST child with ORDER 1</para></entry>
+            </row>
+            
+            <row>
+              <entry>CONTINUE</entry>
+              <entry>2</entry>
+              <entry><para>Represents a continue statement. Labeled continues are expected to have a JUMP_LABEL node AST child with ORDER 1</para></entry>
+            </row>
+            
+            <row>
+              <entry>WHILE</entry>
+              <entry>3</entry>
+              <entry><para>Represents a while statement</para></entry>
+            </row>
+            
+            <row>
+              <entry>DO</entry>
+              <entry>4</entry>
+              <entry><para>Represents a do statement</para></entry>
+            </row>
+            
+            <row>
+              <entry>FOR</entry>
+              <entry>5</entry>
+              <entry><para>Represents a for statement</para></entry>
+            </row>
+            
+            <row>
+              <entry>GOTO</entry>
+              <entry>6</entry>
+              <entry><para>Represents a goto statement</para></entry>
+            </row>
+            
+            <row>
+              <entry>IF</entry>
+              <entry>7</entry>
+              <entry><para>Represents an if statement</para></entry>
+            </row>
+            
+            <row>
+              <entry>ELSE</entry>
+              <entry>8</entry>
+              <entry><para>Represents an else statement</para></entry>
+            </row>
+            
+            <row>
+              <entry>SWITCH</entry>
+              <entry>9</entry>
+              <entry><para>Represents a switch statement</para></entry>
+            </row>
+            
+            <row>
+              <entry>TRY</entry>
+              <entry>10</entry>
+              <entry><para>Represents a try statement</para></entry>
+            </row>
+            
+            <row>
+              <entry>THROW</entry>
+              <entry>11</entry>
+              <entry><para>Represents a throw statement</para></entry>
+            </row>
+            
+            <row>
+              <entry>MATCH</entry>
+              <entry>12</entry>
+              <entry><para>Represents a match expression</para></entry>
+            </row>
+            
+            <row>
+              <entry>YIELD</entry>
+              <entry>13</entry>
+              <entry><para>Represents a yield expression</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section id="atom.CpgStruct.Edge.EdgeType">
+      <title>CpgStruct.Edge.EdgeType</title>
+      <para>Edge type.</para>
+      <table frame="all">
+        <title><classname>CpgStruct.Edge.EdgeType</classname> Values</title>
+        <tgroup cols="3">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Name</entry>
+              <entry>Number</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>UNKNOWN_EDGE_TYPE</entry>
+              <entry>0</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>AST</entry>
+              <entry>3</entry>
+              <entry><para>This edge connects a parent node to its child in the syntax tree.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CALL</entry>
+              <entry>6</entry>
+              <entry><para>This edge connects call sites, i.e., nodes with the type `CALL`, to the method node that represent the method they invoke. The frontend MAY create `CALL` edges but is not required to do so. Instead, of the `METHOD_FULL_NAME` field of the `CALL` node is set correctly, `CALL` edges are created automatically as the CPG is first loaded.</para></entry>
+            </row>
+            
+            <row>
+              <entry>REF</entry>
+              <entry>10</entry>
+              <entry><para>This edge indicates that the source node is an identifier that denotes access to the destination node. For example, an identifier may reference a local variable.</para></entry>
+            </row>
+            
+            <row>
+              <entry>TAGGED_BY</entry>
+              <entry>11</entry>
+              <entry><para>Edges from nodes to the tags they are tagged by.</para></entry>
+            </row>
+            
+            <row>
+              <entry>PARAMETER_LINK</entry>
+              <entry>12</entry>
+              <entry><para>This edge connects a method input parameter to the corresponding method output parameter.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CFG</entry>
+              <entry>19</entry>
+              <entry><para>This edge indicates control flow from the source to the destination node.</para></entry>
+            </row>
+            
+            <row>
+              <entry>EVAL_TYPE</entry>
+              <entry>21</entry>
+              <entry><para>This edge connects a node to its evaluation type.</para></entry>
+            </row>
+            
+            <row>
+              <entry>BINDS_TO</entry>
+              <entry>22</entry>
+              <entry><para>This edge connects type arguments to type parameters to indicate that the type argument is used to instantiate the type parameter.</para></entry>
+            </row>
+            
+            <row>
+              <entry>INHERITS_FROM</entry>
+              <entry>23</entry>
+              <entry><para>Inheritance relation between a type declaration and a type. This edge MUST NOT be created by the language frontend as it is automatically created from `INHERITS_FROM_TYPE_FULL_NAME` fields then the CPG is first loaded.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CONTAINS</entry>
+              <entry>28</entry>
+              <entry><para>This edge connects a node to the method that contains it.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CAPTURE</entry>
+              <entry>40</entry>
+              <entry><para>Represents the capturing of a variable into a closure</para></entry>
+            </row>
+            
+            <row>
+              <entry>CAPTURED_BY</entry>
+              <entry>41</entry>
+              <entry><para>Connection between a captured LOCAL and the corresponding CLOSURE_BINDING</para></entry>
+            </row>
+            
+            <row>
+              <entry>RECEIVER</entry>
+              <entry>55</entry>
+              <entry><para>Similar to `ARGUMENT` edges, `RECEIVER` edges connect call sites to their receiver arguments. A receiver argument is the object on which a method operates, that is, it is the expression that is assigned to the `this` pointer as control is transferred to the method.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CONDITION</entry>
+              <entry>56</entry>
+              <entry><para>The edge connects control structure nodes to the expressions that holds their conditions.</para></entry>
+            </row>
+            
+            <row>
+              <entry>REACHING_DEF</entry>
+              <entry>137</entry>
+              <entry><para>A reaching definition edge indicates that a variable produced at the source node reaches the destination node without being reassigned on the way. The `VARIABLE` property indicates which variable is propagated.</para></entry>
+            </row>
+            
+            <row>
+              <entry>ALIAS_OF</entry>
+              <entry>138</entry>
+              <entry><para>This edge represents an alias relation between a type declaration and a type. The language frontend MUST NOT create `ALIAS_OF` edges as they are created automatically based on `ALIAS_TYPE_FULL_NAME` fields when the CPG is first loaded.</para></entry>
+            </row>
+            
+            <row>
+              <entry>BINDS</entry>
+              <entry>155</entry>
+              <entry><para>This edge connects a type declaration (`TYPE_DECL`) with a binding node (`BINDING`) and indicates that the type declaration has the binding represented by the binding node, in other words, there is a (name, signature) pair that can be resolved for the type declaration as stored in the binding node.</para></entry>
+            </row>
+            
+            <row>
+              <entry>ARGUMENT</entry>
+              <entry>156</entry>
+              <entry><para>Argument edges connect call sites (node type `CALL`) to their arguments (node type `EXPRESSION`) as well as `RETURN` nodes to the expressions that return.</para></entry>
+            </row>
+            
+            <row>
+              <entry>SOURCE_FILE</entry>
+              <entry>157</entry>
+              <entry><para>This edge connects a node to the node that represents its source file. These edges MUST not be created by the language frontend but are automatically created based on `FILENAME` fields.</para></entry>
+            </row>
+            
+            <row>
+              <entry>DOMINATE</entry>
+              <entry>181</entry>
+              <entry><para>This edge indicates that the source node immediately dominates the destination node.</para></entry>
+            </row>
+            
+            <row>
+              <entry>POST_DOMINATE</entry>
+              <entry>182</entry>
+              <entry><para>This edge indicates that the source node immediately post dominates the destination node.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CDG</entry>
+              <entry>183</entry>
+              <entry><para>A CDG edge expresses that the destination node is control dependent on the source node.</para></entry>
+            </row>
+            
+            <row>
+              <entry>IMPORTS</entry>
+              <entry>23663</entry>
+              <entry><para>Edge from imports to dependencies</para></entry>
+            </row>
+            
+            <row>
+              <entry>IS_CALL_FOR_IMPORT</entry>
+              <entry>23664</entry>
+              <entry><para>Edge from CALL statement in the AST to the IMPORT. We use this edge to traverse from the logical representation of the IMPORT to the corresponding import statement in the AST.</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section id="atom.DispatchTypes">
+      <title>DispatchTypes</title>
+      <para>Enum representing the dispatch types</para>
+      <table frame="all">
+        <title><classname>DispatchTypes</classname> Values</title>
+        <tgroup cols="3">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Name</entry>
+              <entry>Number</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>UNKNOWN_DISPATCH_TYPE</entry>
+              <entry>0</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>STATIC_DISPATCH</entry>
+              <entry>1</entry>
+              <entry><para>For statically dispatched calls the call target is known before program execution</para></entry>
+            </row>
+            
+            <row>
+              <entry>DYNAMIC_DISPATCH</entry>
+              <entry>2</entry>
+              <entry><para>For dynamically dispatched calls the target is determined during runtime</para></entry>
+            </row>
+            
+            <row>
+              <entry>INLINED</entry>
+              <entry>3</entry>
+              <entry><para>For macro expansions, code is inlined.</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section id="atom.EdgePropertyName">
+      <title>EdgePropertyName</title>
+      <para>Enum for the name of an edge</para>
+      <table frame="all">
+        <title><classname>EdgePropertyName</classname> Values</title>
+        <tgroup cols="3">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Name</entry>
+              <entry>Number</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>UNKNOWN_EDGE_PROPERTY</entry>
+              <entry>0</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>VARIABLE</entry>
+              <entry>11</entry>
+              <entry><para>This edge property represents the variable propagated by a reaching definition edge.</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section id="atom.EvaluationStrategies">
+      <title>EvaluationStrategies</title>
+      <para>Enum representing the evaluation strategy of the underlying parameter or method or literal.</para>
+      <table frame="all">
+        <title><classname>EvaluationStrategies</classname> Values</title>
+        <tgroup cols="3">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Name</entry>
+              <entry>Number</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>UNKNOWN_EVALUATION_STRATEGY</entry>
+              <entry>0</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>BY_REFERENCE</entry>
+              <entry>1</entry>
+              <entry><para>A parameter or return of a function is passed by reference which means an address is used behind the scenes</para></entry>
+            </row>
+            
+            <row>
+              <entry>BY_SHARING</entry>
+              <entry>2</entry>
+              <entry><para>Only applicable to object parameter or return values. The pointer to the object is passed by value but the object itself is not copied and changes to it are thus propagated out of the method context</para></entry>
+            </row>
+            
+            <row>
+              <entry>BY_VALUE</entry>
+              <entry>3</entry>
+              <entry><para>A parameter or return of a function passed by value which means a flat copy is used</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section id="atom.LANGUAGES">
+      <title>LANGUAGES</title>
+      <para>Enum to represent the frontend language</para>
+      <table frame="all">
+        <title><classname>LANGUAGES</classname> Values</title>
+        <tgroup cols="3">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Name</entry>
+              <entry>Number</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>UNKNOWN_LANGUAGE</entry>
+              <entry>0</entry>
+              <entry><para>Unknown language</para></entry>
+            </row>
+            
+            <row>
+              <entry>JAVA</entry>
+              <entry>1</entry>
+              <entry><para>Java</para></entry>
+            </row>
+            
+            <row>
+              <entry>JAVASCRIPT</entry>
+              <entry>2</entry>
+              <entry><para>JavaScript and TypeScript</para></entry>
+            </row>
+            
+            <row>
+              <entry>GOLANG</entry>
+              <entry>3</entry>
+              <entry><para>Go</para></entry>
+            </row>
+            
+            <row>
+              <entry>CSHARP</entry>
+              <entry>4</entry>
+              <entry><para>csharp / dotnet</para></entry>
+            </row>
+            
+            <row>
+              <entry>C</entry>
+              <entry>5</entry>
+              <entry><para>C/C++</para></entry>
+            </row>
+            
+            <row>
+              <entry>PYTHON</entry>
+              <entry>6</entry>
+              <entry><para>Python</para></entry>
+            </row>
+            
+            <row>
+              <entry>LLVM</entry>
+              <entry>7</entry>
+              <entry><para>llvm</para></entry>
+            </row>
+            
+            <row>
+              <entry>PHP</entry>
+              <entry>8</entry>
+              <entry><para>PHP</para></entry>
+            </row>
+            
+            <row>
+              <entry>FUZZY_TEST_LANG</entry>
+              <entry>9</entry>
+              <entry><para>Test</para></entry>
+            </row>
+            
+            <row>
+              <entry>GHIDRA</entry>
+              <entry>10</entry>
+              <entry><para>generic reverse engineering framework</para></entry>
+            </row>
+            
+            <row>
+              <entry>KOTLIN</entry>
+              <entry>11</entry>
+              <entry><para>Kotlin</para></entry>
+            </row>
+            
+            <row>
+              <entry>NEWC</entry>
+              <entry>12</entry>
+              <entry><para>Eclipse CDT based parser for C/C++</para></entry>
+            </row>
+            
+            <row>
+              <entry>JAVASRC</entry>
+              <entry>13</entry>
+              <entry><para>Source-based front-end for Java</para></entry>
+            </row>
+            
+            <row>
+              <entry>PYTHONSRC</entry>
+              <entry>14</entry>
+              <entry><para>Source-based front-end for Python</para></entry>
+            </row>
+            
+            <row>
+              <entry>JSSRC</entry>
+              <entry>15</entry>
+              <entry><para>Source-based JS frontend based on Babel</para></entry>
+            </row>
+            
+            <row>
+              <entry>SOLIDITY</entry>
+              <entry>16</entry>
+              <entry><para>Solidity language frontend</para></entry>
+            </row>
+            
+            <row>
+              <entry>RUBYSRC</entry>
+              <entry>17</entry>
+              <entry><para>Source-based frontend for Ruby</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section id="atom.ModifierTypes">
+      <title>ModifierTypes</title>
+      <para>Enum for the possible modifier types for symbols, methods and class nodes</para>
+      <table frame="all">
+        <title><classname>ModifierTypes</classname> Values</title>
+        <tgroup cols="3">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Name</entry>
+              <entry>Number</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>UNKNOWN_MODIFIER_TYPE</entry>
+              <entry>0</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>STATIC</entry>
+              <entry>1</entry>
+              <entry><para>The static modifier</para></entry>
+            </row>
+            
+            <row>
+              <entry>PUBLIC</entry>
+              <entry>2</entry>
+              <entry><para>The public modifier</para></entry>
+            </row>
+            
+            <row>
+              <entry>PROTECTED</entry>
+              <entry>3</entry>
+              <entry><para>The protected modifier</para></entry>
+            </row>
+            
+            <row>
+              <entry>PRIVATE</entry>
+              <entry>4</entry>
+              <entry><para>The private modifier</para></entry>
+            </row>
+            
+            <row>
+              <entry>ABSTRACT</entry>
+              <entry>5</entry>
+              <entry><para>The abstract modifier</para></entry>
+            </row>
+            
+            <row>
+              <entry>NATIVE</entry>
+              <entry>6</entry>
+              <entry><para>The native modifier</para></entry>
+            </row>
+            
+            <row>
+              <entry>CONSTRUCTOR</entry>
+              <entry>7</entry>
+              <entry><para>The constructor modifier</para></entry>
+            </row>
+            
+            <row>
+              <entry>VIRTUAL</entry>
+              <entry>8</entry>
+              <entry><para>The virtual modifier</para></entry>
+            </row>
+            
+            <row>
+              <entry>INTERNAL</entry>
+              <entry>9</entry>
+              <entry><para>The internal modifier</para></entry>
+            </row>
+            
+            <row>
+              <entry>FINAL</entry>
+              <entry>10</entry>
+              <entry><para>The final modifier</para></entry>
+            </row>
+            
+            <row>
+              <entry>READONLY</entry>
+              <entry>11</entry>
+              <entry><para>The readonly modifier</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section id="atom.NodePropertyName">
+      <title>NodePropertyName</title>
+      <para>Enum for the name of a node property</para>
+      <table frame="all">
+        <title><classname>NodePropertyName</classname> Values</title>
+        <tgroup cols="3">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Name</entry>
+              <entry>Number</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>UNKNOWN_NODE_PROPERTY</entry>
+              <entry>0</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>LINE_NUMBER</entry>
+              <entry>2</entry>
+              <entry><para>This optional field provides the line number of the program construct represented by the node.</para></entry>
+            </row>
+            
+            <row>
+              <entry>PARSER_TYPE_NAME</entry>
+              <entry>3</entry>
+              <entry><para>AST node type name emitted by parser.</para></entry>
+            </row>
+            
+            <row>
+              <entry>ORDER</entry>
+              <entry>4</entry>
+              <entry><para>This integer indicates the position of the node among its siblings in the AST. The left-most child has an order of 0.</para></entry>
+            </row>
+            
+            <row>
+              <entry>NAME</entry>
+              <entry>5</entry>
+              <entry><para>Name of represented object, e.g., method name (e.g. "run")</para></entry>
+            </row>
+            
+            <row>
+              <entry>FULL_NAME</entry>
+              <entry>6</entry>
+              <entry><para>This is the fully-qualified name of an entity, e.g., the fully-qualified name of a method or type. The details of what constitutes a fully-qualified name are language specific. This field SHOULD be human readable.</para></entry>
+            </row>
+            
+            <row>
+              <entry>IS_EXTERNAL</entry>
+              <entry>7</entry>
+              <entry><para>Indicates that the construct (METHOD or TYPE_DECL) is external, that is, it is referenced but not defined in the code (applies both to insular parsing and to library functions where we have header files only)</para></entry>
+            </row>
+            
+            <row>
+              <entry>VALUE</entry>
+              <entry>8</entry>
+              <entry><para>This property denotes a string value as used in a key-value pair.</para></entry>
+            </row>
+            
+            <row>
+              <entry>COLUMN_NUMBER</entry>
+              <entry>11</entry>
+              <entry><para>This optional fields provides the column number of the program construct represented by the node.</para></entry>
+            </row>
+            
+            <row>
+              <entry>LINE_NUMBER_END</entry>
+              <entry>12</entry>
+              <entry><para>This optional fields provides the line number at which the program construct represented by the node ends.</para></entry>
+            </row>
+            
+            <row>
+              <entry>VERSION</entry>
+              <entry>13</entry>
+              <entry><para>A version, given as a string. Used, for example, in the META_DATA node to indicate which version of the CPG spec this CPG conforms to.</para></entry>
+            </row>
+            
+            <row>
+              <entry>EVALUATION_STRATEGY</entry>
+              <entry>15</entry>
+              <entry><para>For formal method input parameters, output parameters, and return parameters, this field holds the evaluation strategy, which is one of the following: 1) `BY_REFERENCE` indicates that the parameter is passed by reference, 2) `BY_VALUE` indicates that it is passed by value, that is, a copy is made, 3) `BY_SHARING` the parameter is a pointer/reference and it is shared with the caller/callee. While a copy of the pointer is made, a copy of the object that it points to is not made.</para></entry>
+            </row>
+            
+            <row>
+              <entry>COLUMN_NUMBER_END</entry>
+              <entry>16</entry>
+              <entry><para>This optional fields provides the column number at which the program construct represented by the node ends.</para></entry>
+            </row>
+            
+            <row>
+              <entry>LANGUAGE</entry>
+              <entry>19</entry>
+              <entry><para>This field indicates which CPG language frontend generated the CPG. Frontend developers may freely choose a value that describes their frontend so long as it is not used by an existing frontend. Reserved values are to date: C, LLVM, GHIDRA, PHP.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CONTENT</entry>
+              <entry>20</entry>
+              <entry><para>Certain files, e.g., configuration files, may be included in the CPG as-is. For such files, the `CONTENT` field contains the files content.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CODE</entry>
+              <entry>21</entry>
+              <entry><para>This field holds the code snippet that the node represents.</para></entry>
+            </row>
+            
+            <row>
+              <entry>SIGNATURE</entry>
+              <entry>22</entry>
+              <entry><para>The method signature encodes the types of parameters in a string. The string SHOULD be human readable and suitable for differentiating methods with different parameter types sufficiently to allow for resolving of function overloading. The present specification does not enforce a strict format for the signature, that is, it can be chosen by the frontend implementor to fit the source language.</para></entry>
+            </row>
+            
+            <row>
+              <entry>DISPATCH_TYPE</entry>
+              <entry>25</entry>
+              <entry><para>This field holds the dispatch type of a call, which is either `STATIC_DISPATCH` or `DYNAMIC_DISPATCH`. For statically dispatched method calls, the call target is known at compile time while for dynamically dispatched calls, it can only be determined at runtime as it may depend on the type of an object (as is the case for virtual method calls) or calculation of an offset.</para></entry>
+            </row>
+            
+            <row>
+              <entry>MODIFIER_TYPE</entry>
+              <entry>26</entry>
+              <entry><para>The modifier type is a free-form string. The following are known modifier types: `STATIC`, `PUBLIC`, `PROTECTED`, `PRIVATE`, `ABSTRACT`, `NATIVE`, `CONSTRUCTOR`, `VIRTUAL`.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CONTROL_STRUCTURE_TYPE</entry>
+              <entry>27</entry>
+              <entry><para>The `CONTROL_STRUCTURE_TYPE` field indicates which kind of control structure a `CONTROL_STRUCTURE` node represents. The available types are the following: BREAK, CONTINUE, DO, WHILE, FOR, GOTO, IF, ELSE, TRY, THROW and SWITCH.</para></entry>
+            </row>
+            
+            <row>
+              <entry>ARGUMENT_INDEX</entry>
+              <entry>40</entry>
+              <entry><para>AST-children of CALL nodes have an argument index, that is used to match call-site arguments with callee parameters. Explicit parameters are numbered from 1 to N, while index 0 is reserved for implicit self / this parameter. CALLs without implicit parameter therefore have arguments starting with index 1. AST-children of BLOCK nodes may have an argument index as well; in this case, the last argument index determines the return expression of a BLOCK expression. If the `PARAMETER_NAME` field is set, then the `ARGUMENT_INDEX` field is ignored. It is suggested to set it to -1.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CLOSURE_BINDING_ID</entry>
+              <entry>50</entry>
+              <entry><para>Identifier which uniquely describes a CLOSURE_BINDING. This property is used to match captured LOCAL nodes with the corresponding CLOSURE_BINDING nodes.</para></entry>
+            </row>
+            
+            <row>
+              <entry>TYPE_FULL_NAME</entry>
+              <entry>51</entry>
+              <entry><para>This field contains the fully-qualified static type name of the program construct represented by a node. It is the name of an instantiated type, e.g., `java.util.List<Integer>`, rather than `java.util.List[T]`. If the type cannot be determined, this field should be set to the empty string.</para></entry>
+            </row>
+            
+            <row>
+              <entry>TYPE_DECL_FULL_NAME</entry>
+              <entry>52</entry>
+              <entry><para>The static type decl of a TYPE. This property is matched against the FULL_NAME of TYPE_DECL nodes. It is required to have exactly one TYPE_DECL for each different TYPE_DECL_FULL_NAME.</para></entry>
+            </row>
+            
+            <row>
+              <entry>INHERITS_FROM_TYPE_FULL_NAME</entry>
+              <entry>53</entry>
+              <entry><para>The static types a TYPE_DECL inherits from. This property is matched against the FULL_NAME of TYPE nodes and thus it is required to have at least one TYPE node for each TYPE_FULL_NAME.</para></entry>
+            </row>
+            
+            <row>
+              <entry>METHOD_FULL_NAME</entry>
+              <entry>54</entry>
+              <entry><para>The FULL_NAME of a method. Used to link CALL and METHOD nodes. It is required to have exactly one METHOD node for each METHOD_FULL_NAME.</para></entry>
+            </row>
+            
+            <row>
+              <entry>AST_PARENT_TYPE</entry>
+              <entry>56</entry>
+              <entry><para>The type of the AST parent. Since this is only used in some parts of the graph, the list does not include all possible parents by intention. Possible parents: METHOD, TYPE_DECL, NAMESPACE_BLOCK.</para></entry>
+            </row>
+            
+            <row>
+              <entry>AST_PARENT_FULL_NAME</entry>
+              <entry>57</entry>
+              <entry><para>This field holds the FULL_NAME of the AST parent of an entity.</para></entry>
+            </row>
+            
+            <row>
+              <entry>DEPENDENCY_GROUP_ID</entry>
+              <entry>58</entry>
+              <entry><para>The group ID for a dependency</para></entry>
+            </row>
+            
+            <row>
+              <entry>SYMBOL</entry>
+              <entry>100</entry>
+              <entry><para>Symbols</para></entry>
+            </row>
+            
+            <row>
+              <entry>METHOD_SHORT_NAME</entry>
+              <entry>102</entry>
+              <entry><para>Method short name.</para></entry>
+            </row>
+            
+            <row>
+              <entry>PACKAGE_NAME</entry>
+              <entry>103</entry>
+              <entry><para>Method package name.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CLASS_NAME</entry>
+              <entry>104</entry>
+              <entry><para>Method class name.</para></entry>
+            </row>
+            
+            <row>
+              <entry>NODE_LABEL</entry>
+              <entry>105</entry>
+              <entry><para>Label for the node which could be code.</para></entry>
+            </row>
+            
+            <row>
+              <entry>FILENAME</entry>
+              <entry>106</entry>
+              <entry><para>The path of the source file this node was generated from, relative to the root path in the meta data node. This field must be set but may be set to the value `<unknown>` to indicate that no source file can be associated with the node, e.g., because the node represents an entity known to exist because it is referenced, but for which the file that is is declared in is unknown.</para></entry>
+            </row>
+            
+            <row>
+              <entry>OVERLAYS</entry>
+              <entry>118</entry>
+              <entry><para>The field contains the names of the overlays applied to this CPG, in order of their application. Names are free-form strings, that is, this specification does not dictate them but rather requires tool producers and consumers to communicate them between each other.</para></entry>
+            </row>
+            
+            <row>
+              <entry>HASH</entry>
+              <entry>120</entry>
+              <entry><para>This property contains a hash value in the form of a string. Hashes can be used to summarize data, e.g., to summarize the contents of source files or sub graphs. Such summaries are useful to determine whether code has already been analyzed in incremental analysis pipelines. This property is optional to allow its calculation to be deferred or skipped if the hash is not needed.</para></entry>
+            </row>
+            
+            <row>
+              <entry>ARGUMENT_NAME</entry>
+              <entry>130</entry>
+              <entry><para>For calls involving named parameters, the `ARGUMENT_NAME` field holds the name of the parameter initialized by the expression. For all other calls, this field is unset.</para></entry>
+            </row>
+            
+            <row>
+              <entry>KEY</entry>
+              <entry>131</entry>
+              <entry><para>This property denotes a key of a key-value pair.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CLASS_SHORT_NAME</entry>
+              <entry>132</entry>
+              <entry><para>Class short name</para></entry>
+            </row>
+            
+            <row>
+              <entry>ALIAS_TYPE_FULL_NAME</entry>
+              <entry>158</entry>
+              <entry><para>This property holds the fully qualified name of the type that the node is a type alias of.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CLOSURE_ORIGINAL_NAME</entry>
+              <entry>159</entry>
+              <entry><para>The original name of the (potentially mangled) captured variable</para></entry>
+            </row>
+            
+            <row>
+              <entry>IS_VARIADIC</entry>
+              <entry>221</entry>
+              <entry><para>Specifies whether a parameter is the variadic argument handling parameter of a variadic method. Only one parameter of a method is allowed to have this property set to true.</para></entry>
+            </row>
+            
+            <row>
+              <entry>ROOT</entry>
+              <entry>1199</entry>
+              <entry><para>The path to the root directory of the source/binary this CPG is generated from.</para></entry>
+            </row>
+            
+            <row>
+              <entry>DYNAMIC_TYPE_HINT_FULL_NAME</entry>
+              <entry>1591</entry>
+              <entry><para>Type hint for the dynamic type.</para></entry>
+            </row>
+            
+            <row>
+              <entry>INDEX</entry>
+              <entry>2223</entry>
+              <entry><para>Specifies an index, e.g., for a parameter or argument. Explicit parameters are numbered from 1 to N, while index 0 is reserved for implicit self / this parameter.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CANONICAL_NAME</entry>
+              <entry>2001092</entry>
+              <entry><para>This field holds the canonical name of a `FIELD_IDENTIFIER`. It is typically identical to the CODE field, but canonicalized according to source language semantics. Human readable names are preferable. `FIELD_IDENTIFIER` nodes must share identical `CANONICAL_NAME` if and only if they alias, e.g., in C-style unions (if the aliasing relationship is unknown or there are partial overlaps, then one must make a reasonable guess, and trade off between false negatives and false positives).</para></entry>
+            </row>
+            
+            <row>
+              <entry>CONTAINED_REF</entry>
+              <entry>2007161</entry>
+              <entry><para>References to other nodes. This is not a real property; it exists here for the sake of proto serialization only. valueType and cardinality are meaningless.</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section id="atom.NodeType">
+      <title>NodeType</title>
+      <para>Programming languages offer many closely-related concepts for describing blocks of code that can be executed with input parameters and return output parameters, possibly causing side effects. In the CPG specification, we refer to all of these concepts (procedures, functions, methods, etc.) as methods. A single METHOD node must exist for each method found in the source program.</para><para>The `FULL_NAME` field specifies the method's fully-qualified name, including information about the namespace it is contained in if applicable, the name field is the function's short name. The field `IS_EXTERNAL` indicates whether it was possible to identify a method body for the method. This is true for methods that are defined in the source program, and false for methods that are dynamically linked to the program, that is, methods that exist in an external dependency.</para><para>Line and column number information is specified in the optional fields `LINE_NUMBER`, `COLUMN_NUMBER`, `LINE_NUMBER_END`, and `COLUMN_NUMBER_END` and the name of the source file is specified in `FILENAME`. An optional hash value MAY be calculated over the function contents and included in the `HASH` field.</para><para>Finally, the fully qualified name of the program constructs that the method is immediately contained in is stored in the `AST_PARENT_FULL_NAME` field and its type is indicated in the `AST_PARENT_TYPE` field to be one of `METHOD`, `TYPE_DECL` or `NAMESPACE_BLOCK`.</para>
+      <table frame="all">
+        <title><classname>NodeType</classname> Values</title>
+        <tgroup cols="3">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Name</entry>
+              <entry>Number</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>UNKNOWN_NODE_TYPE</entry>
+              <entry>0</entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>METHOD</entry>
+              <entry>1</entry>
+              <entry><para>Method Nodes</para></entry>
+            </row>
+            
+            <row>
+              <entry>METHOD_RETURN</entry>
+              <entry>3</entry>
+              <entry><para>This node represents an (unnamed) formal method return parameter. It carries its fully qualified type name in `TYPE_FULL_NAME`. The `CODE` field MAY be set freely, e.g., to the constant `RET`, however, subsequent layer creators MUST NOT depend on this value.</para></entry>
+            </row>
+            
+            <row>
+              <entry>ANNOTATION</entry>
+              <entry>5</entry>
+              <entry><para>A method annotation. The semantics of the FULL_NAME property on this node differ from the usual FULL_NAME semantics in the sense that FULL_NAME describes the represented annotation class/interface itself and not the ANNOTATION node.</para></entry>
+            </row>
+            
+            <row>
+              <entry>ANNOTATION_PARAMETER_ASSIGN</entry>
+              <entry>6</entry>
+              <entry><para>Assignment of annotation argument to annotation parameter</para></entry>
+            </row>
+            
+            <row>
+              <entry>ANNOTATION_PARAMETER</entry>
+              <entry>7</entry>
+              <entry><para>Formal annotation parameter</para></entry>
+            </row>
+            
+            <row>
+              <entry>LITERAL</entry>
+              <entry>8</entry>
+              <entry><para>This node represents a literal such as an integer or string constant. Literals are symbols included in the code in verbatim form and which are immutable. The `TYPE_FULL_NAME` field stores the literal's fully-qualified type name, e.g., `java.lang.Integer`.</para></entry>
+            </row>
+            
+            <row>
+              <entry>MEMBER</entry>
+              <entry>9</entry>
+              <entry><para>This node represents a type member of a class, struct or union, e.g., for the type declaration `class Foo{ int i ; }`, it represents the declaration of the variable `i`.</para></entry>
+            </row>
+            
+            <row>
+              <entry>ARRAY_INITIALIZER</entry>
+              <entry>14</entry>
+              <entry><para>Initialization construct for arrays</para></entry>
+            </row>
+            
+            <row>
+              <entry>CALL</entry>
+              <entry>15</entry>
+              <entry><para>A (function/method/procedure) call. The `METHOD_FULL_NAME` property is the name of the invoked method (the callee) while the `TYPE_FULL_NAME` is its return type, and therefore, the return type of the call when viewing it as an expression. For languages like Javascript, it is common that we may know the (short-) name of the invoked method, but we do not know at compile time which method will actually be invoked, e.g., because it depends on a dynamic import. In this case, we leave `METHOD_FULL_NAME` blank but at least fill out `NAME`, which contains the method's (short-) name and `SIGNATURE`, which contains any information we may have about the types of arguments and return value.</para></entry>
+            </row>
+            
+            <row>
+              <entry>LOCAL</entry>
+              <entry>23</entry>
+              <entry><para>This node represents a local variable. Its fully qualified type name is stored in the `TYPE_FULL_NAME` field and its name in the `NAME` field. The `CODE` field contains the entire local variable declaration without initialization, e.g., for `int x = 10;`, it contains `int x`.</para></entry>
+            </row>
+            
+            <row>
+              <entry>TAG</entry>
+              <entry>24</entry>
+              <entry><para>This node represents a tag.</para></entry>
+            </row>
+            
+            <row>
+              <entry>LOCATION</entry>
+              <entry>25</entry>
+              <entry><para>A location node summarizes a source code location.</para></entry>
+            </row>
+            
+            <row>
+              <entry>IDENTIFIER</entry>
+              <entry>27</entry>
+              <entry><para>This node represents an identifier as used when referring to a variable by name. It holds the identifier's name in the `NAME` field and its fully-qualified type name in `TYPE_FULL_NAME`.</para></entry>
+            </row>
+            
+            <row>
+              <entry>RETURN</entry>
+              <entry>30</entry>
+              <entry><para>This node represents a return instruction, e.g., `return x`. Note that it does NOT represent a formal return parameter as formal return parameters are represented via `METHOD_RETURN` nodes.</para></entry>
+            </row>
+            
+            <row>
+              <entry>BLOCK</entry>
+              <entry>31</entry>
+              <entry><para>This node represents a compound statement. Compound statements are used in many languages to allow grouping a sequence of statements. For example, in C and Java, compound statements are statements enclosed by curly braces. Function/Method bodies are compound statements. We do not use the term "compound statement" because "statement" would imply that the block does not yield a value upon evaluation, that is, that it is not an expression. This is true in languages such as C and Java, but not for languages such as Scala where the value of the block is given by that of the last expression it contains. In fact, the Scala grammar uses the term "BlockExpr" (short for "block expression") to describe what in the CPG we call "Block".</para></entry>
+            </row>
+            
+            <row>
+              <entry>METHOD_PARAMETER_OUT</entry>
+              <entry>33</entry>
+              <entry><para>This node represents a formal output parameter. Corresponding output parameters for input parameters MUST NOT be created by the frontend as they are automatically created upon first loading the CPG.</para></entry>
+            </row>
+            
+            <row>
+              <entry>METHOD_PARAMETER_IN</entry>
+              <entry>34</entry>
+              <entry><para>This node represents a formal input parameter. The field `NAME` contains its name, while the field `TYPE_FULL_NAME` contains the fully qualified type name.</para></entry>
+            </row>
+            
+            <row>
+              <entry>DEPENDENCY</entry>
+              <entry>35</entry>
+              <entry><para>This node represents a dependency</para></entry>
+            </row>
+            
+            <row>
+              <entry>FILE</entry>
+              <entry>38</entry>
+              <entry><para>File nodes represent source files or a shared objects from which the CPG was generated. File nodes serve as indices, that is, they allow looking up all elements of the code by file.</para><para>For each file, the graph MUST contain exactly one File node. As file nodes are root nodes of abstract syntax tress, they are AstNodes and their order field is set to 0. This is because they have no sibling nodes, not because they are the first node of the AST.</para><para>Each CPG MUST contain a special file node with name set to `<unknown>`. This node is a placeholder used in cases where a file cannot be determined at compile time. As an example, consider external library functions. As their code is not available on CPG construction, the file name is unknown.</para><para>File nodes MUST NOT be created by the language frontend. Instead, the language frontend is assumed to fill out the `FILENAME` field wherever possible, allowing File nodes to be created automatically upon first loading the CPG.</para></entry>
+            </row>
+            
+            <row>
+              <entry>META_DATA</entry>
+              <entry>39</entry>
+              <entry><para>This node contains the CPG meta data. Exactly one node of this type MUST exist per CPG. The `HASH` property MAY contain a hash value calculated over the source files this CPG was generated from. The `VERSION` MUST be set to the version of the specification ("1.1"). The language field indicates which language frontend was used to generate the CPG and the list property `OVERLAYS` specifies which overlays have been applied to the CPG.</para></entry>
+            </row>
+            
+            <row>
+              <entry>NAMESPACE</entry>
+              <entry>40</entry>
+              <entry><para>This node represents a namespace. Similar to FILE nodes, NAMESPACE nodes serve as indices that allow all definitions inside a namespace to be obtained by following outgoing edges from a NAMESPACE node.</para><para>NAMESPACE nodes MUST NOT be created by language frontends. Instead, they are generated from NAMESPACE_BLOCK nodes automatically upon first loading of the CPG.</para></entry>
+            </row>
+            
+            <row>
+              <entry>NAMESPACE_BLOCK</entry>
+              <entry>41</entry>
+              <entry><para>A reference to a namespace.</para><para>We borrow the concept of a "namespace block" from C++, that is, a namespace block is a block of code that has been placed in the same namespace by a programmer. This block may be introduced via a `package` statement in Java or a `namespace{ }` statement in C++.</para><para>The `FULL_NAME` field contains a unique identifier to represent the namespace block itself not just the namespace it references. So in addition to the namespace name it can be useful to use the containing file name to derive a unique identifier.</para><para>The `NAME` field contains the namespace name in a human-readable format. The name should be given in dot-separated form where a dot indicates that the right hand side is a sub namespace of the left hand side, e.g., `foo.bar` denotes the namespace `bar` contained in the namespace `foo`.</para></entry>
+            </row>
+            
+            <row>
+              <entry>UNKNOWN</entry>
+              <entry>44</entry>
+              <entry><para>Any AST node that the frontend would like to include in the AST but for which no suitable AST node is specified in the CPG specification may be included using a node of type `UNKNOWN`.</para></entry>
+            </row>
+            
+            <row>
+              <entry>TYPE</entry>
+              <entry>45</entry>
+              <entry><para>This node represents a type instance, that is, a concrete instantiation of a type declaration.</para></entry>
+            </row>
+            
+            <row>
+              <entry>TYPE_DECL</entry>
+              <entry>46</entry>
+              <entry><para>This node represents a type declaration as for example given by a class-, struct-, or union declaration. In contrast to a `TYPE` node, this node does not represent a concrete instantiation of a type, e.g., for the parametrized type `List[T]`, it represents `List[T]`, but not `List[Integer]` where `Integer` is a concrete type.</para><para>The language frontend MUST create type declarations for all types declared in the source program and MAY provide type declarations for types that are not declared but referenced by the source program. If a declaration is present in the source program, the field `IS_EXTERNAL` is set to `false`. Otherwise, it is set to `true`.</para><para>The `FULL_NAME` field specifies the type's fully-qualified name, including information about the namespace it is contained in if applicable, the name field is the type's short name. Line and column number information is specified in the optional fields `LINE_NUMBER`, `COLUMN_NUMBER`, `LINE_NUMBER_END`, and `COLUMN_NUMBER_END` and the name of the source file is specified in `FILENAME`.</para><para>Base types can be specified via the `INHERITS_FROM_TYPE_FULL_NAME` list, where each entry contains the fully-qualified name of a base type. If the type is known to be an alias of another type (as for example introduced via the C `typedef` statement), the name of the alias is stored in `ALIAS_TYPE_FULL_NAME`.</para><para>Finally, the fully qualified name of the program constructs that the type declaration is immediately contained in is stored in the `AST_PARENT_FULL_NAME` field and its type is indicated in the `AST_PARENT_TYPE` field to be one of `METHOD`, `TYPE_DECL` or `NAMESPACE_BLOCK`.</para></entry>
+            </row>
+            
+            <row>
+              <entry>TYPE_PARAMETER</entry>
+              <entry>47</entry>
+              <entry><para>This node represents a formal type parameter, that is, the type parameter as given in a type-parametrized method or type declaration. Examples for languages that support type parameters are Java (via Generics) and C++ (via templates). Apart from the standard fields of AST nodes, the type parameter carries only a `NAME` field that holds the parameters name.</para></entry>
+            </row>
+            
+            <row>
+              <entry>TYPE_ARGUMENT</entry>
+              <entry>48</entry>
+              <entry><para>An (actual) type argument as used to instantiate a parametrized type, in the same way an (actual) arguments provides concrete values for a parameter at method call sites. As it true for arguments, the method is not expected to  interpret the type argument. It MUST however store its code in the `CODE` field.</para></entry>
+            </row>
+            
+            <row>
+              <entry>ANNOTATION_LITERAL</entry>
+              <entry>49</entry>
+              <entry><para>A literal value assigned to an ANNOTATION_PARAMETER</para></entry>
+            </row>
+            
+            <row>
+              <entry>CONFIG_FILE</entry>
+              <entry>50</entry>
+              <entry><para>This node type represent a configuration file, where `NAME` is the name of the file and `content` is its content. The exact representation of the name is left undefined and can be chosen as required by consumers of the corresponding configuration files.</para></entry>
+            </row>
+            
+            <row>
+              <entry>BINDING</entry>
+              <entry>146</entry>
+              <entry><para>`BINDING` nodes represent name-signature pairs that can be resolved at a type declaration (`TYPE_DECL`). They are connected to `TYPE_DECL` nodes via incoming `BINDS` edges. The bound method is either associated with an outgoing `REF` edge to a `METHOD` or with the `METHOD_FULL_NAME` property. The `REF` edge if present has priority.</para></entry>
+            </row>
+            
+            <row>
+              <entry>TAG_NODE_PAIR</entry>
+              <entry>208</entry>
+              <entry><para>This node contains an arbitrary node and an associated tag node.</para></entry>
+            </row>
+            
+            <row>
+              <entry>FINDING</entry>
+              <entry>214</entry>
+              <entry><para>Finding nodes may be used to store analysis results in the graph that are to be exposed to an end-user, e.g., information about potential vulnerabilities or dangerous programming practices.</para><para>A Finding node may contain an abitrary list of key value pairs that characterize the finding, as well as a list of nodes that serve as evidence for the finding.</para></entry>
+            </row>
+            
+            <row>
+              <entry>KEY_VALUE_PAIR</entry>
+              <entry>217</entry>
+              <entry><para>This node represents a key value pair, where both the key and the value are strings.</para></entry>
+            </row>
+            
+            <row>
+              <entry>MODIFIER</entry>
+              <entry>300</entry>
+              <entry><para>This field represents a (language-dependent) modifier such as `static`, `private` or `public`. Unlike most other AST nodes, it is NOT an expression, that is, it cannot be evaluated and cannot be passed as an argument in function calls.</para></entry>
+            </row>
+            
+            <row>
+              <entry>METHOD_REF</entry>
+              <entry>333</entry>
+              <entry><para>This node represents a reference to a method/function/procedure as it appears when a method is passed as an argument in a call. The `METHOD_FULL_NAME` field holds the fully-qualified name of the referenced method and the `TYPE_FULL_NAME` holds its fully-qualified type name.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CLOSURE_BINDING</entry>
+              <entry>334</entry>
+              <entry><para>Represents the binding of a LOCAL or METHOD_PARAMETER_IN into the closure of a method</para></entry>
+            </row>
+            
+            <row>
+              <entry>TYPE_REF</entry>
+              <entry>335</entry>
+              <entry><para>Reference to a type/class</para></entry>
+            </row>
+            
+            <row>
+              <entry>CONTROL_STRUCTURE</entry>
+              <entry>339</entry>
+              <entry><para>In addition to the `CONTROL_STRUCTURE_TYPE` field, the `PARSER_TYPE_NAME` field MAY be used by frontends to store the name of the control structure as emitted by the parser or disassembler, however, the value of this field is not relevant for construction of the control flow layer.</para></entry>
+            </row>
+            
+            <row>
+              <entry>JUMP_TARGET</entry>
+              <entry>340</entry>
+              <entry><para>A jump target is any location in the code that has been specifically marked as the target of a jump, e.g., via a label. The `NAME` field holds the name of the label while the `PARSER_TYPE_NAME` field holds the name of language construct that this jump target is created from, e.g., "Label".</para></entry>
+            </row>
+            
+            <row>
+              <entry>JUMP_LABEL</entry>
+              <entry>341</entry>
+              <entry><para>A jump label specifies the label and thus the JUMP_TARGET of control structures BREAK and CONTINUE. The `NAME` field holds the name of the label while the `PARSER_TYPE_NAME` field holds the name of language construct that this jump label is created from, e.g., "Label".</para></entry>
+            </row>
+            
+            <row>
+              <entry>TEMPLATE_DOM</entry>
+              <entry>417</entry>
+              <entry><para>This node represents a DOM node used in template languages, e.g., JSX/TSX</para></entry>
+            </row>
+            
+            <row>
+              <entry>COMMENT</entry>
+              <entry>511</entry>
+              <entry><para>A source code comment</para></entry>
+            </row>
+            
+            <row>
+              <entry>FIELD_IDENTIFIER</entry>
+              <entry>2001081</entry>
+              <entry><para>This node represents the field accessed in a field access, e.g., in `a.b`, it represents `b`. The field name as it occurs in the code is stored in the `CODE` field. This may mean that the `CODE` field holds an expression. The `CANONICAL_NAME` field MAY contain the same value is the `CODE` field but SHOULD contain the normalized name that results from evaluating `CODE` as an expression if such an evaluation is possible for the language frontend. The objective is to store an identifier in `CANONICAL_NAME` that is the same for two nodes iff they refer to the same field, regardless of whether they use the same expression to reference it.</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section id="atom.UsageSlice.LabelType">
+      <title>UsageSlice.LabelType</title>
+      <para>Label type.</para>
+      <table frame="all">
+        <title><classname>UsageSlice.LabelType</classname> Values</title>
+        <tgroup cols="3">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Name</entry>
+              <entry>Number</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>ANY</entry>
+              <entry>0</entry>
+              <entry><para>Any is used to represent multiple mechanisms</para></entry>
+            </row>
+            
+            <row>
+              <entry>LOCAL</entry>
+              <entry>1</entry>
+              <entry><para>Represents a local transfer of data via aliasing. The data defined is via some alias.</para></entry>
+            </row>
+            
+            <row>
+              <entry>LITERAL</entry>
+              <entry>2</entry>
+              <entry><para>Represents a literal.</para></entry>
+            </row>
+            
+            <row>
+              <entry>PARAM</entry>
+              <entry>3</entry>
+              <entry><para>Represents data introduced via a parameter.</para></entry>
+            </row>
+            
+            <row>
+              <entry>CALL</entry>
+              <entry>4</entry>
+              <entry><para>Represents data introduced by the return value of a call.</para></entry>
+            </row>
+            
+            <row>
+              <entry>IDENTIFIER</entry>
+              <entry>5</entry>
+              <entry><para>Identifier</para></entry>
+            </row>
+            
+            <row>
+              <entry>TYPE_REF</entry>
+              <entry>6</entry>
+              <entry><para>Type ref</para></entry>
+            </row>
+            
+            <row>
+              <entry>UNKNOWN</entry>
+              <entry>10</entry>
+              <entry><para>Represents data introduced by an unhandled data structure.</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+
+    
+
+    
+  </section>
+  
+
+  <section>
+    <title>Scalar Value Types</title>
+    <informaltable frame="all">
+      <tgroup cols="5">
+        <colspec colwidth="*"/>
+        <colspec colwidth="5*"/>
+        <colspec colwidth="*"/>
+        <colspec colwidth="*"/>
+        <colspec colwidth="*"/>
+        <thead>
+          <row>
+            <entry>.proto Type</entry>
+            <entry>Notes</entry>
+            <entry>C++</entry>
+            <entry>Java</entry>
+            <entry>Python</entry>
+            <entry>Go</entry>
+            <entry>C#</entry>
+            <entry>PHP</entry>
+            <entry>Ruby</entry>
+          </row>
+        </thead>
+        <tbody>
+          
+          <row>
+            <entry id="double">double</entry>
+            <entry></entry>
+            <entry>double</entry>
+            <entry>double</entry>
+            <entry>float</entry>
+            <entry>float64</entry>
+            <entry>double</entry>
+            <entry>float</entry>
+            <entry>Float</entry>
+          </row>
+          
+          <row>
+            <entry id="float">float</entry>
+            <entry></entry>
+            <entry>float</entry>
+            <entry>float</entry>
+            <entry>float</entry>
+            <entry>float32</entry>
+            <entry>float</entry>
+            <entry>float</entry>
+            <entry>Float</entry>
+          </row>
+          
+          <row>
+            <entry id="int32">int32</entry>
+            <entry>Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint32 instead.</entry>
+            <entry>int32</entry>
+            <entry>int</entry>
+            <entry>int</entry>
+            <entry>int32</entry>
+            <entry>int</entry>
+            <entry>integer</entry>
+            <entry>Bignum or Fixnum (as required)</entry>
+          </row>
+          
+          <row>
+            <entry id="int64">int64</entry>
+            <entry>Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint64 instead.</entry>
+            <entry>int64</entry>
+            <entry>long</entry>
+            <entry>int/long</entry>
+            <entry>int64</entry>
+            <entry>long</entry>
+            <entry>integer/string</entry>
+            <entry>Bignum</entry>
+          </row>
+          
+          <row>
+            <entry id="uint32">uint32</entry>
+            <entry>Uses variable-length encoding.</entry>
+            <entry>uint32</entry>
+            <entry>int</entry>
+            <entry>int/long</entry>
+            <entry>uint32</entry>
+            <entry>uint</entry>
+            <entry>integer</entry>
+            <entry>Bignum or Fixnum (as required)</entry>
+          </row>
+          
+          <row>
+            <entry id="uint64">uint64</entry>
+            <entry>Uses variable-length encoding.</entry>
+            <entry>uint64</entry>
+            <entry>long</entry>
+            <entry>int/long</entry>
+            <entry>uint64</entry>
+            <entry>ulong</entry>
+            <entry>integer/string</entry>
+            <entry>Bignum or Fixnum (as required)</entry>
+          </row>
+          
+          <row>
+            <entry id="sint32">sint32</entry>
+            <entry>Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int32s.</entry>
+            <entry>int32</entry>
+            <entry>int</entry>
+            <entry>int</entry>
+            <entry>int32</entry>
+            <entry>int</entry>
+            <entry>integer</entry>
+            <entry>Bignum or Fixnum (as required)</entry>
+          </row>
+          
+          <row>
+            <entry id="sint64">sint64</entry>
+            <entry>Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int64s.</entry>
+            <entry>int64</entry>
+            <entry>long</entry>
+            <entry>int/long</entry>
+            <entry>int64</entry>
+            <entry>long</entry>
+            <entry>integer/string</entry>
+            <entry>Bignum</entry>
+          </row>
+          
+          <row>
+            <entry id="fixed32">fixed32</entry>
+            <entry>Always four bytes. More efficient than uint32 if values are often greater than 2^28.</entry>
+            <entry>uint32</entry>
+            <entry>int</entry>
+            <entry>int</entry>
+            <entry>uint32</entry>
+            <entry>uint</entry>
+            <entry>integer</entry>
+            <entry>Bignum or Fixnum (as required)</entry>
+          </row>
+          
+          <row>
+            <entry id="fixed64">fixed64</entry>
+            <entry>Always eight bytes. More efficient than uint64 if values are often greater than 2^56.</entry>
+            <entry>uint64</entry>
+            <entry>long</entry>
+            <entry>int/long</entry>
+            <entry>uint64</entry>
+            <entry>ulong</entry>
+            <entry>integer/string</entry>
+            <entry>Bignum</entry>
+          </row>
+          
+          <row>
+            <entry id="sfixed32">sfixed32</entry>
+            <entry>Always four bytes.</entry>
+            <entry>int32</entry>
+            <entry>int</entry>
+            <entry>int</entry>
+            <entry>int32</entry>
+            <entry>int</entry>
+            <entry>integer</entry>
+            <entry>Bignum or Fixnum (as required)</entry>
+          </row>
+          
+          <row>
+            <entry id="sfixed64">sfixed64</entry>
+            <entry>Always eight bytes.</entry>
+            <entry>int64</entry>
+            <entry>long</entry>
+            <entry>int/long</entry>
+            <entry>int64</entry>
+            <entry>long</entry>
+            <entry>integer/string</entry>
+            <entry>Bignum</entry>
+          </row>
+          
+          <row>
+            <entry id="bool">bool</entry>
+            <entry></entry>
+            <entry>bool</entry>
+            <entry>boolean</entry>
+            <entry>boolean</entry>
+            <entry>bool</entry>
+            <entry>bool</entry>
+            <entry>boolean</entry>
+            <entry>TrueClass/FalseClass</entry>
+          </row>
+          
+          <row>
+            <entry id="string">string</entry>
+            <entry>A string must always contain UTF-8 encoded or 7-bit ASCII text.</entry>
+            <entry>string</entry>
+            <entry>String</entry>
+            <entry>str/unicode</entry>
+            <entry>string</entry>
+            <entry>string</entry>
+            <entry>string</entry>
+            <entry>String (UTF-8)</entry>
+          </row>
+          
+          <row>
+            <entry id="bytes">bytes</entry>
+            <entry>May contain any arbitrary sequence of bytes.</entry>
+            <entry>string</entry>
+            <entry>ByteString</entry>
+            <entry>str</entry>
+            <entry>[]byte</entry>
+            <entry>ByteString</entry>
+            <entry>string</entry>
+            <entry>String (ASCII-8BIT)</entry>
+          </row>
+          
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+
+</article>

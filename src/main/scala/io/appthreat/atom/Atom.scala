@@ -5,7 +5,7 @@ import io.appthreat.atom.Atom.loadFromOdb
 import io.appthreat.atom.dataflows.{DataFlowGraph, OssDataFlow, OssDataFlowOptions}
 import io.appthreat.atom.parsedeps.{AtomSlice, parseDependencies}
 import io.joern.c2cpg.{C2Cpg, Config as CConfig}
-import io.joern.dataflowengineoss.slicing.{UsageSlicing, *}
+import io.appthreat.atom.slicing.{UsageSlicing, *}
 import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.joern.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
 import io.joern.jssrc2cpg.passes.{ConstClosurePass, JavaScriptInheritanceNamePass}
@@ -35,7 +35,7 @@ object Atom {
 
   val DEFAULT_ATOM_OUT_FILE: String = if (Properties.isWin) "app.atom" else "app.⚛"
   val DEFAULT_SLICE_OUT_FILE        = "slices.json"
-  val DEFAULT_SLICE_DEPTH           = 3
+  val DEFAULT_SLICE_DEPTH           = 10
   val DEFAULT_MAX_DEFS: Int         = 2000
   private val MAVEN_JAR_PATH: File  = File.home / ".m2"
   private val GRADLE_JAR_PATH: File = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
@@ -120,7 +120,7 @@ object Atom {
       .action((_, _) => AtomDataFlowConfig().withDataDependencies(true))
       .children(
         opt[Int]("slice-depth")
-          .text(s"the max depth to traverse the DDG for the data-flow slice - defaults to 3.")
+          .text(s"the max depth to traverse the DDG for the data-flow slice - defaults to 10.")
           .action((x, c) =>
             c match {
               case c: AtomDataFlowConfig => c.copy(sliceDepth = x)
@@ -134,14 +134,6 @@ object Atom {
               case c: AtomDataFlowConfig => c.copy(sinkPatternFilter = Option(x))
               case _                     => c
             }
-          ),
-        opt[Unit]("end-at-external-method")
-          .text(s"all slices must end at an external method - defaults to false.")
-          .action((_, c) =>
-            c match {
-              case c: AtomDataFlowConfig => c.copy(mustEndAtExternalMethod = true)
-              case _                     => c
-            }
           )
       )
     cmd("usages")
@@ -153,14 +145,6 @@ object Atom {
           .action((x, c) =>
             c match {
               case c: AtomUsagesConfig => c.copy(minNumCalls = x)
-              case _                   => c
-            }
-          ),
-        opt[Unit]("exclude-operators")
-          .text(s"excludes operator calls in the slices - defaults to true.")
-          .action((_, c) =>
-            c match {
-              case c: AtomUsagesConfig => c.copy(excludeOperatorCalls = true)
               case _                   => c
             }
           ),
@@ -264,7 +248,7 @@ object Atom {
       case Success(cpg) =>
         config match {
           case x: AtomConfig if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] =>
-            println("Generating data-flow dependencies")
+            println("Generating data-flow dependencies. Please wait ...")
             new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
               .run(new LayerCreatorContext(cpg))
           case _ =>
@@ -298,7 +282,12 @@ object Atom {
   private def migrateAtomConfigToSliceConfig(x: BaseConfig): BaseConfig =
     (x match {
       case config: AtomDataFlowConfig =>
-        DataFlowConfig(config.sinkPatternFilter, config.mustEndAtExternalMethod, config.sliceDepth)
+        DataFlowConfig(
+          config.sinkPatternFilter,
+          config.excludeOperatorCalls,
+          config.mustEndAtExternalMethod,
+          config.sliceDepth
+        )
       case config: AtomUsagesConfig =>
         UsagesConfig(config.minNumCalls, config.excludeOperatorCalls, !config.includeMethodSource)
       case _ => x

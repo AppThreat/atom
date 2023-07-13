@@ -39,7 +39,7 @@ def main():
     )
 
     method = atom.CpgStructNode(
-        key=1, type=atom.CpgStructNodeNodeType.METHOD, property=[methodFullName]
+        key=1, type=atom.NodeType.METHOD, property=[methodFullName]
     )
 
     atom_struct = atom.CpgStruct(node=[method])

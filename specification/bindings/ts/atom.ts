@@ -121,6 +121,52 @@ export namespace atom {
         MATCH = 12,
         YIELD = 13
     }
+    export enum NodeType {
+        UNKNOWN_NODE_TYPE = 0,
+        METHOD = 1,
+        METHOD_RETURN = 3,
+        ANNOTATION = 5,
+        ANNOTATION_PARAMETER_ASSIGN = 6,
+        ANNOTATION_PARAMETER = 7,
+        LITERAL = 8,
+        MEMBER = 9,
+        ARRAY_INITIALIZER = 14,
+        CALL = 15,
+        LOCAL = 23,
+        TAG = 24,
+        LOCATION = 25,
+        IDENTIFIER = 27,
+        RETURN = 30,
+        BLOCK = 31,
+        METHOD_PARAMETER_OUT = 33,
+        METHOD_PARAMETER_IN = 34,
+        DEPENDENCY = 35,
+        FILE = 38,
+        META_DATA = 39,
+        NAMESPACE = 40,
+        NAMESPACE_BLOCK = 41,
+        UNKNOWN = 44,
+        TYPE = 45,
+        TYPE_DECL = 46,
+        TYPE_PARAMETER = 47,
+        TYPE_ARGUMENT = 48,
+        ANNOTATION_LITERAL = 49,
+        CONFIG_FILE = 50,
+        BINDING = 146,
+        TAG_NODE_PAIR = 208,
+        FINDING = 214,
+        KEY_VALUE_PAIR = 217,
+        MODIFIER = 300,
+        METHOD_REF = 333,
+        CLOSURE_BINDING = 334,
+        TYPE_REF = 335,
+        CONTROL_STRUCTURE = 339,
+        JUMP_TARGET = 340,
+        JUMP_LABEL = 341,
+        TEMPLATE_DOM = 417,
+        COMMENT = 511,
+        FIELD_IDENTIFIER = 2001081
+    }
     export class PropertyValue extends pb_1.Message {
         #one_of_decls: number[][] = [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]];
         constructor(data?: any[] | ({} & (({
@@ -1279,7 +1325,7 @@ export namespace atom {
             #one_of_decls: number[][] = [];
             constructor(data?: any[] | {
                 key?: number;
-                type?: CpgStruct.Node.NodeType;
+                type?: NodeType;
                 property?: CpgStruct.Node.Property[];
             }) {
                 super();
@@ -1303,9 +1349,9 @@ export namespace atom {
                 pb_1.Message.setField(this, 1, value);
             }
             get type() {
-                return pb_1.Message.getFieldWithDefault(this, 2, CpgStruct.Node.NodeType.UNKNOWN_NODE_TYPE) as CpgStruct.Node.NodeType;
+                return pb_1.Message.getFieldWithDefault(this, 2, NodeType.UNKNOWN_NODE_TYPE) as NodeType;
             }
-            set type(value: CpgStruct.Node.NodeType) {
+            set type(value: NodeType) {
                 pb_1.Message.setField(this, 2, value);
             }
             get property() {
@@ -1316,7 +1362,7 @@ export namespace atom {
             }
             static fromObject(data: {
                 key?: number;
-                type?: CpgStruct.Node.NodeType;
+                type?: NodeType;
                 property?: ReturnType<typeof CpgStruct.Node.Property.prototype.toObject>[];
             }): Node {
                 const message = new Node({});
@@ -1334,7 +1380,7 @@ export namespace atom {
             toObject() {
                 const data: {
                     key?: number;
-                    type?: CpgStruct.Node.NodeType;
+                    type?: NodeType;
                     property?: ReturnType<typeof CpgStruct.Node.Property.prototype.toObject>[];
                 } = {};
                 if (this.key != null) {
@@ -1354,7 +1400,7 @@ export namespace atom {
                 const writer = w || new pb_1.BinaryWriter();
                 if (this.key != 0)
                     writer.writeInt64(1, this.key);
-                if (this.type != CpgStruct.Node.NodeType.UNKNOWN_NODE_TYPE)
+                if (this.type != NodeType.UNKNOWN_NODE_TYPE)
                     writer.writeEnum(2, this.type);
                 if (this.property.length)
                     writer.writeRepeatedMessage(3, this.property, (item: CpgStruct.Node.Property) => item.serialize(writer));
@@ -1389,52 +1435,6 @@ export namespace atom {
             }
         }
         export namespace Node {
-            export enum NodeType {
-                UNKNOWN_NODE_TYPE = 0,
-                METHOD = 1,
-                METHOD_RETURN = 3,
-                ANNOTATION = 5,
-                ANNOTATION_PARAMETER_ASSIGN = 6,
-                ANNOTATION_PARAMETER = 7,
-                LITERAL = 8,
-                MEMBER = 9,
-                ARRAY_INITIALIZER = 14,
-                CALL = 15,
-                LOCAL = 23,
-                TAG = 24,
-                LOCATION = 25,
-                IDENTIFIER = 27,
-                RETURN = 30,
-                BLOCK = 31,
-                METHOD_PARAMETER_OUT = 33,
-                METHOD_PARAMETER_IN = 34,
-                DEPENDENCY = 35,
-                FILE = 38,
-                META_DATA = 39,
-                NAMESPACE = 40,
-                NAMESPACE_BLOCK = 41,
-                UNKNOWN = 44,
-                TYPE = 45,
-                TYPE_DECL = 46,
-                TYPE_PARAMETER = 47,
-                TYPE_ARGUMENT = 48,
-                ANNOTATION_LITERAL = 49,
-                CONFIG_FILE = 50,
-                BINDING = 146,
-                TAG_NODE_PAIR = 208,
-                FINDING = 214,
-                KEY_VALUE_PAIR = 217,
-                MODIFIER = 300,
-                METHOD_REF = 333,
-                CLOSURE_BINDING = 334,
-                TYPE_REF = 335,
-                CONTROL_STRUCTURE = 339,
-                JUMP_TARGET = 340,
-                JUMP_LABEL = 341,
-                TEMPLATE_DOM = 417,
-                COMMENT = 511,
-                FIELD_IDENTIFIER = 2001081
-            }
             export class Property extends pb_1.Message {
                 #one_of_decls: number[][] = [];
                 constructor(data?: any[] | {
@@ -3051,6 +3051,2484 @@ export namespace atom {
             }
             static deserializeBinary(bytes: Uint8Array): Entry {
                 return Entry.deserialize(bytes);
+            }
+        }
+    }
+    export class UsageSlice extends pb_1.Message {
+        #one_of_decls: number[][] = [];
+        constructor(data?: any[] | {
+            objectSlices?: UsageSlice.MethodUsageSlice[];
+            userDefinedTypes?: UsageSlice.UserDefinedTypes[];
+        }) {
+            super();
+            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1, 2], this.#one_of_decls);
+            if (!Array.isArray(data) && typeof data == "object") {
+                if ("objectSlices" in data && data.objectSlices != undefined) {
+                    this.objectSlices = data.objectSlices;
+                }
+                if ("userDefinedTypes" in data && data.userDefinedTypes != undefined) {
+                    this.userDefinedTypes = data.userDefinedTypes;
+                }
+            }
+        }
+        get objectSlices() {
+            return pb_1.Message.getRepeatedWrapperField(this, UsageSlice.MethodUsageSlice, 1) as UsageSlice.MethodUsageSlice[];
+        }
+        set objectSlices(value: UsageSlice.MethodUsageSlice[]) {
+            pb_1.Message.setRepeatedWrapperField(this, 1, value);
+        }
+        get userDefinedTypes() {
+            return pb_1.Message.getRepeatedWrapperField(this, UsageSlice.UserDefinedTypes, 2) as UsageSlice.UserDefinedTypes[];
+        }
+        set userDefinedTypes(value: UsageSlice.UserDefinedTypes[]) {
+            pb_1.Message.setRepeatedWrapperField(this, 2, value);
+        }
+        static fromObject(data: {
+            objectSlices?: ReturnType<typeof UsageSlice.MethodUsageSlice.prototype.toObject>[];
+            userDefinedTypes?: ReturnType<typeof UsageSlice.UserDefinedTypes.prototype.toObject>[];
+        }): UsageSlice {
+            const message = new UsageSlice({});
+            if (data.objectSlices != null) {
+                message.objectSlices = data.objectSlices.map(item => UsageSlice.MethodUsageSlice.fromObject(item));
+            }
+            if (data.userDefinedTypes != null) {
+                message.userDefinedTypes = data.userDefinedTypes.map(item => UsageSlice.UserDefinedTypes.fromObject(item));
+            }
+            return message;
+        }
+        toObject() {
+            const data: {
+                objectSlices?: ReturnType<typeof UsageSlice.MethodUsageSlice.prototype.toObject>[];
+                userDefinedTypes?: ReturnType<typeof UsageSlice.UserDefinedTypes.prototype.toObject>[];
+            } = {};
+            if (this.objectSlices != null) {
+                data.objectSlices = this.objectSlices.map((item: UsageSlice.MethodUsageSlice) => item.toObject());
+            }
+            if (this.userDefinedTypes != null) {
+                data.userDefinedTypes = this.userDefinedTypes.map((item: UsageSlice.UserDefinedTypes) => item.toObject());
+            }
+            return data;
+        }
+        serialize(): Uint8Array;
+        serialize(w: pb_1.BinaryWriter): void;
+        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+            const writer = w || new pb_1.BinaryWriter();
+            if (this.objectSlices.length)
+                writer.writeRepeatedMessage(1, this.objectSlices, (item: UsageSlice.MethodUsageSlice) => item.serialize(writer));
+            if (this.userDefinedTypes.length)
+                writer.writeRepeatedMessage(2, this.userDefinedTypes, (item: UsageSlice.UserDefinedTypes) => item.serialize(writer));
+            if (!w)
+                return writer.getResultBuffer();
+        }
+        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): UsageSlice {
+            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new UsageSlice();
+            while (reader.nextField()) {
+                if (reader.isEndGroup())
+                    break;
+                switch (reader.getFieldNumber()) {
+                    case 1:
+                        reader.readMessage(message.objectSlices, () => pb_1.Message.addToRepeatedWrapperField(message, 1, UsageSlice.MethodUsageSlice.deserialize(reader), UsageSlice.MethodUsageSlice));
+                        break;
+                    case 2:
+                        reader.readMessage(message.userDefinedTypes, () => pb_1.Message.addToRepeatedWrapperField(message, 2, UsageSlice.UserDefinedTypes.deserialize(reader), UsageSlice.UserDefinedTypes));
+                        break;
+                    default: reader.skipField();
+                }
+            }
+            return message;
+        }
+        serializeBinary(): Uint8Array {
+            return this.serialize();
+        }
+        static deserializeBinary(bytes: Uint8Array): UsageSlice {
+            return UsageSlice.deserialize(bytes);
+        }
+    }
+    export namespace UsageSlice {
+        export enum LabelType {
+            ANY = 0,
+            LOCAL = 1,
+            LITERAL = 2,
+            PARAM = 3,
+            CALL = 4,
+            IDENTIFIER = 5,
+            TYPE_REF = 6,
+            UNKNOWN = 10
+        }
+        export class TargetObj extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                name?: string;
+                typeFullName?: string;
+                position?: number;
+                lineNumber?: number;
+                columnNumber?: number;
+                label?: UsageSlice.LabelType;
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("name" in data && data.name != undefined) {
+                        this.name = data.name;
+                    }
+                    if ("typeFullName" in data && data.typeFullName != undefined) {
+                        this.typeFullName = data.typeFullName;
+                    }
+                    if ("position" in data && data.position != undefined) {
+                        this.position = data.position;
+                    }
+                    if ("lineNumber" in data && data.lineNumber != undefined) {
+                        this.lineNumber = data.lineNumber;
+                    }
+                    if ("columnNumber" in data && data.columnNumber != undefined) {
+                        this.columnNumber = data.columnNumber;
+                    }
+                    if ("label" in data && data.label != undefined) {
+                        this.label = data.label;
+                    }
+                }
+            }
+            get name() {
+                return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+            }
+            set name(value: string) {
+                pb_1.Message.setField(this, 1, value);
+            }
+            get typeFullName() {
+                return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+            }
+            set typeFullName(value: string) {
+                pb_1.Message.setField(this, 2, value);
+            }
+            get position() {
+                return pb_1.Message.getFieldWithDefault(this, 3, 0) as number;
+            }
+            set position(value: number) {
+                pb_1.Message.setField(this, 3, value);
+            }
+            get lineNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 4, 0) as number;
+            }
+            set lineNumber(value: number) {
+                pb_1.Message.setField(this, 4, value);
+            }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 5, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 5, value);
+            }
+            get label() {
+                return pb_1.Message.getFieldWithDefault(this, 6, UsageSlice.LabelType.ANY) as UsageSlice.LabelType;
+            }
+            set label(value: UsageSlice.LabelType) {
+                pb_1.Message.setField(this, 6, value);
+            }
+            static fromObject(data: {
+                name?: string;
+                typeFullName?: string;
+                position?: number;
+                lineNumber?: number;
+                columnNumber?: number;
+                label?: UsageSlice.LabelType;
+            }): TargetObj {
+                const message = new TargetObj({});
+                if (data.name != null) {
+                    message.name = data.name;
+                }
+                if (data.typeFullName != null) {
+                    message.typeFullName = data.typeFullName;
+                }
+                if (data.position != null) {
+                    message.position = data.position;
+                }
+                if (data.lineNumber != null) {
+                    message.lineNumber = data.lineNumber;
+                }
+                if (data.columnNumber != null) {
+                    message.columnNumber = data.columnNumber;
+                }
+                if (data.label != null) {
+                    message.label = data.label;
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    name?: string;
+                    typeFullName?: string;
+                    position?: number;
+                    lineNumber?: number;
+                    columnNumber?: number;
+                    label?: UsageSlice.LabelType;
+                } = {};
+                if (this.name != null) {
+                    data.name = this.name;
+                }
+                if (this.typeFullName != null) {
+                    data.typeFullName = this.typeFullName;
+                }
+                if (this.position != null) {
+                    data.position = this.position;
+                }
+                if (this.lineNumber != null) {
+                    data.lineNumber = this.lineNumber;
+                }
+                if (this.columnNumber != null) {
+                    data.columnNumber = this.columnNumber;
+                }
+                if (this.label != null) {
+                    data.label = this.label;
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.name.length)
+                    writer.writeString(1, this.name);
+                if (this.typeFullName.length)
+                    writer.writeString(2, this.typeFullName);
+                if (this.position != 0)
+                    writer.writeUint32(3, this.position);
+                if (this.lineNumber != 0)
+                    writer.writeUint32(4, this.lineNumber);
+                if (this.columnNumber != 0)
+                    writer.writeUint32(5, this.columnNumber);
+                if (this.label != UsageSlice.LabelType.ANY)
+                    writer.writeEnum(6, this.label);
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): TargetObj {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new TargetObj();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            message.name = reader.readString();
+                            break;
+                        case 2:
+                            message.typeFullName = reader.readString();
+                            break;
+                        case 3:
+                            message.position = reader.readUint32();
+                            break;
+                        case 4:
+                            message.lineNumber = reader.readUint32();
+                            break;
+                        case 5:
+                            message.columnNumber = reader.readUint32();
+                            break;
+                        case 6:
+                            message.label = reader.readEnum();
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): TargetObj {
+                return TargetObj.deserialize(bytes);
+            }
+        }
+        export class DefinedBy extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                name?: string;
+                typeFullName?: string;
+                resolvedMethod?: string;
+                position?: number;
+                lineNumber?: number;
+                columnNumber?: number;
+                label?: string;
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("name" in data && data.name != undefined) {
+                        this.name = data.name;
+                    }
+                    if ("typeFullName" in data && data.typeFullName != undefined) {
+                        this.typeFullName = data.typeFullName;
+                    }
+                    if ("resolvedMethod" in data && data.resolvedMethod != undefined) {
+                        this.resolvedMethod = data.resolvedMethod;
+                    }
+                    if ("position" in data && data.position != undefined) {
+                        this.position = data.position;
+                    }
+                    if ("lineNumber" in data && data.lineNumber != undefined) {
+                        this.lineNumber = data.lineNumber;
+                    }
+                    if ("columnNumber" in data && data.columnNumber != undefined) {
+                        this.columnNumber = data.columnNumber;
+                    }
+                    if ("label" in data && data.label != undefined) {
+                        this.label = data.label;
+                    }
+                }
+            }
+            get name() {
+                return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+            }
+            set name(value: string) {
+                pb_1.Message.setField(this, 1, value);
+            }
+            get typeFullName() {
+                return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+            }
+            set typeFullName(value: string) {
+                pb_1.Message.setField(this, 2, value);
+            }
+            get resolvedMethod() {
+                return pb_1.Message.getFieldWithDefault(this, 3, "") as string;
+            }
+            set resolvedMethod(value: string) {
+                pb_1.Message.setField(this, 3, value);
+            }
+            get position() {
+                return pb_1.Message.getFieldWithDefault(this, 4, 0) as number;
+            }
+            set position(value: number) {
+                pb_1.Message.setField(this, 4, value);
+            }
+            get lineNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 5, 0) as number;
+            }
+            set lineNumber(value: number) {
+                pb_1.Message.setField(this, 5, value);
+            }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 6, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 6, value);
+            }
+            get label() {
+                return pb_1.Message.getFieldWithDefault(this, 7, "") as string;
+            }
+            set label(value: string) {
+                pb_1.Message.setField(this, 7, value);
+            }
+            static fromObject(data: {
+                name?: string;
+                typeFullName?: string;
+                resolvedMethod?: string;
+                position?: number;
+                lineNumber?: number;
+                columnNumber?: number;
+                label?: string;
+            }): DefinedBy {
+                const message = new DefinedBy({});
+                if (data.name != null) {
+                    message.name = data.name;
+                }
+                if (data.typeFullName != null) {
+                    message.typeFullName = data.typeFullName;
+                }
+                if (data.resolvedMethod != null) {
+                    message.resolvedMethod = data.resolvedMethod;
+                }
+                if (data.position != null) {
+                    message.position = data.position;
+                }
+                if (data.lineNumber != null) {
+                    message.lineNumber = data.lineNumber;
+                }
+                if (data.columnNumber != null) {
+                    message.columnNumber = data.columnNumber;
+                }
+                if (data.label != null) {
+                    message.label = data.label;
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    name?: string;
+                    typeFullName?: string;
+                    resolvedMethod?: string;
+                    position?: number;
+                    lineNumber?: number;
+                    columnNumber?: number;
+                    label?: string;
+                } = {};
+                if (this.name != null) {
+                    data.name = this.name;
+                }
+                if (this.typeFullName != null) {
+                    data.typeFullName = this.typeFullName;
+                }
+                if (this.resolvedMethod != null) {
+                    data.resolvedMethod = this.resolvedMethod;
+                }
+                if (this.position != null) {
+                    data.position = this.position;
+                }
+                if (this.lineNumber != null) {
+                    data.lineNumber = this.lineNumber;
+                }
+                if (this.columnNumber != null) {
+                    data.columnNumber = this.columnNumber;
+                }
+                if (this.label != null) {
+                    data.label = this.label;
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.name.length)
+                    writer.writeString(1, this.name);
+                if (this.typeFullName.length)
+                    writer.writeString(2, this.typeFullName);
+                if (this.resolvedMethod.length)
+                    writer.writeString(3, this.resolvedMethod);
+                if (this.position != 0)
+                    writer.writeUint32(4, this.position);
+                if (this.lineNumber != 0)
+                    writer.writeUint32(5, this.lineNumber);
+                if (this.columnNumber != 0)
+                    writer.writeUint32(6, this.columnNumber);
+                if (this.label.length)
+                    writer.writeString(7, this.label);
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): DefinedBy {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new DefinedBy();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            message.name = reader.readString();
+                            break;
+                        case 2:
+                            message.typeFullName = reader.readString();
+                            break;
+                        case 3:
+                            message.resolvedMethod = reader.readString();
+                            break;
+                        case 4:
+                            message.position = reader.readUint32();
+                            break;
+                        case 5:
+                            message.lineNumber = reader.readUint32();
+                            break;
+                        case 6:
+                            message.columnNumber = reader.readUint32();
+                            break;
+                        case 7:
+                            message.label = reader.readString();
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): DefinedBy {
+                return DefinedBy.deserialize(bytes);
+            }
+        }
+        export class InvokedCalls extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                callName?: string;
+                resolvedMethod?: string;
+                paramTypes?: string[];
+                returnType?: string;
+                lineNumber?: number;
+                columnNumber?: number;
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [3], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("callName" in data && data.callName != undefined) {
+                        this.callName = data.callName;
+                    }
+                    if ("resolvedMethod" in data && data.resolvedMethod != undefined) {
+                        this.resolvedMethod = data.resolvedMethod;
+                    }
+                    if ("paramTypes" in data && data.paramTypes != undefined) {
+                        this.paramTypes = data.paramTypes;
+                    }
+                    if ("returnType" in data && data.returnType != undefined) {
+                        this.returnType = data.returnType;
+                    }
+                    if ("lineNumber" in data && data.lineNumber != undefined) {
+                        this.lineNumber = data.lineNumber;
+                    }
+                    if ("columnNumber" in data && data.columnNumber != undefined) {
+                        this.columnNumber = data.columnNumber;
+                    }
+                }
+            }
+            get callName() {
+                return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+            }
+            set callName(value: string) {
+                pb_1.Message.setField(this, 1, value);
+            }
+            get resolvedMethod() {
+                return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+            }
+            set resolvedMethod(value: string) {
+                pb_1.Message.setField(this, 2, value);
+            }
+            get paramTypes() {
+                return pb_1.Message.getFieldWithDefault(this, 3, []) as string[];
+            }
+            set paramTypes(value: string[]) {
+                pb_1.Message.setField(this, 3, value);
+            }
+            get returnType() {
+                return pb_1.Message.getFieldWithDefault(this, 4, "") as string;
+            }
+            set returnType(value: string) {
+                pb_1.Message.setField(this, 4, value);
+            }
+            get lineNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 5, 0) as number;
+            }
+            set lineNumber(value: number) {
+                pb_1.Message.setField(this, 5, value);
+            }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 6, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 6, value);
+            }
+            static fromObject(data: {
+                callName?: string;
+                resolvedMethod?: string;
+                paramTypes?: string[];
+                returnType?: string;
+                lineNumber?: number;
+                columnNumber?: number;
+            }): InvokedCalls {
+                const message = new InvokedCalls({});
+                if (data.callName != null) {
+                    message.callName = data.callName;
+                }
+                if (data.resolvedMethod != null) {
+                    message.resolvedMethod = data.resolvedMethod;
+                }
+                if (data.paramTypes != null) {
+                    message.paramTypes = data.paramTypes;
+                }
+                if (data.returnType != null) {
+                    message.returnType = data.returnType;
+                }
+                if (data.lineNumber != null) {
+                    message.lineNumber = data.lineNumber;
+                }
+                if (data.columnNumber != null) {
+                    message.columnNumber = data.columnNumber;
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    callName?: string;
+                    resolvedMethod?: string;
+                    paramTypes?: string[];
+                    returnType?: string;
+                    lineNumber?: number;
+                    columnNumber?: number;
+                } = {};
+                if (this.callName != null) {
+                    data.callName = this.callName;
+                }
+                if (this.resolvedMethod != null) {
+                    data.resolvedMethod = this.resolvedMethod;
+                }
+                if (this.paramTypes != null) {
+                    data.paramTypes = this.paramTypes;
+                }
+                if (this.returnType != null) {
+                    data.returnType = this.returnType;
+                }
+                if (this.lineNumber != null) {
+                    data.lineNumber = this.lineNumber;
+                }
+                if (this.columnNumber != null) {
+                    data.columnNumber = this.columnNumber;
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.callName.length)
+                    writer.writeString(1, this.callName);
+                if (this.resolvedMethod.length)
+                    writer.writeString(2, this.resolvedMethod);
+                if (this.paramTypes.length)
+                    writer.writeRepeatedString(3, this.paramTypes);
+                if (this.returnType.length)
+                    writer.writeString(4, this.returnType);
+                if (this.lineNumber != 0)
+                    writer.writeUint32(5, this.lineNumber);
+                if (this.columnNumber != 0)
+                    writer.writeUint32(6, this.columnNumber);
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): InvokedCalls {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new InvokedCalls();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            message.callName = reader.readString();
+                            break;
+                        case 2:
+                            message.resolvedMethod = reader.readString();
+                            break;
+                        case 3:
+                            pb_1.Message.addToRepeatedField(message, 3, reader.readString());
+                            break;
+                        case 4:
+                            message.returnType = reader.readString();
+                            break;
+                        case 5:
+                            message.lineNumber = reader.readUint32();
+                            break;
+                        case 6:
+                            message.columnNumber = reader.readUint32();
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): InvokedCalls {
+                return InvokedCalls.deserialize(bytes);
+            }
+        }
+        export class ArgToCalls extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                callName?: string;
+                resolvedMethod?: string;
+                paramTypes?: string[];
+                returnType?: string;
+                position?: number;
+                lineNumber?: number;
+                columnNumber?: number;
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [3], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("callName" in data && data.callName != undefined) {
+                        this.callName = data.callName;
+                    }
+                    if ("resolvedMethod" in data && data.resolvedMethod != undefined) {
+                        this.resolvedMethod = data.resolvedMethod;
+                    }
+                    if ("paramTypes" in data && data.paramTypes != undefined) {
+                        this.paramTypes = data.paramTypes;
+                    }
+                    if ("returnType" in data && data.returnType != undefined) {
+                        this.returnType = data.returnType;
+                    }
+                    if ("position" in data && data.position != undefined) {
+                        this.position = data.position;
+                    }
+                    if ("lineNumber" in data && data.lineNumber != undefined) {
+                        this.lineNumber = data.lineNumber;
+                    }
+                    if ("columnNumber" in data && data.columnNumber != undefined) {
+                        this.columnNumber = data.columnNumber;
+                    }
+                }
+            }
+            get callName() {
+                return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+            }
+            set callName(value: string) {
+                pb_1.Message.setField(this, 1, value);
+            }
+            get resolvedMethod() {
+                return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+            }
+            set resolvedMethod(value: string) {
+                pb_1.Message.setField(this, 2, value);
+            }
+            get paramTypes() {
+                return pb_1.Message.getFieldWithDefault(this, 3, []) as string[];
+            }
+            set paramTypes(value: string[]) {
+                pb_1.Message.setField(this, 3, value);
+            }
+            get returnType() {
+                return pb_1.Message.getFieldWithDefault(this, 4, "") as string;
+            }
+            set returnType(value: string) {
+                pb_1.Message.setField(this, 4, value);
+            }
+            get position() {
+                return pb_1.Message.getFieldWithDefault(this, 5, 0) as number;
+            }
+            set position(value: number) {
+                pb_1.Message.setField(this, 5, value);
+            }
+            get lineNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 6, 0) as number;
+            }
+            set lineNumber(value: number) {
+                pb_1.Message.setField(this, 6, value);
+            }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 7, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 7, value);
+            }
+            static fromObject(data: {
+                callName?: string;
+                resolvedMethod?: string;
+                paramTypes?: string[];
+                returnType?: string;
+                position?: number;
+                lineNumber?: number;
+                columnNumber?: number;
+            }): ArgToCalls {
+                const message = new ArgToCalls({});
+                if (data.callName != null) {
+                    message.callName = data.callName;
+                }
+                if (data.resolvedMethod != null) {
+                    message.resolvedMethod = data.resolvedMethod;
+                }
+                if (data.paramTypes != null) {
+                    message.paramTypes = data.paramTypes;
+                }
+                if (data.returnType != null) {
+                    message.returnType = data.returnType;
+                }
+                if (data.position != null) {
+                    message.position = data.position;
+                }
+                if (data.lineNumber != null) {
+                    message.lineNumber = data.lineNumber;
+                }
+                if (data.columnNumber != null) {
+                    message.columnNumber = data.columnNumber;
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    callName?: string;
+                    resolvedMethod?: string;
+                    paramTypes?: string[];
+                    returnType?: string;
+                    position?: number;
+                    lineNumber?: number;
+                    columnNumber?: number;
+                } = {};
+                if (this.callName != null) {
+                    data.callName = this.callName;
+                }
+                if (this.resolvedMethod != null) {
+                    data.resolvedMethod = this.resolvedMethod;
+                }
+                if (this.paramTypes != null) {
+                    data.paramTypes = this.paramTypes;
+                }
+                if (this.returnType != null) {
+                    data.returnType = this.returnType;
+                }
+                if (this.position != null) {
+                    data.position = this.position;
+                }
+                if (this.lineNumber != null) {
+                    data.lineNumber = this.lineNumber;
+                }
+                if (this.columnNumber != null) {
+                    data.columnNumber = this.columnNumber;
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.callName.length)
+                    writer.writeString(1, this.callName);
+                if (this.resolvedMethod.length)
+                    writer.writeString(2, this.resolvedMethod);
+                if (this.paramTypes.length)
+                    writer.writeRepeatedString(3, this.paramTypes);
+                if (this.returnType.length)
+                    writer.writeString(4, this.returnType);
+                if (this.position != 0)
+                    writer.writeUint32(5, this.position);
+                if (this.lineNumber != 0)
+                    writer.writeUint32(6, this.lineNumber);
+                if (this.columnNumber != 0)
+                    writer.writeUint32(7, this.columnNumber);
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): ArgToCalls {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new ArgToCalls();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            message.callName = reader.readString();
+                            break;
+                        case 2:
+                            message.resolvedMethod = reader.readString();
+                            break;
+                        case 3:
+                            pb_1.Message.addToRepeatedField(message, 3, reader.readString());
+                            break;
+                        case 4:
+                            message.returnType = reader.readString();
+                            break;
+                        case 5:
+                            message.position = reader.readUint32();
+                            break;
+                        case 6:
+                            message.lineNumber = reader.readUint32();
+                            break;
+                        case 7:
+                            message.columnNumber = reader.readUint32();
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): ArgToCalls {
+                return ArgToCalls.deserialize(bytes);
+            }
+        }
+        export class ObjectUsageSlice extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                targetObj?: UsageSlice.TargetObj;
+                definedBy?: UsageSlice.DefinedBy;
+                invokedCalls?: UsageSlice.InvokedCalls[];
+                argToCalls?: UsageSlice.ArgToCalls[];
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [3, 4], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("targetObj" in data && data.targetObj != undefined) {
+                        this.targetObj = data.targetObj;
+                    }
+                    if ("definedBy" in data && data.definedBy != undefined) {
+                        this.definedBy = data.definedBy;
+                    }
+                    if ("invokedCalls" in data && data.invokedCalls != undefined) {
+                        this.invokedCalls = data.invokedCalls;
+                    }
+                    if ("argToCalls" in data && data.argToCalls != undefined) {
+                        this.argToCalls = data.argToCalls;
+                    }
+                }
+            }
+            get targetObj() {
+                return pb_1.Message.getWrapperField(this, UsageSlice.TargetObj, 1) as UsageSlice.TargetObj;
+            }
+            set targetObj(value: UsageSlice.TargetObj) {
+                pb_1.Message.setWrapperField(this, 1, value);
+            }
+            get has_targetObj() {
+                return pb_1.Message.getField(this, 1) != null;
+            }
+            get definedBy() {
+                return pb_1.Message.getWrapperField(this, UsageSlice.DefinedBy, 2) as UsageSlice.DefinedBy;
+            }
+            set definedBy(value: UsageSlice.DefinedBy) {
+                pb_1.Message.setWrapperField(this, 2, value);
+            }
+            get has_definedBy() {
+                return pb_1.Message.getField(this, 2) != null;
+            }
+            get invokedCalls() {
+                return pb_1.Message.getRepeatedWrapperField(this, UsageSlice.InvokedCalls, 3) as UsageSlice.InvokedCalls[];
+            }
+            set invokedCalls(value: UsageSlice.InvokedCalls[]) {
+                pb_1.Message.setRepeatedWrapperField(this, 3, value);
+            }
+            get argToCalls() {
+                return pb_1.Message.getRepeatedWrapperField(this, UsageSlice.ArgToCalls, 4) as UsageSlice.ArgToCalls[];
+            }
+            set argToCalls(value: UsageSlice.ArgToCalls[]) {
+                pb_1.Message.setRepeatedWrapperField(this, 4, value);
+            }
+            static fromObject(data: {
+                targetObj?: ReturnType<typeof UsageSlice.TargetObj.prototype.toObject>;
+                definedBy?: ReturnType<typeof UsageSlice.DefinedBy.prototype.toObject>;
+                invokedCalls?: ReturnType<typeof UsageSlice.InvokedCalls.prototype.toObject>[];
+                argToCalls?: ReturnType<typeof UsageSlice.ArgToCalls.prototype.toObject>[];
+            }): ObjectUsageSlice {
+                const message = new ObjectUsageSlice({});
+                if (data.targetObj != null) {
+                    message.targetObj = UsageSlice.TargetObj.fromObject(data.targetObj);
+                }
+                if (data.definedBy != null) {
+                    message.definedBy = UsageSlice.DefinedBy.fromObject(data.definedBy);
+                }
+                if (data.invokedCalls != null) {
+                    message.invokedCalls = data.invokedCalls.map(item => UsageSlice.InvokedCalls.fromObject(item));
+                }
+                if (data.argToCalls != null) {
+                    message.argToCalls = data.argToCalls.map(item => UsageSlice.ArgToCalls.fromObject(item));
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    targetObj?: ReturnType<typeof UsageSlice.TargetObj.prototype.toObject>;
+                    definedBy?: ReturnType<typeof UsageSlice.DefinedBy.prototype.toObject>;
+                    invokedCalls?: ReturnType<typeof UsageSlice.InvokedCalls.prototype.toObject>[];
+                    argToCalls?: ReturnType<typeof UsageSlice.ArgToCalls.prototype.toObject>[];
+                } = {};
+                if (this.targetObj != null) {
+                    data.targetObj = this.targetObj.toObject();
+                }
+                if (this.definedBy != null) {
+                    data.definedBy = this.definedBy.toObject();
+                }
+                if (this.invokedCalls != null) {
+                    data.invokedCalls = this.invokedCalls.map((item: UsageSlice.InvokedCalls) => item.toObject());
+                }
+                if (this.argToCalls != null) {
+                    data.argToCalls = this.argToCalls.map((item: UsageSlice.ArgToCalls) => item.toObject());
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.has_targetObj)
+                    writer.writeMessage(1, this.targetObj, () => this.targetObj.serialize(writer));
+                if (this.has_definedBy)
+                    writer.writeMessage(2, this.definedBy, () => this.definedBy.serialize(writer));
+                if (this.invokedCalls.length)
+                    writer.writeRepeatedMessage(3, this.invokedCalls, (item: UsageSlice.InvokedCalls) => item.serialize(writer));
+                if (this.argToCalls.length)
+                    writer.writeRepeatedMessage(4, this.argToCalls, (item: UsageSlice.ArgToCalls) => item.serialize(writer));
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): ObjectUsageSlice {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new ObjectUsageSlice();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            reader.readMessage(message.targetObj, () => message.targetObj = UsageSlice.TargetObj.deserialize(reader));
+                            break;
+                        case 2:
+                            reader.readMessage(message.definedBy, () => message.definedBy = UsageSlice.DefinedBy.deserialize(reader));
+                            break;
+                        case 3:
+                            reader.readMessage(message.invokedCalls, () => pb_1.Message.addToRepeatedWrapperField(message, 3, UsageSlice.InvokedCalls.deserialize(reader), UsageSlice.InvokedCalls));
+                            break;
+                        case 4:
+                            reader.readMessage(message.argToCalls, () => pb_1.Message.addToRepeatedWrapperField(message, 4, UsageSlice.ArgToCalls.deserialize(reader), UsageSlice.ArgToCalls));
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): ObjectUsageSlice {
+                return ObjectUsageSlice.deserialize(bytes);
+            }
+        }
+        export class MethodUsageSlice extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                code?: string;
+                fullName?: string;
+                fileName?: string;
+                lineNumber?: number;
+                columnNumber?: number;
+                usages?: UsageSlice.ObjectUsageSlice[];
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [6], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("code" in data && data.code != undefined) {
+                        this.code = data.code;
+                    }
+                    if ("fullName" in data && data.fullName != undefined) {
+                        this.fullName = data.fullName;
+                    }
+                    if ("fileName" in data && data.fileName != undefined) {
+                        this.fileName = data.fileName;
+                    }
+                    if ("lineNumber" in data && data.lineNumber != undefined) {
+                        this.lineNumber = data.lineNumber;
+                    }
+                    if ("columnNumber" in data && data.columnNumber != undefined) {
+                        this.columnNumber = data.columnNumber;
+                    }
+                    if ("usages" in data && data.usages != undefined) {
+                        this.usages = data.usages;
+                    }
+                }
+            }
+            get code() {
+                return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+            }
+            set code(value: string) {
+                pb_1.Message.setField(this, 1, value);
+            }
+            get fullName() {
+                return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+            }
+            set fullName(value: string) {
+                pb_1.Message.setField(this, 2, value);
+            }
+            get fileName() {
+                return pb_1.Message.getFieldWithDefault(this, 3, "") as string;
+            }
+            set fileName(value: string) {
+                pb_1.Message.setField(this, 3, value);
+            }
+            get lineNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 4, 0) as number;
+            }
+            set lineNumber(value: number) {
+                pb_1.Message.setField(this, 4, value);
+            }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 5, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 5, value);
+            }
+            get usages() {
+                return pb_1.Message.getRepeatedWrapperField(this, UsageSlice.ObjectUsageSlice, 6) as UsageSlice.ObjectUsageSlice[];
+            }
+            set usages(value: UsageSlice.ObjectUsageSlice[]) {
+                pb_1.Message.setRepeatedWrapperField(this, 6, value);
+            }
+            static fromObject(data: {
+                code?: string;
+                fullName?: string;
+                fileName?: string;
+                lineNumber?: number;
+                columnNumber?: number;
+                usages?: ReturnType<typeof UsageSlice.ObjectUsageSlice.prototype.toObject>[];
+            }): MethodUsageSlice {
+                const message = new MethodUsageSlice({});
+                if (data.code != null) {
+                    message.code = data.code;
+                }
+                if (data.fullName != null) {
+                    message.fullName = data.fullName;
+                }
+                if (data.fileName != null) {
+                    message.fileName = data.fileName;
+                }
+                if (data.lineNumber != null) {
+                    message.lineNumber = data.lineNumber;
+                }
+                if (data.columnNumber != null) {
+                    message.columnNumber = data.columnNumber;
+                }
+                if (data.usages != null) {
+                    message.usages = data.usages.map(item => UsageSlice.ObjectUsageSlice.fromObject(item));
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    code?: string;
+                    fullName?: string;
+                    fileName?: string;
+                    lineNumber?: number;
+                    columnNumber?: number;
+                    usages?: ReturnType<typeof UsageSlice.ObjectUsageSlice.prototype.toObject>[];
+                } = {};
+                if (this.code != null) {
+                    data.code = this.code;
+                }
+                if (this.fullName != null) {
+                    data.fullName = this.fullName;
+                }
+                if (this.fileName != null) {
+                    data.fileName = this.fileName;
+                }
+                if (this.lineNumber != null) {
+                    data.lineNumber = this.lineNumber;
+                }
+                if (this.columnNumber != null) {
+                    data.columnNumber = this.columnNumber;
+                }
+                if (this.usages != null) {
+                    data.usages = this.usages.map((item: UsageSlice.ObjectUsageSlice) => item.toObject());
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.code.length)
+                    writer.writeString(1, this.code);
+                if (this.fullName.length)
+                    writer.writeString(2, this.fullName);
+                if (this.fileName.length)
+                    writer.writeString(3, this.fileName);
+                if (this.lineNumber != 0)
+                    writer.writeUint32(4, this.lineNumber);
+                if (this.columnNumber != 0)
+                    writer.writeUint32(5, this.columnNumber);
+                if (this.usages.length)
+                    writer.writeRepeatedMessage(6, this.usages, (item: UsageSlice.ObjectUsageSlice) => item.serialize(writer));
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): MethodUsageSlice {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new MethodUsageSlice();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            message.code = reader.readString();
+                            break;
+                        case 2:
+                            message.fullName = reader.readString();
+                            break;
+                        case 3:
+                            message.fileName = reader.readString();
+                            break;
+                        case 4:
+                            message.lineNumber = reader.readUint32();
+                            break;
+                        case 5:
+                            message.columnNumber = reader.readUint32();
+                            break;
+                        case 6:
+                            reader.readMessage(message.usages, () => pb_1.Message.addToRepeatedWrapperField(message, 6, UsageSlice.ObjectUsageSlice.deserialize(reader), UsageSlice.ObjectUsageSlice));
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): MethodUsageSlice {
+                return MethodUsageSlice.deserialize(bytes);
+            }
+        }
+        export class Fields extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                name?: string;
+                typeFullName?: string;
+                lineNumber?: number;
+                columnNumber?: number;
+                label?: UsageSlice.LabelType;
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("name" in data && data.name != undefined) {
+                        this.name = data.name;
+                    }
+                    if ("typeFullName" in data && data.typeFullName != undefined) {
+                        this.typeFullName = data.typeFullName;
+                    }
+                    if ("lineNumber" in data && data.lineNumber != undefined) {
+                        this.lineNumber = data.lineNumber;
+                    }
+                    if ("columnNumber" in data && data.columnNumber != undefined) {
+                        this.columnNumber = data.columnNumber;
+                    }
+                    if ("label" in data && data.label != undefined) {
+                        this.label = data.label;
+                    }
+                }
+            }
+            get name() {
+                return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+            }
+            set name(value: string) {
+                pb_1.Message.setField(this, 1, value);
+            }
+            get typeFullName() {
+                return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+            }
+            set typeFullName(value: string) {
+                pb_1.Message.setField(this, 2, value);
+            }
+            get lineNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 3, 0) as number;
+            }
+            set lineNumber(value: number) {
+                pb_1.Message.setField(this, 3, value);
+            }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 4, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 4, value);
+            }
+            get label() {
+                return pb_1.Message.getFieldWithDefault(this, 5, UsageSlice.LabelType.ANY) as UsageSlice.LabelType;
+            }
+            set label(value: UsageSlice.LabelType) {
+                pb_1.Message.setField(this, 5, value);
+            }
+            static fromObject(data: {
+                name?: string;
+                typeFullName?: string;
+                lineNumber?: number;
+                columnNumber?: number;
+                label?: UsageSlice.LabelType;
+            }): Fields {
+                const message = new Fields({});
+                if (data.name != null) {
+                    message.name = data.name;
+                }
+                if (data.typeFullName != null) {
+                    message.typeFullName = data.typeFullName;
+                }
+                if (data.lineNumber != null) {
+                    message.lineNumber = data.lineNumber;
+                }
+                if (data.columnNumber != null) {
+                    message.columnNumber = data.columnNumber;
+                }
+                if (data.label != null) {
+                    message.label = data.label;
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    name?: string;
+                    typeFullName?: string;
+                    lineNumber?: number;
+                    columnNumber?: number;
+                    label?: UsageSlice.LabelType;
+                } = {};
+                if (this.name != null) {
+                    data.name = this.name;
+                }
+                if (this.typeFullName != null) {
+                    data.typeFullName = this.typeFullName;
+                }
+                if (this.lineNumber != null) {
+                    data.lineNumber = this.lineNumber;
+                }
+                if (this.columnNumber != null) {
+                    data.columnNumber = this.columnNumber;
+                }
+                if (this.label != null) {
+                    data.label = this.label;
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.name.length)
+                    writer.writeString(1, this.name);
+                if (this.typeFullName.length)
+                    writer.writeString(2, this.typeFullName);
+                if (this.lineNumber != 0)
+                    writer.writeUint32(3, this.lineNumber);
+                if (this.columnNumber != 0)
+                    writer.writeUint32(4, this.columnNumber);
+                if (this.label != UsageSlice.LabelType.ANY)
+                    writer.writeEnum(5, this.label);
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Fields {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Fields();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            message.name = reader.readString();
+                            break;
+                        case 2:
+                            message.typeFullName = reader.readString();
+                            break;
+                        case 3:
+                            message.lineNumber = reader.readUint32();
+                            break;
+                        case 4:
+                            message.columnNumber = reader.readUint32();
+                            break;
+                        case 5:
+                            message.label = reader.readEnum();
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): Fields {
+                return Fields.deserialize(bytes);
+            }
+        }
+        export class Procedures extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                callName?: string;
+                resolvedMethod?: string;
+                paramTypes?: string[];
+                returnType?: string;
+                lineNumber?: number;
+                columnNumber?: number;
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [3], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("callName" in data && data.callName != undefined) {
+                        this.callName = data.callName;
+                    }
+                    if ("resolvedMethod" in data && data.resolvedMethod != undefined) {
+                        this.resolvedMethod = data.resolvedMethod;
+                    }
+                    if ("paramTypes" in data && data.paramTypes != undefined) {
+                        this.paramTypes = data.paramTypes;
+                    }
+                    if ("returnType" in data && data.returnType != undefined) {
+                        this.returnType = data.returnType;
+                    }
+                    if ("lineNumber" in data && data.lineNumber != undefined) {
+                        this.lineNumber = data.lineNumber;
+                    }
+                    if ("columnNumber" in data && data.columnNumber != undefined) {
+                        this.columnNumber = data.columnNumber;
+                    }
+                }
+            }
+            get callName() {
+                return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+            }
+            set callName(value: string) {
+                pb_1.Message.setField(this, 1, value);
+            }
+            get resolvedMethod() {
+                return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+            }
+            set resolvedMethod(value: string) {
+                pb_1.Message.setField(this, 2, value);
+            }
+            get paramTypes() {
+                return pb_1.Message.getFieldWithDefault(this, 3, []) as string[];
+            }
+            set paramTypes(value: string[]) {
+                pb_1.Message.setField(this, 3, value);
+            }
+            get returnType() {
+                return pb_1.Message.getFieldWithDefault(this, 4, "") as string;
+            }
+            set returnType(value: string) {
+                pb_1.Message.setField(this, 4, value);
+            }
+            get lineNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 5, 0) as number;
+            }
+            set lineNumber(value: number) {
+                pb_1.Message.setField(this, 5, value);
+            }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 6, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 6, value);
+            }
+            static fromObject(data: {
+                callName?: string;
+                resolvedMethod?: string;
+                paramTypes?: string[];
+                returnType?: string;
+                lineNumber?: number;
+                columnNumber?: number;
+            }): Procedures {
+                const message = new Procedures({});
+                if (data.callName != null) {
+                    message.callName = data.callName;
+                }
+                if (data.resolvedMethod != null) {
+                    message.resolvedMethod = data.resolvedMethod;
+                }
+                if (data.paramTypes != null) {
+                    message.paramTypes = data.paramTypes;
+                }
+                if (data.returnType != null) {
+                    message.returnType = data.returnType;
+                }
+                if (data.lineNumber != null) {
+                    message.lineNumber = data.lineNumber;
+                }
+                if (data.columnNumber != null) {
+                    message.columnNumber = data.columnNumber;
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    callName?: string;
+                    resolvedMethod?: string;
+                    paramTypes?: string[];
+                    returnType?: string;
+                    lineNumber?: number;
+                    columnNumber?: number;
+                } = {};
+                if (this.callName != null) {
+                    data.callName = this.callName;
+                }
+                if (this.resolvedMethod != null) {
+                    data.resolvedMethod = this.resolvedMethod;
+                }
+                if (this.paramTypes != null) {
+                    data.paramTypes = this.paramTypes;
+                }
+                if (this.returnType != null) {
+                    data.returnType = this.returnType;
+                }
+                if (this.lineNumber != null) {
+                    data.lineNumber = this.lineNumber;
+                }
+                if (this.columnNumber != null) {
+                    data.columnNumber = this.columnNumber;
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.callName.length)
+                    writer.writeString(1, this.callName);
+                if (this.resolvedMethod.length)
+                    writer.writeString(2, this.resolvedMethod);
+                if (this.paramTypes.length)
+                    writer.writeRepeatedString(3, this.paramTypes);
+                if (this.returnType.length)
+                    writer.writeString(4, this.returnType);
+                if (this.lineNumber != 0)
+                    writer.writeUint32(5, this.lineNumber);
+                if (this.columnNumber != 0)
+                    writer.writeUint32(6, this.columnNumber);
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Procedures {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Procedures();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            message.callName = reader.readString();
+                            break;
+                        case 2:
+                            message.resolvedMethod = reader.readString();
+                            break;
+                        case 3:
+                            pb_1.Message.addToRepeatedField(message, 3, reader.readString());
+                            break;
+                        case 4:
+                            message.returnType = reader.readString();
+                            break;
+                        case 5:
+                            message.lineNumber = reader.readUint32();
+                            break;
+                        case 6:
+                            message.columnNumber = reader.readUint32();
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): Procedures {
+                return Procedures.deserialize(bytes);
+            }
+        }
+        export class UserDefinedTypes extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                name?: string;
+                fields?: UsageSlice.Fields[];
+                procedures?: UsageSlice.Procedures[];
+                fileName?: string;
+                lineNumber?: number;
+                columnNumber?: number;
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [2, 3], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("name" in data && data.name != undefined) {
+                        this.name = data.name;
+                    }
+                    if ("fields" in data && data.fields != undefined) {
+                        this.fields = data.fields;
+                    }
+                    if ("procedures" in data && data.procedures != undefined) {
+                        this.procedures = data.procedures;
+                    }
+                    if ("fileName" in data && data.fileName != undefined) {
+                        this.fileName = data.fileName;
+                    }
+                    if ("lineNumber" in data && data.lineNumber != undefined) {
+                        this.lineNumber = data.lineNumber;
+                    }
+                    if ("columnNumber" in data && data.columnNumber != undefined) {
+                        this.columnNumber = data.columnNumber;
+                    }
+                }
+            }
+            get name() {
+                return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+            }
+            set name(value: string) {
+                pb_1.Message.setField(this, 1, value);
+            }
+            get fields() {
+                return pb_1.Message.getRepeatedWrapperField(this, UsageSlice.Fields, 2) as UsageSlice.Fields[];
+            }
+            set fields(value: UsageSlice.Fields[]) {
+                pb_1.Message.setRepeatedWrapperField(this, 2, value);
+            }
+            get procedures() {
+                return pb_1.Message.getRepeatedWrapperField(this, UsageSlice.Procedures, 3) as UsageSlice.Procedures[];
+            }
+            set procedures(value: UsageSlice.Procedures[]) {
+                pb_1.Message.setRepeatedWrapperField(this, 3, value);
+            }
+            get fileName() {
+                return pb_1.Message.getFieldWithDefault(this, 4, "") as string;
+            }
+            set fileName(value: string) {
+                pb_1.Message.setField(this, 4, value);
+            }
+            get lineNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 5, 0) as number;
+            }
+            set lineNumber(value: number) {
+                pb_1.Message.setField(this, 5, value);
+            }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 6, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 6, value);
+            }
+            static fromObject(data: {
+                name?: string;
+                fields?: ReturnType<typeof UsageSlice.Fields.prototype.toObject>[];
+                procedures?: ReturnType<typeof UsageSlice.Procedures.prototype.toObject>[];
+                fileName?: string;
+                lineNumber?: number;
+                columnNumber?: number;
+            }): UserDefinedTypes {
+                const message = new UserDefinedTypes({});
+                if (data.name != null) {
+                    message.name = data.name;
+                }
+                if (data.fields != null) {
+                    message.fields = data.fields.map(item => UsageSlice.Fields.fromObject(item));
+                }
+                if (data.procedures != null) {
+                    message.procedures = data.procedures.map(item => UsageSlice.Procedures.fromObject(item));
+                }
+                if (data.fileName != null) {
+                    message.fileName = data.fileName;
+                }
+                if (data.lineNumber != null) {
+                    message.lineNumber = data.lineNumber;
+                }
+                if (data.columnNumber != null) {
+                    message.columnNumber = data.columnNumber;
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    name?: string;
+                    fields?: ReturnType<typeof UsageSlice.Fields.prototype.toObject>[];
+                    procedures?: ReturnType<typeof UsageSlice.Procedures.prototype.toObject>[];
+                    fileName?: string;
+                    lineNumber?: number;
+                    columnNumber?: number;
+                } = {};
+                if (this.name != null) {
+                    data.name = this.name;
+                }
+                if (this.fields != null) {
+                    data.fields = this.fields.map((item: UsageSlice.Fields) => item.toObject());
+                }
+                if (this.procedures != null) {
+                    data.procedures = this.procedures.map((item: UsageSlice.Procedures) => item.toObject());
+                }
+                if (this.fileName != null) {
+                    data.fileName = this.fileName;
+                }
+                if (this.lineNumber != null) {
+                    data.lineNumber = this.lineNumber;
+                }
+                if (this.columnNumber != null) {
+                    data.columnNumber = this.columnNumber;
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.name.length)
+                    writer.writeString(1, this.name);
+                if (this.fields.length)
+                    writer.writeRepeatedMessage(2, this.fields, (item: UsageSlice.Fields) => item.serialize(writer));
+                if (this.procedures.length)
+                    writer.writeRepeatedMessage(3, this.procedures, (item: UsageSlice.Procedures) => item.serialize(writer));
+                if (this.fileName.length)
+                    writer.writeString(4, this.fileName);
+                if (this.lineNumber != 0)
+                    writer.writeUint32(5, this.lineNumber);
+                if (this.columnNumber != 0)
+                    writer.writeUint32(6, this.columnNumber);
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): UserDefinedTypes {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new UserDefinedTypes();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            message.name = reader.readString();
+                            break;
+                        case 2:
+                            reader.readMessage(message.fields, () => pb_1.Message.addToRepeatedWrapperField(message, 2, UsageSlice.Fields.deserialize(reader), UsageSlice.Fields));
+                            break;
+                        case 3:
+                            reader.readMessage(message.procedures, () => pb_1.Message.addToRepeatedWrapperField(message, 3, UsageSlice.Procedures.deserialize(reader), UsageSlice.Procedures));
+                            break;
+                        case 4:
+                            message.fileName = reader.readString();
+                            break;
+                        case 5:
+                            message.lineNumber = reader.readUint32();
+                            break;
+                        case 6:
+                            message.columnNumber = reader.readUint32();
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): UserDefinedTypes {
+                return UserDefinedTypes.deserialize(bytes);
+            }
+        }
+    }
+    export class DataFlowSlice extends pb_1.Message {
+        #one_of_decls: number[][] = [];
+        constructor(data?: any[] | {
+            graph?: DataFlowSlice.Graph;
+            path?: DataFlowSlice.Paths;
+        }) {
+            super();
+            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
+            if (!Array.isArray(data) && typeof data == "object") {
+                if ("graph" in data && data.graph != undefined) {
+                    this.graph = data.graph;
+                }
+                if ("path" in data && data.path != undefined) {
+                    this.path = data.path;
+                }
+            }
+        }
+        get graph() {
+            return pb_1.Message.getWrapperField(this, DataFlowSlice.Graph, 1) as DataFlowSlice.Graph;
+        }
+        set graph(value: DataFlowSlice.Graph) {
+            pb_1.Message.setWrapperField(this, 1, value);
+        }
+        get has_graph() {
+            return pb_1.Message.getField(this, 1) != null;
+        }
+        get path() {
+            return pb_1.Message.getWrapperField(this, DataFlowSlice.Paths, 2) as DataFlowSlice.Paths;
+        }
+        set path(value: DataFlowSlice.Paths) {
+            pb_1.Message.setWrapperField(this, 2, value);
+        }
+        get has_path() {
+            return pb_1.Message.getField(this, 2) != null;
+        }
+        static fromObject(data: {
+            graph?: ReturnType<typeof DataFlowSlice.Graph.prototype.toObject>;
+            path?: ReturnType<typeof DataFlowSlice.Paths.prototype.toObject>;
+        }): DataFlowSlice {
+            const message = new DataFlowSlice({});
+            if (data.graph != null) {
+                message.graph = DataFlowSlice.Graph.fromObject(data.graph);
+            }
+            if (data.path != null) {
+                message.path = DataFlowSlice.Paths.fromObject(data.path);
+            }
+            return message;
+        }
+        toObject() {
+            const data: {
+                graph?: ReturnType<typeof DataFlowSlice.Graph.prototype.toObject>;
+                path?: ReturnType<typeof DataFlowSlice.Paths.prototype.toObject>;
+            } = {};
+            if (this.graph != null) {
+                data.graph = this.graph.toObject();
+            }
+            if (this.path != null) {
+                data.path = this.path.toObject();
+            }
+            return data;
+        }
+        serialize(): Uint8Array;
+        serialize(w: pb_1.BinaryWriter): void;
+        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+            const writer = w || new pb_1.BinaryWriter();
+            if (this.has_graph)
+                writer.writeMessage(1, this.graph, () => this.graph.serialize(writer));
+            if (this.has_path)
+                writer.writeMessage(2, this.path, () => this.path.serialize(writer));
+            if (!w)
+                return writer.getResultBuffer();
+        }
+        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): DataFlowSlice {
+            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new DataFlowSlice();
+            while (reader.nextField()) {
+                if (reader.isEndGroup())
+                    break;
+                switch (reader.getFieldNumber()) {
+                    case 1:
+                        reader.readMessage(message.graph, () => message.graph = DataFlowSlice.Graph.deserialize(reader));
+                        break;
+                    case 2:
+                        reader.readMessage(message.path, () => message.path = DataFlowSlice.Paths.deserialize(reader));
+                        break;
+                    default: reader.skipField();
+                }
+            }
+            return message;
+        }
+        serializeBinary(): Uint8Array {
+            return this.serialize();
+        }
+        static deserializeBinary(bytes: Uint8Array): DataFlowSlice {
+            return DataFlowSlice.deserialize(bytes);
+        }
+    }
+    export namespace DataFlowSlice {
+        export class Nodes extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                id?: number;
+                label?: NodeType;
+                name?: string;
+                fullName?: string;
+                signature?: string;
+                isExternal?: boolean;
+                code?: string;
+                typeFullName?: string;
+                parentMethod?: string;
+                parentFile?: string;
+                lineNumber?: number;
+                columnNumber?: number;
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("id" in data && data.id != undefined) {
+                        this.id = data.id;
+                    }
+                    if ("label" in data && data.label != undefined) {
+                        this.label = data.label;
+                    }
+                    if ("name" in data && data.name != undefined) {
+                        this.name = data.name;
+                    }
+                    if ("fullName" in data && data.fullName != undefined) {
+                        this.fullName = data.fullName;
+                    }
+                    if ("signature" in data && data.signature != undefined) {
+                        this.signature = data.signature;
+                    }
+                    if ("isExternal" in data && data.isExternal != undefined) {
+                        this.isExternal = data.isExternal;
+                    }
+                    if ("code" in data && data.code != undefined) {
+                        this.code = data.code;
+                    }
+                    if ("typeFullName" in data && data.typeFullName != undefined) {
+                        this.typeFullName = data.typeFullName;
+                    }
+                    if ("parentMethod" in data && data.parentMethod != undefined) {
+                        this.parentMethod = data.parentMethod;
+                    }
+                    if ("parentFile" in data && data.parentFile != undefined) {
+                        this.parentFile = data.parentFile;
+                    }
+                    if ("lineNumber" in data && data.lineNumber != undefined) {
+                        this.lineNumber = data.lineNumber;
+                    }
+                    if ("columnNumber" in data && data.columnNumber != undefined) {
+                        this.columnNumber = data.columnNumber;
+                    }
+                }
+            }
+            get id() {
+                return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
+            }
+            set id(value: number) {
+                pb_1.Message.setField(this, 1, value);
+            }
+            get label() {
+                return pb_1.Message.getFieldWithDefault(this, 2, NodeType.UNKNOWN_NODE_TYPE) as NodeType;
+            }
+            set label(value: NodeType) {
+                pb_1.Message.setField(this, 2, value);
+            }
+            get name() {
+                return pb_1.Message.getFieldWithDefault(this, 3, "") as string;
+            }
+            set name(value: string) {
+                pb_1.Message.setField(this, 3, value);
+            }
+            get fullName() {
+                return pb_1.Message.getFieldWithDefault(this, 4, "") as string;
+            }
+            set fullName(value: string) {
+                pb_1.Message.setField(this, 4, value);
+            }
+            get signature() {
+                return pb_1.Message.getFieldWithDefault(this, 5, "") as string;
+            }
+            set signature(value: string) {
+                pb_1.Message.setField(this, 5, value);
+            }
+            get isExternal() {
+                return pb_1.Message.getFieldWithDefault(this, 6, false) as boolean;
+            }
+            set isExternal(value: boolean) {
+                pb_1.Message.setField(this, 6, value);
+            }
+            get code() {
+                return pb_1.Message.getFieldWithDefault(this, 7, "") as string;
+            }
+            set code(value: string) {
+                pb_1.Message.setField(this, 7, value);
+            }
+            get typeFullName() {
+                return pb_1.Message.getFieldWithDefault(this, 8, "") as string;
+            }
+            set typeFullName(value: string) {
+                pb_1.Message.setField(this, 8, value);
+            }
+            get parentMethod() {
+                return pb_1.Message.getFieldWithDefault(this, 9, "") as string;
+            }
+            set parentMethod(value: string) {
+                pb_1.Message.setField(this, 9, value);
+            }
+            get parentFile() {
+                return pb_1.Message.getFieldWithDefault(this, 10, "") as string;
+            }
+            set parentFile(value: string) {
+                pb_1.Message.setField(this, 10, value);
+            }
+            get lineNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 11, 0) as number;
+            }
+            set lineNumber(value: number) {
+                pb_1.Message.setField(this, 11, value);
+            }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 12, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 12, value);
+            }
+            static fromObject(data: {
+                id?: number;
+                label?: NodeType;
+                name?: string;
+                fullName?: string;
+                signature?: string;
+                isExternal?: boolean;
+                code?: string;
+                typeFullName?: string;
+                parentMethod?: string;
+                parentFile?: string;
+                lineNumber?: number;
+                columnNumber?: number;
+            }): Nodes {
+                const message = new Nodes({});
+                if (data.id != null) {
+                    message.id = data.id;
+                }
+                if (data.label != null) {
+                    message.label = data.label;
+                }
+                if (data.name != null) {
+                    message.name = data.name;
+                }
+                if (data.fullName != null) {
+                    message.fullName = data.fullName;
+                }
+                if (data.signature != null) {
+                    message.signature = data.signature;
+                }
+                if (data.isExternal != null) {
+                    message.isExternal = data.isExternal;
+                }
+                if (data.code != null) {
+                    message.code = data.code;
+                }
+                if (data.typeFullName != null) {
+                    message.typeFullName = data.typeFullName;
+                }
+                if (data.parentMethod != null) {
+                    message.parentMethod = data.parentMethod;
+                }
+                if (data.parentFile != null) {
+                    message.parentFile = data.parentFile;
+                }
+                if (data.lineNumber != null) {
+                    message.lineNumber = data.lineNumber;
+                }
+                if (data.columnNumber != null) {
+                    message.columnNumber = data.columnNumber;
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    id?: number;
+                    label?: NodeType;
+                    name?: string;
+                    fullName?: string;
+                    signature?: string;
+                    isExternal?: boolean;
+                    code?: string;
+                    typeFullName?: string;
+                    parentMethod?: string;
+                    parentFile?: string;
+                    lineNumber?: number;
+                    columnNumber?: number;
+                } = {};
+                if (this.id != null) {
+                    data.id = this.id;
+                }
+                if (this.label != null) {
+                    data.label = this.label;
+                }
+                if (this.name != null) {
+                    data.name = this.name;
+                }
+                if (this.fullName != null) {
+                    data.fullName = this.fullName;
+                }
+                if (this.signature != null) {
+                    data.signature = this.signature;
+                }
+                if (this.isExternal != null) {
+                    data.isExternal = this.isExternal;
+                }
+                if (this.code != null) {
+                    data.code = this.code;
+                }
+                if (this.typeFullName != null) {
+                    data.typeFullName = this.typeFullName;
+                }
+                if (this.parentMethod != null) {
+                    data.parentMethod = this.parentMethod;
+                }
+                if (this.parentFile != null) {
+                    data.parentFile = this.parentFile;
+                }
+                if (this.lineNumber != null) {
+                    data.lineNumber = this.lineNumber;
+                }
+                if (this.columnNumber != null) {
+                    data.columnNumber = this.columnNumber;
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.id != 0)
+                    writer.writeUint32(1, this.id);
+                if (this.label != NodeType.UNKNOWN_NODE_TYPE)
+                    writer.writeEnum(2, this.label);
+                if (this.name.length)
+                    writer.writeString(3, this.name);
+                if (this.fullName.length)
+                    writer.writeString(4, this.fullName);
+                if (this.signature.length)
+                    writer.writeString(5, this.signature);
+                if (this.isExternal != false)
+                    writer.writeBool(6, this.isExternal);
+                if (this.code.length)
+                    writer.writeString(7, this.code);
+                if (this.typeFullName.length)
+                    writer.writeString(8, this.typeFullName);
+                if (this.parentMethod.length)
+                    writer.writeString(9, this.parentMethod);
+                if (this.parentFile.length)
+                    writer.writeString(10, this.parentFile);
+                if (this.lineNumber != 0)
+                    writer.writeUint32(11, this.lineNumber);
+                if (this.columnNumber != 0)
+                    writer.writeUint32(12, this.columnNumber);
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Nodes {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Nodes();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            message.id = reader.readUint32();
+                            break;
+                        case 2:
+                            message.label = reader.readEnum();
+                            break;
+                        case 3:
+                            message.name = reader.readString();
+                            break;
+                        case 4:
+                            message.fullName = reader.readString();
+                            break;
+                        case 5:
+                            message.signature = reader.readString();
+                            break;
+                        case 6:
+                            message.isExternal = reader.readBool();
+                            break;
+                        case 7:
+                            message.code = reader.readString();
+                            break;
+                        case 8:
+                            message.typeFullName = reader.readString();
+                            break;
+                        case 9:
+                            message.parentMethod = reader.readString();
+                            break;
+                        case 10:
+                            message.parentFile = reader.readString();
+                            break;
+                        case 11:
+                            message.lineNumber = reader.readUint32();
+                            break;
+                        case 12:
+                            message.columnNumber = reader.readUint32();
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): Nodes {
+                return Nodes.deserialize(bytes);
+            }
+        }
+        export class Edges extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                src?: number;
+                dst?: number;
+                label?: CpgStruct.Edge.EdgeType;
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("src" in data && data.src != undefined) {
+                        this.src = data.src;
+                    }
+                    if ("dst" in data && data.dst != undefined) {
+                        this.dst = data.dst;
+                    }
+                    if ("label" in data && data.label != undefined) {
+                        this.label = data.label;
+                    }
+                }
+            }
+            get src() {
+                return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
+            }
+            set src(value: number) {
+                pb_1.Message.setField(this, 1, value);
+            }
+            get dst() {
+                return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
+            }
+            set dst(value: number) {
+                pb_1.Message.setField(this, 2, value);
+            }
+            get label() {
+                return pb_1.Message.getFieldWithDefault(this, 3, CpgStruct.Edge.EdgeType.UNKNOWN_EDGE_TYPE) as CpgStruct.Edge.EdgeType;
+            }
+            set label(value: CpgStruct.Edge.EdgeType) {
+                pb_1.Message.setField(this, 3, value);
+            }
+            static fromObject(data: {
+                src?: number;
+                dst?: number;
+                label?: CpgStruct.Edge.EdgeType;
+            }): Edges {
+                const message = new Edges({});
+                if (data.src != null) {
+                    message.src = data.src;
+                }
+                if (data.dst != null) {
+                    message.dst = data.dst;
+                }
+                if (data.label != null) {
+                    message.label = data.label;
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    src?: number;
+                    dst?: number;
+                    label?: CpgStruct.Edge.EdgeType;
+                } = {};
+                if (this.src != null) {
+                    data.src = this.src;
+                }
+                if (this.dst != null) {
+                    data.dst = this.dst;
+                }
+                if (this.label != null) {
+                    data.label = this.label;
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.src != 0)
+                    writer.writeUint32(1, this.src);
+                if (this.dst != 0)
+                    writer.writeUint32(2, this.dst);
+                if (this.label != CpgStruct.Edge.EdgeType.UNKNOWN_EDGE_TYPE)
+                    writer.writeEnum(3, this.label);
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Edges {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Edges();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            message.src = reader.readUint32();
+                            break;
+                        case 2:
+                            message.dst = reader.readUint32();
+                            break;
+                        case 3:
+                            message.label = reader.readEnum();
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): Edges {
+                return Edges.deserialize(bytes);
+            }
+        }
+        export class Flows extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                id?: number[];
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("id" in data && data.id != undefined) {
+                        this.id = data.id;
+                    }
+                }
+            }
+            get id() {
+                return pb_1.Message.getFieldWithDefault(this, 1, []) as number[];
+            }
+            set id(value: number[]) {
+                pb_1.Message.setField(this, 1, value);
+            }
+            static fromObject(data: {
+                id?: number[];
+            }): Flows {
+                const message = new Flows({});
+                if (data.id != null) {
+                    message.id = data.id;
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    id?: number[];
+                } = {};
+                if (this.id != null) {
+                    data.id = this.id;
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.id.length)
+                    writer.writePackedUint32(1, this.id);
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Flows {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Flows();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            message.id = reader.readPackedUint32();
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): Flows {
+                return Flows.deserialize(bytes);
+            }
+        }
+        export class Paths extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                flows?: DataFlowSlice.Flows[];
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("flows" in data && data.flows != undefined) {
+                        this.flows = data.flows;
+                    }
+                }
+            }
+            get flows() {
+                return pb_1.Message.getRepeatedWrapperField(this, DataFlowSlice.Flows, 1) as DataFlowSlice.Flows[];
+            }
+            set flows(value: DataFlowSlice.Flows[]) {
+                pb_1.Message.setRepeatedWrapperField(this, 1, value);
+            }
+            static fromObject(data: {
+                flows?: ReturnType<typeof DataFlowSlice.Flows.prototype.toObject>[];
+            }): Paths {
+                const message = new Paths({});
+                if (data.flows != null) {
+                    message.flows = data.flows.map(item => DataFlowSlice.Flows.fromObject(item));
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    flows?: ReturnType<typeof DataFlowSlice.Flows.prototype.toObject>[];
+                } = {};
+                if (this.flows != null) {
+                    data.flows = this.flows.map((item: DataFlowSlice.Flows) => item.toObject());
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.flows.length)
+                    writer.writeRepeatedMessage(1, this.flows, (item: DataFlowSlice.Flows) => item.serialize(writer));
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Paths {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Paths();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            reader.readMessage(message.flows, () => pb_1.Message.addToRepeatedWrapperField(message, 1, DataFlowSlice.Flows.deserialize(reader), DataFlowSlice.Flows));
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): Paths {
+                return Paths.deserialize(bytes);
+            }
+        }
+        export class Graph extends pb_1.Message {
+            #one_of_decls: number[][] = [];
+            constructor(data?: any[] | {
+                nodes?: DataFlowSlice.Nodes[];
+                edges?: DataFlowSlice.Edges[];
+            }) {
+                super();
+                pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1, 2], this.#one_of_decls);
+                if (!Array.isArray(data) && typeof data == "object") {
+                    if ("nodes" in data && data.nodes != undefined) {
+                        this.nodes = data.nodes;
+                    }
+                    if ("edges" in data && data.edges != undefined) {
+                        this.edges = data.edges;
+                    }
+                }
+            }
+            get nodes() {
+                return pb_1.Message.getRepeatedWrapperField(this, DataFlowSlice.Nodes, 1) as DataFlowSlice.Nodes[];
+            }
+            set nodes(value: DataFlowSlice.Nodes[]) {
+                pb_1.Message.setRepeatedWrapperField(this, 1, value);
+            }
+            get edges() {
+                return pb_1.Message.getRepeatedWrapperField(this, DataFlowSlice.Edges, 2) as DataFlowSlice.Edges[];
+            }
+            set edges(value: DataFlowSlice.Edges[]) {
+                pb_1.Message.setRepeatedWrapperField(this, 2, value);
+            }
+            static fromObject(data: {
+                nodes?: ReturnType<typeof DataFlowSlice.Nodes.prototype.toObject>[];
+                edges?: ReturnType<typeof DataFlowSlice.Edges.prototype.toObject>[];
+            }): Graph {
+                const message = new Graph({});
+                if (data.nodes != null) {
+                    message.nodes = data.nodes.map(item => DataFlowSlice.Nodes.fromObject(item));
+                }
+                if (data.edges != null) {
+                    message.edges = data.edges.map(item => DataFlowSlice.Edges.fromObject(item));
+                }
+                return message;
+            }
+            toObject() {
+                const data: {
+                    nodes?: ReturnType<typeof DataFlowSlice.Nodes.prototype.toObject>[];
+                    edges?: ReturnType<typeof DataFlowSlice.Edges.prototype.toObject>[];
+                } = {};
+                if (this.nodes != null) {
+                    data.nodes = this.nodes.map((item: DataFlowSlice.Nodes) => item.toObject());
+                }
+                if (this.edges != null) {
+                    data.edges = this.edges.map((item: DataFlowSlice.Edges) => item.toObject());
+                }
+                return data;
+            }
+            serialize(): Uint8Array;
+            serialize(w: pb_1.BinaryWriter): void;
+            serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+                const writer = w || new pb_1.BinaryWriter();
+                if (this.nodes.length)
+                    writer.writeRepeatedMessage(1, this.nodes, (item: DataFlowSlice.Nodes) => item.serialize(writer));
+                if (this.edges.length)
+                    writer.writeRepeatedMessage(2, this.edges, (item: DataFlowSlice.Edges) => item.serialize(writer));
+                if (!w)
+                    return writer.getResultBuffer();
+            }
+            static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Graph {
+                const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Graph();
+                while (reader.nextField()) {
+                    if (reader.isEndGroup())
+                        break;
+                    switch (reader.getFieldNumber()) {
+                        case 1:
+                            reader.readMessage(message.nodes, () => pb_1.Message.addToRepeatedWrapperField(message, 1, DataFlowSlice.Nodes.deserialize(reader), DataFlowSlice.Nodes));
+                            break;
+                        case 2:
+                            reader.readMessage(message.edges, () => pb_1.Message.addToRepeatedWrapperField(message, 2, DataFlowSlice.Edges.deserialize(reader), DataFlowSlice.Edges));
+                            break;
+                        default: reader.skipField();
+                    }
+                }
+                return message;
+            }
+            serializeBinary(): Uint8Array {
+                return this.serialize();
+            }
+            static deserializeBinary(bytes: Uint8Array): Graph {
+                return Graph.deserialize(bytes);
             }
         }
     }
