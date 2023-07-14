@@ -20,7 +20,7 @@ object DataFlowSlicing {
     (config.fileFilter match {
       case Some(fileName) => cpg.file.nameExact(fileName).ast.isCall
       case None           => cpg.call
-    }).iterator.method.withMethodNameFilter.withMethodParameterFilter.withMethodAnnotationFilter.ast.isCall
+    }).where(c => c.callee.isExternal)
       .flatMap {
         case c if excludeOperatorCalls.get() && c.name.startsWith("<operator") => None
         case c                                                                 => Some(c)
@@ -36,7 +36,6 @@ object DataFlowSlicing {
           .map { e => SliceEdge(e.outNode().id(), e.inNode().id(), e.label()) }
           .toSet
         lazy val slice = Option(DataFlowSlice(sliceNodes.map(cfgNodeToSliceNode).toSet, sliceEdges))
-
         // Filtering
         sliceNodes match {
           case Nil                                                                     => None
@@ -68,8 +67,8 @@ object DataFlowSlicing {
         sliceNode.copy(
           name = n.name,
           fullName = n.methodFullName,
-          isExternal = if (n.callee.isExternal.isEmpty) false else n.callee.isExternal.l(0),
-          signature = if (n.callee.signature.isEmpty) "" else n.callee.signature.l(0),
+          isExternal = n.callee.isExternal.headOption.getOrElse(false),
+          signature = n.callee.signature.headOption.getOrElse(""),
           typeFullName = n.typeFullName
         )
       case n: Method =>
