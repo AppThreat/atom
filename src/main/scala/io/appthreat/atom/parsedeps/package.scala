@@ -56,8 +56,8 @@ package object parsedeps {
     cpg.metaData.language.map(_.toUpperCase).headOption match
       case Some(language) if Set(Languages.PYTHONSRC, Languages.PYTHON, "PY").contains(language) =>
         Right(PythonDependencyParser.parse(cpg))
-      case Some(language) => Left(s"'$language' is not yet supported for the `depscan` command")
-      case _              => Left("Unable to extract CPG language")
+      case Some(language) => Left(s"'$language' is not yet supported for the `parsedeps` command")
+      case _              => Left("Unable to extract atom language")
   }
 
 }

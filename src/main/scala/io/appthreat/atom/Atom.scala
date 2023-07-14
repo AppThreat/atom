@@ -8,15 +8,14 @@ import io.joern.c2cpg.{C2Cpg, Config as CConfig}
 import io.appthreat.atom.slicing.{UsageSlicing, *}
 import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.joern.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
-import io.joern.jssrc2cpg.passes.{ConstClosurePass, JavaScriptInheritanceNamePass}
+import io.joern.jssrc2cpg.passes.{ConstClosurePass, JavaScriptInheritanceNamePass, ImportResolverPass}
 import io.joern.jssrc2cpg.{JsSrc2Cpg, Config as JSConfig}
 import io.joern.pysrc2cpg.{
   DynamicTypeHintFullNamePass,
   Py2CpgOnFileSystem,
   PythonInheritanceNamePass,
-  PythonTypeHintCallLinker,
-  PythonTypeRecoveryPass,
   ImportsPass as PythonImportsPass,
+  ImportResolverPass as PyImportResolverPass,
   Py2CpgOnFileSystemConfig as PyConfig
 }
 import io.joern.x2cpg.passes.base.AstLinkerPass
@@ -223,7 +222,7 @@ object Atom {
           .map { cpg =>
             new JavaScriptInheritanceNamePass(cpg).createAndApply()
             new ConstClosurePass(cpg).createAndApply()
-            new NaiveCallLinker(cpg).createAndApply()
+            new ImportResolverPass(cpg).createAndApply()
             cpg
           }
       case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
@@ -239,6 +238,9 @@ object Atom {
           )
           .map { cpg =>
             new PythonImportsPass(cpg).createAndApply()
+            new PyImportResolverPass(cpg).createAndApply()
+            new DynamicTypeHintFullNamePass(cpg).createAndApply()
+            new PythonInheritanceNamePass(cpg).createAndApply()
             cpg
           }
       case _ => Failure(new RuntimeException(s"No language frontend supported for language '$language'"))

@@ -16,14 +16,14 @@ const dirName = import.meta ? dirname(fileURLToPath(url)) : __dirname;
 const LOG4J_CONFIG = join(dirName, "plugins", "log4j2.xml");
 const ATOM_HOME = join(dirName, "plugins", "atom-1.0.0");
 const APP_LIB_DIR = join(ATOM_HOME, "lib");
-const freeMemoryGB = Math.floor(freemem() / 1024 / 1024 / 1024);
+const freeMemoryGB = Math.max(Math.floor(freemem() / 1024 / 1024 / 1024), 4);
 const JVM_ARGS =
   "-XX:+UseG1GC -XX:+ExplicitGCInvokesConcurrent -XX:+ParallelRefProcEnabled -XX:+UseStringDeduplication -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:+UnlockDiagnosticVMOptions -XX:G1SummarizeRSetStatsPeriod=1";
 const JAVA_OPTS = `${process.env.JAVA_OPTS || ""} -Xms${Math.round(
   Math.floor(freeMemoryGB / 2)
 )}G -Xmx${freeMemoryGB}G ${JVM_ARGS}`;
 const APP_MAIN_CLASS = "io.appthreat.atom.Atom";
-let APP_CLASSPATH = join(APP_LIB_DIR, "io.appthreat.atom-1.0.0-classpath.jar");
+const APP_CLASSPATH = join(APP_LIB_DIR, "io.appthreat.atom-1.0.0-classpath.jar");
 let JAVACMD = "java";
 if (process.env.JAVA_HOME) {
   JAVACMD = join(process.env.JAVA_HOME, "bin", "java" + (isWin ? ".exe" : ""));

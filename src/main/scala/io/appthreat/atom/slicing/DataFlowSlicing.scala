@@ -68,8 +68,8 @@ object DataFlowSlicing {
         sliceNode.copy(
           name = n.name,
           fullName = n.methodFullName,
-          isExternal = n.callee.isExternal.l(0),
-          signature = n.callee.signature.l(0),
+          isExternal = if (n.callee.isExternal.isEmpty) false else n.callee.isExternal.l(0),
+          signature = if (n.callee.signature.isEmpty) "" else n.callee.signature.l(0),
           typeFullName = n.typeFullName
         )
       case n: Method =>
