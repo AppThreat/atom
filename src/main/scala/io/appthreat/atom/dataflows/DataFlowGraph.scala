@@ -39,7 +39,7 @@ private class DataFlowGraph(nodes: Set[Option[DFNode]]) {
     * nodes
     */
   private def isUsefulPath(path: List[String]): Boolean =
-    (path.head == "METHOD_PARAMETER_IN" || path.last == "CALL") && path
+    path.head == "METHOD_PARAMETER_IN" && path
       .filter(x => USEFUL_PATH_LABELS.contains(x))
       .size > 2
 
@@ -72,7 +72,7 @@ private case class DFNode(id: Long, isExternal: Boolean, label: String, in: Set[
 
 object DataFlowGraph {
 
-  private def DF_EDGES = Set(EdgeTypes.REACHING_DEF, EdgeTypes.CALL, EdgeTypes.REF, EdgeTypes.CFG, EdgeTypes.DOMINATE)
+  private def DF_EDGES = Set(EdgeTypes.REACHING_DEF, EdgeTypes.CALL, EdgeTypes.REF)
   val exec             = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors())
 
   def buildFromSlice(slice: DataFlowSlice): DataFlowGraph = {

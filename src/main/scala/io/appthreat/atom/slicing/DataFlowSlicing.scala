@@ -16,6 +16,7 @@ object DataFlowSlicing {
   private val excludeOperatorCalls     = new AtomicBoolean(true)
   private val nodeCache                = new TrieMap[Long, SliceNode]()
   val exec                             = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors())
+  private def DF_EDGES                 = Set(EdgeTypes.REACHING_DEF, EdgeTypes.CALL, EdgeTypes.REF)
 
   def calculateDataFlowSlice(cpg: Cpg, config: DataFlowConfig): Option[DataFlowSlice] = {
     implicit val implicitConfig: BaseConfig = config
@@ -61,21 +62,11 @@ object DataFlowSlicing {
         .flatMap(_.outE)
         .filter(x => sliceNodesIdSet.contains(x.inNode().id()))
         .map { e => SliceEdge(e.outNode().id(), e.inNode().id(), e.label()) }
+        .filter(e => DF_EDGES.contains(e.label))
         .toSet
-      lazy val slice = Option(DataFlowSlice(sliceNodes.map(fromCfgNode).toSet, sliceEdges))
-      // Filtering
-      sliceNodes match {
-        case Nil                                                                     => None
-        case _ if config.mustEndAtExternalMethod && !sinksEndAtExternalMethod(sinks) => None
-        case _                                                                       => slice
-      }
+      Option(DataFlowSlice(sliceNodes.map(fromCfgNode).toSet, sliceEdges))
     }
   }
-
-  /** True if the sinks are either calls to external methods or are in external method stubs.
-    */
-  private def sinksEndAtExternalMethod(sinks: List[Expression]) =
-    sinks.isCall.callee.isExternal.nonEmpty || sinks.method.isExternal.nonEmpty
 
   /** Convert cfg node to a sliceable node with backing cache
     */
