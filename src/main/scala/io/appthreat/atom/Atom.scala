@@ -34,7 +34,7 @@ object Atom {
 
   val DEFAULT_ATOM_OUT_FILE: String = if (Properties.isWin) "app.atom" else "app.⚛"
   val DEFAULT_SLICE_OUT_FILE        = "slices.json"
-  val DEFAULT_SLICE_DEPTH           = 10
+  val DEFAULT_SLICE_DEPTH           = 7
   val DEFAULT_MAX_DEFS: Int         = 2000
   private val MAVEN_JAR_PATH: File  = File.home / ".m2"
   private val GRADLE_JAR_PATH: File = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
@@ -92,7 +92,7 @@ object Atom {
           case _                  => c
       )
     opt[String]("file-filter")
-      .text(s"the name of the source file to generate slices from.")
+      .text(s"the name of the source file to generate slices from. Uses regex.")
       .action((x, c) => c.withFileFilter(Option(x)))
     opt[String]("method-name-filter")
       .text(s"filters in slices that go through specific methods by names. Uses regex.")
@@ -104,7 +104,7 @@ object Atom {
       .text(s"filters in slices that go through methods with specific annotations on the methods. Uses regex.")
       .action((x, c) => c.withMethodAnnotationFilter(Option(x)))
     opt[Int]("max-num-def")
-      .text("maximum number of definitions in per-method data flow calculation - defaults to 2000")
+      .text(s"maximum number of definitions in per-method data flow calculation - defaults to $DEFAULT_MAX_DEFS")
       .action((x, c) =>
         c match
           case config: AtomConfig => config.withMaxNumDef(x)
@@ -119,7 +119,7 @@ object Atom {
       .action((_, _) => AtomDataFlowConfig().withDataDependencies(true))
       .children(
         opt[Int]("slice-depth")
-          .text(s"the max depth to traverse the DDG for the data-flow slice - defaults to 10.")
+          .text(s"the max depth to traverse the DDG for the data-flow slice - defaults to $DEFAULT_SLICE_DEPTH.")
           .action((x, c) =>
             c match {
               case c: AtomDataFlowConfig => c.copy(sliceDepth = x)
@@ -168,7 +168,7 @@ object Atom {
     }
   }
 
-  def newCpgCreatedString(path: String): String = {
+  def newAtomCreatedString(path: String): String = {
     val absolutePath = File(path).path.toAbsolutePath
     s"Atom created successfully at $absolutePath\n"
   }
@@ -177,7 +177,7 @@ object Atom {
     for {
       _ <- generateAtom(config, language)
       _ <- generateSlice(config)
-    } yield newCpgCreatedString(config match
+    } yield newAtomCreatedString(config match
       case config: AtomConfig => config.outputAtomFile.pathAsString
       case _                  => DEFAULT_ATOM_OUT_FILE
     )
@@ -219,11 +219,11 @@ object Atom {
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
           )
-          .map { cpg =>
-            new JavaScriptInheritanceNamePass(cpg).createAndApply()
-            new ConstClosurePass(cpg).createAndApply()
-            new ImportResolverPass(cpg).createAndApply()
-            cpg
+          .map { ag =>
+            new JavaScriptInheritanceNamePass(ag).createAndApply()
+            new ConstClosurePass(ag).createAndApply()
+            new ImportResolverPass(ag).createAndApply()
+            ag
           }
       case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
         new Py2CpgOnFileSystem()
@@ -236,26 +236,26 @@ object Atom {
                 ".*(samples|examples|test|tests|unittests|docs|virtualenvs|venv|benchmarks|tutorials).*"
               )
           )
-          .map { cpg =>
-            new PythonImportsPass(cpg).createAndApply()
-            new PyImportResolverPass(cpg).createAndApply()
-            new DynamicTypeHintFullNamePass(cpg).createAndApply()
-            new PythonInheritanceNamePass(cpg).createAndApply()
-            cpg
+          .map { ag =>
+            new PythonImportsPass(ag).createAndApply()
+            new PyImportResolverPass(ag).createAndApply()
+            new DynamicTypeHintFullNamePass(ag).createAndApply()
+            new PythonInheritanceNamePass(ag).createAndApply()
+            ag
           }
       case _ => Failure(new RuntimeException(s"No language frontend supported for language '$language'"))
     }) match {
       case Failure(exception) =>
         Left(exception.getMessage)
-      case Success(cpg) =>
+      case Success(ag) =>
         config match {
           case x: AtomConfig if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] =>
-            println("Generating data-flow dependencies. Please wait ...")
+            println("Generating data-flow dependencies from atom. Please wait ...")
             new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
-              .run(new LayerCreatorContext(cpg))
+              .run(new LayerCreatorContext(ag))
           case _ =>
         }
-        cpg.close()
+        ag.close()
         Right("Atom generation successful")
     }
   }

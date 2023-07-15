@@ -1041,11 +1041,15 @@ class DataFlowSliceNodes(betterproto.Message):
     # Parent method
     parent_method: str = betterproto.string_field(9)
     # Parent filename
-    parent_file: str = betterproto.string_field(10)
+    parent_file_name: str = betterproto.string_field(10)
+    # Parent package name
+    parent_package_name: str = betterproto.string_field(11)
+    # Parent class name
+    parent_class_name: str = betterproto.string_field(12)
     # Line number
-    line_number: int = betterproto.uint32_field(11)
+    line_number: int = betterproto.uint32_field(13)
     # Column number
-    column_number: int = betterproto.uint32_field(12)
+    column_number: int = betterproto.uint32_field(14)
 
 
 @dataclass

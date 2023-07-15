@@ -145,7 +145,9 @@ package object slicing {
     typeFullName: String = "",
     parentMethod: String = "",
     parentMethodSignature: String = "",
-    parentFile: String = "",
+    parentFileName: String = "",
+    parentPackageName: String = "",
+    parentClassName: String = "",
     lineNumber: Option[Integer] = None,
     columnNumber: Option[Integer] = None
   )
@@ -162,7 +164,9 @@ package object slicing {
           typeFullName,
           parentMethod,
           parentMethodSignature,
-          parentFile,
+          parentFileName,
+          parentPackageName,
+          parentClassName,
           lineNumber,
           columnNumber
         ) =>
@@ -177,7 +181,9 @@ package object slicing {
         "typeFullName"          -> typeFullName.asJson,
         "parentMethod"          -> parentMethod.asJson,
         "parentMethodSignature" -> parentMethodSignature.asJson,
-        "parentFile"            -> parentFile.asJson,
+        "parentFileName"        -> parentFileName.asJson,
+        "parentPackageName"     -> parentPackageName.asJson,
+        "parentClassName"       -> parentClassName.asJson,
         "lineNumber"            -> lineNumber.asJson,
         "columnNumber"          -> columnNumber.asJson
       )
