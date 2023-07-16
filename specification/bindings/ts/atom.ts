@@ -4886,7 +4886,9 @@ export namespace atom {
                 code?: string;
                 typeFullName?: string;
                 parentMethod?: string;
-                parentFile?: string;
+                parentFileName?: string;
+                parentPackageName?: string;
+                parentClassName?: string;
                 lineNumber?: number;
                 columnNumber?: number;
             }) {
@@ -4920,8 +4922,14 @@ export namespace atom {
                     if ("parentMethod" in data && data.parentMethod != undefined) {
                         this.parentMethod = data.parentMethod;
                     }
-                    if ("parentFile" in data && data.parentFile != undefined) {
-                        this.parentFile = data.parentFile;
+                    if ("parentFileName" in data && data.parentFileName != undefined) {
+                        this.parentFileName = data.parentFileName;
+                    }
+                    if ("parentPackageName" in data && data.parentPackageName != undefined) {
+                        this.parentPackageName = data.parentPackageName;
+                    }
+                    if ("parentClassName" in data && data.parentClassName != undefined) {
+                        this.parentClassName = data.parentClassName;
                     }
                     if ("lineNumber" in data && data.lineNumber != undefined) {
                         this.lineNumber = data.lineNumber;
@@ -4985,23 +4993,35 @@ export namespace atom {
             set parentMethod(value: string) {
                 pb_1.Message.setField(this, 9, value);
             }
-            get parentFile() {
+            get parentFileName() {
                 return pb_1.Message.getFieldWithDefault(this, 10, "") as string;
             }
-            set parentFile(value: string) {
+            set parentFileName(value: string) {
                 pb_1.Message.setField(this, 10, value);
             }
-            get lineNumber() {
-                return pb_1.Message.getFieldWithDefault(this, 11, 0) as number;
+            get parentPackageName() {
+                return pb_1.Message.getFieldWithDefault(this, 11, "") as string;
             }
-            set lineNumber(value: number) {
+            set parentPackageName(value: string) {
                 pb_1.Message.setField(this, 11, value);
             }
+            get parentClassName() {
+                return pb_1.Message.getFieldWithDefault(this, 12, "") as string;
+            }
+            set parentClassName(value: string) {
+                pb_1.Message.setField(this, 12, value);
+            }
+            get lineNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 13, 0) as number;
+            }
+            set lineNumber(value: number) {
+                pb_1.Message.setField(this, 13, value);
+            }
             get columnNumber() {
-                return pb_1.Message.getFieldWithDefault(this, 12, 0) as number;
+                return pb_1.Message.getFieldWithDefault(this, 14, 0) as number;
             }
             set columnNumber(value: number) {
-                pb_1.Message.setField(this, 12, value);
+                pb_1.Message.setField(this, 14, value);
             }
             static fromObject(data: {
                 id?: number;
@@ -5013,7 +5033,9 @@ export namespace atom {
                 code?: string;
                 typeFullName?: string;
                 parentMethod?: string;
-                parentFile?: string;
+                parentFileName?: string;
+                parentPackageName?: string;
+                parentClassName?: string;
                 lineNumber?: number;
                 columnNumber?: number;
             }): Nodes {
@@ -5045,8 +5067,14 @@ export namespace atom {
                 if (data.parentMethod != null) {
                     message.parentMethod = data.parentMethod;
                 }
-                if (data.parentFile != null) {
-                    message.parentFile = data.parentFile;
+                if (data.parentFileName != null) {
+                    message.parentFileName = data.parentFileName;
+                }
+                if (data.parentPackageName != null) {
+                    message.parentPackageName = data.parentPackageName;
+                }
+                if (data.parentClassName != null) {
+                    message.parentClassName = data.parentClassName;
                 }
                 if (data.lineNumber != null) {
                     message.lineNumber = data.lineNumber;
@@ -5067,7 +5095,9 @@ export namespace atom {
                     code?: string;
                     typeFullName?: string;
                     parentMethod?: string;
-                    parentFile?: string;
+                    parentFileName?: string;
+                    parentPackageName?: string;
+                    parentClassName?: string;
                     lineNumber?: number;
                     columnNumber?: number;
                 } = {};
@@ -5098,8 +5128,14 @@ export namespace atom {
                 if (this.parentMethod != null) {
                     data.parentMethod = this.parentMethod;
                 }
-                if (this.parentFile != null) {
-                    data.parentFile = this.parentFile;
+                if (this.parentFileName != null) {
+                    data.parentFileName = this.parentFileName;
+                }
+                if (this.parentPackageName != null) {
+                    data.parentPackageName = this.parentPackageName;
+                }
+                if (this.parentClassName != null) {
+                    data.parentClassName = this.parentClassName;
                 }
                 if (this.lineNumber != null) {
                     data.lineNumber = this.lineNumber;
@@ -5131,12 +5167,16 @@ export namespace atom {
                     writer.writeString(8, this.typeFullName);
                 if (this.parentMethod.length)
                     writer.writeString(9, this.parentMethod);
-                if (this.parentFile.length)
-                    writer.writeString(10, this.parentFile);
+                if (this.parentFileName.length)
+                    writer.writeString(10, this.parentFileName);
+                if (this.parentPackageName.length)
+                    writer.writeString(11, this.parentPackageName);
+                if (this.parentClassName.length)
+                    writer.writeString(12, this.parentClassName);
                 if (this.lineNumber != 0)
-                    writer.writeUint32(11, this.lineNumber);
+                    writer.writeUint32(13, this.lineNumber);
                 if (this.columnNumber != 0)
-                    writer.writeUint32(12, this.columnNumber);
+                    writer.writeUint32(14, this.columnNumber);
                 if (!w)
                     return writer.getResultBuffer();
             }
@@ -5174,12 +5214,18 @@ export namespace atom {
                             message.parentMethod = reader.readString();
                             break;
                         case 10:
-                            message.parentFile = reader.readString();
+                            message.parentFileName = reader.readString();
                             break;
                         case 11:
-                            message.lineNumber = reader.readUint32();
+                            message.parentPackageName = reader.readString();
                             break;
                         case 12:
+                            message.parentClassName = reader.readString();
+                            break;
+                        case 13:
+                            message.lineNumber = reader.readUint32();
+                            break;
+                        case 14:
                             message.columnNumber = reader.readUint32();
                             break;
                         default: reader.skipField();

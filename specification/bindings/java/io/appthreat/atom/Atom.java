@@ -39393,27 +39393,67 @@ public final class Atom {
        * Parent filename
        * </pre>
        *
-       * <code>string parentFile = 10;</code>
-       * @return The parentFile.
+       * <code>string parentFileName = 10;</code>
+       * @return The parentFileName.
        */
-      java.lang.String getParentFile();
+      java.lang.String getParentFileName();
       /**
        * <pre>
        * Parent filename
        * </pre>
        *
-       * <code>string parentFile = 10;</code>
-       * @return The bytes for parentFile.
+       * <code>string parentFileName = 10;</code>
+       * @return The bytes for parentFileName.
        */
       com.google.protobuf.ByteString
-          getParentFileBytes();
+          getParentFileNameBytes();
+
+      /**
+       * <pre>
+       * Parent package name
+       * </pre>
+       *
+       * <code>string parentPackageName = 11;</code>
+       * @return The parentPackageName.
+       */
+      java.lang.String getParentPackageName();
+      /**
+       * <pre>
+       * Parent package name
+       * </pre>
+       *
+       * <code>string parentPackageName = 11;</code>
+       * @return The bytes for parentPackageName.
+       */
+      com.google.protobuf.ByteString
+          getParentPackageNameBytes();
+
+      /**
+       * <pre>
+       * Parent class name
+       * </pre>
+       *
+       * <code>string parentClassName = 12;</code>
+       * @return The parentClassName.
+       */
+      java.lang.String getParentClassName();
+      /**
+       * <pre>
+       * Parent class name
+       * </pre>
+       *
+       * <code>string parentClassName = 12;</code>
+       * @return The bytes for parentClassName.
+       */
+      com.google.protobuf.ByteString
+          getParentClassNameBytes();
 
       /**
        * <pre>
        * Line number
        * </pre>
        *
-       * <code>uint32 lineNumber = 11;</code>
+       * <code>uint32 lineNumber = 13;</code>
        * @return The lineNumber.
        */
       int getLineNumber();
@@ -39423,7 +39463,7 @@ public final class Atom {
        * Column number
        * </pre>
        *
-       * <code>uint32 columnNumber = 12;</code>
+       * <code>uint32 columnNumber = 14;</code>
        * @return The columnNumber.
        */
       int getColumnNumber();
@@ -39448,7 +39488,9 @@ public final class Atom {
         code_ = "";
         typeFullName_ = "";
         parentMethod_ = "";
-        parentFile_ = "";
+        parentFileName_ = "";
+        parentPackageName_ = "";
+        parentClassName_ = "";
       }
 
       @java.lang.Override
@@ -39809,27 +39851,27 @@ public final class Atom {
         }
       }
 
-      public static final int PARENTFILE_FIELD_NUMBER = 10;
+      public static final int PARENTFILENAME_FIELD_NUMBER = 10;
       @SuppressWarnings("serial")
-      private volatile java.lang.Object parentFile_ = "";
+      private volatile java.lang.Object parentFileName_ = "";
       /**
        * <pre>
        * Parent filename
        * </pre>
        *
-       * <code>string parentFile = 10;</code>
-       * @return The parentFile.
+       * <code>string parentFileName = 10;</code>
+       * @return The parentFileName.
        */
       @java.lang.Override
-      public java.lang.String getParentFile() {
-        java.lang.Object ref = parentFile_;
+      public java.lang.String getParentFileName() {
+        java.lang.Object ref = parentFileName_;
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
           com.google.protobuf.ByteString bs = 
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
-          parentFile_ = s;
+          parentFileName_ = s;
           return s;
         }
       }
@@ -39838,32 +39880,126 @@ public final class Atom {
        * Parent filename
        * </pre>
        *
-       * <code>string parentFile = 10;</code>
-       * @return The bytes for parentFile.
+       * <code>string parentFileName = 10;</code>
+       * @return The bytes for parentFileName.
        */
       @java.lang.Override
       public com.google.protobuf.ByteString
-          getParentFileBytes() {
-        java.lang.Object ref = parentFile_;
+          getParentFileNameBytes() {
+        java.lang.Object ref = parentFileName_;
         if (ref instanceof java.lang.String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          parentFile_ = b;
+          parentFileName_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
 
-      public static final int LINENUMBER_FIELD_NUMBER = 11;
+      public static final int PARENTPACKAGENAME_FIELD_NUMBER = 11;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object parentPackageName_ = "";
+      /**
+       * <pre>
+       * Parent package name
+       * </pre>
+       *
+       * <code>string parentPackageName = 11;</code>
+       * @return The parentPackageName.
+       */
+      @java.lang.Override
+      public java.lang.String getParentPackageName() {
+        java.lang.Object ref = parentPackageName_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          parentPackageName_ = s;
+          return s;
+        }
+      }
+      /**
+       * <pre>
+       * Parent package name
+       * </pre>
+       *
+       * <code>string parentPackageName = 11;</code>
+       * @return The bytes for parentPackageName.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getParentPackageNameBytes() {
+        java.lang.Object ref = parentPackageName_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          parentPackageName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int PARENTCLASSNAME_FIELD_NUMBER = 12;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object parentClassName_ = "";
+      /**
+       * <pre>
+       * Parent class name
+       * </pre>
+       *
+       * <code>string parentClassName = 12;</code>
+       * @return The parentClassName.
+       */
+      @java.lang.Override
+      public java.lang.String getParentClassName() {
+        java.lang.Object ref = parentClassName_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          parentClassName_ = s;
+          return s;
+        }
+      }
+      /**
+       * <pre>
+       * Parent class name
+       * </pre>
+       *
+       * <code>string parentClassName = 12;</code>
+       * @return The bytes for parentClassName.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getParentClassNameBytes() {
+        java.lang.Object ref = parentClassName_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          parentClassName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int LINENUMBER_FIELD_NUMBER = 13;
       private int lineNumber_ = 0;
       /**
        * <pre>
        * Line number
        * </pre>
        *
-       * <code>uint32 lineNumber = 11;</code>
+       * <code>uint32 lineNumber = 13;</code>
        * @return The lineNumber.
        */
       @java.lang.Override
@@ -39871,14 +40007,14 @@ public final class Atom {
         return lineNumber_;
       }
 
-      public static final int COLUMNNUMBER_FIELD_NUMBER = 12;
+      public static final int COLUMNNUMBER_FIELD_NUMBER = 14;
       private int columnNumber_ = 0;
       /**
        * <pre>
        * Column number
        * </pre>
        *
-       * <code>uint32 columnNumber = 12;</code>
+       * <code>uint32 columnNumber = 14;</code>
        * @return The columnNumber.
        */
       @java.lang.Override
@@ -39927,14 +40063,20 @@ public final class Atom {
         if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentMethod_)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 9, parentMethod_);
         }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentFile_)) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 10, parentFile_);
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentFileName_)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 10, parentFileName_);
+        }
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentPackageName_)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 11, parentPackageName_);
+        }
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentClassName_)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 12, parentClassName_);
         }
         if (lineNumber_ != 0) {
-          output.writeUInt32(11, lineNumber_);
+          output.writeUInt32(13, lineNumber_);
         }
         if (columnNumber_ != 0) {
-          output.writeUInt32(12, columnNumber_);
+          output.writeUInt32(14, columnNumber_);
         }
         getUnknownFields().writeTo(output);
       }
@@ -39975,16 +40117,22 @@ public final class Atom {
         if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentMethod_)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, parentMethod_);
         }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentFile_)) {
-          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, parentFile_);
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentFileName_)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, parentFileName_);
+        }
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentPackageName_)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, parentPackageName_);
+        }
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentClassName_)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, parentClassName_);
         }
         if (lineNumber_ != 0) {
           size += com.google.protobuf.CodedOutputStream
-            .computeUInt32Size(11, lineNumber_);
+            .computeUInt32Size(13, lineNumber_);
         }
         if (columnNumber_ != 0) {
           size += com.google.protobuf.CodedOutputStream
-            .computeUInt32Size(12, columnNumber_);
+            .computeUInt32Size(14, columnNumber_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
@@ -40018,8 +40166,12 @@ public final class Atom {
             .equals(other.getTypeFullName())) return false;
         if (!getParentMethod()
             .equals(other.getParentMethod())) return false;
-        if (!getParentFile()
-            .equals(other.getParentFile())) return false;
+        if (!getParentFileName()
+            .equals(other.getParentFileName())) return false;
+        if (!getParentPackageName()
+            .equals(other.getParentPackageName())) return false;
+        if (!getParentClassName()
+            .equals(other.getParentClassName())) return false;
         if (getLineNumber()
             != other.getLineNumber()) return false;
         if (getColumnNumber()
@@ -40054,8 +40206,12 @@ public final class Atom {
         hash = (53 * hash) + getTypeFullName().hashCode();
         hash = (37 * hash) + PARENTMETHOD_FIELD_NUMBER;
         hash = (53 * hash) + getParentMethod().hashCode();
-        hash = (37 * hash) + PARENTFILE_FIELD_NUMBER;
-        hash = (53 * hash) + getParentFile().hashCode();
+        hash = (37 * hash) + PARENTFILENAME_FIELD_NUMBER;
+        hash = (53 * hash) + getParentFileName().hashCode();
+        hash = (37 * hash) + PARENTPACKAGENAME_FIELD_NUMBER;
+        hash = (53 * hash) + getParentPackageName().hashCode();
+        hash = (37 * hash) + PARENTCLASSNAME_FIELD_NUMBER;
+        hash = (53 * hash) + getParentClassName().hashCode();
         hash = (37 * hash) + LINENUMBER_FIELD_NUMBER;
         hash = (53 * hash) + getLineNumber();
         hash = (37 * hash) + COLUMNNUMBER_FIELD_NUMBER;
@@ -40200,7 +40356,9 @@ public final class Atom {
           code_ = "";
           typeFullName_ = "";
           parentMethod_ = "";
-          parentFile_ = "";
+          parentFileName_ = "";
+          parentPackageName_ = "";
+          parentClassName_ = "";
           lineNumber_ = 0;
           columnNumber_ = 0;
           return this;
@@ -40264,12 +40422,18 @@ public final class Atom {
             result.parentMethod_ = parentMethod_;
           }
           if (((from_bitField0_ & 0x00000200) != 0)) {
-            result.parentFile_ = parentFile_;
+            result.parentFileName_ = parentFileName_;
           }
           if (((from_bitField0_ & 0x00000400) != 0)) {
-            result.lineNumber_ = lineNumber_;
+            result.parentPackageName_ = parentPackageName_;
           }
           if (((from_bitField0_ & 0x00000800) != 0)) {
+            result.parentClassName_ = parentClassName_;
+          }
+          if (((from_bitField0_ & 0x00001000) != 0)) {
+            result.lineNumber_ = lineNumber_;
+          }
+          if (((from_bitField0_ & 0x00002000) != 0)) {
             result.columnNumber_ = columnNumber_;
           }
         }
@@ -40357,9 +40521,19 @@ public final class Atom {
             bitField0_ |= 0x00000100;
             onChanged();
           }
-          if (!other.getParentFile().isEmpty()) {
-            parentFile_ = other.parentFile_;
+          if (!other.getParentFileName().isEmpty()) {
+            parentFileName_ = other.parentFileName_;
             bitField0_ |= 0x00000200;
+            onChanged();
+          }
+          if (!other.getParentPackageName().isEmpty()) {
+            parentPackageName_ = other.parentPackageName_;
+            bitField0_ |= 0x00000400;
+            onChanged();
+          }
+          if (!other.getParentClassName().isEmpty()) {
+            parentClassName_ = other.parentClassName_;
+            bitField0_ |= 0x00000800;
             onChanged();
           }
           if (other.getLineNumber() != 0) {
@@ -40440,20 +40614,30 @@ public final class Atom {
                   break;
                 } // case 74
                 case 82: {
-                  parentFile_ = input.readStringRequireUtf8();
+                  parentFileName_ = input.readStringRequireUtf8();
                   bitField0_ |= 0x00000200;
                   break;
                 } // case 82
-                case 88: {
-                  lineNumber_ = input.readUInt32();
+                case 90: {
+                  parentPackageName_ = input.readStringRequireUtf8();
                   bitField0_ |= 0x00000400;
                   break;
-                } // case 88
-                case 96: {
-                  columnNumber_ = input.readUInt32();
+                } // case 90
+                case 98: {
+                  parentClassName_ = input.readStringRequireUtf8();
                   bitField0_ |= 0x00000800;
                   break;
-                } // case 96
+                } // case 98
+                case 104: {
+                  lineNumber_ = input.readUInt32();
+                  bitField0_ |= 0x00001000;
+                  break;
+                } // case 104
+                case 112: {
+                  columnNumber_ = input.readUInt32();
+                  bitField0_ |= 0x00002000;
+                  break;
+                } // case 112
                 default: {
                   if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                     done = true; // was an endgroup tag
@@ -41184,22 +41368,22 @@ public final class Atom {
           return this;
         }
 
-        private java.lang.Object parentFile_ = "";
+        private java.lang.Object parentFileName_ = "";
         /**
          * <pre>
          * Parent filename
          * </pre>
          *
-         * <code>string parentFile = 10;</code>
-         * @return The parentFile.
+         * <code>string parentFileName = 10;</code>
+         * @return The parentFileName.
          */
-        public java.lang.String getParentFile() {
-          java.lang.Object ref = parentFile_;
+        public java.lang.String getParentFileName() {
+          java.lang.Object ref = parentFileName_;
           if (!(ref instanceof java.lang.String)) {
             com.google.protobuf.ByteString bs =
                 (com.google.protobuf.ByteString) ref;
             java.lang.String s = bs.toStringUtf8();
-            parentFile_ = s;
+            parentFileName_ = s;
             return s;
           } else {
             return (java.lang.String) ref;
@@ -41210,17 +41394,17 @@ public final class Atom {
          * Parent filename
          * </pre>
          *
-         * <code>string parentFile = 10;</code>
-         * @return The bytes for parentFile.
+         * <code>string parentFileName = 10;</code>
+         * @return The bytes for parentFileName.
          */
         public com.google.protobuf.ByteString
-            getParentFileBytes() {
-          java.lang.Object ref = parentFile_;
+            getParentFileNameBytes() {
+          java.lang.Object ref = parentFileName_;
           if (ref instanceof String) {
             com.google.protobuf.ByteString b = 
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
-            parentFile_ = b;
+            parentFileName_ = b;
             return b;
           } else {
             return (com.google.protobuf.ByteString) ref;
@@ -41231,14 +41415,14 @@ public final class Atom {
          * Parent filename
          * </pre>
          *
-         * <code>string parentFile = 10;</code>
-         * @param value The parentFile to set.
+         * <code>string parentFileName = 10;</code>
+         * @param value The parentFileName to set.
          * @return This builder for chaining.
          */
-        public Builder setParentFile(
+        public Builder setParentFileName(
             java.lang.String value) {
           if (value == null) { throw new NullPointerException(); }
-          parentFile_ = value;
+          parentFileName_ = value;
           bitField0_ |= 0x00000200;
           onChanged();
           return this;
@@ -41248,11 +41432,11 @@ public final class Atom {
          * Parent filename
          * </pre>
          *
-         * <code>string parentFile = 10;</code>
+         * <code>string parentFileName = 10;</code>
          * @return This builder for chaining.
          */
-        public Builder clearParentFile() {
-          parentFile_ = getDefaultInstance().getParentFile();
+        public Builder clearParentFileName() {
+          parentFileName_ = getDefaultInstance().getParentFileName();
           bitField0_ = (bitField0_ & ~0x00000200);
           onChanged();
           return this;
@@ -41262,16 +41446,200 @@ public final class Atom {
          * Parent filename
          * </pre>
          *
-         * <code>string parentFile = 10;</code>
-         * @param value The bytes for parentFile to set.
+         * <code>string parentFileName = 10;</code>
+         * @param value The bytes for parentFileName to set.
          * @return This builder for chaining.
          */
-        public Builder setParentFileBytes(
+        public Builder setParentFileNameBytes(
             com.google.protobuf.ByteString value) {
           if (value == null) { throw new NullPointerException(); }
           checkByteStringIsUtf8(value);
-          parentFile_ = value;
+          parentFileName_ = value;
           bitField0_ |= 0x00000200;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object parentPackageName_ = "";
+        /**
+         * <pre>
+         * Parent package name
+         * </pre>
+         *
+         * <code>string parentPackageName = 11;</code>
+         * @return The parentPackageName.
+         */
+        public java.lang.String getParentPackageName() {
+          java.lang.Object ref = parentPackageName_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            parentPackageName_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <pre>
+         * Parent package name
+         * </pre>
+         *
+         * <code>string parentPackageName = 11;</code>
+         * @return The bytes for parentPackageName.
+         */
+        public com.google.protobuf.ByteString
+            getParentPackageNameBytes() {
+          java.lang.Object ref = parentPackageName_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            parentPackageName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <pre>
+         * Parent package name
+         * </pre>
+         *
+         * <code>string parentPackageName = 11;</code>
+         * @param value The parentPackageName to set.
+         * @return This builder for chaining.
+         */
+        public Builder setParentPackageName(
+            java.lang.String value) {
+          if (value == null) { throw new NullPointerException(); }
+          parentPackageName_ = value;
+          bitField0_ |= 0x00000400;
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * Parent package name
+         * </pre>
+         *
+         * <code>string parentPackageName = 11;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearParentPackageName() {
+          parentPackageName_ = getDefaultInstance().getParentPackageName();
+          bitField0_ = (bitField0_ & ~0x00000400);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * Parent package name
+         * </pre>
+         *
+         * <code>string parentPackageName = 11;</code>
+         * @param value The bytes for parentPackageName to set.
+         * @return This builder for chaining.
+         */
+        public Builder setParentPackageNameBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
+          parentPackageName_ = value;
+          bitField0_ |= 0x00000400;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object parentClassName_ = "";
+        /**
+         * <pre>
+         * Parent class name
+         * </pre>
+         *
+         * <code>string parentClassName = 12;</code>
+         * @return The parentClassName.
+         */
+        public java.lang.String getParentClassName() {
+          java.lang.Object ref = parentClassName_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            parentClassName_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <pre>
+         * Parent class name
+         * </pre>
+         *
+         * <code>string parentClassName = 12;</code>
+         * @return The bytes for parentClassName.
+         */
+        public com.google.protobuf.ByteString
+            getParentClassNameBytes() {
+          java.lang.Object ref = parentClassName_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            parentClassName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <pre>
+         * Parent class name
+         * </pre>
+         *
+         * <code>string parentClassName = 12;</code>
+         * @param value The parentClassName to set.
+         * @return This builder for chaining.
+         */
+        public Builder setParentClassName(
+            java.lang.String value) {
+          if (value == null) { throw new NullPointerException(); }
+          parentClassName_ = value;
+          bitField0_ |= 0x00000800;
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * Parent class name
+         * </pre>
+         *
+         * <code>string parentClassName = 12;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearParentClassName() {
+          parentClassName_ = getDefaultInstance().getParentClassName();
+          bitField0_ = (bitField0_ & ~0x00000800);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * Parent class name
+         * </pre>
+         *
+         * <code>string parentClassName = 12;</code>
+         * @param value The bytes for parentClassName to set.
+         * @return This builder for chaining.
+         */
+        public Builder setParentClassNameBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
+          parentClassName_ = value;
+          bitField0_ |= 0x00000800;
           onChanged();
           return this;
         }
@@ -41282,7 +41650,7 @@ public final class Atom {
          * Line number
          * </pre>
          *
-         * <code>uint32 lineNumber = 11;</code>
+         * <code>uint32 lineNumber = 13;</code>
          * @return The lineNumber.
          */
         @java.lang.Override
@@ -41294,14 +41662,14 @@ public final class Atom {
          * Line number
          * </pre>
          *
-         * <code>uint32 lineNumber = 11;</code>
+         * <code>uint32 lineNumber = 13;</code>
          * @param value The lineNumber to set.
          * @return This builder for chaining.
          */
         public Builder setLineNumber(int value) {
 
           lineNumber_ = value;
-          bitField0_ |= 0x00000400;
+          bitField0_ |= 0x00001000;
           onChanged();
           return this;
         }
@@ -41310,11 +41678,11 @@ public final class Atom {
          * Line number
          * </pre>
          *
-         * <code>uint32 lineNumber = 11;</code>
+         * <code>uint32 lineNumber = 13;</code>
          * @return This builder for chaining.
          */
         public Builder clearLineNumber() {
-          bitField0_ = (bitField0_ & ~0x00000400);
+          bitField0_ = (bitField0_ & ~0x00001000);
           lineNumber_ = 0;
           onChanged();
           return this;
@@ -41326,7 +41694,7 @@ public final class Atom {
          * Column number
          * </pre>
          *
-         * <code>uint32 columnNumber = 12;</code>
+         * <code>uint32 columnNumber = 14;</code>
          * @return The columnNumber.
          */
         @java.lang.Override
@@ -41338,14 +41706,14 @@ public final class Atom {
          * Column number
          * </pre>
          *
-         * <code>uint32 columnNumber = 12;</code>
+         * <code>uint32 columnNumber = 14;</code>
          * @param value The columnNumber to set.
          * @return This builder for chaining.
          */
         public Builder setColumnNumber(int value) {
 
           columnNumber_ = value;
-          bitField0_ |= 0x00000800;
+          bitField0_ |= 0x00002000;
           onChanged();
           return this;
         }
@@ -41354,11 +41722,11 @@ public final class Atom {
          * Column number
          * </pre>
          *
-         * <code>uint32 columnNumber = 12;</code>
+         * <code>uint32 columnNumber = 14;</code>
          * @return This builder for chaining.
          */
         public Builder clearColumnNumber() {
-          bitField0_ = (bitField0_ & ~0x00000800);
+          bitField0_ = (bitField0_ & ~0x00002000);
           columnNumber_ = 0;
           onChanged();
           return this;
@@ -45901,89 +46269,91 @@ public final class Atom {
       "ber\030\005 \001(\r\022\024\n\014columnNumber\030\006 \001(\r\"l\n\tLabel" +
       "Type\022\007\n\003ANY\020\000\022\t\n\005LOCAL\020\001\022\013\n\007LITERAL\020\002\022\t\n" +
       "\005PARAM\020\003\022\010\n\004CALL\020\004\022\016\n\nIDENTIFIER\020\005\022\014\n\010TY" +
-      "PE_REF\020\006\022\013\n\007UNKNOWN\020\n\"\314\004\n\rDataFlowSlice\022" +
+      "PE_REF\020\006\022\013\n\007UNKNOWN\020\n\"\204\005\n\rDataFlowSlice\022" +
       "(\n\005graph\030\001 \001(\0132\031.atom.DataFlowSlice.Grap" +
       "h\022\'\n\004path\030\002 \001(\0132\031.atom.DataFlowSlice.Pat" +
-      "hs\032\361\001\n\005Nodes\022\n\n\002id\030\001 \001(\r\022\035\n\005label\030\002 \001(\0162" +
+      "hs\032\251\002\n\005Nodes\022\n\n\002id\030\001 \001(\r\022\035\n\005label\030\002 \001(\0162" +
       "\016.atom.NodeType\022\014\n\004name\030\003 \001(\t\022\020\n\010fullNam" +
       "e\030\004 \001(\t\022\021\n\tsignature\030\005 \001(\t\022\022\n\nisExternal" +
       "\030\006 \001(\010\022\014\n\004code\030\007 \001(\t\022\024\n\014typeFullName\030\010 \001" +
-      "(\t\022\024\n\014parentMethod\030\t \001(\t\022\022\n\nparentFile\030\n" +
-      " \001(\t\022\022\n\nlineNumber\030\013 \001(\r\022\024\n\014columnNumber" +
-      "\030\014 \001(\r\032O\n\005Edges\022\013\n\003src\030\001 \001(\r\022\013\n\003dst\030\002 \001(" +
-      "\r\022,\n\005label\030\003 \001(\0162\035.atom.CpgStruct.Edge.E" +
-      "dgeType\032\023\n\005Flows\022\n\n\002id\030\001 \003(\r\0321\n\005Paths\022(\n" +
-      "\005flows\030\001 \003(\0132\031.atom.DataFlowSlice.Flows\032" +
-      "[\n\005Graph\022(\n\005nodes\030\001 \003(\0132\031.atom.DataFlowS" +
-      "lice.Nodes\022(\n\005edges\030\002 \003(\0132\031.atom.DataFlo" +
-      "wSlice.Edges*\245\007\n\020NodePropertyName\022\031\n\025UNK" +
-      "NOWN_NODE_PROPERTY\020\000\022\017\n\013LINE_NUMBER\020\002\022\024\n" +
-      "\020PARSER_TYPE_NAME\020\003\022\t\n\005ORDER\020\004\022\010\n\004NAME\020\005" +
-      "\022\r\n\tFULL_NAME\020\006\022\017\n\013IS_EXTERNAL\020\007\022\t\n\005VALU" +
-      "E\020\010\022\021\n\rCOLUMN_NUMBER\020\013\022\023\n\017LINE_NUMBER_EN" +
-      "D\020\014\022\013\n\007VERSION\020\r\022\027\n\023EVALUATION_STRATEGY\020" +
-      "\017\022\025\n\021COLUMN_NUMBER_END\020\020\022\014\n\010LANGUAGE\020\023\022\013" +
-      "\n\007CONTENT\020\024\022\010\n\004CODE\020\025\022\r\n\tSIGNATURE\020\026\022\021\n\r" +
-      "DISPATCH_TYPE\020\031\022\021\n\rMODIFIER_TYPE\020\032\022\032\n\026CO" +
-      "NTROL_STRUCTURE_TYPE\020\033\022\022\n\016ARGUMENT_INDEX" +
-      "\020(\022\026\n\022CLOSURE_BINDING_ID\0202\022\022\n\016TYPE_FULL_" +
-      "NAME\0203\022\027\n\023TYPE_DECL_FULL_NAME\0204\022 \n\034INHER" +
-      "ITS_FROM_TYPE_FULL_NAME\0205\022\024\n\020METHOD_FULL" +
-      "_NAME\0206\022\023\n\017AST_PARENT_TYPE\0208\022\030\n\024AST_PARE" +
-      "NT_FULL_NAME\0209\022\027\n\023DEPENDENCY_GROUP_ID\020:\022" +
-      "\n\n\006SYMBOL\020d\022\025\n\021METHOD_SHORT_NAME\020f\022\020\n\014PA" +
-      "CKAGE_NAME\020g\022\016\n\nCLASS_NAME\020h\022\016\n\nNODE_LAB" +
-      "EL\020i\022\014\n\010FILENAME\020j\022\014\n\010OVERLAYS\020v\022\010\n\004HASH" +
-      "\020x\022\022\n\rARGUMENT_NAME\020\202\001\022\010\n\003KEY\020\203\001\022\025\n\020CLAS" +
-      "S_SHORT_NAME\020\204\001\022\031\n\024ALIAS_TYPE_FULL_NAME\020" +
-      "\236\001\022\032\n\025CLOSURE_ORIGINAL_NAME\020\237\001\022\020\n\013IS_VAR" +
-      "IADIC\020\335\001\022\t\n\004ROOT\020\257\t\022 \n\033DYNAMIC_TYPE_HINT" +
-      "_FULL_NAME\020\267\014\022\n\n\005INDEX\020\257\021\022\024\n\016CANONICAL_N" +
-      "AME\020\304\221z\022\023\n\rCONTAINED_REF\020\371\300z*;\n\020EdgeProp" +
-      "ertyName\022\031\n\025UNKNOWN_EDGE_PROPERTY\020\000\022\014\n\010V" +
-      "ARIABLE\020\013*\275\001\n\rModifierTypes\022\031\n\025UNKNOWN_M" +
-      "ODIFIER_TYPE\020\000\022\n\n\006STATIC\020\001\022\n\n\006PUBLIC\020\002\022\r" +
-      "\n\tPROTECTED\020\003\022\013\n\007PRIVATE\020\004\022\014\n\010ABSTRACT\020\005" +
-      "\022\n\n\006NATIVE\020\006\022\017\n\013CONSTRUCTOR\020\007\022\013\n\007VIRTUAL" +
-      "\020\010\022\014\n\010INTERNAL\020\t\022\t\n\005FINAL\020\n\022\014\n\010READONLY\020" +
-      "\013*\362\001\n\tLANGUAGES\022\024\n\020UNKNOWN_LANGUAGE\020\000\022\010\n" +
-      "\004JAVA\020\001\022\016\n\nJAVASCRIPT\020\002\022\n\n\006GOLANG\020\003\022\n\n\006C" +
-      "SHARP\020\004\022\005\n\001C\020\005\022\n\n\006PYTHON\020\006\022\010\n\004LLVM\020\007\022\007\n\003" +
-      "PHP\020\010\022\023\n\017FUZZY_TEST_LANG\020\t\022\n\n\006GHIDRA\020\n\022\n" +
-      "\n\006KOTLIN\020\013\022\010\n\004NEWC\020\014\022\013\n\007JAVASRC\020\r\022\r\n\tPYT" +
-      "HONSRC\020\016\022\t\n\005JSSRC\020\017\022\014\n\010SOLIDITY\020\020\022\013\n\007RUB" +
-      "YSRC\020\021*g\n\024EvaluationStrategies\022\037\n\033UNKNOW" +
-      "N_EVALUATION_STRATEGY\020\000\022\020\n\014BY_REFERENCE\020" +
-      "\001\022\016\n\nBY_SHARING\020\002\022\014\n\010BY_VALUE\020\003*b\n\rDispa" +
-      "tchTypes\022\031\n\025UNKNOWN_DISPATCH_TYPE\020\000\022\023\n\017S" +
-      "TATIC_DISPATCH\020\001\022\024\n\020DYNAMIC_DISPATCH\020\002\022\013" +
-      "\n\007INLINED\020\003*\304\001\n\027CONTROL_STRUCTURE_TYPES\022" +
-      "\"\n\036UNKNOWN_CONTROL_STRUCTURE_TYPE\020\000\022\t\n\005B" +
-      "REAK\020\001\022\014\n\010CONTINUE\020\002\022\t\n\005WHILE\020\003\022\006\n\002DO\020\004\022" +
-      "\007\n\003FOR\020\005\022\010\n\004GOTO\020\006\022\006\n\002IF\020\007\022\010\n\004ELSE\020\010\022\n\n\006" +
-      "SWITCH\020\t\022\007\n\003TRY\020\n\022\t\n\005THROW\020\013\022\t\n\005MATCH\020\014\022" +
-      "\t\n\005YIELD\020\r*\202\006\n\010NodeType\022\025\n\021UNKNOWN_NODE_" +
-      "TYPE\020\000\022\n\n\006METHOD\020\001\022\021\n\rMETHOD_RETURN\020\003\022\016\n" +
-      "\nANNOTATION\020\005\022\037\n\033ANNOTATION_PARAMETER_AS" +
-      "SIGN\020\006\022\030\n\024ANNOTATION_PARAMETER\020\007\022\013\n\007LITE" +
-      "RAL\020\010\022\n\n\006MEMBER\020\t\022\025\n\021ARRAY_INITIALIZER\020\016" +
-      "\022\010\n\004CALL\020\017\022\t\n\005LOCAL\020\027\022\007\n\003TAG\020\030\022\014\n\010LOCATI" +
-      "ON\020\031\022\016\n\nIDENTIFIER\020\033\022\n\n\006RETURN\020\036\022\t\n\005BLOC" +
-      "K\020\037\022\030\n\024METHOD_PARAMETER_OUT\020!\022\027\n\023METHOD_" +
-      "PARAMETER_IN\020\"\022\016\n\nDEPENDENCY\020#\022\010\n\004FILE\020&" +
-      "\022\r\n\tMETA_DATA\020\'\022\r\n\tNAMESPACE\020(\022\023\n\017NAMESP" +
-      "ACE_BLOCK\020)\022\013\n\007UNKNOWN\020,\022\010\n\004TYPE\020-\022\r\n\tTY" +
-      "PE_DECL\020.\022\022\n\016TYPE_PARAMETER\020/\022\021\n\rTYPE_AR" +
-      "GUMENT\0200\022\026\n\022ANNOTATION_LITERAL\0201\022\017\n\013CONF" +
-      "IG_FILE\0202\022\014\n\007BINDING\020\222\001\022\022\n\rTAG_NODE_PAIR" +
-      "\020\320\001\022\014\n\007FINDING\020\326\001\022\023\n\016KEY_VALUE_PAIR\020\331\001\022\r" +
-      "\n\010MODIFIER\020\254\002\022\017\n\nMETHOD_REF\020\315\002\022\024\n\017CLOSUR" +
-      "E_BINDING\020\316\002\022\r\n\010TYPE_REF\020\317\002\022\026\n\021CONTROL_S" +
-      "TRUCTURE\020\323\002\022\020\n\013JUMP_TARGET\020\324\002\022\017\n\nJUMP_LA" +
-      "BEL\020\325\002\022\021\n\014TEMPLATE_DOM\020\241\003\022\014\n\007COMMENT\020\377\003\022" +
-      "\026\n\020FIELD_IDENTIFIER\020\271\221zBH\n\021io.appthreat." +
-      "atomB\004AtomZ\031github.com/AppThreat/atom\252\002\021" +
-      "io.appthreat.atomb\006proto3"
+      "(\t\022\024\n\014parentMethod\030\t \001(\t\022\026\n\016parentFileNa" +
+      "me\030\n \001(\t\022\031\n\021parentPackageName\030\013 \001(\t\022\027\n\017p" +
+      "arentClassName\030\014 \001(\t\022\022\n\nlineNumber\030\r \001(\r" +
+      "\022\024\n\014columnNumber\030\016 \001(\r\032O\n\005Edges\022\013\n\003src\030\001" +
+      " \001(\r\022\013\n\003dst\030\002 \001(\r\022,\n\005label\030\003 \001(\0162\035.atom." +
+      "CpgStruct.Edge.EdgeType\032\023\n\005Flows\022\n\n\002id\030\001" +
+      " \003(\r\0321\n\005Paths\022(\n\005flows\030\001 \003(\0132\031.atom.Data" +
+      "FlowSlice.Flows\032[\n\005Graph\022(\n\005nodes\030\001 \003(\0132" +
+      "\031.atom.DataFlowSlice.Nodes\022(\n\005edges\030\002 \003(" +
+      "\0132\031.atom.DataFlowSlice.Edges*\245\007\n\020NodePro" +
+      "pertyName\022\031\n\025UNKNOWN_NODE_PROPERTY\020\000\022\017\n\013" +
+      "LINE_NUMBER\020\002\022\024\n\020PARSER_TYPE_NAME\020\003\022\t\n\005O" +
+      "RDER\020\004\022\010\n\004NAME\020\005\022\r\n\tFULL_NAME\020\006\022\017\n\013IS_EX" +
+      "TERNAL\020\007\022\t\n\005VALUE\020\010\022\021\n\rCOLUMN_NUMBER\020\013\022\023" +
+      "\n\017LINE_NUMBER_END\020\014\022\013\n\007VERSION\020\r\022\027\n\023EVAL" +
+      "UATION_STRATEGY\020\017\022\025\n\021COLUMN_NUMBER_END\020\020" +
+      "\022\014\n\010LANGUAGE\020\023\022\013\n\007CONTENT\020\024\022\010\n\004CODE\020\025\022\r\n" +
+      "\tSIGNATURE\020\026\022\021\n\rDISPATCH_TYPE\020\031\022\021\n\rMODIF" +
+      "IER_TYPE\020\032\022\032\n\026CONTROL_STRUCTURE_TYPE\020\033\022\022" +
+      "\n\016ARGUMENT_INDEX\020(\022\026\n\022CLOSURE_BINDING_ID" +
+      "\0202\022\022\n\016TYPE_FULL_NAME\0203\022\027\n\023TYPE_DECL_FULL" +
+      "_NAME\0204\022 \n\034INHERITS_FROM_TYPE_FULL_NAME\020" +
+      "5\022\024\n\020METHOD_FULL_NAME\0206\022\023\n\017AST_PARENT_TY" +
+      "PE\0208\022\030\n\024AST_PARENT_FULL_NAME\0209\022\027\n\023DEPEND" +
+      "ENCY_GROUP_ID\020:\022\n\n\006SYMBOL\020d\022\025\n\021METHOD_SH" +
+      "ORT_NAME\020f\022\020\n\014PACKAGE_NAME\020g\022\016\n\nCLASS_NA" +
+      "ME\020h\022\016\n\nNODE_LABEL\020i\022\014\n\010FILENAME\020j\022\014\n\010OV" +
+      "ERLAYS\020v\022\010\n\004HASH\020x\022\022\n\rARGUMENT_NAME\020\202\001\022\010" +
+      "\n\003KEY\020\203\001\022\025\n\020CLASS_SHORT_NAME\020\204\001\022\031\n\024ALIAS" +
+      "_TYPE_FULL_NAME\020\236\001\022\032\n\025CLOSURE_ORIGINAL_N" +
+      "AME\020\237\001\022\020\n\013IS_VARIADIC\020\335\001\022\t\n\004ROOT\020\257\t\022 \n\033D" +
+      "YNAMIC_TYPE_HINT_FULL_NAME\020\267\014\022\n\n\005INDEX\020\257" +
+      "\021\022\024\n\016CANONICAL_NAME\020\304\221z\022\023\n\rCONTAINED_REF" +
+      "\020\371\300z*;\n\020EdgePropertyName\022\031\n\025UNKNOWN_EDGE" +
+      "_PROPERTY\020\000\022\014\n\010VARIABLE\020\013*\275\001\n\rModifierTy" +
+      "pes\022\031\n\025UNKNOWN_MODIFIER_TYPE\020\000\022\n\n\006STATIC" +
+      "\020\001\022\n\n\006PUBLIC\020\002\022\r\n\tPROTECTED\020\003\022\013\n\007PRIVATE" +
+      "\020\004\022\014\n\010ABSTRACT\020\005\022\n\n\006NATIVE\020\006\022\017\n\013CONSTRUC" +
+      "TOR\020\007\022\013\n\007VIRTUAL\020\010\022\014\n\010INTERNAL\020\t\022\t\n\005FINA" +
+      "L\020\n\022\014\n\010READONLY\020\013*\362\001\n\tLANGUAGES\022\024\n\020UNKNO" +
+      "WN_LANGUAGE\020\000\022\010\n\004JAVA\020\001\022\016\n\nJAVASCRIPT\020\002\022" +
+      "\n\n\006GOLANG\020\003\022\n\n\006CSHARP\020\004\022\005\n\001C\020\005\022\n\n\006PYTHON" +
+      "\020\006\022\010\n\004LLVM\020\007\022\007\n\003PHP\020\010\022\023\n\017FUZZY_TEST_LANG" +
+      "\020\t\022\n\n\006GHIDRA\020\n\022\n\n\006KOTLIN\020\013\022\010\n\004NEWC\020\014\022\013\n\007" +
+      "JAVASRC\020\r\022\r\n\tPYTHONSRC\020\016\022\t\n\005JSSRC\020\017\022\014\n\010S" +
+      "OLIDITY\020\020\022\013\n\007RUBYSRC\020\021*g\n\024EvaluationStra" +
+      "tegies\022\037\n\033UNKNOWN_EVALUATION_STRATEGY\020\000\022" +
+      "\020\n\014BY_REFERENCE\020\001\022\016\n\nBY_SHARING\020\002\022\014\n\010BY_" +
+      "VALUE\020\003*b\n\rDispatchTypes\022\031\n\025UNKNOWN_DISP" +
+      "ATCH_TYPE\020\000\022\023\n\017STATIC_DISPATCH\020\001\022\024\n\020DYNA" +
+      "MIC_DISPATCH\020\002\022\013\n\007INLINED\020\003*\304\001\n\027CONTROL_" +
+      "STRUCTURE_TYPES\022\"\n\036UNKNOWN_CONTROL_STRUC" +
+      "TURE_TYPE\020\000\022\t\n\005BREAK\020\001\022\014\n\010CONTINUE\020\002\022\t\n\005" +
+      "WHILE\020\003\022\006\n\002DO\020\004\022\007\n\003FOR\020\005\022\010\n\004GOTO\020\006\022\006\n\002IF" +
+      "\020\007\022\010\n\004ELSE\020\010\022\n\n\006SWITCH\020\t\022\007\n\003TRY\020\n\022\t\n\005THR" +
+      "OW\020\013\022\t\n\005MATCH\020\014\022\t\n\005YIELD\020\r*\202\006\n\010NodeType\022" +
+      "\025\n\021UNKNOWN_NODE_TYPE\020\000\022\n\n\006METHOD\020\001\022\021\n\rME" +
+      "THOD_RETURN\020\003\022\016\n\nANNOTATION\020\005\022\037\n\033ANNOTAT" +
+      "ION_PARAMETER_ASSIGN\020\006\022\030\n\024ANNOTATION_PAR" +
+      "AMETER\020\007\022\013\n\007LITERAL\020\010\022\n\n\006MEMBER\020\t\022\025\n\021ARR" +
+      "AY_INITIALIZER\020\016\022\010\n\004CALL\020\017\022\t\n\005LOCAL\020\027\022\007\n" +
+      "\003TAG\020\030\022\014\n\010LOCATION\020\031\022\016\n\nIDENTIFIER\020\033\022\n\n\006" +
+      "RETURN\020\036\022\t\n\005BLOCK\020\037\022\030\n\024METHOD_PARAMETER_" +
+      "OUT\020!\022\027\n\023METHOD_PARAMETER_IN\020\"\022\016\n\nDEPEND" +
+      "ENCY\020#\022\010\n\004FILE\020&\022\r\n\tMETA_DATA\020\'\022\r\n\tNAMES" +
+      "PACE\020(\022\023\n\017NAMESPACE_BLOCK\020)\022\013\n\007UNKNOWN\020," +
+      "\022\010\n\004TYPE\020-\022\r\n\tTYPE_DECL\020.\022\022\n\016TYPE_PARAME" +
+      "TER\020/\022\021\n\rTYPE_ARGUMENT\0200\022\026\n\022ANNOTATION_L" +
+      "ITERAL\0201\022\017\n\013CONFIG_FILE\0202\022\014\n\007BINDING\020\222\001\022" +
+      "\022\n\rTAG_NODE_PAIR\020\320\001\022\014\n\007FINDING\020\326\001\022\023\n\016KEY" +
+      "_VALUE_PAIR\020\331\001\022\r\n\010MODIFIER\020\254\002\022\017\n\nMETHOD_" +
+      "REF\020\315\002\022\024\n\017CLOSURE_BINDING\020\316\002\022\r\n\010TYPE_REF" +
+      "\020\317\002\022\026\n\021CONTROL_STRUCTURE\020\323\002\022\020\n\013JUMP_TARG" +
+      "ET\020\324\002\022\017\n\nJUMP_LABEL\020\325\002\022\021\n\014TEMPLATE_DOM\020\241" +
+      "\003\022\014\n\007COMMENT\020\377\003\022\026\n\020FIELD_IDENTIFIER\020\271\221zB" +
+      "H\n\021io.appthreat.atomB\004AtomZ\031github.com/A" +
+      "ppThreat/atom\252\002\021io.appthreat.atomb\006proto" +
+      "3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -46192,7 +46562,7 @@ public final class Atom {
     internal_static_atom_DataFlowSlice_Nodes_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_atom_DataFlowSlice_Nodes_descriptor,
-        new java.lang.String[] { "Id", "Label", "Name", "FullName", "Signature", "IsExternal", "Code", "TypeFullName", "ParentMethod", "ParentFile", "LineNumber", "ColumnNumber", });
+        new java.lang.String[] { "Id", "Label", "Name", "FullName", "Signature", "IsExternal", "Code", "TypeFullName", "ParentMethod", "ParentFileName", "ParentPackageName", "ParentClassName", "LineNumber", "ColumnNumber", });
     internal_static_atom_DataFlowSlice_Edges_descriptor =
       internal_static_atom_DataFlowSlice_descriptor.getNestedTypes().get(1);
     internal_static_atom_DataFlowSlice_Edges_fieldAccessorTable = new

@@ -336,7 +336,9 @@ DataFlow slices offers a list of nodes and edges exported from data dependency g
 | code | [string](#string) |  | Source code |
 | typeFullName | [string](#string) |  | Type full name |
 | parentMethod | [string](#string) |  | Parent method |
-| parentFile | [string](#string) |  | Parent filename |
+| parentFileName | [string](#string) |  | Parent filename |
+| parentPackageName | [string](#string) |  | Parent package name |
+| parentClassName | [string](#string) |  | Parent class name |
 | lineNumber | [uint32](#uint32) |  | Line number |
 | columnNumber | [uint32](#uint32) |  | Column number |
 

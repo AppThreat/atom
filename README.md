@@ -55,7 +55,7 @@ Command: parsedeps
 Extract dependencies from the build file and imports
 Command: data-flow [options]
 Extract backward data-flow slices
-  --slice-depth <value>    the max depth to traverse the DDG for the data-flow slice - defaults to 10.
+  --slice-depth <value>    the max depth to traverse the DDG for the data-flow slice - defaults to 7.
   --sink-filter <value>    filters on the sink's `code` property. Uses regex.
 Command: usages [options]
 Extract local variable and parameter usages
@@ -146,6 +146,18 @@ Install Java 17 or 19 (Recommended)
 ```shell
 sbt scalafmt
 sbt stage
+```
+
+## Using atom with joern
+
+At present, atom files are compatible with joern 2.x. However, atom files have specific overlays and enhancements and therefore must be imported with `enhance=false` as shown:
+
+```shell
+joern> importCpg("/home/almalinux/work/sandbox/apollo/app.atom", enhance=false)
+Creating project `app.atom1` for CPG at `/home/almalinux/work/sandbox/apollo/app.atom`
+Creating working copy of CPG to be safe
+Loading base CPG from: /home/almalinux/workspace/app.atom1/cpg.bin.tmp
+res1: Option[Cpg] = Some(value = Cpg (Graph [122094 nodes]))
 ```
 
 ## Enterprise support

@@ -938,11 +938,15 @@ message DataFlowSlice {
         // Parent method
         string parentMethod = 9;
         // Parent filename
-        string parentFile = 10;
+        string parentFileName = 10;
+        // Parent package name
+        string parentPackageName = 11;
+        // Parent class name
+        string parentClassName = 12;
         // Line number
-        uint32 lineNumber = 11;
+        uint32 lineNumber = 13;
         // Column number
-        uint32 columnNumber = 12;
+        uint32 columnNumber = 14;
     }
 
     message Edges {

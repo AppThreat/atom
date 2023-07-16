@@ -728,10 +728,24 @@
             </row>
             
             <row>
-              <entry>parentFile</entry>
+              <entry>parentFileName</entry>
               <entry><link linkend="string">string</link></entry>
               <entry></entry>
               <entry><para>Parent filename</para></entry>
+            </row>
+            
+            <row>
+              <entry>parentPackageName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Parent package name</para></entry>
+            </row>
+            
+            <row>
+              <entry>parentClassName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Parent class name</para></entry>
             </row>
             
             <row>
