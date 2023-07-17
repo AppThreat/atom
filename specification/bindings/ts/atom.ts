@@ -4885,7 +4885,7 @@ export namespace atom {
                 isExternal?: boolean;
                 code?: string;
                 typeFullName?: string;
-                parentMethod?: string;
+                parentMethodName?: string;
                 parentFileName?: string;
                 parentPackageName?: string;
                 parentClassName?: string;
@@ -4919,8 +4919,8 @@ export namespace atom {
                     if ("typeFullName" in data && data.typeFullName != undefined) {
                         this.typeFullName = data.typeFullName;
                     }
-                    if ("parentMethod" in data && data.parentMethod != undefined) {
-                        this.parentMethod = data.parentMethod;
+                    if ("parentMethodName" in data && data.parentMethodName != undefined) {
+                        this.parentMethodName = data.parentMethodName;
                     }
                     if ("parentFileName" in data && data.parentFileName != undefined) {
                         this.parentFileName = data.parentFileName;
@@ -4987,10 +4987,10 @@ export namespace atom {
             set typeFullName(value: string) {
                 pb_1.Message.setField(this, 8, value);
             }
-            get parentMethod() {
+            get parentMethodName() {
                 return pb_1.Message.getFieldWithDefault(this, 9, "") as string;
             }
-            set parentMethod(value: string) {
+            set parentMethodName(value: string) {
                 pb_1.Message.setField(this, 9, value);
             }
             get parentFileName() {
@@ -5032,7 +5032,7 @@ export namespace atom {
                 isExternal?: boolean;
                 code?: string;
                 typeFullName?: string;
-                parentMethod?: string;
+                parentMethodName?: string;
                 parentFileName?: string;
                 parentPackageName?: string;
                 parentClassName?: string;
@@ -5064,8 +5064,8 @@ export namespace atom {
                 if (data.typeFullName != null) {
                     message.typeFullName = data.typeFullName;
                 }
-                if (data.parentMethod != null) {
-                    message.parentMethod = data.parentMethod;
+                if (data.parentMethodName != null) {
+                    message.parentMethodName = data.parentMethodName;
                 }
                 if (data.parentFileName != null) {
                     message.parentFileName = data.parentFileName;
@@ -5094,7 +5094,7 @@ export namespace atom {
                     isExternal?: boolean;
                     code?: string;
                     typeFullName?: string;
-                    parentMethod?: string;
+                    parentMethodName?: string;
                     parentFileName?: string;
                     parentPackageName?: string;
                     parentClassName?: string;
@@ -5125,8 +5125,8 @@ export namespace atom {
                 if (this.typeFullName != null) {
                     data.typeFullName = this.typeFullName;
                 }
-                if (this.parentMethod != null) {
-                    data.parentMethod = this.parentMethod;
+                if (this.parentMethodName != null) {
+                    data.parentMethodName = this.parentMethodName;
                 }
                 if (this.parentFileName != null) {
                     data.parentFileName = this.parentFileName;
@@ -5165,8 +5165,8 @@ export namespace atom {
                     writer.writeString(7, this.code);
                 if (this.typeFullName.length)
                     writer.writeString(8, this.typeFullName);
-                if (this.parentMethod.length)
-                    writer.writeString(9, this.parentMethod);
+                if (this.parentMethodName.length)
+                    writer.writeString(9, this.parentMethodName);
                 if (this.parentFileName.length)
                     writer.writeString(10, this.parentFileName);
                 if (this.parentPackageName.length)
@@ -5211,7 +5211,7 @@ export namespace atom {
                             message.typeFullName = reader.readString();
                             break;
                         case 9:
-                            message.parentMethod = reader.readString();
+                            message.parentMethodName = reader.readString();
                             break;
                         case 10:
                             message.parentFileName = reader.readString();

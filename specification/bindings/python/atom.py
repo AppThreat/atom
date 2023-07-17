@@ -1039,8 +1039,8 @@ class DataFlowSliceNodes(betterproto.Message):
     code: str = betterproto.string_field(7)
     # Type full name
     type_full_name: str = betterproto.string_field(8)
-    # Parent method
-    parent_method: str = betterproto.string_field(9)
+    # Parent method name
+    parent_method_name: str = betterproto.string_field(9)
     # Parent filename
     parent_file_name: str = betterproto.string_field(10)
     # Parent package name

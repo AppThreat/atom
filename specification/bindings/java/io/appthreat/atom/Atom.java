@@ -39376,23 +39376,23 @@ public final class Atom {
 
       /**
        * <pre>
-       * Parent method
+       * Parent method name
        * </pre>
        *
-       * <code>string parentMethod = 9;</code>
-       * @return The parentMethod.
+       * <code>string parentMethodName = 9;</code>
+       * @return The parentMethodName.
        */
-      java.lang.String getParentMethod();
+      java.lang.String getParentMethodName();
       /**
        * <pre>
-       * Parent method
+       * Parent method name
        * </pre>
        *
-       * <code>string parentMethod = 9;</code>
-       * @return The bytes for parentMethod.
+       * <code>string parentMethodName = 9;</code>
+       * @return The bytes for parentMethodName.
        */
       com.google.protobuf.ByteString
-          getParentMethodBytes();
+          getParentMethodNameBytes();
 
       /**
        * <pre>
@@ -39493,7 +39493,7 @@ public final class Atom {
         signature_ = "";
         code_ = "";
         typeFullName_ = "";
-        parentMethod_ = "";
+        parentMethodName_ = "";
         parentFileName_ = "";
         parentPackageName_ = "";
         parentClassName_ = "";
@@ -39810,47 +39810,47 @@ public final class Atom {
         }
       }
 
-      public static final int PARENTMETHOD_FIELD_NUMBER = 9;
+      public static final int PARENTMETHODNAME_FIELD_NUMBER = 9;
       @SuppressWarnings("serial")
-      private volatile java.lang.Object parentMethod_ = "";
+      private volatile java.lang.Object parentMethodName_ = "";
       /**
        * <pre>
-       * Parent method
+       * Parent method name
        * </pre>
        *
-       * <code>string parentMethod = 9;</code>
-       * @return The parentMethod.
+       * <code>string parentMethodName = 9;</code>
+       * @return The parentMethodName.
        */
       @java.lang.Override
-      public java.lang.String getParentMethod() {
-        java.lang.Object ref = parentMethod_;
+      public java.lang.String getParentMethodName() {
+        java.lang.Object ref = parentMethodName_;
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
           com.google.protobuf.ByteString bs = 
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
-          parentMethod_ = s;
+          parentMethodName_ = s;
           return s;
         }
       }
       /**
        * <pre>
-       * Parent method
+       * Parent method name
        * </pre>
        *
-       * <code>string parentMethod = 9;</code>
-       * @return The bytes for parentMethod.
+       * <code>string parentMethodName = 9;</code>
+       * @return The bytes for parentMethodName.
        */
       @java.lang.Override
       public com.google.protobuf.ByteString
-          getParentMethodBytes() {
-        java.lang.Object ref = parentMethod_;
+          getParentMethodNameBytes() {
+        java.lang.Object ref = parentMethodName_;
         if (ref instanceof java.lang.String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          parentMethod_ = b;
+          parentMethodName_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
@@ -40066,8 +40066,8 @@ public final class Atom {
         if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(typeFullName_)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 8, typeFullName_);
         }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentMethod_)) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 9, parentMethod_);
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentMethodName_)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 9, parentMethodName_);
         }
         if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentFileName_)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 10, parentFileName_);
@@ -40120,8 +40120,8 @@ public final class Atom {
         if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(typeFullName_)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, typeFullName_);
         }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentMethod_)) {
-          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, parentMethod_);
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentMethodName_)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, parentMethodName_);
         }
         if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentFileName_)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, parentFileName_);
@@ -40170,8 +40170,8 @@ public final class Atom {
             .equals(other.getCode())) return false;
         if (!getTypeFullName()
             .equals(other.getTypeFullName())) return false;
-        if (!getParentMethod()
-            .equals(other.getParentMethod())) return false;
+        if (!getParentMethodName()
+            .equals(other.getParentMethodName())) return false;
         if (!getParentFileName()
             .equals(other.getParentFileName())) return false;
         if (!getParentPackageName()
@@ -40210,8 +40210,8 @@ public final class Atom {
         hash = (53 * hash) + getCode().hashCode();
         hash = (37 * hash) + TYPEFULLNAME_FIELD_NUMBER;
         hash = (53 * hash) + getTypeFullName().hashCode();
-        hash = (37 * hash) + PARENTMETHOD_FIELD_NUMBER;
-        hash = (53 * hash) + getParentMethod().hashCode();
+        hash = (37 * hash) + PARENTMETHODNAME_FIELD_NUMBER;
+        hash = (53 * hash) + getParentMethodName().hashCode();
         hash = (37 * hash) + PARENTFILENAME_FIELD_NUMBER;
         hash = (53 * hash) + getParentFileName().hashCode();
         hash = (37 * hash) + PARENTPACKAGENAME_FIELD_NUMBER;
@@ -40361,7 +40361,7 @@ public final class Atom {
           isExternal_ = false;
           code_ = "";
           typeFullName_ = "";
-          parentMethod_ = "";
+          parentMethodName_ = "";
           parentFileName_ = "";
           parentPackageName_ = "";
           parentClassName_ = "";
@@ -40425,7 +40425,7 @@ public final class Atom {
             result.typeFullName_ = typeFullName_;
           }
           if (((from_bitField0_ & 0x00000100) != 0)) {
-            result.parentMethod_ = parentMethod_;
+            result.parentMethodName_ = parentMethodName_;
           }
           if (((from_bitField0_ & 0x00000200) != 0)) {
             result.parentFileName_ = parentFileName_;
@@ -40522,8 +40522,8 @@ public final class Atom {
             bitField0_ |= 0x00000080;
             onChanged();
           }
-          if (!other.getParentMethod().isEmpty()) {
-            parentMethod_ = other.parentMethod_;
+          if (!other.getParentMethodName().isEmpty()) {
+            parentMethodName_ = other.parentMethodName_;
             bitField0_ |= 0x00000100;
             onChanged();
           }
@@ -40615,7 +40615,7 @@ public final class Atom {
                   break;
                 } // case 66
                 case 74: {
-                  parentMethod_ = input.readStringRequireUtf8();
+                  parentMethodName_ = input.readStringRequireUtf8();
                   bitField0_ |= 0x00000100;
                   break;
                 } // case 74
@@ -41282,22 +41282,22 @@ public final class Atom {
           return this;
         }
 
-        private java.lang.Object parentMethod_ = "";
+        private java.lang.Object parentMethodName_ = "";
         /**
          * <pre>
-         * Parent method
+         * Parent method name
          * </pre>
          *
-         * <code>string parentMethod = 9;</code>
-         * @return The parentMethod.
+         * <code>string parentMethodName = 9;</code>
+         * @return The parentMethodName.
          */
-        public java.lang.String getParentMethod() {
-          java.lang.Object ref = parentMethod_;
+        public java.lang.String getParentMethodName() {
+          java.lang.Object ref = parentMethodName_;
           if (!(ref instanceof java.lang.String)) {
             com.google.protobuf.ByteString bs =
                 (com.google.protobuf.ByteString) ref;
             java.lang.String s = bs.toStringUtf8();
-            parentMethod_ = s;
+            parentMethodName_ = s;
             return s;
           } else {
             return (java.lang.String) ref;
@@ -41305,20 +41305,20 @@ public final class Atom {
         }
         /**
          * <pre>
-         * Parent method
+         * Parent method name
          * </pre>
          *
-         * <code>string parentMethod = 9;</code>
-         * @return The bytes for parentMethod.
+         * <code>string parentMethodName = 9;</code>
+         * @return The bytes for parentMethodName.
          */
         public com.google.protobuf.ByteString
-            getParentMethodBytes() {
-          java.lang.Object ref = parentMethod_;
+            getParentMethodNameBytes() {
+          java.lang.Object ref = parentMethodName_;
           if (ref instanceof String) {
             com.google.protobuf.ByteString b = 
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
-            parentMethod_ = b;
+            parentMethodName_ = b;
             return b;
           } else {
             return (com.google.protobuf.ByteString) ref;
@@ -41326,49 +41326,49 @@ public final class Atom {
         }
         /**
          * <pre>
-         * Parent method
+         * Parent method name
          * </pre>
          *
-         * <code>string parentMethod = 9;</code>
-         * @param value The parentMethod to set.
+         * <code>string parentMethodName = 9;</code>
+         * @param value The parentMethodName to set.
          * @return This builder for chaining.
          */
-        public Builder setParentMethod(
+        public Builder setParentMethodName(
             java.lang.String value) {
           if (value == null) { throw new NullPointerException(); }
-          parentMethod_ = value;
+          parentMethodName_ = value;
           bitField0_ |= 0x00000100;
           onChanged();
           return this;
         }
         /**
          * <pre>
-         * Parent method
+         * Parent method name
          * </pre>
          *
-         * <code>string parentMethod = 9;</code>
+         * <code>string parentMethodName = 9;</code>
          * @return This builder for chaining.
          */
-        public Builder clearParentMethod() {
-          parentMethod_ = getDefaultInstance().getParentMethod();
+        public Builder clearParentMethodName() {
+          parentMethodName_ = getDefaultInstance().getParentMethodName();
           bitField0_ = (bitField0_ & ~0x00000100);
           onChanged();
           return this;
         }
         /**
          * <pre>
-         * Parent method
+         * Parent method name
          * </pre>
          *
-         * <code>string parentMethod = 9;</code>
-         * @param value The bytes for parentMethod to set.
+         * <code>string parentMethodName = 9;</code>
+         * @param value The bytes for parentMethodName to set.
          * @return This builder for chaining.
          */
-        public Builder setParentMethodBytes(
+        public Builder setParentMethodNameBytes(
             com.google.protobuf.ByteString value) {
           if (value == null) { throw new NullPointerException(); }
           checkByteStringIsUtf8(value);
-          parentMethod_ = value;
+          parentMethodName_ = value;
           bitField0_ |= 0x00000100;
           onChanged();
           return this;
@@ -46277,91 +46277,91 @@ public final class Atom {
       "ber\030\005 \001(\r\022\024\n\014columnNumber\030\006 \001(\r\"l\n\tLabel" +
       "Type\022\007\n\003ANY\020\000\022\t\n\005LOCAL\020\001\022\013\n\007LITERAL\020\002\022\t\n" +
       "\005PARAM\020\003\022\010\n\004CALL\020\004\022\016\n\nIDENTIFIER\020\005\022\014\n\010TY" +
-      "PE_REF\020\006\022\013\n\007UNKNOWN\020\n\"\204\005\n\rDataFlowSlice\022" +
+      "PE_REF\020\006\022\013\n\007UNKNOWN\020\n\"\210\005\n\rDataFlowSlice\022" +
       "(\n\005graph\030\001 \001(\0132\031.atom.DataFlowSlice.Grap" +
       "h\022\'\n\004path\030\002 \001(\0132\031.atom.DataFlowSlice.Pat" +
-      "hs\032\251\002\n\005Nodes\022\n\n\002id\030\001 \001(\r\022\035\n\005label\030\002 \001(\0162" +
+      "hs\032\255\002\n\005Nodes\022\n\n\002id\030\001 \001(\r\022\035\n\005label\030\002 \001(\0162" +
       "\016.atom.NodeType\022\014\n\004name\030\003 \001(\t\022\020\n\010fullNam" +
       "e\030\004 \001(\t\022\021\n\tsignature\030\005 \001(\t\022\022\n\nisExternal" +
       "\030\006 \001(\010\022\014\n\004code\030\007 \001(\t\022\024\n\014typeFullName\030\010 \001" +
-      "(\t\022\024\n\014parentMethod\030\t \001(\t\022\026\n\016parentFileNa" +
-      "me\030\n \001(\t\022\031\n\021parentPackageName\030\013 \001(\t\022\027\n\017p" +
-      "arentClassName\030\014 \001(\t\022\022\n\nlineNumber\030\r \001(\r" +
-      "\022\024\n\014columnNumber\030\016 \001(\r\032O\n\005Edges\022\013\n\003src\030\001" +
-      " \001(\r\022\013\n\003dst\030\002 \001(\r\022,\n\005label\030\003 \001(\0162\035.atom." +
-      "CpgStruct.Edge.EdgeType\032\023\n\005Flows\022\n\n\002id\030\001" +
-      " \003(\r\0321\n\005Paths\022(\n\005flows\030\001 \003(\0132\031.atom.Data" +
-      "FlowSlice.Flows\032[\n\005Graph\022(\n\005nodes\030\001 \003(\0132" +
-      "\031.atom.DataFlowSlice.Nodes\022(\n\005edges\030\002 \003(" +
-      "\0132\031.atom.DataFlowSlice.Edges*\245\007\n\020NodePro" +
-      "pertyName\022\031\n\025UNKNOWN_NODE_PROPERTY\020\000\022\017\n\013" +
-      "LINE_NUMBER\020\002\022\024\n\020PARSER_TYPE_NAME\020\003\022\t\n\005O" +
-      "RDER\020\004\022\010\n\004NAME\020\005\022\r\n\tFULL_NAME\020\006\022\017\n\013IS_EX" +
-      "TERNAL\020\007\022\t\n\005VALUE\020\010\022\021\n\rCOLUMN_NUMBER\020\013\022\023" +
-      "\n\017LINE_NUMBER_END\020\014\022\013\n\007VERSION\020\r\022\027\n\023EVAL" +
-      "UATION_STRATEGY\020\017\022\025\n\021COLUMN_NUMBER_END\020\020" +
-      "\022\014\n\010LANGUAGE\020\023\022\013\n\007CONTENT\020\024\022\010\n\004CODE\020\025\022\r\n" +
-      "\tSIGNATURE\020\026\022\021\n\rDISPATCH_TYPE\020\031\022\021\n\rMODIF" +
-      "IER_TYPE\020\032\022\032\n\026CONTROL_STRUCTURE_TYPE\020\033\022\022" +
-      "\n\016ARGUMENT_INDEX\020(\022\026\n\022CLOSURE_BINDING_ID" +
-      "\0202\022\022\n\016TYPE_FULL_NAME\0203\022\027\n\023TYPE_DECL_FULL" +
-      "_NAME\0204\022 \n\034INHERITS_FROM_TYPE_FULL_NAME\020" +
-      "5\022\024\n\020METHOD_FULL_NAME\0206\022\023\n\017AST_PARENT_TY" +
-      "PE\0208\022\030\n\024AST_PARENT_FULL_NAME\0209\022\027\n\023DEPEND" +
-      "ENCY_GROUP_ID\020:\022\n\n\006SYMBOL\020d\022\025\n\021METHOD_SH" +
-      "ORT_NAME\020f\022\020\n\014PACKAGE_NAME\020g\022\016\n\nCLASS_NA" +
-      "ME\020h\022\016\n\nNODE_LABEL\020i\022\014\n\010FILENAME\020j\022\014\n\010OV" +
-      "ERLAYS\020v\022\010\n\004HASH\020x\022\022\n\rARGUMENT_NAME\020\202\001\022\010" +
-      "\n\003KEY\020\203\001\022\025\n\020CLASS_SHORT_NAME\020\204\001\022\031\n\024ALIAS" +
-      "_TYPE_FULL_NAME\020\236\001\022\032\n\025CLOSURE_ORIGINAL_N" +
-      "AME\020\237\001\022\020\n\013IS_VARIADIC\020\335\001\022\t\n\004ROOT\020\257\t\022 \n\033D" +
-      "YNAMIC_TYPE_HINT_FULL_NAME\020\267\014\022\n\n\005INDEX\020\257" +
-      "\021\022\024\n\016CANONICAL_NAME\020\304\221z\022\023\n\rCONTAINED_REF" +
-      "\020\371\300z*;\n\020EdgePropertyName\022\031\n\025UNKNOWN_EDGE" +
-      "_PROPERTY\020\000\022\014\n\010VARIABLE\020\013*\275\001\n\rModifierTy" +
-      "pes\022\031\n\025UNKNOWN_MODIFIER_TYPE\020\000\022\n\n\006STATIC" +
-      "\020\001\022\n\n\006PUBLIC\020\002\022\r\n\tPROTECTED\020\003\022\013\n\007PRIVATE" +
-      "\020\004\022\014\n\010ABSTRACT\020\005\022\n\n\006NATIVE\020\006\022\017\n\013CONSTRUC" +
-      "TOR\020\007\022\013\n\007VIRTUAL\020\010\022\014\n\010INTERNAL\020\t\022\t\n\005FINA" +
-      "L\020\n\022\014\n\010READONLY\020\013*\362\001\n\tLANGUAGES\022\024\n\020UNKNO" +
-      "WN_LANGUAGE\020\000\022\010\n\004JAVA\020\001\022\016\n\nJAVASCRIPT\020\002\022" +
-      "\n\n\006GOLANG\020\003\022\n\n\006CSHARP\020\004\022\005\n\001C\020\005\022\n\n\006PYTHON" +
-      "\020\006\022\010\n\004LLVM\020\007\022\007\n\003PHP\020\010\022\023\n\017FUZZY_TEST_LANG" +
-      "\020\t\022\n\n\006GHIDRA\020\n\022\n\n\006KOTLIN\020\013\022\010\n\004NEWC\020\014\022\013\n\007" +
-      "JAVASRC\020\r\022\r\n\tPYTHONSRC\020\016\022\t\n\005JSSRC\020\017\022\014\n\010S" +
-      "OLIDITY\020\020\022\013\n\007RUBYSRC\020\021*g\n\024EvaluationStra" +
-      "tegies\022\037\n\033UNKNOWN_EVALUATION_STRATEGY\020\000\022" +
-      "\020\n\014BY_REFERENCE\020\001\022\016\n\nBY_SHARING\020\002\022\014\n\010BY_" +
-      "VALUE\020\003*b\n\rDispatchTypes\022\031\n\025UNKNOWN_DISP" +
-      "ATCH_TYPE\020\000\022\023\n\017STATIC_DISPATCH\020\001\022\024\n\020DYNA" +
-      "MIC_DISPATCH\020\002\022\013\n\007INLINED\020\003*\304\001\n\027CONTROL_" +
-      "STRUCTURE_TYPES\022\"\n\036UNKNOWN_CONTROL_STRUC" +
-      "TURE_TYPE\020\000\022\t\n\005BREAK\020\001\022\014\n\010CONTINUE\020\002\022\t\n\005" +
-      "WHILE\020\003\022\006\n\002DO\020\004\022\007\n\003FOR\020\005\022\010\n\004GOTO\020\006\022\006\n\002IF" +
-      "\020\007\022\010\n\004ELSE\020\010\022\n\n\006SWITCH\020\t\022\007\n\003TRY\020\n\022\t\n\005THR" +
-      "OW\020\013\022\t\n\005MATCH\020\014\022\t\n\005YIELD\020\r*\202\006\n\010NodeType\022" +
-      "\025\n\021UNKNOWN_NODE_TYPE\020\000\022\n\n\006METHOD\020\001\022\021\n\rME" +
-      "THOD_RETURN\020\003\022\016\n\nANNOTATION\020\005\022\037\n\033ANNOTAT" +
-      "ION_PARAMETER_ASSIGN\020\006\022\030\n\024ANNOTATION_PAR" +
-      "AMETER\020\007\022\013\n\007LITERAL\020\010\022\n\n\006MEMBER\020\t\022\025\n\021ARR" +
-      "AY_INITIALIZER\020\016\022\010\n\004CALL\020\017\022\t\n\005LOCAL\020\027\022\007\n" +
-      "\003TAG\020\030\022\014\n\010LOCATION\020\031\022\016\n\nIDENTIFIER\020\033\022\n\n\006" +
-      "RETURN\020\036\022\t\n\005BLOCK\020\037\022\030\n\024METHOD_PARAMETER_" +
-      "OUT\020!\022\027\n\023METHOD_PARAMETER_IN\020\"\022\016\n\nDEPEND" +
-      "ENCY\020#\022\010\n\004FILE\020&\022\r\n\tMETA_DATA\020\'\022\r\n\tNAMES" +
-      "PACE\020(\022\023\n\017NAMESPACE_BLOCK\020)\022\013\n\007UNKNOWN\020," +
-      "\022\010\n\004TYPE\020-\022\r\n\tTYPE_DECL\020.\022\022\n\016TYPE_PARAME" +
-      "TER\020/\022\021\n\rTYPE_ARGUMENT\0200\022\026\n\022ANNOTATION_L" +
-      "ITERAL\0201\022\017\n\013CONFIG_FILE\0202\022\014\n\007BINDING\020\222\001\022" +
-      "\022\n\rTAG_NODE_PAIR\020\320\001\022\014\n\007FINDING\020\326\001\022\023\n\016KEY" +
-      "_VALUE_PAIR\020\331\001\022\r\n\010MODIFIER\020\254\002\022\017\n\nMETHOD_" +
-      "REF\020\315\002\022\024\n\017CLOSURE_BINDING\020\316\002\022\r\n\010TYPE_REF" +
-      "\020\317\002\022\026\n\021CONTROL_STRUCTURE\020\323\002\022\020\n\013JUMP_TARG" +
-      "ET\020\324\002\022\017\n\nJUMP_LABEL\020\325\002\022\021\n\014TEMPLATE_DOM\020\241" +
-      "\003\022\014\n\007COMMENT\020\377\003\022\026\n\020FIELD_IDENTIFIER\020\271\221zB" +
-      "H\n\021io.appthreat.atomB\004AtomZ\031github.com/A" +
-      "ppThreat/atom\252\002\021io.appthreat.atomb\006proto" +
-      "3"
+      "(\t\022\030\n\020parentMethodName\030\t \001(\t\022\026\n\016parentFi" +
+      "leName\030\n \001(\t\022\031\n\021parentPackageName\030\013 \001(\t\022" +
+      "\027\n\017parentClassName\030\014 \001(\t\022\022\n\nlineNumber\030\r" +
+      " \001(\r\022\024\n\014columnNumber\030\016 \001(\r\032O\n\005Edges\022\013\n\003s" +
+      "rc\030\001 \001(\r\022\013\n\003dst\030\002 \001(\r\022,\n\005label\030\003 \001(\0162\035.a" +
+      "tom.CpgStruct.Edge.EdgeType\032\023\n\005Flows\022\n\n\002" +
+      "id\030\001 \003(\r\0321\n\005Paths\022(\n\005flows\030\001 \003(\0132\031.atom." +
+      "DataFlowSlice.Flows\032[\n\005Graph\022(\n\005nodes\030\001 " +
+      "\003(\0132\031.atom.DataFlowSlice.Nodes\022(\n\005edges\030" +
+      "\002 \003(\0132\031.atom.DataFlowSlice.Edges*\245\007\n\020Nod" +
+      "ePropertyName\022\031\n\025UNKNOWN_NODE_PROPERTY\020\000" +
+      "\022\017\n\013LINE_NUMBER\020\002\022\024\n\020PARSER_TYPE_NAME\020\003\022" +
+      "\t\n\005ORDER\020\004\022\010\n\004NAME\020\005\022\r\n\tFULL_NAME\020\006\022\017\n\013I" +
+      "S_EXTERNAL\020\007\022\t\n\005VALUE\020\010\022\021\n\rCOLUMN_NUMBER" +
+      "\020\013\022\023\n\017LINE_NUMBER_END\020\014\022\013\n\007VERSION\020\r\022\027\n\023" +
+      "EVALUATION_STRATEGY\020\017\022\025\n\021COLUMN_NUMBER_E" +
+      "ND\020\020\022\014\n\010LANGUAGE\020\023\022\013\n\007CONTENT\020\024\022\010\n\004CODE\020" +
+      "\025\022\r\n\tSIGNATURE\020\026\022\021\n\rDISPATCH_TYPE\020\031\022\021\n\rM" +
+      "ODIFIER_TYPE\020\032\022\032\n\026CONTROL_STRUCTURE_TYPE" +
+      "\020\033\022\022\n\016ARGUMENT_INDEX\020(\022\026\n\022CLOSURE_BINDIN" +
+      "G_ID\0202\022\022\n\016TYPE_FULL_NAME\0203\022\027\n\023TYPE_DECL_" +
+      "FULL_NAME\0204\022 \n\034INHERITS_FROM_TYPE_FULL_N" +
+      "AME\0205\022\024\n\020METHOD_FULL_NAME\0206\022\023\n\017AST_PAREN" +
+      "T_TYPE\0208\022\030\n\024AST_PARENT_FULL_NAME\0209\022\027\n\023DE" +
+      "PENDENCY_GROUP_ID\020:\022\n\n\006SYMBOL\020d\022\025\n\021METHO" +
+      "D_SHORT_NAME\020f\022\020\n\014PACKAGE_NAME\020g\022\016\n\nCLAS" +
+      "S_NAME\020h\022\016\n\nNODE_LABEL\020i\022\014\n\010FILENAME\020j\022\014" +
+      "\n\010OVERLAYS\020v\022\010\n\004HASH\020x\022\022\n\rARGUMENT_NAME\020" +
+      "\202\001\022\010\n\003KEY\020\203\001\022\025\n\020CLASS_SHORT_NAME\020\204\001\022\031\n\024A" +
+      "LIAS_TYPE_FULL_NAME\020\236\001\022\032\n\025CLOSURE_ORIGIN" +
+      "AL_NAME\020\237\001\022\020\n\013IS_VARIADIC\020\335\001\022\t\n\004ROOT\020\257\t\022" +
+      " \n\033DYNAMIC_TYPE_HINT_FULL_NAME\020\267\014\022\n\n\005IND" +
+      "EX\020\257\021\022\024\n\016CANONICAL_NAME\020\304\221z\022\023\n\rCONTAINED" +
+      "_REF\020\371\300z*;\n\020EdgePropertyName\022\031\n\025UNKNOWN_" +
+      "EDGE_PROPERTY\020\000\022\014\n\010VARIABLE\020\013*\275\001\n\rModifi" +
+      "erTypes\022\031\n\025UNKNOWN_MODIFIER_TYPE\020\000\022\n\n\006ST" +
+      "ATIC\020\001\022\n\n\006PUBLIC\020\002\022\r\n\tPROTECTED\020\003\022\013\n\007PRI" +
+      "VATE\020\004\022\014\n\010ABSTRACT\020\005\022\n\n\006NATIVE\020\006\022\017\n\013CONS" +
+      "TRUCTOR\020\007\022\013\n\007VIRTUAL\020\010\022\014\n\010INTERNAL\020\t\022\t\n\005" +
+      "FINAL\020\n\022\014\n\010READONLY\020\013*\362\001\n\tLANGUAGES\022\024\n\020U" +
+      "NKNOWN_LANGUAGE\020\000\022\010\n\004JAVA\020\001\022\016\n\nJAVASCRIP" +
+      "T\020\002\022\n\n\006GOLANG\020\003\022\n\n\006CSHARP\020\004\022\005\n\001C\020\005\022\n\n\006PY" +
+      "THON\020\006\022\010\n\004LLVM\020\007\022\007\n\003PHP\020\010\022\023\n\017FUZZY_TEST_" +
+      "LANG\020\t\022\n\n\006GHIDRA\020\n\022\n\n\006KOTLIN\020\013\022\010\n\004NEWC\020\014" +
+      "\022\013\n\007JAVASRC\020\r\022\r\n\tPYTHONSRC\020\016\022\t\n\005JSSRC\020\017\022" +
+      "\014\n\010SOLIDITY\020\020\022\013\n\007RUBYSRC\020\021*g\n\024Evaluation" +
+      "Strategies\022\037\n\033UNKNOWN_EVALUATION_STRATEG" +
+      "Y\020\000\022\020\n\014BY_REFERENCE\020\001\022\016\n\nBY_SHARING\020\002\022\014\n" +
+      "\010BY_VALUE\020\003*b\n\rDispatchTypes\022\031\n\025UNKNOWN_" +
+      "DISPATCH_TYPE\020\000\022\023\n\017STATIC_DISPATCH\020\001\022\024\n\020" +
+      "DYNAMIC_DISPATCH\020\002\022\013\n\007INLINED\020\003*\304\001\n\027CONT" +
+      "ROL_STRUCTURE_TYPES\022\"\n\036UNKNOWN_CONTROL_S" +
+      "TRUCTURE_TYPE\020\000\022\t\n\005BREAK\020\001\022\014\n\010CONTINUE\020\002" +
+      "\022\t\n\005WHILE\020\003\022\006\n\002DO\020\004\022\007\n\003FOR\020\005\022\010\n\004GOTO\020\006\022\006" +
+      "\n\002IF\020\007\022\010\n\004ELSE\020\010\022\n\n\006SWITCH\020\t\022\007\n\003TRY\020\n\022\t\n" +
+      "\005THROW\020\013\022\t\n\005MATCH\020\014\022\t\n\005YIELD\020\r*\202\006\n\010NodeT" +
+      "ype\022\025\n\021UNKNOWN_NODE_TYPE\020\000\022\n\n\006METHOD\020\001\022\021" +
+      "\n\rMETHOD_RETURN\020\003\022\016\n\nANNOTATION\020\005\022\037\n\033ANN" +
+      "OTATION_PARAMETER_ASSIGN\020\006\022\030\n\024ANNOTATION" +
+      "_PARAMETER\020\007\022\013\n\007LITERAL\020\010\022\n\n\006MEMBER\020\t\022\025\n" +
+      "\021ARRAY_INITIALIZER\020\016\022\010\n\004CALL\020\017\022\t\n\005LOCAL\020" +
+      "\027\022\007\n\003TAG\020\030\022\014\n\010LOCATION\020\031\022\016\n\nIDENTIFIER\020\033" +
+      "\022\n\n\006RETURN\020\036\022\t\n\005BLOCK\020\037\022\030\n\024METHOD_PARAME" +
+      "TER_OUT\020!\022\027\n\023METHOD_PARAMETER_IN\020\"\022\016\n\nDE" +
+      "PENDENCY\020#\022\010\n\004FILE\020&\022\r\n\tMETA_DATA\020\'\022\r\n\tN" +
+      "AMESPACE\020(\022\023\n\017NAMESPACE_BLOCK\020)\022\013\n\007UNKNO" +
+      "WN\020,\022\010\n\004TYPE\020-\022\r\n\tTYPE_DECL\020.\022\022\n\016TYPE_PA" +
+      "RAMETER\020/\022\021\n\rTYPE_ARGUMENT\0200\022\026\n\022ANNOTATI" +
+      "ON_LITERAL\0201\022\017\n\013CONFIG_FILE\0202\022\014\n\007BINDING" +
+      "\020\222\001\022\022\n\rTAG_NODE_PAIR\020\320\001\022\014\n\007FINDING\020\326\001\022\023\n" +
+      "\016KEY_VALUE_PAIR\020\331\001\022\r\n\010MODIFIER\020\254\002\022\017\n\nMET" +
+      "HOD_REF\020\315\002\022\024\n\017CLOSURE_BINDING\020\316\002\022\r\n\010TYPE" +
+      "_REF\020\317\002\022\026\n\021CONTROL_STRUCTURE\020\323\002\022\020\n\013JUMP_" +
+      "TARGET\020\324\002\022\017\n\nJUMP_LABEL\020\325\002\022\021\n\014TEMPLATE_D" +
+      "OM\020\241\003\022\014\n\007COMMENT\020\377\003\022\026\n\020FIELD_IDENTIFIER\020" +
+      "\271\221zBH\n\021io.appthreat.atomB\004AtomZ\031github.c" +
+      "om/AppThreat/atom\252\002\021io.appthreat.atomb\006p" +
+      "roto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -46570,7 +46570,7 @@ public final class Atom {
     internal_static_atom_DataFlowSlice_Nodes_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_atom_DataFlowSlice_Nodes_descriptor,
-        new java.lang.String[] { "Id", "Label", "Name", "FullName", "Signature", "IsExternal", "Code", "TypeFullName", "ParentMethod", "ParentFileName", "ParentPackageName", "ParentClassName", "LineNumber", "ColumnNumber", });
+        new java.lang.String[] { "Id", "Label", "Name", "FullName", "Signature", "IsExternal", "Code", "TypeFullName", "ParentMethodName", "ParentFileName", "ParentPackageName", "ParentClassName", "LineNumber", "ColumnNumber", });
     internal_static_atom_DataFlowSlice_Edges_descriptor =
       internal_static_atom_DataFlowSlice_descriptor.getNestedTypes().get(1);
     internal_static_atom_DataFlowSlice_Edges_fieldAccessorTable = new

@@ -940,8 +940,8 @@ message DataFlowSlice {
         string code = 7;
         // Type full name
         string typeFullName = 8;
-        // Parent method
-        string parentMethod = 9;
+        // Parent method name
+        string parentMethodName = 9;
         // Parent filename
         string parentFileName = 10;
         // Parent package name

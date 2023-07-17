@@ -79,7 +79,7 @@ object DataFlowSlicing {
       cfgNode.id(),
       cfgNode.label,
       code = cfgNode.code,
-      parentMethod = cfgNode.method.fullName,
+      parentMethodName = cfgNode.method.fullName,
       parentMethodSignature = cfgNode.method.signature,
       parentFileName = cfgNode.file.name.headOption.getOrElse(""),
       parentPackageName = cfgNode.method.location.packageName,

@@ -721,10 +721,10 @@
             </row>
             
             <row>
-              <entry>parentMethod</entry>
+              <entry>parentMethodName</entry>
               <entry><link linkend="string">string</link></entry>
               <entry></entry>
-              <entry><para>Parent method</para></entry>
+              <entry><para>Parent method name</para></entry>
             </row>
             
             <row>
