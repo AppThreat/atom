@@ -4,18 +4,19 @@ import better.files.File
 import io.appthreat.atom.Atom.loadFromOdb
 import io.appthreat.atom.dataflows.{DataFlowGraph, OssDataFlow, OssDataFlowOptions}
 import io.appthreat.atom.parsedeps.{AtomSlice, parseDependencies}
+import io.appthreat.atom.passes.{SafeJSTypeRecoveryPass, TypeHintPass}
+import io.appthreat.atom.slicing.*
 import io.joern.c2cpg.{C2Cpg, Config as CConfig}
-import io.appthreat.atom.slicing.{UsageSlicing, *}
 import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.joern.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
-import io.joern.jssrc2cpg.passes.{ConstClosurePass, JavaScriptInheritanceNamePass, ImportResolverPass}
+import io.joern.jssrc2cpg.passes.{ConstClosurePass, ImportResolverPass, JavaScriptInheritanceNamePass}
 import io.joern.jssrc2cpg.{JsSrc2Cpg, Config as JSConfig}
 import io.joern.pysrc2cpg.{
   DynamicTypeHintFullNamePass,
   Py2CpgOnFileSystem,
   PythonInheritanceNamePass,
-  ImportsPass as PythonImportsPass,
   ImportResolverPass as PyImportResolverPass,
+  ImportsPass as PythonImportsPass,
   Py2CpgOnFileSystemConfig as PyConfig
 }
 import io.joern.x2cpg.passes.base.AstLinkerPass
@@ -41,20 +42,10 @@ object Atom {
   private val SBT_JAR_PATH: File    = File.home / ".ivy2" / "cache"
   private val JAR_INFERENCE_PATHS: Set[String] =
     Set(MAVEN_JAR_PATH.pathAsString, GRADLE_JAR_PATH.pathAsString, SBT_JAR_PATH.pathAsString)
-  private val ANDROID_JAR_PATH: Option[String] = Option(System.getenv("ANDROID_HOME")).flatMap(androidHome =>
-    File(androidHome).glob("**/android.jar").map(_.pathAsString).toSeq.headOption
-  )
-
-  def main(args: Array[String]): Unit = {
-    run(args) match {
-      case Right(msg) =>
-        println(msg)
-      case Left(errMsg) =>
-        println(s"Failure: $errMsg")
-        System.exit(1)
-    }
+  private val ANDROID_JAR_PATH: Option[String] = Option(System.getenv("ANDROID_HOME")).flatMap { androidHome =>
+    if (File(androidHome).isDirectory) File(androidHome).glob("**/android.jar").map(_.pathAsString).toSeq.headOption
+    else None
   }
-
   private val optionParser: OptionParser[BaseConfig] = new scopt.OptionParser[BaseConfig]("atom") {
     arg[String]("input")
       .optional()
@@ -159,6 +150,16 @@ object Atom {
     help("help").text("display this help message")
   }
 
+  def main(args: Array[String]): Unit = {
+    run(args) match {
+      case Right(msg) =>
+        println(msg)
+      case Left(errMsg) =>
+        println(s"Failure: $errMsg")
+        System.exit(1)
+    }
+  }
+
   private def run(args: Array[String]): Either[String, String] = {
     val parserArgs = args.toList
     parseConfig(parserArgs) match {
@@ -166,11 +167,6 @@ object Atom {
       case Right(_)                  => Left("Invalid configuration generated")
       case Left(err)                 => Left(err)
     }
-  }
-
-  def newAtomCreatedString(path: String): String = {
-    val absolutePath = File(path).path.toAbsolutePath
-    s"Atom created successfully at $absolutePath\n"
   }
 
   private def run(config: BaseConfig, language: String): Either[String, String] = {
@@ -183,80 +179,49 @@ object Atom {
     )
   }
 
-  private def generateForLanguage(language: String, config: BaseConfig): Either[String, String] = {
+  private def newAtomCreatedString(path: String): String = {
+    val absolutePath = File(path).path.toAbsolutePath
+    s"Atom created successfully at $absolutePath\n"
+  }
+
+  private def generateSlice(config: BaseConfig): Either[String, String] = {
+    def sliceCpg(cpg: Cpg): Option[ProgramSlice] =
+      config match {
+        case x: AtomDataFlowConfig =>
+          val dataFlowConfig = migrateAtomConfigToSliceConfig(x)
+          DataFlowSlicing.calculateDataFlowSlice(cpg, dataFlowConfig.asInstanceOf[DataFlowConfig])
+        case x: AtomUsagesConfig =>
+          val usagesConfig = migrateAtomConfigToSliceConfig(x)
+          Option(UsageSlicing.calculateUsageSlice(cpg, usagesConfig.asInstanceOf[UsagesConfig]))
+        case _ =>
+          None
+      }
+
     val outputAtomFile = config match
       case x: AtomConfig => x.outputAtomFile.pathAsString
       case _             => DEFAULT_ATOM_OUT_FILE
 
-    (language match {
-      case Languages.C | Languages.NEWC | "CPP" | "C++" =>
-        new C2Cpg()
-          .createCpgWithOverlays(
-            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = false)
-              .withInputPath(config.inputPath.pathAsString)
-              .withOutputPath(outputAtomFile)
-              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks).*")
-          )
-      case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
-        new Jimple2Cpg()
-          .createCpgWithOverlays(
-            JimpleConfig(android = ANDROID_JAR_PATH)
-              .withInputPath(config.inputPath.pathAsString)
-              .withOutputPath(outputAtomFile)
-              .withFullResolver(true)
-          )
-      case Languages.JAVA | Languages.JAVASRC =>
-        new JavaSrc2Cpg()
-          .createCpgWithOverlays(
-            JavaConfig(fetchDependencies = true, inferenceJarPaths = JAR_INFERENCE_PATHS)
-              .withInputPath(config.inputPath.pathAsString)
-              .withOutputPath(outputAtomFile)
-          )
-      case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
-        new JsSrc2Cpg()
-          .createCpgWithOverlays(
-            JSConfig(disableDummyTypes = true)
-              .withInputPath(config.inputPath.pathAsString)
-              .withOutputPath(outputAtomFile)
-          )
-          .map { ag =>
-            new JavaScriptInheritanceNamePass(ag).createAndApply()
-            new ConstClosurePass(ag).createAndApply()
-            new ImportResolverPass(ag).createAndApply()
-            ag
+    try {
+      migrateAtomConfigToSliceConfig(config) match {
+        case _: DataFlowConfig =>
+          val dataFlowSlice =
+            Using.resource(loadFromOdb(outputAtomFile))(sliceCpg).collect { case x: DataFlowSlice => x }
+          val atomDataFlowSliceJson =
+            dataFlowSlice.map(x => AtomDataFlowSlice(x, DataFlowGraph.buildFromSlice(x).paths).toJson)
+          saveSlice(config.outputSliceFile, atomDataFlowSliceJson)
+        case _: UsagesConfig =>
+          saveSlice(config.outputSliceFile, Using.resource(loadFromOdb(outputAtomFile))(sliceCpg).map(_.toJson))
+        case x: AtomParseDepsConfig =>
+          Using.resource(loadFromOdb(outputAtomFile))(parseDependencies).map(_.toJson) match {
+            case Left(err)    => return Left(err)
+            case Right(slice) => saveSlice(x.outputSliceFile, Option(slice))
           }
-      case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
-        new Py2CpgOnFileSystem()
-          .createCpgWithOverlays(
-            PyConfig(disableDummyTypes = true)
-              .withInputPath(config.inputPath.pathAsString)
-              .withOutputPath(outputAtomFile)
-              .withDefaultIgnoredFilesRegex(List("\\..*".r))
-              .withIgnoredFilesRegex(
-                ".*(samples|examples|test|tests|unittests|docs|virtualenvs|venv|benchmarks|tutorials).*"
-              )
-          )
-          .map { ag =>
-            new PythonImportsPass(ag).createAndApply()
-            new PyImportResolverPass(ag).createAndApply()
-            new DynamicTypeHintFullNamePass(ag).createAndApply()
-            new PythonInheritanceNamePass(ag).createAndApply()
-            ag
-          }
-      case _ => Failure(new RuntimeException(s"No language frontend supported for language '$language'"))
-    }) match {
-      case Failure(exception) =>
-        Left(exception.getMessage)
-      case Success(ag) =>
-        config match {
-          case x: AtomConfig if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] =>
-            println("Generating data-flow dependencies from atom. Please wait ...")
-            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
-              .run(new LayerCreatorContext(ag))
-          case _ =>
-        }
-        ag.close()
-        Right("Atom generation successful")
+        case _ =>
+      }
+      Right("Atom sliced successfully")
+    } catch {
+      case err: Throwable if err.getMessage == null => Left(err.getStackTrace.take(7).mkString("\n"))
+      case err: Throwable                           => Left(err.getMessage)
     }
   }
 
@@ -300,49 +265,88 @@ object Atom {
       .withMethodParamTypeFilter(x.methodParamTypeFilter)
       .withMethodAnnotationFilter(x.methodAnnotationFilter)
 
-  private def generateSlice(config: BaseConfig): Either[String, String] = {
-    def sliceCpg(cpg: Cpg): Option[ProgramSlice] =
-      config match {
-        case x: AtomDataFlowConfig =>
-          val dataFlowConfig = migrateAtomConfigToSliceConfig(x)
-          DataFlowSlicing.calculateDataFlowSlice(cpg, dataFlowConfig.asInstanceOf[DataFlowConfig])
-        case x: AtomUsagesConfig =>
-          val usagesConfig = migrateAtomConfigToSliceConfig(x)
-          Option(UsageSlicing.calculateUsageSlice(cpg, usagesConfig.asInstanceOf[UsagesConfig]))
-        case _ =>
-          None
-      }
+  private def generateAtom(config: BaseConfig, language: String): Either[String, String] =
+    generateForLanguage(language.toUpperCase, config)
 
+  private def generateForLanguage(language: String, config: BaseConfig): Either[String, String] = {
     val outputAtomFile = config match
       case x: AtomConfig => x.outputAtomFile.pathAsString
       case _             => DEFAULT_ATOM_OUT_FILE
 
-    try {
-      migrateAtomConfigToSliceConfig(config) match {
-        case _: DataFlowConfig =>
-          val dataFlowSlice =
-            Using.resource(loadFromOdb(outputAtomFile))(sliceCpg).collect { case x: DataFlowSlice => x }
-          val atomDataFlowSliceJson =
-            dataFlowSlice.map(x => AtomDataFlowSlice(x, DataFlowGraph.buildFromSlice(x).paths).toJson)
-          saveSlice(config.outputSliceFile, atomDataFlowSliceJson)
-        case _: UsagesConfig =>
-          saveSlice(config.outputSliceFile, Using.resource(loadFromOdb(outputAtomFile))(sliceCpg).map(_.toJson))
-        case x: AtomParseDepsConfig =>
-          Using.resource(loadFromOdb(outputAtomFile))(parseDependencies).map(_.toJson) match {
-            case Left(err)    => return Left(err)
-            case Right(slice) => saveSlice(x.outputSliceFile, Option(slice))
+    (language match {
+      case Languages.C | Languages.NEWC | "CPP" | "C++" =>
+        new C2Cpg()
+          .createCpgWithOverlays(
+            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = false)
+              .withInputPath(config.inputPath.pathAsString)
+              .withOutputPath(outputAtomFile)
+              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks).*")
+          )
+      case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
+        new Jimple2Cpg()
+          .createCpgWithOverlays(
+            JimpleConfig(android = ANDROID_JAR_PATH)
+              .withInputPath(config.inputPath.pathAsString)
+              .withOutputPath(outputAtomFile)
+              .withFullResolver(true)
+          )
+      case Languages.JAVA | Languages.JAVASRC =>
+        new JavaSrc2Cpg()
+          .createCpgWithOverlays(
+            JavaConfig(fetchDependencies = true, inferenceJarPaths = JAR_INFERENCE_PATHS)
+              .withInputPath(config.inputPath.pathAsString)
+              .withOutputPath(outputAtomFile)
+          )
+      case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
+        new JsSrc2Cpg()
+          .createCpgWithOverlays(
+            JSConfig(disableDummyTypes = true)
+              .withInputPath(config.inputPath.pathAsString)
+              .withOutputPath(outputAtomFile)
+          )
+          .map { ag =>
+            new JavaScriptInheritanceNamePass(ag).createAndApply()
+            new ConstClosurePass(ag).createAndApply()
+            new ImportResolverPass(ag).createAndApply()
+            new SafeJSTypeRecoveryPass(ag).createAndApply()
+            new TypeHintPass(ag).createAndApply()
+            new NaiveCallLinker(ag).createAndApply()
+            ag
           }
-        case _ =>
-      }
-      Right("Atom sliced successfully")
-    } catch {
-      case err: Throwable if err.getMessage == null => Left(err.getStackTrace.take(7).mkString("\n"))
-      case err: Throwable                           => Left(err.getMessage)
+      case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
+        new Py2CpgOnFileSystem()
+          .createCpgWithOverlays(
+            PyConfig(disableDummyTypes = true)
+              .withInputPath(config.inputPath.pathAsString)
+              .withOutputPath(outputAtomFile)
+              .withDefaultIgnoredFilesRegex(List("\\..*".r))
+              .withIgnoredFilesRegex(
+                ".*(samples|examples|test|tests|unittests|docs|virtualenvs|venv|benchmarks|tutorials).*"
+              )
+          )
+          .map { ag =>
+            new PythonImportsPass(ag).createAndApply()
+            new PyImportResolverPass(ag).createAndApply()
+            new DynamicTypeHintFullNamePass(ag).createAndApply()
+            new PythonInheritanceNamePass(ag).createAndApply()
+            ag
+          }
+      case _ => Failure(new RuntimeException(s"No language frontend supported for language '$language'"))
+    }) match {
+      case Failure(exception) =>
+        Left(exception.getMessage)
+      case Success(ag) =>
+        config match {
+          case x: AtomConfig if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] =>
+            println("Generating data-flow dependencies from atom. Please wait ...")
+            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
+              .run(new LayerCreatorContext(ag))
+          case _ =>
+        }
+        ag.close()
+        Right("Atom generation successful")
     }
   }
-
-  private def generateAtom(config: BaseConfig, language: String): Either[String, String] =
-    generateForLanguage(language.toUpperCase, config)
 
   private def parseConfig(parserArgs: List[String]): Either[String, BaseConfig] = {
     optionParser.parse(

@@ -1,16 +1,10 @@
 package io.appthreat.atom.passes
 
-import io.joern.dataflowengineoss.passes.reachingdef.{
-  DataFlowProblem,
-  DataFlowSolver,
-  DdgGenerator,
-  ReachingDefProblem,
-  ReachingDefTransferFunction
-}
+import io.joern.dataflowengineoss.passes.reachingdef.*
 import io.joern.dataflowengineoss.semanticsloader.Semantics
 import io.shiftleft.codepropertygraph.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes._
-import io.shiftleft.semanticcpg.language._
+import io.shiftleft.codepropertygraph.generated.nodes.*
+import io.shiftleft.semanticcpg.language.*
 
 import scala.collection.mutable
 

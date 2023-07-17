@@ -4,7 +4,7 @@ import io.appthreat.atom.slicing.{DataFlowSlice, SliceNode}
 import io.shiftleft.codepropertygraph.generated.EdgeTypes
 
 import scala.collection.mutable
-import java.util.concurrent.{Callable, Executors, Future, TimeUnit}
+import java.util.concurrent.{Callable, ExecutorService, Executors, Future, TimeUnit}
 
 private class DataFlowGraph(nodes: Set[Option[DFNode]]) {
 
@@ -38,10 +38,10 @@ private class DataFlowGraph(nodes: Set[Option[DFNode]]) {
   /** A given path is useful if it starts with a METHOD_PARAMETER_IN contains at least 1 CALL and a METHOD_PARAMETER_IN
     * nodes
     */
-  private def isUsefulPath(path: List[String]): Boolean =
-    path.head == "METHOD_PARAMETER_IN" && path
-      .filter(x => USEFUL_PATH_LABELS.contains(x))
-      .size > 2
+  private def isUsefulPath(finalSet: mutable.Set[Path], path: List[String]): Boolean =
+    path.last == "METHOD_PARAMETER_IN" || (path.head == "METHOD_PARAMETER_IN" && (finalSet.size < 10 || path.count(x =>
+      USEFUL_PATH_LABELS.contains(x)
+    ) > 2))
 
   /** Is there an existing path that starts and ends with the same node
     */
@@ -57,7 +57,7 @@ private class DataFlowGraph(nodes: Set[Option[DFNode]]) {
       val labelPath = currLabelPath :+ x.label
       val queue     = x.out.filterNot(currPath.contains)
       if (queue.isEmpty) {
-        if (isUsefulPath(labelPath) && !isDuplicate(finalSet, path) && !isSubList(path)) {
+        if (isUsefulPath(finalSet, labelPath) && !isDuplicate(finalSet, path) && !isSubList(path)) {
           finalSet.add(path)
         }
       } else if (finalSet.size < MAX_PATHS) {
@@ -72,8 +72,8 @@ private case class DFNode(id: Long, isExternal: Boolean, label: String, in: Set[
 
 object DataFlowGraph {
 
-  private def DF_EDGES = Set(EdgeTypes.REACHING_DEF, EdgeTypes.CALL, EdgeTypes.REF)
-  val exec             = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors())
+  private def DF_EDGES      = Set(EdgeTypes.REACHING_DEF, EdgeTypes.CALL, EdgeTypes.REF)
+  val exec: ExecutorService = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors())
 
   def buildFromSlice(slice: DataFlowSlice): DataFlowGraph = {
     val dfNodes = slice.nodes

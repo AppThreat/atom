@@ -1,4 +1,4 @@
-import sbt.{IO, URL}
+import sbt.{IO, URI}
 import java.io.File
 import java.net.URLEncoder
 
@@ -12,7 +12,7 @@ object SimpleCache {
     val localFile = encodeFile(url)
     if (!localFile.exists) {
       println(s"downloading $url")
-      sbt.io.Using.urlInputStream(new URL(url)) { inputStream =>
+      sbt.io.Using.urlInputStream(new URI(url).toURL) { inputStream =>
         IO.transfer(inputStream, localFile)
       }
     }

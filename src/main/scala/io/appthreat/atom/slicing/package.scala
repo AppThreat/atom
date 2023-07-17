@@ -12,8 +12,8 @@ import java.util.regex.Pattern
 
 package object slicing {
 
-  import cats.syntax.functor._
-  import io.circe.generic.auto._
+  import cats.syntax.functor.*
+  import io.circe.generic.auto.*
   import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
   import io.circe.syntax.EncoderOps
 
@@ -23,7 +23,7 @@ package object slicing {
 
     var outputSliceFile: File = File("slices")
 
-    var dummyTypesEnabled: Boolean = false
+    private var dummyTypesEnabled: Boolean = false
 
     var fileFilter: Option[String] = None
 
@@ -409,11 +409,24 @@ package object slicing {
       *   an ID type pair with default values "UNKNOWN" if the respective properties for [[LocalDef]] could not be
       *   extracted.
       */
-    def fromNode(node: StoredNode, typeMap: Map[String, String] = Map.empty[String, String]): DefComponent = {
-      val nodeType = (node.property(PropertyNames.TYPE_FULL_NAME, "ANY") +: node.property(
+    def fromNode(
+      node: StoredNode,
+      definedCallNode: StoredNode,
+      typeMap: Map[String, String] = Map.empty[String, String]
+    ): DefComponent = {
+      var nodeType = (node.property(PropertyNames.TYPE_FULL_NAME, "ANY") +: node.property(
         PropertyNames.DYNAMIC_TYPE_HINT_FULL_NAME,
         Seq.empty[String]
       )).filterNot(_.matches("(ANY|UNKNOWN)")).headOption.getOrElse("ANY")
+      if (nodeType == "ANY" && definedCallNode.nonEmpty) {
+        definedCallNode match
+          case x: Call =>
+            val callName = x.code.takeWhile(_ != '(')
+            if (callName == "require" || x.methodFullName == "<operator>.fieldAccess")
+              nodeType = x.argument.last.code.replace("\"", "")
+          case _ =>
+            nodeType = "ANY"
+      }
       val typeFullName = typeMap.getOrElse(nodeType, nodeType)
       val lineNumber   = Option(node.property(new PropertyKey[Integer](PropertyNames.LINE_NUMBER))).map(_.toInt)
       val columnNumber = Option(node.property(new PropertyKey[Integer](PropertyNames.COLUMN_NUMBER))).map(_.toInt)
@@ -429,9 +442,13 @@ package object slicing {
             columnNumber
           )
         case x: Call if unresolvedCallPattern.matcher(x.methodFullName).matches() =>
-          CallDef(x.code.takeWhile(_ != '('), typeFullName)
+          val callName = x.code.takeWhile(_ != '(')
+          CallDef(callName, typeFullName, Option(callName), lineNumber, columnNumber)
         case x: Call =>
-          CallDef(x.code.takeWhile(_ != '('), typeFullName, Option(x.methodFullName), lineNumber, columnNumber)
+          val callName       = x.code.takeWhile(_ != '(')
+          var resolvedMethod = Option(x.methodFullName)
+          if (callName == "require" && resolvedMethod.get == "<operator>.fieldAccess") resolvedMethod = Option(x.code)
+          CallDef(callName, typeFullName, resolvedMethod, lineNumber, columnNumber)
         case x: Identifier => LocalDef(x.name, typeFullName, lineNumber, columnNumber)
         case x: Local      => LocalDef(x.name, typeFullName, lineNumber, columnNumber)
         case x: Literal    => LiteralDef(x.code, typeFullName, lineNumber, columnNumber)
