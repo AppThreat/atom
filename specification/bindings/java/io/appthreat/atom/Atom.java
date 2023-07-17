@@ -24940,6 +24940,8 @@ public final class Atom {
    **
    * The usages slice describes how a variable interacts within its procedure. This is perhaps a more "descriptive" slice in some ways. The variables are locals and parameters and the referencing identifiers are tracked to find what the variable calls and what calls it forms an argument of.
    * There are two lists. There is a list of MethodUsageSlice with key "objectSlices" and a list of UserDefinedTypes with key "userDefinedTypes"
+   *
+   * ![Usage slices overview](./docs/Library%20Usages.png)
    * </pre>
    *
    * Protobuf type {@code atom.UsageSlice}
@@ -38337,6 +38339,8 @@ public final class Atom {
      **
      * The usages slice describes how a variable interacts within its procedure. This is perhaps a more "descriptive" slice in some ways. The variables are locals and parameters and the referencing identifiers are tracked to find what the variable calls and what calls it forms an argument of.
      * There are two lists. There is a list of MethodUsageSlice with key "objectSlices" and a list of UserDefinedTypes with key "userDefinedTypes"
+     *
+     * ![Usage slices overview](./docs/Library%20Usages.png)
      * </pre>
      *
      * Protobuf type {@code atom.UsageSlice}
@@ -39189,6 +39193,8 @@ public final class Atom {
    * <pre>
    **
    * DataFlow slices offers a list of nodes and edges exported from data dependency graph
+   *
+   * ![Data Flow slices overview](./docs/Data%20Flows.png)
    * </pre>
    *
    * Protobuf type {@code atom.DataFlowSlice}
@@ -45456,6 +45462,8 @@ public final class Atom {
      * <pre>
      **
      * DataFlow slices offers a list of nodes and edges exported from data dependency graph
+     *
+     * ![Data Flow slices overview](./docs/Data%20Flows.png)
      * </pre>
      *
      * Protobuf type {@code atom.DataFlowSlice}

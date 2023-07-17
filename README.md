@@ -1,15 +1,6 @@
 # Atom (⚛)
 
-```shell
- █████╗ ████████╗ ██████╗ ███╗   ███╗
-██╔══██╗╚══██╔══╝██╔═══██╗████╗ ████║
-███████║   ██║   ██║   ██║██╔████╔██║
-██╔══██║   ██║   ██║   ██║██║╚██╔╝██║
-██║  ██║   ██║   ╚██████╔╝██║ ╚═╝ ██║
-╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝     ╚═╝
-```
-
-Atom is a novel intermediate representation for applications and a standalone tool that is powered by the [joern](https://joern.io) library. The intermediate representation is optimized for operations such as slicing typically used for application analytics. Our vision is to make atom useful for a number of use cases such as:
+Atom is a novel intermediate representation for applications and a standalone tool that is powered by the [joern](https://joern.io) library. The intermediate representation is optimized for operations such as [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md) typically used for application analytics and machine learning. Our vision is to make atom useful for a number of use cases such as:
 
 - **Supply-chain analysis:** Generate evidence of usages of external libraries including the flow of data from sources to sinks. Atom is used by [OWASP cdxgen](https://github.com/CycloneDX/cdxgen) to improve the precision and comprehensiveness of the generated CycloneDX document.
 - **Vulnerability analysis:** Describing vulnerabilities with evidence of affected symbols, call paths, and data-flows. Enable variant and reachability analysis at scale.
@@ -23,6 +14,8 @@ and more.
 [![release](https://github.com/appthreat/atom/actions/workflows/npm-release.yml/badge.svg)](https://github.com/appthreat/atom/actions/workflows/npm-release.yml)
 ![npm](https://img.shields.io/npm/dw/@appthreat/atom)
 [![Discord](https://img.shields.io/badge/-Discord-lime?style=for-the-badge&logo=discord&logoColor=white&color=black)](https://discord.gg/tmmtjCEHNV)
+
+![Atom logo](./specification/docs/Atom-logo.png)
 
 ## Installation
 
@@ -93,6 +86,8 @@ atom data-flow -o app.atom --slice-outfile df.json -l java .
 ```shell
 atom usages -o app.atom --slice-outfile usages.json -l java .
 ```
+
+Learn more about [slices](./specification/docs/slices.md)
 
 ## Languages supported
 

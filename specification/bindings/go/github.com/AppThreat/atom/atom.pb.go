@@ -7,6 +7,7 @@
 //*
 // Atom is a novel intermediate representation for applications. The representation is optimized for operations such as slicing useful for application analytics.
 //
+// ![Atom logo](./docs/Atom-logo.png)
 // Atom v1.0.0 specification is currently compatible with Joern CPG v1.1 specification with 1 modification
 // - imports edges are not hidden in atom
 // [https://cpg.joern.io](https://cpg.joern.io)
@@ -2082,6 +2083,8 @@ func (x *DiffGraph) GetEntries() []*DiffGraph_Entry {
 // *
 // The usages slice describes how a variable interacts within its procedure. This is perhaps a more "descriptive" slice in some ways. The variables are locals and parameters and the referencing identifiers are tracked to find what the variable calls and what calls it forms an argument of.
 // There are two lists. There is a list of MethodUsageSlice with key "objectSlices" and a list of UserDefinedTypes with key "userDefinedTypes"
+//
+// ![Usage slices overview](./docs/Library%20Usages.png)
 type UsageSlice struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2139,6 +2142,8 @@ func (x *UsageSlice) GetUserDefinedTypes() []*UsageSlice_UserDefinedTypes {
 
 // *
 // DataFlow slices offers a list of nodes and edges exported from data dependency graph
+//
+// ![Data Flow slices overview](./docs/Data%20Flows.png)
 type DataFlowSlice struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

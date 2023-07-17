@@ -839,7 +839,8 @@ class UsageSlice(betterproto.Message):
     locals and parameters and the referencing identifiers are tracked to find
     what the variable calls and what calls it forms an argument of. There are
     two lists. There is a list of MethodUsageSlice with key "objectSlices" and
-    a list of UserDefinedTypes with key "userDefinedTypes"
+    a list of UserDefinedTypes with key "userDefinedTypes" ![Usage slices
+    overview](./docs/Library%20Usages.png)
     """
 
     object_slices: List["UsageSliceMethodUsageSlice"] = betterproto.message_field(1)
@@ -1013,7 +1014,7 @@ class UsageSliceUserDefinedTypes(betterproto.Message):
 class DataFlowSlice(betterproto.Message):
     """
     * DataFlow slices offers a list of nodes and edges exported from data
-    dependency graph
+    dependency graph ![Data Flow slices overview](./docs/Data%20Flows.png)
     """
 
     graph: "DataFlowSliceGraph" = betterproto.message_field(1)

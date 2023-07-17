@@ -477,7 +477,7 @@
     
     <section id="atom.DataFlowSlice">
       <title>DataFlowSlice</title>
-      <para>DataFlow slices offers a list of nodes and edges exported from data dependency graph</para>
+      <para>DataFlow slices offers a list of nodes and edges exported from data dependency graph</para><para>![Data Flow slices overview](./docs/Data%20Flows.png)</para>
       
       <table frame="all">
         <title><classname>DataFlowSlice</classname> Fields</title>
@@ -1422,7 +1422,7 @@
     
     <section id="atom.UsageSlice">
       <title>UsageSlice</title>
-      <para>The usages slice describes how a variable interacts within its procedure. This is perhaps a more "descriptive" slice in some ways. The variables are locals and parameters and the referencing identifiers are tracked to find what the variable calls and what calls it forms an argument of.</para><para>There are two lists. There is a list of MethodUsageSlice with key "objectSlices" and a list of UserDefinedTypes with key "userDefinedTypes"</para>
+      <para>The usages slice describes how a variable interacts within its procedure. This is perhaps a more "descriptive" slice in some ways. The variables are locals and parameters and the referencing identifiers are tracked to find what the variable calls and what calls it forms an argument of.</para><para>There are two lists. There is a list of MethodUsageSlice with key "objectSlices" and a list of UserDefinedTypes with key "userDefinedTypes"</para><para>![Usage slices overview](./docs/Library%20Usages.png)</para>
       
       <table frame="all">
         <title><classname>UsageSlice</classname> Fields</title>
