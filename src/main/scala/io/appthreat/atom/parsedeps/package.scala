@@ -7,12 +7,16 @@ import io.shiftleft.semanticcpg.language.{toMetaDataTraversalExtGen, toNodeTypeS
 
 package object parsedeps {
 
-  trait XDependencyParser {
-    def parse(cpg: Cpg): DependencySlice
+  def parseDependencies(cpg: Cpg): Either[String, DependencySlice] = {
+    cpg.metaData.language.map(_.toUpperCase).headOption match
+      case Some(language) if Set(Languages.PYTHONSRC, Languages.PYTHON, "PY").contains(language) =>
+        Right(PythonDependencyParser.parse(cpg))
+      case Some(language) => Left(s"'$language' is not yet supported for the `parsedeps` command")
+      case _              => Left("Unable to extract atom language")
   }
 
-  trait AtomSlice {
-    def toJson: String
+  trait XDependencyParser {
+    def parse(cpg: Cpg): DependencySlice
   }
 
   implicit val dependencySliceEncoder: Decoder[DependencySlice] =
@@ -27,8 +31,8 @@ package object parsedeps {
       Json.obj("modules" -> modules.asJson)
     }
 
-  case class DependencySlice(modules: Seq[ModuleWithVersion]) extends AtomSlice {
-    override def toJson: String = this.asJson.spaces2
+  trait AtomSlice {
+    def toJson: String
   }
 
   implicit val moduleWithVersionEncoder: Encoder[ModuleWithVersion] =
@@ -36,10 +40,11 @@ package object parsedeps {
   implicit val moduleWithVersionDecoder: Decoder[ModuleWithVersion] =
     Decoder.forProduct3("name", "version", "versionSpecifiers")(ModuleWithVersion.apply)
 
-  case class ModuleWithVersion(name: String, version: String = "", versionSpecifiers: String = "") {
+  case class DependencySlice(modules: Seq[ModuleWithVersion]) extends AtomSlice {
+    override def toJson: String = this.asJson.spaces2
+  }
 
-    def versions: Set[String] =
-      (if (!version.isBlank) Set(s"==$version") else Set.empty) ++ versionSpecifiers.split(',').filterNot(_.isBlank)
+  case class ModuleWithVersion(name: String, version: String = "", versionSpecifiers: String = "") {
 
     def merge(x: ModuleWithVersion): ModuleWithVersion = {
       val vs = this.versions ++ x.versions
@@ -50,14 +55,9 @@ package object parsedeps {
 
     }
 
-  }
+    def versions: Set[String] =
+      (if (!version.isBlank) Set(s"==$version") else Set.empty) ++ versionSpecifiers.split(',').filterNot(_.isBlank)
 
-  def parseDependencies(cpg: Cpg): Either[String, DependencySlice] = {
-    cpg.metaData.language.map(_.toUpperCase).headOption match
-      case Some(language) if Set(Languages.PYTHONSRC, Languages.PYTHON, "PY").contains(language) =>
-        Right(PythonDependencyParser.parse(cpg))
-      case Some(language) => Left(s"'$language' is not yet supported for the `parsedeps` command")
-      case _              => Left("Unable to extract atom language")
   }
 
 }

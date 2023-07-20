@@ -1,7 +1,7 @@
 package io.appthreat.atom.passes
-import io.shiftleft.passes.{KeyPool, NewStyleCpgPassBase}
 import io.shiftleft.SerializedCpg
 import io.shiftleft.codepropertygraph.Cpg
+import io.shiftleft.passes.{KeyPool, NewStyleCpgPassBase}
 import io.shiftleft.utils.ExecutionContextProvider
 
 import java.util.concurrent.LinkedBlockingQueue
@@ -14,7 +14,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   */
 object SafeConcurrentCpgPass {
   private val writerQueueCapacity   = 2
-  private val producerQueueCapacity = Runtime.getRuntime().availableProcessors()
+  private val producerQueueCapacity = Runtime.getRuntime.availableProcessors()
 }
 abstract class SafeConcurrentCpgPass[T <: AnyRef](
   cpg: Cpg,
@@ -22,7 +22,7 @@ abstract class SafeConcurrentCpgPass[T <: AnyRef](
   keyPool: Option[KeyPool] = None
 ) extends NewStyleCpgPassBase[T] {
 
-  @volatile var nDiffT = -1
+  @volatile private var nDiffT: Int = -1
 
   override def createApplySerializeAndStore(
     serializedCpg: SerializedCpg,
@@ -35,7 +35,7 @@ abstract class SafeConcurrentCpgPass[T <: AnyRef](
     nDiffT = -1
     init()
     val parts           = generateParts()
-    val nParts          = parts.size
+    val nParts          = parts.length
     val partIter        = parts.iterator
     val completionQueue = mutable.ArrayDeque[Future[overflowdb.BatchedUpdate.DiffGraphBuilder]]()
     val writer          = new Writer()
@@ -81,8 +81,6 @@ abstract class SafeConcurrentCpgPass[T <: AnyRef](
     val queue =
       new LinkedBlockingQueue[Option[overflowdb.BatchedUpdate.DiffGraph]](SafeConcurrentCpgPass.writerQueueCapacity)
 
-    @volatile var raisedException: Exception = null
-
     override def run(): Unit = {
       try {
         nDiffT = 0
@@ -94,7 +92,7 @@ abstract class SafeConcurrentCpgPass[T <: AnyRef](
               terminate = true
             case Some(diffGraph) =>
               nDiffT += overflowdb.BatchedUpdate
-                .applyDiff(cpg.graph, diffGraph, keyPool.getOrElse(null), null)
+                .applyDiff(cpg.graph, diffGraph, keyPool.orNull, null)
                 .transitiveModifications()
               index += 1
           }
