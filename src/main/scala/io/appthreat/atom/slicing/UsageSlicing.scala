@@ -311,7 +311,11 @@ object UsageSlicing {
           "("
         ) && language.get == Languages.JSSRC
       ) {
-        resolvedMethod = Option(baseCall.code.takeWhile(_ != '('))
+        var baseCallCode = baseCall.code.takeWhile(_ != '(')
+        if (baseCallCode.contains(" ")) {
+          baseCallCode = baseCallCode.split(" ").last
+        }
+        resolvedMethod = Option(baseCallCode)
       }
       Option(
         ObservedCall(
