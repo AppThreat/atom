@@ -3,15 +3,15 @@ package io.appthreat.atom.dataflows
 import io.appthreat.atom.slicing.{DataFlowSlice, SliceNode}
 import io.shiftleft.codepropertygraph.generated.EdgeTypes
 
+import java.util.concurrent.*
+import scala.annotation.unused
 import scala.collection.mutable
-import java.util.concurrent.{Callable, ExecutorService, Executors, Future, TimeUnit}
 
 private class DataFlowGraph(nodes: Set[Option[DFNode]]) {
 
-  private type Path      = List[Long]
-  private type LabelPath = List[String]
+  private type Path = List[Long]
   // Maximum number of data-flow paths to compute
-  private val MAX_PATHS = 100
+  private val MAX_PATHS = 50
 
   private val USEFUL_PATH_LABELS = List("METHOD_PARAMETER_IN", "CALL")
 
@@ -39,9 +39,9 @@ private class DataFlowGraph(nodes: Set[Option[DFNode]]) {
     * nodes
     */
   private def isUsefulPath(finalSet: mutable.Set[Path], path: List[String]): Boolean =
-    path.last == "METHOD_PARAMETER_IN" || (path.head == "METHOD_PARAMETER_IN" && (finalSet.size < 10 || path.count(x =>
-      USEFUL_PATH_LABELS.contains(x)
-    ) > 2))
+    path.last == "METHOD_PARAMETER_IN" || (path.contains(
+      "METHOD_PARAMETER_IN"
+    ) && path.size > 5) || finalSet.size < 10 || path.count(x => x != "IDENTIFIER") > 2
 
   /** Is there an existing path that starts and ends with the same node
     */
@@ -73,7 +73,7 @@ private case class DFNode(id: Long, isExternal: Boolean, label: String, in: Set[
 object DataFlowGraph {
 
   private def DF_EDGES      = Set(EdgeTypes.REACHING_DEF, EdgeTypes.CALL, EdgeTypes.REF)
-  val exec: ExecutorService = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors())
+  val exec: ExecutorService = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors / 2)
 
   def buildFromSlice(slice: DataFlowSlice): DataFlowGraph = {
     val dfNodes = slice.nodes
@@ -91,7 +91,7 @@ object DataFlowGraph {
     try {
       Option(dfn.get(5, TimeUnit.SECONDS))
     } catch {
-      case err: Throwable => None
+      case _: Throwable => None
     }
   }
 

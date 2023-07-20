@@ -15,6 +15,8 @@ import io.joern.pysrc2cpg.{
   DynamicTypeHintFullNamePass,
   Py2CpgOnFileSystem,
   PythonInheritanceNamePass,
+  PythonTypeHintCallLinker,
+  PythonTypeRecoveryPass,
   ImportResolverPass as PyImportResolverPass,
   ImportsPass as PythonImportsPass,
   Py2CpgOnFileSystemConfig as PyConfig
@@ -329,6 +331,11 @@ object Atom {
             new PyImportResolverPass(ag).createAndApply()
             new DynamicTypeHintFullNamePass(ag).createAndApply()
             new PythonInheritanceNamePass(ag).createAndApply()
+            new PythonTypeRecoveryPass(ag, XTypeRecoveryConfig(enabledDummyTypes = false))
+              .createAndApply()
+            new PythonTypeHintCallLinker(ag).createAndApply()
+            new NaiveCallLinker(ag).createAndApply()
+            new AstLinkerPass(ag).createAndApply()
             ag
           }
       case _ => Failure(new RuntimeException(s"No language frontend supported for language '$language'"))

@@ -20,7 +20,7 @@ object PythonDependencyParser extends XDependencyParser {
   override def parse(cpg: Cpg): DependencySlice = DependencySlice(
     (parseSetupPy(cpg) ++ parseImports(cpg))
       .groupBy(_.name)
-      .map { case (x, slices) => slices.reduce((a, b) => a.merge(b)) }
+      .map { case (_, slices) => slices.reduce((a, b) => a.merge(b)) }
       .toSeq
       .sortBy(_.name)
   )

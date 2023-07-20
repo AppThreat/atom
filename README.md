@@ -139,8 +139,9 @@ Apache-2.0
 Install Java 17 or 19 (Recommended)
 
 ```shell
-sbt scalafmt
-sbt stage
+sbt clean stage scalafmt test createDistribution
+cd wrapper/nodejs
+bash build.sh && sudo npm install -g .
 ```
 
 ## Using atom with joern
