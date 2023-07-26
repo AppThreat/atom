@@ -13,14 +13,13 @@ import scala.collection.concurrent.TrieMap
 object DataFlowSlicing {
 
   implicit val resolver: ICallResolver = NoResolve
-  val exec: ExecutorService            = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors())
+  val exec: ExecutorService            = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors() / 2)
   private val excludeOperatorCalls     = new AtomicBoolean(true)
   private val nodeCache                = new TrieMap[Long, SliceNode]()
   private var language: Option[String] = _
 
   def calculateDataFlowSlice(cpg: Cpg, config: DataFlowConfig): Option[DataFlowSlice] = {
     language = cpg.metaData.language.headOption
-    implicit val implicitConfig: BaseConfig = config
     excludeOperatorCalls.set(config.excludeOperatorCalls)
 
     val dataFlowSlice = (config.fileFilter match {
@@ -32,7 +31,7 @@ object DataFlowSlicing {
         case c
             if excludeOperatorCalls.get() && (c.name.startsWith("<operator") || c.methodFullName.contains(
               ".lambda$"
-            ) || c.location.filename.contains("Exception")) =>
+            ) || c.location.filename.contains("Exception") || c.methodFullName.contains(":program:")) =>
           None
         case c => Some(c)
       }
@@ -47,7 +46,7 @@ object DataFlowSlicing {
     try {
       dsf.get(5, TimeUnit.SECONDS)
     } catch {
-      case err: Throwable => None
+      case _: Throwable => None
     }
   }
 
@@ -92,7 +91,7 @@ object DataFlowSlicing {
       case n: Return    => sliceNode.copy(name = "RET", typeFullName = n.method.methodReturn.typeFullName)
       case n: MethodRef => sliceNode.copy(name = n.methodFullName, code = n.code)
       case n: TypeRef   => sliceNode.copy(name = n.typeFullName, code = n.code)
-      case n: Block => {
+      case n: Block =>
         var typeFullName = n.property(PropertyNames.TYPE_FULL_NAME, "")
         if (typeFullName == "ANY") {
           if (n.code.startsWith("[")) typeFullName = "Array"
@@ -105,8 +104,7 @@ object DataFlowSlicing {
           typeFullName = typeFullName,
           signature = n.property(PropertyNames.SIGNATURE, "")
         )
-      }
-      case n: Identifier => {
+      case n: Identifier =>
         var typeFullName = n.property(PropertyNames.TYPE_FULL_NAME, "")
         if (typeFullName == "ANY") {
           if (n.code.startsWith("[")) typeFullName = "Array"
@@ -119,7 +117,6 @@ object DataFlowSlicing {
           typeFullName = typeFullName,
           signature = n.property(PropertyNames.SIGNATURE, "")
         )
-      }
       case n =>
         sliceNode.copy(
           name = n.property(PropertyNames.NAME, ""),
@@ -133,7 +130,8 @@ object DataFlowSlicing {
 
   private class TrackDataFlowTask(config: DataFlowConfig, c: Call) extends Callable[Option[DataFlowSlice]] {
     override def call(): Option[DataFlowSlice] = {
-      val sinks = config.sinkPatternFilter.map(filter => c.argument.code(filter).l).getOrElse(c.argument.l)
+      val sinks =
+        config.sinkPatternFilter.map(filter => c.argument.code(filter).l).getOrElse(c.argument.filterNot(_.isBlock).l)
       // Slow operation
       val sliceNodes = sinks.repeat(_.ddgIn)(_.maxDepth(config.sliceDepth).emit).dedup.l
       // This is required to create paths
@@ -146,7 +144,7 @@ object DataFlowSlicing {
         .filter(e => DF_EDGES.contains(e.label))
         .toSet
       lazy val slice = Option(DataFlowSlice(sliceNodes.map(fromCfgNode).toSet, sliceEdges))
-      if (sliceNodes.isEmpty) None else slice
+      if (sliceNodes.isEmpty || sliceNodes.size > config.sliceNodesLimit) None else slice
     }
   }
 

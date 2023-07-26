@@ -19,7 +19,7 @@ and more.
 
 ## Installation
 
-Atom comprises of a core (standalone joern application developed in scala) with a wrapper nodejs module. It is currently distributed as an npm package.
+Atom comprises a core (standalone joern application developed in scala) with a wrapper nodejs module. It is currently distributed as an npm package.
 
 ```shell
 npm install @appthreat/atom
@@ -87,7 +87,7 @@ atom data-flow -o app.atom --slice-outfile df.json -l java .
 atom usages -o app.atom --slice-outfile usages.json -l java .
 ```
 
-Learn more about [slices](./specification/docs/slices.md)
+Learn more about [slices](./specification/docs/slices.md) or view some [samples](https://github.com/AppThreat/atom-samples)
 
 ## Languages supported
 
@@ -139,8 +139,9 @@ Apache-2.0
 Install Java 17 or 19 (Recommended)
 
 ```shell
-sbt scalafmt
-sbt stage
+sbt clean stage scalafmt test createDistribution
+cd wrapper/nodejs
+bash build.sh && sudo npm install -g .
 ```
 
 ## Using atom with joern

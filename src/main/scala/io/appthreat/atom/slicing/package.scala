@@ -5,7 +5,6 @@ import io.circe.{Decoder, Encoder, HCursor, Json}
 import io.shiftleft.codepropertygraph.generated.PropertyNames
 import io.shiftleft.codepropertygraph.generated.nodes._
 import io.shiftleft.semanticcpg.language._
-import org.slf4j.LoggerFactory
 import overflowdb.PropertyKey
 
 import java.util.regex.Pattern
@@ -76,7 +75,8 @@ package object slicing {
     sinkPatternFilter: Option[String] = None,
     mustEndAtExternalMethod: Boolean = true,
     excludeOperatorCalls: Boolean = true,
-    sliceDepth: Int = 10
+    sliceDepth: Int = 7,
+    sliceNodesLimit: Int = 200
   ) extends BaseConfig
 
   case class UsagesConfig(
@@ -399,7 +399,6 @@ package object slicing {
   object DefComponent {
 
     val unresolvedCallPattern: Pattern = Pattern.compile("^(<unknown|ANY).*$")
-    private val logger                 = LoggerFactory.getLogger(DefComponent.getClass)
 
     /** Attempts to generate an [[DefComponent]] from the given CPG node.
       *
@@ -453,8 +452,16 @@ package object slicing {
         case x: Local      => LocalDef(x.name, typeFullName, lineNumber, columnNumber)
         case x: Literal    => LiteralDef(x.code, typeFullName, lineNumber, columnNumber)
         case x: Member     => LocalDef(x.name, typeFullName, lineNumber, columnNumber)
+        case x: Method if (x.callIn.nonEmpty) =>
+          val lastCall = x.callIn.last
+          CallDef(
+            lastCall.name,
+            lastCall.typeFullName,
+            Option(x.fullName),
+            lastCall.lineNumber.map(_.intValue()),
+            lastCall.columnNumber.map(_.intValue())
+          )
         case x: AstNode =>
-          logger.warn(s"Unhandled conversion from node type ${x.label} to DefComponent")
           UnknownDef(x.code, typeFullName, lineNumber, columnNumber)
       }
     }

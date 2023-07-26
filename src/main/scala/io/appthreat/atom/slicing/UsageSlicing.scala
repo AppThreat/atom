@@ -8,6 +8,7 @@ import io.shiftleft.semanticcpg.language.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{ForkJoinPool, RecursiveTask}
 import java.util.regex.Pattern
+import scala.annotation.unused
 import scala.collection.concurrent.TrieMap
 import scala.util.Try
 
@@ -61,11 +62,13 @@ object UsageSlicing {
     val root     = cpg.metaData.root.headOption
     getDeclIdentifiers()
       .to(LazyList)
-      .filter(a => atLeastNCalls(a, config.minNumCalls) && !a.name.startsWith("_tmp_"))
+      .filterNot(a => a.name.equals("*"))
+      .filter(a => !a.name.startsWith("_tmp_") && atLeastNCalls(a, config.minNumCalls))
       .map(a => fjp.submit(new TrackUsageTask(cpg, a, typeMap)))
       .flatMap(_.get())
       .groupBy { case (scope, _) => scope }
       .view
+      .filterNot((m, _) => (m.fullName.startsWith("<operator") || m.fullName.startsWith("__builtin")))
       .sortBy(_._1.fullName)
       .map { case (method, slices) =>
         MethodUsageSlice(
@@ -94,7 +97,7 @@ object UsageSlicing {
     *   true if the call count condition is satisfied.
     */
   private def atLeastNCalls(decl: Declaration, n: Int): Boolean =
-    getInCallsForReferencedIdentifiers(decl).size >= n
+    decl.label == "METHOD" || decl.name.contains("init") || getInCallsForReferencedIdentifiers(decl).size >= n
 
   private def getInCallsForReferencedIdentifiers(decl: Declaration): List[Call] = {
     // Cross closure boundaries
@@ -103,6 +106,7 @@ object UsageSlicing {
       .flatMap {
         case local: Local             => local.referencingIdentifiers ++ capturedVars
         case param: MethodParameterIn => param.referencingIdentifiers ++ capturedVars
+        case m: Method                => m.callIn.argument.isIdentifier
         case _                        => Seq()
       }
       .inCall
@@ -166,7 +170,7 @@ object UsageSlicing {
             .headOption match {
             // In the case of a constructor, we should get the "new" call
             case Some(block: Block) =>
-              block.ast.isCall.nameExact("<operator>.new").lastOption
+              block.ast.isCall.or(_.nameExact("<operator>.new"), _.name(".*__init__.*")).lastOption
             case x => x
           }
         case x => Some(x)
@@ -199,7 +203,23 @@ object UsageSlicing {
               )
             )
           )
-        case _ => None
+        case (m: Method, _, (invokedCalls, argToCalls)) =>
+          var method  = m
+          val defComp = createDefComponent(m, null)
+          if (method.filename == "<empty>" && defComp.label == "CALL" && method.callIn.nonEmpty) {
+            method = method.callIn.head.method
+          }
+          Option(
+            method,
+            ObjectUsageSlice(
+              targetObj = defComp,
+              definedBy = Option(defComp),
+              invokedCalls = invokedCalls,
+              argToCalls = argToCalls
+            )
+          )
+        case _ =>
+          None
       }
     }
 
@@ -336,6 +356,7 @@ object UsageSlicing {
 
     // TODO: Slicing may run before post-processing so we cannot assume a call graph
     //  implement this in a next step to combine slices
+    @unused
     private def linkSlices(slices: Map[String, Set[ObjectUsageSlice]]): Unit = {
       slices.foreach { case (_, usageSlices) =>
         usageSlices.foreach { slice =>

@@ -64,12 +64,11 @@ private class RecoverForJavaScriptFile(cpg: Cpg, cu: File, builder: DiffGraphBui
       }
     case x @ (_: Identifier | _: Local | _: MethodParameterIn) =>
       symbolTable.put(x, x.getKnownTypes)
-    case x: Call => {
+    case x: Call =>
       if (!x.methodFullName.contains(".js")) {
         builder.setNodeProperty(x, PropertyNames.IS_EXTERNAL, true)
       }
       symbolTable.put(x, (x.methodFullName +: x.dynamicTypeHintFullName).toSet)
-    }
     case _ =>
   }
 
@@ -167,33 +166,26 @@ private class RecoverForJavaScriptFile(cpg: Cpg, cu: File, builder: DiffGraphBui
     } else if (symbolTable.contains(CallAlias(fieldName, Option("this")))) {
       symbolTable.get(CallAlias(fieldName, Option("this")))
     } else {
-      super.associateInterproceduralTypes(
-        i: Identifier,
-        fieldFullName: String,
-        fieldName: String,
-        globalTypes: Set[String],
-        baseTypes: Set[String]
-      )
+      Set.empty
     }
   }
 
   override protected def visitIdentifierAssignedToCall(i: Identifier, c: Call): Set[String] =
-    if (c.name == "require") Set.empty
-    else super.visitIdentifierAssignedToCall(i, c)
+    Set.empty
 
   override protected def visitIdentifierAssignedToMethodRef(
     i: Identifier,
     m: MethodRef,
     rec: Option[String] = None
   ): Set[String] =
-    super.visitIdentifierAssignedToMethodRef(i, m, Option("this"))
+    Set.empty
 
   override protected def visitIdentifierAssignedToTypeRef(
     i: Identifier,
     t: TypeRef,
     rec: Option[String] = None
   ): Set[String] =
-    super.visitIdentifierAssignedToTypeRef(i, t, Option("this"))
+    Set.empty
 
   override protected def postSetTypeInformation(): Unit = {
     // often there are "this" identifiers with type hints but this can be set to a type hint if they meet the criteria
