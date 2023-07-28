@@ -97,7 +97,7 @@ The mind map below offers an overview.
 
 ### Data flow slice
 
-Data Flow slices represent the data-dependency information computed statically from the source code. Up to 100 reachable
+Data flow slices represent the data-dependency information computed statically from the source code. Up to 100 reachable
 paths are precomputed and made available via the `paths` attribute in the json. The full list of `nodes` and `edges` from the
 Data Dependency Graph (DDG) is also made available for custom visualization and traversal purposes.
 
@@ -113,7 +113,7 @@ Data Dependency Graph (DDG) is also made available for custom visualization and 
 5. All `CALL` nodes with `isExternal=true` indicates external method calls. The `fullName` property is interesting for
    such external calls along with all the `parent*` attributes such as `parentFileName`, `parentMethodName` etc.
 6. Nodes with the label `METHOD_PARAMETER_IN` are method parameters. These could be user-provided input depending on the
-   framework on filename. For instance, method parameters in a controller or service class usually takes input from the
+   framework and filename. For instance, method parameters in a controller or service class usually takes input from the
    users or another service.
 
 #### Mapping data flow slices to CycloneDX 1.5
