@@ -1,6 +1,6 @@
 # Atom (⚛)
 
-Atom is a novel intermediate representation for applications and a standalone tool powered by the [joern](https://joern.io) library. The intermediate representation is optimized for operations typically used for application analytics and machine learning, including such as [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md). 
+Atom is a novel intermediate representation for applications and a standalone tool powered by the [joern](https://joern.io) library. The intermediate representation is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md). 
 
 Our vision is to make atom useful for a number of use cases such as:
 

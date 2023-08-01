@@ -1,7 +1,7 @@
 # Introduction
 
 Program slicing is a technique to extract parts of a program based on a criterion. Atom (powered by joern library) is a
-static opinionated data-flow slicer optimized for application and dependency analysis use cases with up to 100K LOC.
+static opinionated data flow slicer optimized for application and dependency analysis use cases with up to 100K LOC.
 
 ## Design principles
 
@@ -105,7 +105,7 @@ Data Dependency Graph (DDG) is also made available for custom visualization and 
 
 #### Use
 
-1. Parse the data-flow json.
+1. Parse the data flow json.
 2. Iterate over the `graph.nodes` array and create a Map for each node with the id as the key and the node as the value.
 3. Iterate over the `paths` array. For each id, look up the node from the map object created in step 2.
 4. Filter any operator calls where the name starts with `<operator`. Note that operator calls could start with
