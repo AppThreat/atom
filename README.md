@@ -1,13 +1,15 @@
 # Atom (⚛)
 
-Atom is a novel intermediate representation for applications and a standalone tool that is powered by the [joern](https://joern.io) library. The intermediate representation is optimized for operations such as [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md) typically used for application analytics and machine learning. Our vision is to make atom useful for a number of use cases such as:
+Atom is a novel intermediate representation for applications and a standalone tool powered by the [joern](https://joern.io) library. The intermediate representation is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md). 
 
-- **Supply-chain analysis:** Generate evidence of usages of external libraries including the flow of data from sources to sinks. Atom is used by [OWASP cdxgen](https://github.com/CycloneDX/cdxgen) to improve the precision and comprehensiveness of the generated CycloneDX document.
-- **Vulnerability analysis:** Describing vulnerabilities with evidence of affected symbols, call paths, and data-flows. Enable variant and reachability analysis at scale.
-- **Exploit prediction:** Predicting exploits using precise representations of vulnerabilities, libraries, and applications.
-- **Threat-model and attack vectors generation:** Generating precise threat-models and attack vectors for applications at scale.
-- **Application context detection:** Generating context such as services, endpoints, and data attributes useful for summarization and risk-profile generation.
-- **Mind-maps for applications:** Automated summarization of large and complex applications as a tool for developers.
+Our vision is to make atom useful for a number of use cases such as:
+
+- **Supply-chain analysis:** Generate evidence of external library usage including the flow of data from sources to sinks. Atom is used by [OWASP cdxgen](https://github.com/CycloneDX/cdxgen) to improve the precision and comprehensiveness of the generated CycloneDX document.
+- **Vulnerability analysis:** Describe vulnerabilities with evidence of affected symbols, call paths, and data-flows. Enable variant and reachability analysis at scale.
+- **Exploit prediction:** Predict exploits using precise representations of vulnerabilities, libraries, and applications.
+- **Threat-model and attack vectors generation:** Generate precise threat-models and attack vectors for applications at scale.
+- **Application context detection:** Generate context useful for summarization and risk-profile generation (e.g. services, endpoints, and data attributes).
+- **Mind-maps for applications:** Automate summarization of large and complex applications as a developer tool.
 
 and more.
 
@@ -19,7 +21,7 @@ and more.
 
 ## Installation
 
-Atom comprises a core (standalone joern application developed in scala) with a wrapper nodejs module. It is currently distributed as an npm package.
+Atom comprises a core (standalone joern application developed in scala) with a nodejs wrapper module. It is currently distributed as an npm package.
 
 ```shell
 npm install @appthreat/atom
@@ -107,7 +109,7 @@ The current specification version is 1.0.0
 
 ## Generating atom files
 
-Atom files (app.⚛ or app.atom) are zip files with serialized protobuf data. Atom cli is the preferred approach to generate these files. It is possible to author a generator tool from scratch using the [proto specification](./specification/atom.proto). We offer samples in [Python](./specification/samples/python-atomgen/README.md) and [Deno](./specification/samples/deno-atomgen/README.md) for interested users. We also offer proto bindings in additional languages which could be found [here](./specification/bindings/).
+Atom files (app.⚛ or app.atom) are zip files with serialized protobuf data. Atom cli is the preferred approach to generate these files. It is possible to author a generator tool from scratch using the [proto specification](./specification/atom.proto). We offer samples in [Python](./specification/samples/python-atomgen/README.md) and [Deno](./specification/samples/deno-atomgen/README.md) for interested users. We also offer proto bindings in additional languages which can be found [here](./specification/bindings/).
 
 Example code snippet for generating an atom in python.
 
