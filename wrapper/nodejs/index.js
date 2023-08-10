@@ -13,17 +13,17 @@ if (!url.startsWith("file://")) {
 }
 const dirName = import.meta ? dirname(fileURLToPath(url)) : __dirname;
 
-const LOG4J_CONFIG = join(dirName, "plugins", "log4j2.xml");
-const ATOM_HOME = join(dirName, "plugins", "atom-1.0.0");
-const APP_LIB_DIR = join(ATOM_HOME, "lib");
+export const LOG4J_CONFIG = join(dirName, "plugins", "log4j2.xml");
+export const ATOM_HOME = join(dirName, "plugins", "atom-1.0.0");
+export const APP_LIB_DIR = join(ATOM_HOME, "lib");
 const freeMemoryGB = Math.max(Math.floor(freemem() / 1024 / 1024 / 1024), 4);
-const JVM_ARGS =
+export const JVM_ARGS =
   "-XX:+UseG1GC -XX:+ExplicitGCInvokesConcurrent -XX:+ParallelRefProcEnabled -XX:+UseStringDeduplication -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:+UnlockDiagnosticVMOptions -XX:G1SummarizeRSetStatsPeriod=1";
-const JAVA_OPTS = `${process.env.JAVA_OPTS || ""} -Xms${Math.round(
+export const JAVA_OPTS = `${process.env.JAVA_OPTS || ""} -Xms${Math.round(
   Math.floor(freeMemoryGB / 2)
 )}G -Xmx${freeMemoryGB}G ${JVM_ARGS}`;
-const APP_MAIN_CLASS = "io.appthreat.atom.Atom";
-const APP_CLASSPATH = join(
+export const APP_MAIN_CLASS = "io.appthreat.atom.Atom";
+export const APP_CLASSPATH = join(
   APP_LIB_DIR,
   "io.appthreat.atom-1.0.0-classpath.jar"
 );
@@ -35,7 +35,7 @@ if (process.env.JAVA_HOME) {
 const atomLibs = [APP_CLASSPATH];
 const argv = process.argv.slice(2);
 
-const executeAtom = (atomArgs) => {
+export const executeAtom = (atomArgs) => {
   if (!detectJava()) {
     // If we couldn't detect java but there is a JAVA_HOME defined then
     // try fixing the PATH manually. Usually required for windows users

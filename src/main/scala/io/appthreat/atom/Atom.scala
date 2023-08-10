@@ -39,6 +39,7 @@ object Atom {
   val DEFAULT_SLICE_OUT_FILE        = "slices.json"
   val DEFAULT_SLICE_DEPTH           = 7
   val DEFAULT_MAX_DEFS: Int         = 2000
+  val TYPE_PROPAGATION_ITERATIONS   = 1
   private val MAVEN_JAR_PATH: File  = File.home / ".m2"
   private val GRADLE_JAR_PATH: File = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
   private val SBT_JAR_PATH: File    = File.home / ".ivy2" / "cache"
@@ -302,7 +303,9 @@ object Atom {
       case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
         new JsSrc2Cpg()
           .createCpgWithOverlays(
-            JSConfig(disableDummyTypes = true)
+            JSConfig()
+              .withDisableDummyTypes(true)
+              .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
           )
@@ -318,7 +321,9 @@ object Atom {
       case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
         new Py2CpgOnFileSystem()
           .createCpgWithOverlays(
-            PyConfig(disableDummyTypes = true)
+            PyConfig()
+              .withDisableDummyTypes(true)
+              .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
               .withDefaultIgnoredFilesRegex(List("\\..*".r))
