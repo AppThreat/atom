@@ -15,7 +15,7 @@ import {
 } from "fs";
 import { getAllFiles } from "./utils.mjs";
 
-const ASTGEN_VERSION = "3.2.0";
+const ASTGEN_VERSION = "3.4.0";
 
 const babelParserOptions = {
   sourceType: "unambiguous",
