@@ -24,7 +24,7 @@ const IGNORE_DIRS = [
 ];
 
 const IGNORE_FILE_PATTERN = new RegExp(
-  "(conf|test|spec|\\.d)\\.(js|ts|jsx|tsx)$",
+  "(conf|test|spec|min|\\.d)\\.(js|ts|jsx|tsx)$",
   "i"
 );
 
