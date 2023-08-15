@@ -1,0 +1,335 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/AdditionalEdgeProperty",
+    "definitions": {
+        "AdditionalEdgeProperty": {
+            "properties": {
+                "edge_id": {
+                    "type": "string"
+                },
+                "property": {
+                    "$ref": "#/definitions/atom.CpgStruct.Edge.Property",
+                    "additionalProperties": false
+                },
+                "out_node_key": {
+                    "type": "string"
+                },
+                "in_node_key": {
+                    "type": "string"
+                },
+                "edge_type": {
+                    "enum": [
+                        "UNKNOWN_EDGE_TYPE",
+                        0,
+                        "AST",
+                        3,
+                        "CALL",
+                        6,
+                        "REF",
+                        10,
+                        "TAGGED_BY",
+                        11,
+                        "PARAMETER_LINK",
+                        12,
+                        "CFG",
+                        19,
+                        "EVAL_TYPE",
+                        21,
+                        "BINDS_TO",
+                        22,
+                        "INHERITS_FROM",
+                        23,
+                        "CONTAINS",
+                        28,
+                        "CAPTURE",
+                        40,
+                        "CAPTURED_BY",
+                        41,
+                        "RECEIVER",
+                        55,
+                        "CONDITION",
+                        56,
+                        "REACHING_DEF",
+                        137,
+                        "ALIAS_OF",
+                        138,
+                        "BINDS",
+                        155,
+                        "ARGUMENT",
+                        156,
+                        "SOURCE_FILE",
+                        157,
+                        "DOMINATE",
+                        181,
+                        "POST_DOMINATE",
+                        182,
+                        "CDG",
+                        183,
+                        "IMPORTS",
+                        23663,
+                        "IS_CALL_FOR_IMPORT",
+                        23664
+                    ],
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ],
+                    "title": "Edge Type",
+                    "description": "Edge type."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Additional Edge Property"
+        },
+        "atom.BoolList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "boolean"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Bool List"
+        },
+        "atom.ContainedRefs": {
+            "properties": {
+                "local_name": {
+                    "type": "string"
+                },
+                "refs": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Contained Refs"
+        },
+        "atom.CpgStruct.Edge.Property": {
+            "properties": {
+                "name": {
+                    "enum": [
+                        "UNKNOWN_EDGE_PROPERTY",
+                        0,
+                        "VARIABLE",
+                        11
+                    ],
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ],
+                    "title": "Edge Property Name",
+                    "description": "Enum for the name of an edge"
+                },
+                "value": {
+                    "$ref": "#/definitions/atom.PropertyValue",
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Property",
+            "description": "Edge properties."
+        },
+        "atom.DoubleList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Double List"
+        },
+        "atom.FloatList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Float List"
+        },
+        "atom.IntList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "integer"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Int List"
+        },
+        "atom.LongList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Long List"
+        },
+        "atom.PropertyValue": {
+            "properties": {
+                "string_value": {
+                    "type": "string"
+                },
+                "bool_value": {
+                    "type": "boolean"
+                },
+                "int_value": {
+                    "type": "integer"
+                },
+                "long_value": {
+                    "type": "string"
+                },
+                "float_value": {
+                    "type": "number"
+                },
+                "double_value": {
+                    "type": "number"
+                },
+                "string_list": {
+                    "$ref": "#/definitions/atom.StringList",
+                    "additionalProperties": false
+                },
+                "bool_list": {
+                    "$ref": "#/definitions/atom.BoolList",
+                    "additionalProperties": false
+                },
+                "int_list": {
+                    "$ref": "#/definitions/atom.IntList",
+                    "additionalProperties": false
+                },
+                "long_list": {
+                    "$ref": "#/definitions/atom.LongList",
+                    "additionalProperties": false
+                },
+                "float_list": {
+                    "$ref": "#/definitions/atom.FloatList",
+                    "additionalProperties": false
+                },
+                "double_list": {
+                    "$ref": "#/definitions/atom.DoubleList",
+                    "additionalProperties": false
+                },
+                "contained_refs": {
+                    "$ref": "#/definitions/atom.ContainedRefs",
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "oneOf": [
+                {
+                    "required": [
+                        "string_value"
+                    ]
+                },
+                {
+                    "required": [
+                        "bool_value"
+                    ]
+                },
+                {
+                    "required": [
+                        "int_value"
+                    ]
+                },
+                {
+                    "required": [
+                        "long_value"
+                    ]
+                },
+                {
+                    "required": [
+                        "float_value"
+                    ]
+                },
+                {
+                    "required": [
+                        "double_value"
+                    ]
+                },
+                {
+                    "required": [
+                        "string_list"
+                    ]
+                },
+                {
+                    "required": [
+                        "bool_list"
+                    ]
+                },
+                {
+                    "required": [
+                        "int_list"
+                    ]
+                },
+                {
+                    "required": [
+                        "long_list"
+                    ]
+                },
+                {
+                    "required": [
+                        "float_list"
+                    ]
+                },
+                {
+                    "required": [
+                        "double_list"
+                    ]
+                },
+                {
+                    "required": [
+                        "contained_refs"
+                    ]
+                }
+            ],
+            "title": "Property Value",
+            "description": "Message to store the property values such as string or int values"
+        },
+        "atom.StringList": {
+            "properties": {
+                "values": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "String List"
+        }
+    }
+}

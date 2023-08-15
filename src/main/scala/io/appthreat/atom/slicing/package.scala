@@ -461,6 +461,15 @@ package object slicing {
             lastCall.lineNumber.map(_.intValue()),
             lastCall.columnNumber.map(_.intValue())
           )
+        case x: Method if (x.annotation.nonEmpty) =>
+          val annotation = x.annotation.last
+          CallDef(
+            annotation.name,
+            annotation.fullName,
+            Option(x.fullName),
+            annotation.lineNumber.map(_.intValue()),
+            annotation.columnNumber.map(_.intValue())
+          )
         case x: AstNode =>
           UnknownDef(x.code, typeFullName, lineNumber, columnNumber)
       }

@@ -24,7 +24,7 @@ Usage slices can help answer two key questions about the usages of external libr
 
 The mind map below offers an overview.
 
-![Usages slice](./Library%20Usages.png)
+<img src="./Library%20Usages.png" alt="Usages slice" width="512">
 
 #### Use
 
@@ -61,47 +61,47 @@ The mind map below offers an overview.
    custom type from index 1 onward.
 
 ```json
-"userDefinedTypes" : [
-{
-"name": "com.example.vulnspring.WebController",
-"fields": [
-{
-"name": "jdbcTemplate",
-"typeFullName": "org.springframework.jdbc.core.JdbcTemplate",
-"lineNumber" : 42,
-"columnNumber": 15,
-"label": "LOCAL"
-},
-{
-"name": "logger",
-"typeFullName": "org.slf4j.Logger",
-"lineNumber": 44,
-"columnNumber": 30,
-"label" : "LOCAL"
-}
-],
-"procedures": [
-{
-"callName": "home",
-"resolvedMethod": "com.example.vulnspring.WebController.home:java.lang.String(org.springframework.ui.Model,javax.servlet.http.HttpSession)",
-"paramTypes" : [
-"com.example.vulnspring.WebController",
-"org.springframework.ui.Model",
-"javax.servlet.http.HttpSession"
-],
-"returnType": "java.lang.String",
-"lineNumber": 46,
-"columnNumber": 2
-},
+"userDefinedTypes": [
+  {
+    "name": "com.example.vulnspring.WebController",
+    "fields": [
+    {
+      "name": "jdbcTemplate",
+      "typeFullName": "org.springframework.jdbc.core.JdbcTemplate",
+      "lineNumber" : 42,
+      "columnNumber": 15,
+      "label": "LOCAL"
+    },
+    {
+      "name": "logger",
+      "typeFullName": "org.slf4j.Logger",
+      "lineNumber": 44,
+      "columnNumber": 30,
+      "label" : "LOCAL"
+    }
+    ],
+    "procedures": [
+    {
+      "callName": "home",
+      "resolvedMethod": "com.example.vulnspring.WebController.home:java.lang.String(org.springframework.ui.Model,javax.servlet.http.HttpSession)",
+      "paramTypes" : [
+        "com.example.vulnspring.WebController",
+        "org.springframework.ui.Model",
+        "javax.servlet.http.HttpSession"
+      ],
+    "returnType": "java.lang.String",
+    "lineNumber": 46,
+    "columnNumber": 2
+    },
 ```
 
 ### Data flow slice
 
-Data flow slices represent the data-dependency information computed statically from the source code. Up to 100 reachable
-paths are precomputed and made available via the `paths` attribute in the json. The full list of `nodes` and `edges` from the
-Data Dependency Graph (DDG) is also made available for custom visualization and traversal purposes.
+Data flow slices represent the data-dependency information computed statically from the source code. The full list of `nodes` and `edges` from the
+Data Dependency Graph (DDG) is also made available for custom visualization and traversal purposes. Up to 100 reachable
+paths are precomputed and made available via the `paths` attribute in the json by the atom cli tool for convenience.
 
-![Data Flow slice](./Data%20Flows.png)
+<img src="./Data%20Flows.png" alt="Data Flow slice" width="512">
 
 #### Use
 
@@ -120,10 +120,10 @@ Data Dependency Graph (DDG) is also made available for custom visualization and 
 
 The information in a data-flow slice can be used as component evidence in a CycloneDX 1.5 document.
 
-![Data Flow Slice and CycloneDX mapping](./dataflow-cdx-mapping.jpg)
+<img src="./dataflow-cdx-mapping.jpg" alt="Data Flow Slice and CycloneDX mapping" width="512">
 
 | Data Flow Slice Attribute | CycloneDX Attribute | Comments                                                |
-|---------------------------|---------------------|---------------------------------------------------------|
+| ------------------------- | ------------------- | ------------------------------------------------------- |
 | parentPackageName         | package             | Will be based on the filename for Javascript/Typescript |
 | parentClassName           | module              | Will be based on the filename for Javascript/Typescript |
 | parentMethodName          | function            |                                                         |
@@ -150,4 +150,4 @@ atom usages -o app.atom --slice-outfile usages.json -l java .
 
 ## Develop a custom slicer
 
-Coming soon!
+Planned for 1.1.0 release

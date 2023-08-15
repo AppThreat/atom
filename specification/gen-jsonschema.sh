@@ -20,12 +20,12 @@ protoc \
   --doc_opt=docbook,spec.docbook \
   ./atom.proto
 
-# protoc \
-#   --plugin=${HOME}/go/bin/protoc-gen-jsonschema \
-#   --jsonschema_opt=enforce_oneof \
-#   --jsonschema_opt=disallow_additional_properties \
-#   --jsonschema_out=schemas \
-#   ./atom.proto
+protoc \
+   --plugin=${HOME}/go/bin/protoc-gen-jsonschema \
+   --jsonschema_opt=enforce_oneof \
+   --jsonschema_opt=disallow_additional_properties \
+   --jsonschema_out=schemas \
+   ./atom.proto
 
 # cd schemas
 # pip install jsonschema2md

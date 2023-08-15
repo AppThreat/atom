@@ -209,12 +209,24 @@ object UsageSlicing {
           if (method.filename == "<empty>" && defComp.label == "CALL" && method.callIn.nonEmpty) {
             method = method.callIn.head.method
           }
+          val annotationCalls = m.annotation
+            .map(a =>
+              ObservedCall(
+                a.name,
+                Option(a.fullName),
+                List.empty,
+                "",
+                a.lineNumber.map(_.intValue()),
+                a.columnNumber.map(_.intValue())
+              )
+            )
+            .toList
           Option(
             method,
             ObjectUsageSlice(
               targetObj = defComp,
               definedBy = Option(defComp),
-              invokedCalls = invokedCalls,
+              invokedCalls = invokedCalls ++ annotationCalls,
               argToCalls = argToCalls
             )
           )

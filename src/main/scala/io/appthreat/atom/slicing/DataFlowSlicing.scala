@@ -50,8 +50,6 @@ object DataFlowSlicing {
     }
   }
 
-  private def DF_EDGES = Set(EdgeTypes.REACHING_DEF, EdgeTypes.CALL, EdgeTypes.REF)
-
   /** Convert cfg node to a sliceable node with backing cache
     */
   private def fromCfgNode(cfgNode: CfgNode): SliceNode = {
@@ -141,7 +139,6 @@ object DataFlowSlicing {
         .flatMap(_.outE)
         .filter(x => sliceNodesIdSet.contains(x.inNode().id()))
         .map { e => SliceEdge(e.outNode().id(), e.inNode().id(), e.label()) }
-        .filter(e => DF_EDGES.contains(e.label))
         .toSet
       lazy val slice = Option(DataFlowSlice(sliceNodes.map(fromCfgNode).toSet, sliceEdges))
       if (sliceNodes.isEmpty || sliceNodes.size > config.sliceNodesLimit) None else slice

@@ -11,7 +11,7 @@ private class DataFlowGraph(nodes: Set[Option[DFNode]]) {
 
   private type Path = List[Long]
   // Maximum number of data-flow paths to compute
-  private val MAX_PATHS = 50
+  private val MAX_PATHS = 100
 
   private val USEFUL_PATH_LABELS = List("METHOD_PARAMETER_IN", "CALL")
 
@@ -39,9 +39,9 @@ private class DataFlowGraph(nodes: Set[Option[DFNode]]) {
     * nodes
     */
   private def isUsefulPath(finalSet: mutable.Set[Path], path: List[String]): Boolean =
-    path.last == "METHOD_PARAMETER_IN" || (path.contains(
-      "METHOD_PARAMETER_IN"
-    ) && path.size > 5) || finalSet.size < 10 || path.count(x => x != "IDENTIFIER") > 2
+    path.last == "METHOD_PARAMETER_IN" || (path.contains("CALL") && path.size > 5) || path.count(x =>
+      x != "IDENTIFIER"
+    ) > 2
 
   /** Is there an existing path that starts and ends with the same node
     */
@@ -57,7 +57,7 @@ private class DataFlowGraph(nodes: Set[Option[DFNode]]) {
       val labelPath = currLabelPath :+ x.label
       val queue     = x.out.filterNot(currPath.contains)
       if (queue.isEmpty) {
-        if (isUsefulPath(finalSet, labelPath) && !isDuplicate(finalSet, path) && !isSubList(path)) {
+        if (!isDuplicate(finalSet, path) && !isSubList(path)) {
           finalSet.add(path)
         }
       } else if (finalSet.size < MAX_PATHS) {
@@ -72,7 +72,8 @@ private case class DFNode(id: Long, isExternal: Boolean, label: String, in: Set[
 
 object DataFlowGraph {
 
-  private def DF_EDGES      = Set(EdgeTypes.REACHING_DEF, EdgeTypes.CALL, EdgeTypes.REF)
+  private def DF_EDGES =
+    Set(EdgeTypes.REACHING_DEF, EdgeTypes.CALL, EdgeTypes.REF)
   val exec: ExecutorService = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors / 2)
 
   def buildFromSlice(slice: DataFlowSlice): DataFlowGraph = {
