@@ -1,0 +1,388 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/UsageSlice",
+    "definitions": {
+        "UsageSlice": {
+            "properties": {
+                "objectSlices": {
+                    "items": {
+                        "$ref": "#/definitions/atom.UsageSlice.MethodUsageSlice"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                },
+                "userDefinedTypes": {
+                    "items": {
+                        "$ref": "#/definitions/atom.UsageSlice.UserDefinedTypes"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Usage Slice",
+            "description": "* The usages slice describes how a variable interacts within its procedure. This is perhaps a more \"descriptive\" slice in some ways. The variables are locals and parameters and the referencing identifiers are tracked to find what the variable calls and what calls it forms an argument of. There are two lists. There is a list of MethodUsageSlice with key \"objectSlices\" and a list of UserDefinedTypes with key \"userDefinedTypes\" ![Usage slices overview](./docs/Library%20Usages.png)"
+        },
+        "atom.UsageSlice.ArgToCalls": {
+            "properties": {
+                "callName": {
+                    "type": "string",
+                    "description": "Call method name"
+                },
+                "resolvedMethod": {
+                    "type": "string",
+                    "description": "Full name of the resolved method"
+                },
+                "paramTypes": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Types of the parameters"
+                },
+                "returnType": {
+                    "type": "string",
+                    "description": "Return type"
+                },
+                "position": {
+                    "type": "integer",
+                    "description": "Argument position"
+                },
+                "lineNumber": {
+                    "type": "integer",
+                    "description": "Line number"
+                },
+                "columnNumber": {
+                    "type": "integer",
+                    "description": "Column number"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Arg To Calls",
+            "description": "The calls this object is observed to be an argument of."
+        },
+        "atom.UsageSlice.DefinedBy": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "variable or parameter name"
+                },
+                "typeFullName": {
+                    "type": "string",
+                    "description": "Fullname of the data type"
+                },
+                "resolvedMethod": {
+                    "type": "string",
+                    "description": "Method name"
+                },
+                "position": {
+                    "type": "integer",
+                    "description": "Position"
+                },
+                "lineNumber": {
+                    "type": "integer",
+                    "description": "Line number"
+                },
+                "columnNumber": {
+                    "type": "integer",
+                    "description": "Column number"
+                },
+                "label": {
+                    "type": "string",
+                    "description": "Label describing the resolved method or position"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Defined By",
+            "description": "Places where the given symbol is defined"
+        },
+        "atom.UsageSlice.Fields": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the local variable"
+                },
+                "typeFullName": {
+                    "type": "string",
+                    "description": "Full name of the type"
+                },
+                "lineNumber": {
+                    "type": "integer",
+                    "description": "Line number"
+                },
+                "columnNumber": {
+                    "type": "integer",
+                    "description": "Column number"
+                },
+                "label": {
+                    "enum": [
+                        "ANY",
+                        0,
+                        "LOCAL",
+                        1,
+                        "LITERAL",
+                        2,
+                        "PARAM",
+                        3,
+                        "CALL",
+                        4,
+                        "IDENTIFIER",
+                        5,
+                        "TYPE_REF",
+                        6,
+                        "UNKNOWN",
+                        10
+                    ],
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ],
+                    "title": "Label Type",
+                    "description": "Label type."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Fields",
+            "description": "Represents a local transfer of data via aliasing. The data defined is via some alias."
+        },
+        "atom.UsageSlice.InvokedCalls": {
+            "properties": {
+                "callName": {
+                    "type": "string",
+                    "description": "Call method name"
+                },
+                "resolvedMethod": {
+                    "type": "string",
+                    "description": "Full name of the resolved method"
+                },
+                "paramTypes": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Types of the parameters"
+                },
+                "returnType": {
+                    "type": "string",
+                    "description": "Return type"
+                },
+                "lineNumber": {
+                    "type": "integer",
+                    "description": "Line number"
+                },
+                "columnNumber": {
+                    "type": "integer",
+                    "description": "Column number"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Invoked Calls",
+            "description": "The calls this object is observed to call."
+        },
+        "atom.UsageSlice.MethodUsageSlice": {
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "description": "Raw source code of the method"
+                },
+                "fullName": {
+                    "type": "string",
+                    "description": "Method full name"
+                },
+                "fileName": {
+                    "type": "string",
+                    "description": "File name"
+                },
+                "lineNumber": {
+                    "type": "integer",
+                    "description": "Line number"
+                },
+                "columnNumber": {
+                    "type": "integer",
+                    "description": "Column number"
+                },
+                "usages": {
+                    "items": {
+                        "$ref": "#/definitions/atom.UsageSlice.ObjectUsageSlice"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Method Usage Slice",
+            "description": "Packages the object usage slices along with location and an optional method source code."
+        },
+        "atom.UsageSlice.ObjectUsageSlice": {
+            "properties": {
+                "targetObj": {
+                    "$ref": "#/definitions/atom.UsageSlice.TargetObj",
+                    "additionalProperties": false
+                },
+                "definedBy": {
+                    "$ref": "#/definitions/atom.UsageSlice.DefinedBy",
+                    "additionalProperties": false
+                },
+                "invokedCalls": {
+                    "items": {
+                        "$ref": "#/definitions/atom.UsageSlice.InvokedCalls"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                },
+                "argToCalls": {
+                    "items": {
+                        "$ref": "#/definitions/atom.UsageSlice.ArgToCalls"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Object Usage Slice",
+            "description": "Describes where and how the given external object/type is used"
+        },
+        "atom.UsageSlice.Procedures": {
+            "properties": {
+                "callName": {
+                    "type": "string",
+                    "description": "Name of the method or call"
+                },
+                "resolvedMethod": {
+                    "type": "string",
+                    "description": "Full name of the resolved method"
+                },
+                "paramTypes": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Types of the parameters"
+                },
+                "returnType": {
+                    "type": "string",
+                    "description": "Type of the return value"
+                },
+                "lineNumber": {
+                    "type": "integer",
+                    "description": "Line number"
+                },
+                "columnNumber": {
+                    "type": "integer",
+                    "description": "Column number"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Procedures",
+            "description": "Details related to an observed call."
+        },
+        "atom.UsageSlice.TargetObj": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "variable or parameter name"
+                },
+                "typeFullName": {
+                    "type": "string",
+                    "description": "Fullname of the data type"
+                },
+                "position": {
+                    "type": "integer",
+                    "description": "Position of the parameter or argument"
+                },
+                "lineNumber": {
+                    "type": "integer",
+                    "description": "Line number in the file"
+                },
+                "columnNumber": {
+                    "type": "integer",
+                    "description": "Column number"
+                },
+                "label": {
+                    "enum": [
+                        "ANY",
+                        0,
+                        "LOCAL",
+                        1,
+                        "LITERAL",
+                        2,
+                        "PARAM",
+                        3,
+                        "CALL",
+                        4,
+                        "IDENTIFIER",
+                        5,
+                        "TYPE_REF",
+                        6,
+                        "UNKNOWN",
+                        10
+                    ],
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ],
+                    "title": "Label Type",
+                    "description": "Label type."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Target Obj",
+            "description": "Represents a source of data-generation, i.e., where data is defined and can be assigned to some variable or used in an argument."
+        },
+        "atom.UsageSlice.UserDefinedTypes": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the type"
+                },
+                "fields": {
+                    "items": {
+                        "$ref": "#/definitions/atom.UsageSlice.Fields"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                },
+                "procedures": {
+                    "items": {
+                        "$ref": "#/definitions/atom.UsageSlice.Procedures"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                },
+                "fileName": {
+                    "type": "string",
+                    "description": "File name"
+                },
+                "lineNumber": {
+                    "type": "integer",
+                    "description": "Line number"
+                },
+                "columnNumber": {
+                    "type": "integer",
+                    "description": "Column number"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "User Defined Types",
+            "description": "Describes custom types defined within the application."
+        }
+    }
+}
