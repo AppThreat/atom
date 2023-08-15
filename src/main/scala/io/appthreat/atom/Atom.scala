@@ -40,7 +40,7 @@ object Atom {
   val DEFAULT_SLICE_DEPTH           = 7
   val DEFAULT_MAX_DEFS: Int         = 2000
   val TYPE_PROPAGATION_ITERATIONS   = 1
-  private val MAVEN_JAR_PATH: File  = File.home / ".m2"
+  private val MAVEN_JAR_PATH: File  = File.home / ".m2" / "repository"
   private val GRADLE_JAR_PATH: File = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
   private val SBT_JAR_PATH: File    = File.home / ".ivy2" / "cache"
   private val JAR_INFERENCE_PATHS: Set[String] =
@@ -296,8 +296,9 @@ object Atom {
       case Languages.JAVA | Languages.JAVASRC =>
         new JavaSrc2Cpg()
           .createCpgWithOverlays(
-            JavaConfig(fetchDependencies = true, inferenceJarPaths = JAR_INFERENCE_PATHS)
+            JavaConfig(fetchDependencies = true, inferenceJarPaths = JAR_INFERENCE_PATHS, enableTypeRecovery = true)
               .withInputPath(config.inputPath.pathAsString)
+              .withDefaultIgnoredFilesRegex(List("\\..*".r))
               .withOutputPath(outputAtomFile)
           )
       case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
