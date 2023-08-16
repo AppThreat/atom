@@ -468,7 +468,8 @@ package object slicing {
             annotation.fullName,
             Option(x.fullName),
             annotation.lineNumber.map(_.intValue()),
-            annotation.columnNumber.map(_.intValue())
+            annotation.columnNumber.map(_.intValue()),
+            label = annotation.label
           )
         case x: AstNode =>
           UnknownDef(x.code, typeFullName, lineNumber, columnNumber)
