@@ -214,7 +214,7 @@ object UsageSlicing {
               ObservedCall(
                 a.name,
                 Option(a.fullName),
-                List.empty,
+                List(a.code),
                 "",
                 a.lineNumber.map(_.intValue()),
                 a.columnNumber.map(_.intValue())
