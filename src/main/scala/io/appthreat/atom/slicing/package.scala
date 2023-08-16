@@ -466,7 +466,7 @@ package object slicing {
           CallDef(
             annotation.name,
             annotation.fullName,
-            Option(x.fullName),
+            Option(annotation.code),
             annotation.lineNumber.map(_.intValue()),
             annotation.columnNumber.map(_.intValue()),
             label = annotation.label
