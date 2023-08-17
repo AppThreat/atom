@@ -12,12 +12,15 @@ import scala.annotation.unused
 import scala.collection.concurrent.TrieMap
 import scala.util.Try
 
+import java.util.concurrent.*
+
 /** A utility for slicing based off of usage references for identifiers and parameters. This is mainly tested around
   * JavaScript CPGs.
   */
 object UsageSlicing {
 
   private val resolver               = NoResolve
+  val exec: ExecutorService          = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors() / 2)
   private val constructorTypeMatcher = Pattern.compile(".*new (\\w+)\\(.*")
   private val excludeOperatorCalls   = new AtomicBoolean(true)
 
@@ -37,35 +40,25 @@ object UsageSlicing {
       case None           => cpg.method
     }).withMethodNameFilter.withMethodParameterFilter.withMethodAnnotationFilter.declaration
 
-    def typeMap = TrieMap.from(cpg.typeDecl.map(f => (f.name, f.fullName)).toMap)
-
-    val fjp = ForkJoinPool.commonPool()
-
-    try {
-      val slices       = usageSlices(fjp, cpg, () => getDeclarations, typeMap)
-      val userDefTypes = userDefinedTypes(cpg)
-      ProgramUsageSlice(slices, userDefTypes)
-    } finally {
-      fjp.shutdown()
-    }
+    def typeMap      = TrieMap.from(cpg.typeDecl.map(f => (f.name, f.fullName)).toMap)
+    val slices       = usageSlices(cpg, () => getDeclarations, typeMap)
+    val userDefTypes = userDefinedTypes(cpg)
+    ProgramUsageSlice(slices, userDefTypes)
   }
 
   import io.shiftleft.semanticcpg.codedumper.CodeDumper.dump
 
-  private def usageSlices(
-    fjp: ForkJoinPool,
-    cpg: Cpg,
-    getDeclIdentifiers: () => Traversal[Declaration],
-    typeMap: TrieMap[String, String]
-  )(implicit config: UsagesConfig): List[MethodUsageSlice] = {
+  private def usageSlices(cpg: Cpg, getDeclIdentifiers: () => Traversal[Declaration], typeMap: TrieMap[String, String])(
+    implicit config: UsagesConfig
+  ): List[MethodUsageSlice] = {
     val language = cpg.metaData.language.headOption
     val root     = cpg.metaData.root.headOption
     getDeclIdentifiers()
       .to(LazyList)
       .filterNot(a => a.name.equals("*"))
       .filter(a => !a.name.startsWith("_tmp_") && atLeastNCalls(a, config.minNumCalls))
-      .map(a => fjp.submit(new TrackUsageTask(cpg, a, typeMap)))
-      .flatMap(_.get())
+      .map(a => exec.submit(new TrackUsageTask(cpg, a, typeMap)))
+      .flatMap(TimedGet)
       .groupBy { case (scope, _) => scope }
       .view
       .filterNot((m, _) => (m.fullName.startsWith("<operator") || m.fullName.startsWith("__builtin")))
@@ -84,6 +77,14 @@ object UsageSlicing {
         )
       }
       .toList
+  }
+
+  private def TimedGet(dsf: Future[Option[(Method, ObjectUsageSlice)]]) = {
+    try {
+      dsf.get(5, TimeUnit.SECONDS)
+    } catch {
+      case _: Throwable => None
+    }
   }
 
   /** Returns true if the given declaration is found to have at least n non-operator calls within its referenced
@@ -159,9 +160,9 @@ object UsageSlicing {
 
   private class TrackUsageTask(cpg: Cpg, tgt: Declaration, typeMap: TrieMap[String, String])(implicit
     config: UsagesConfig
-  ) extends RecursiveTask[Option[(Method, ObjectUsageSlice)]] {
+  ) extends Callable[Option[(Method, ObjectUsageSlice)]] {
 
-    override def compute(): Option[(Method, ObjectUsageSlice)] = {
+    override def call(): Option[(Method, ObjectUsageSlice)] = {
       val defNode = tgt match {
         case local: Local =>
           local.referencingIdentifiers.inCall.astParent.assignment

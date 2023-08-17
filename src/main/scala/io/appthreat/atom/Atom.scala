@@ -35,14 +35,14 @@ import scala.util.{Failure, Properties, Success, Using}
 
 object Atom {
 
-  val DEFAULT_ATOM_OUT_FILE: String = if (Properties.isWin) "app.atom" else "app.⚛"
-  val DEFAULT_SLICE_OUT_FILE        = "slices.json"
-  val DEFAULT_SLICE_DEPTH           = 7
-  val DEFAULT_MAX_DEFS: Int         = 2000
-  val TYPE_PROPAGATION_ITERATIONS   = 1
-  private val MAVEN_JAR_PATH: File  = File.home / ".m2" / "repository"
-  private val GRADLE_JAR_PATH: File = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
-  private val SBT_JAR_PATH: File    = File.home / ".ivy2" / "cache"
+  val DEFAULT_ATOM_OUT_FILE: String       = if (Properties.isWin) "app.atom" else "app.⚛"
+  val DEFAULT_SLICE_OUT_FILE              = "slices.json"
+  val DEFAULT_SLICE_DEPTH                 = 7
+  val DEFAULT_MAX_DEFS: Int               = 2000
+  private val TYPE_PROPAGATION_ITERATIONS = 1
+  private val MAVEN_JAR_PATH: File        = File.home / ".m2" / "repository"
+  private val GRADLE_JAR_PATH: File       = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
+  private val SBT_JAR_PATH: File          = File.home / ".ivy2" / "cache"
   private val JAR_INFERENCE_PATHS: Set[String] =
     Set(MAVEN_JAR_PATH.pathAsString, GRADLE_JAR_PATH.pathAsString, SBT_JAR_PATH.pathAsString)
   private val ANDROID_JAR_PATH: Option[String] = Option(System.getenv("ANDROID_HOME")).flatMap { androidHome =>
@@ -298,7 +298,9 @@ object Atom {
           .createCpgWithOverlays(
             JavaConfig(fetchDependencies = true, inferenceJarPaths = JAR_INFERENCE_PATHS, enableTypeRecovery = true)
               .withInputPath(config.inputPath.pathAsString)
-              .withDefaultIgnoredFilesRegex(List("\\..*".r))
+              .withDefaultIgnoredFilesRegex(
+                List("\\..*".r, ".*build/(generated|intermediates|outputs|tmp).*" r, ".*src/test.*" r)
+              )
               .withOutputPath(outputAtomFile)
           )
       case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
