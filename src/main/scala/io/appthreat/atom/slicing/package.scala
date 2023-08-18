@@ -353,6 +353,7 @@ package object slicing {
     name: String,
     typeFullName: String,
     resolvedMethod: Option[String] = None,
+    isExternal: Option[Boolean],
     lineNumber: Option[Int] = None,
     columnNumber: Option[Int] = None,
     label: String = "CALL"
@@ -382,7 +383,7 @@ package object slicing {
   implicit val encodeDefComponent: Encoder[DefComponent] = Encoder.instance {
     case local @ LocalDef(_, _, _, _, _)     => local.asJson
     case literal @ LiteralDef(_, _, _, _, _) => literal.asJson
-    case call @ CallDef(_, _, _, _, _, _)    => call.asJson
+    case call @ CallDef(_, _, _, _, _, _, _) => call.asJson
     case param @ ParamDef(_, _, _, _, _, _)  => param.asJson
     case unknown @ UnknownDef(_, _, _, _, _) => unknown.asJson
   }
@@ -429,6 +430,7 @@ package object slicing {
       val typeFullName = typeMap.getOrElse(nodeType, nodeType)
       val lineNumber   = Option(node.property(new PropertyKey[Integer](PropertyNames.LINE_NUMBER))).map(_.toInt)
       val columnNumber = Option(node.property(new PropertyKey[Integer](PropertyNames.COLUMN_NUMBER))).map(_.toInt)
+      val isExternal   = Option(node.property(new PropertyKey[Boolean](PropertyNames.IS_EXTERNAL)))
       node match {
         case x: MethodParameterIn => ParamDef(x.name, typeFullName, x.index, lineNumber, columnNumber)
         case x: Call if x.code.startsWith("new ") =>
@@ -437,17 +439,18 @@ package object slicing {
             x.code.takeWhile(_ != '('),
             typeMap.getOrElse(typeName, x.typeFullName),
             typeMap.get(typeName),
+            isExternal,
             lineNumber,
             columnNumber
           )
         case x: Call if unresolvedCallPattern.matcher(x.methodFullName).matches() =>
           val callName = x.code.takeWhile(_ != '(')
-          CallDef(callName, typeFullName, Option(callName), lineNumber, columnNumber)
+          CallDef(callName, typeFullName, Option(callName), isExternal, lineNumber, columnNumber)
         case x: Call =>
           val callName       = x.code.takeWhile(_ != '(')
           var resolvedMethod = Option(x.methodFullName)
           if (callName == "require" && resolvedMethod.get == "<operator>.fieldAccess") resolvedMethod = Option(x.code)
-          CallDef(callName, typeFullName, resolvedMethod, lineNumber, columnNumber)
+          CallDef(callName, typeFullName, resolvedMethod, isExternal, lineNumber, columnNumber)
         case x: Identifier => LocalDef(x.name, typeFullName, lineNumber, columnNumber)
         case x: Local      => LocalDef(x.name, typeFullName, lineNumber, columnNumber)
         case x: Literal    => LiteralDef(x.code, typeFullName, lineNumber, columnNumber)
@@ -458,6 +461,7 @@ package object slicing {
             lastCall.name,
             lastCall.typeFullName,
             Option(x.fullName),
+            isExternal,
             lastCall.lineNumber.map(_.intValue()),
             lastCall.columnNumber.map(_.intValue())
           )
@@ -467,6 +471,7 @@ package object slicing {
             annotation.name,
             annotation.fullName,
             Option(annotation.code),
+            isExternal,
             annotation.lineNumber.map(_.intValue()),
             annotation.columnNumber.map(_.intValue()),
             label = annotation.label
@@ -493,6 +498,7 @@ package object slicing {
     resolvedMethod: Option[String],
     paramTypes: List[String],
     returnType: String,
+    isExternal: Option[Boolean],
     lineNumber: Option[Int] = None,
     columnNumber: Option[Int] = None
   ) {
@@ -507,9 +513,10 @@ package object slicing {
     resolvedMethod: Option[String],
     paramTypes: List[String],
     returnType: String,
+    isExternal: Option[Boolean],
     lineNumber: Option[Int] = None,
     columnNumber: Option[Int] = None
-  ) extends UsedCall(callName, resolvedMethod, paramTypes, returnType, lineNumber, columnNumber)
+  ) extends UsedCall(callName, resolvedMethod, paramTypes, returnType, isExternal, lineNumber, columnNumber)
 
   implicit val decodeObservedCall: Decoder[ObservedCall] =
     (c: HCursor) =>
@@ -518,18 +525,20 @@ package object slicing {
         m   <- c.downField("resolvedMethod").as[Option[String]]
         p   <- c.downField("paramTypes").as[List[String]]
         r   <- c.downField("returnType").as[String]
+        ex  <- c.downField("isExternal").as[Option[Boolean]]
         lin <- c.downField("lineNumber").as[Option[Int]]
         col <- c.downField("columnNumber").as[Option[Int]]
       } yield {
-        ObservedCall(x, m, p, r, lin, col)
+        ObservedCall(x, m, p, r, ex, lin, col)
       }
   implicit val encodeObservedCall: Encoder[ObservedCall] =
-    Encoder.instance { case ObservedCall(c, m, p, r, lin, col) =>
+    Encoder.instance { case ObservedCall(c, m, p, r, ex, lin, col) =>
       Json.obj(
         "callName"       -> c.asJson,
         "resolvedMethod" -> m.asJson,
         "paramTypes"     -> p.asJson,
         "returnType"     -> r.asJson,
+        "isExternal"     -> ex.asJson,
         "lineNumber"     -> lin.asJson,
         "columnNumber"   -> col.asJson
       )
@@ -546,9 +555,10 @@ package object slicing {
     paramTypes: List[String],
     returnType: String,
     position: Either[String, Int],
+    isExternal: Option[Boolean],
     lineNumber: Option[Int] = None,
     columnNumber: Option[Int] = None
-  ) extends UsedCall(callName, resolvedMethod, paramTypes, returnType, lineNumber, columnNumber) {
+  ) extends UsedCall(callName, resolvedMethod, paramTypes, returnType, isExternal, lineNumber, columnNumber) {
     override def toString: String = super.toString + " @ " + (position match {
       case Left(namedArg) => namedArg
       case Right(argIdx)  => argIdx
@@ -563,6 +573,7 @@ package object slicing {
         oc.paramTypes,
         oc.returnType,
         pos,
+        oc.isExternal,
         oc.lineNumber,
         oc.columnNumber
       )
@@ -575,6 +586,7 @@ package object slicing {
         m   <- c.downField("resolvedMethod").as[Option[String]]
         p   <- c.downField("paramTypes").as[List[String]]
         r   <- c.downField("returnType").as[String]
+        ex  <- c.downField("isExternal").as[Option[Boolean]]
         lin <- c.downField("lineNumber").as[Option[Int]]
         col <- c.downField("columnNumber").as[Option[Int]]
       } yield {
@@ -590,10 +602,10 @@ package object slicing {
             }
           case Right(argIdx) => Right(argIdx)
         }
-        ObservedCallWithArgPos(x, m, p, r, pos, lin, col)
+        ObservedCallWithArgPos(x, m, p, r, pos, ex, lin, col)
       }
   implicit val encodeObservedCallWithArgPos: Encoder[ObservedCallWithArgPos] =
-    Encoder.instance { case ObservedCallWithArgPos(c, m, p, r, a, lin, col) =>
+    Encoder.instance { case ObservedCallWithArgPos(c, m, p, r, a, ex, lin, col) =>
       Json.obj(
         "callName"       -> c.asJson,
         "resolvedMethod" -> m.asJson,
@@ -603,14 +615,15 @@ package object slicing {
           case Left(argName) => argName.asJson
           case Right(argIdx) => argIdx.asJson
         }),
+        "isExternal"   -> ex.asJson,
         "lineNumber"   -> lin.asJson,
         "columnNumber" -> col.asJson
       )
     }
 
   implicit val encodeUsedCall: Encoder[UsedCall] = Encoder.instance {
-    case oc @ ObservedCall(_, _, _, _, _, _)               => oc.asJson
-    case oca @ ObservedCallWithArgPos(_, _, _, _, _, _, _) => oca.asJson
+    case oc @ ObservedCall(_, _, _, _, _, _, _)               => oc.asJson
+    case oca @ ObservedCallWithArgPos(_, _, _, _, _, _, _, _) => oca.asJson
   }
 
   implicit val decodeUsedCall: Decoder[UsedCall] =

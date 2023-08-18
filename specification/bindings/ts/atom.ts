@@ -3161,6 +3161,7 @@ export namespace atom {
                 name?: string;
                 typeFullName?: string;
                 position?: number;
+                isExternal?: boolean;
                 lineNumber?: number;
                 columnNumber?: number;
                 label?: UsageSlice.LabelType;
@@ -3176,6 +3177,9 @@ export namespace atom {
                     }
                     if ("position" in data && data.position != undefined) {
                         this.position = data.position;
+                    }
+                    if ("isExternal" in data && data.isExternal != undefined) {
+                        this.isExternal = data.isExternal;
                     }
                     if ("lineNumber" in data && data.lineNumber != undefined) {
                         this.lineNumber = data.lineNumber;
@@ -3206,28 +3210,35 @@ export namespace atom {
             set position(value: number) {
                 pb_1.Message.setField(this, 3, value);
             }
-            get lineNumber() {
-                return pb_1.Message.getFieldWithDefault(this, 4, 0) as number;
+            get isExternal() {
+                return pb_1.Message.getFieldWithDefault(this, 4, false) as boolean;
             }
-            set lineNumber(value: number) {
+            set isExternal(value: boolean) {
                 pb_1.Message.setField(this, 4, value);
             }
-            get columnNumber() {
+            get lineNumber() {
                 return pb_1.Message.getFieldWithDefault(this, 5, 0) as number;
             }
-            set columnNumber(value: number) {
+            set lineNumber(value: number) {
                 pb_1.Message.setField(this, 5, value);
             }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 6, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 6, value);
+            }
             get label() {
-                return pb_1.Message.getFieldWithDefault(this, 6, UsageSlice.LabelType.ANY) as UsageSlice.LabelType;
+                return pb_1.Message.getFieldWithDefault(this, 7, UsageSlice.LabelType.ANY) as UsageSlice.LabelType;
             }
             set label(value: UsageSlice.LabelType) {
-                pb_1.Message.setField(this, 6, value);
+                pb_1.Message.setField(this, 7, value);
             }
             static fromObject(data: {
                 name?: string;
                 typeFullName?: string;
                 position?: number;
+                isExternal?: boolean;
                 lineNumber?: number;
                 columnNumber?: number;
                 label?: UsageSlice.LabelType;
@@ -3241,6 +3252,9 @@ export namespace atom {
                 }
                 if (data.position != null) {
                     message.position = data.position;
+                }
+                if (data.isExternal != null) {
+                    message.isExternal = data.isExternal;
                 }
                 if (data.lineNumber != null) {
                     message.lineNumber = data.lineNumber;
@@ -3258,6 +3272,7 @@ export namespace atom {
                     name?: string;
                     typeFullName?: string;
                     position?: number;
+                    isExternal?: boolean;
                     lineNumber?: number;
                     columnNumber?: number;
                     label?: UsageSlice.LabelType;
@@ -3270,6 +3285,9 @@ export namespace atom {
                 }
                 if (this.position != null) {
                     data.position = this.position;
+                }
+                if (this.isExternal != null) {
+                    data.isExternal = this.isExternal;
                 }
                 if (this.lineNumber != null) {
                     data.lineNumber = this.lineNumber;
@@ -3292,12 +3310,14 @@ export namespace atom {
                     writer.writeString(2, this.typeFullName);
                 if (this.position != 0)
                     writer.writeUint32(3, this.position);
+                if (this.isExternal != false)
+                    writer.writeBool(4, this.isExternal);
                 if (this.lineNumber != 0)
-                    writer.writeUint32(4, this.lineNumber);
+                    writer.writeUint32(5, this.lineNumber);
                 if (this.columnNumber != 0)
-                    writer.writeUint32(5, this.columnNumber);
+                    writer.writeUint32(6, this.columnNumber);
                 if (this.label != UsageSlice.LabelType.ANY)
-                    writer.writeEnum(6, this.label);
+                    writer.writeEnum(7, this.label);
                 if (!w)
                     return writer.getResultBuffer();
             }
@@ -3317,12 +3337,15 @@ export namespace atom {
                             message.position = reader.readUint32();
                             break;
                         case 4:
-                            message.lineNumber = reader.readUint32();
+                            message.isExternal = reader.readBool();
                             break;
                         case 5:
-                            message.columnNumber = reader.readUint32();
+                            message.lineNumber = reader.readUint32();
                             break;
                         case 6:
+                            message.columnNumber = reader.readUint32();
+                            break;
+                        case 7:
                             message.label = reader.readEnum();
                             break;
                         default: reader.skipField();
@@ -3344,6 +3367,7 @@ export namespace atom {
                 typeFullName?: string;
                 resolvedMethod?: string;
                 position?: number;
+                isExternal?: boolean;
                 lineNumber?: number;
                 columnNumber?: number;
                 label?: string;
@@ -3362,6 +3386,9 @@ export namespace atom {
                     }
                     if ("position" in data && data.position != undefined) {
                         this.position = data.position;
+                    }
+                    if ("isExternal" in data && data.isExternal != undefined) {
+                        this.isExternal = data.isExternal;
                     }
                     if ("lineNumber" in data && data.lineNumber != undefined) {
                         this.lineNumber = data.lineNumber;
@@ -3398,29 +3425,36 @@ export namespace atom {
             set position(value: number) {
                 pb_1.Message.setField(this, 4, value);
             }
-            get lineNumber() {
-                return pb_1.Message.getFieldWithDefault(this, 5, 0) as number;
+            get isExternal() {
+                return pb_1.Message.getFieldWithDefault(this, 5, false) as boolean;
             }
-            set lineNumber(value: number) {
+            set isExternal(value: boolean) {
                 pb_1.Message.setField(this, 5, value);
             }
-            get columnNumber() {
+            get lineNumber() {
                 return pb_1.Message.getFieldWithDefault(this, 6, 0) as number;
             }
-            set columnNumber(value: number) {
+            set lineNumber(value: number) {
                 pb_1.Message.setField(this, 6, value);
             }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 7, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 7, value);
+            }
             get label() {
-                return pb_1.Message.getFieldWithDefault(this, 7, "") as string;
+                return pb_1.Message.getFieldWithDefault(this, 8, "") as string;
             }
             set label(value: string) {
-                pb_1.Message.setField(this, 7, value);
+                pb_1.Message.setField(this, 8, value);
             }
             static fromObject(data: {
                 name?: string;
                 typeFullName?: string;
                 resolvedMethod?: string;
                 position?: number;
+                isExternal?: boolean;
                 lineNumber?: number;
                 columnNumber?: number;
                 label?: string;
@@ -3437,6 +3471,9 @@ export namespace atom {
                 }
                 if (data.position != null) {
                     message.position = data.position;
+                }
+                if (data.isExternal != null) {
+                    message.isExternal = data.isExternal;
                 }
                 if (data.lineNumber != null) {
                     message.lineNumber = data.lineNumber;
@@ -3455,6 +3492,7 @@ export namespace atom {
                     typeFullName?: string;
                     resolvedMethod?: string;
                     position?: number;
+                    isExternal?: boolean;
                     lineNumber?: number;
                     columnNumber?: number;
                     label?: string;
@@ -3470,6 +3508,9 @@ export namespace atom {
                 }
                 if (this.position != null) {
                     data.position = this.position;
+                }
+                if (this.isExternal != null) {
+                    data.isExternal = this.isExternal;
                 }
                 if (this.lineNumber != null) {
                     data.lineNumber = this.lineNumber;
@@ -3494,12 +3535,14 @@ export namespace atom {
                     writer.writeString(3, this.resolvedMethod);
                 if (this.position != 0)
                     writer.writeUint32(4, this.position);
+                if (this.isExternal != false)
+                    writer.writeBool(5, this.isExternal);
                 if (this.lineNumber != 0)
-                    writer.writeUint32(5, this.lineNumber);
+                    writer.writeUint32(6, this.lineNumber);
                 if (this.columnNumber != 0)
-                    writer.writeUint32(6, this.columnNumber);
+                    writer.writeUint32(7, this.columnNumber);
                 if (this.label.length)
-                    writer.writeString(7, this.label);
+                    writer.writeString(8, this.label);
                 if (!w)
                     return writer.getResultBuffer();
             }
@@ -3522,12 +3565,15 @@ export namespace atom {
                             message.position = reader.readUint32();
                             break;
                         case 5:
-                            message.lineNumber = reader.readUint32();
+                            message.isExternal = reader.readBool();
                             break;
                         case 6:
-                            message.columnNumber = reader.readUint32();
+                            message.lineNumber = reader.readUint32();
                             break;
                         case 7:
+                            message.columnNumber = reader.readUint32();
+                            break;
+                        case 8:
                             message.label = reader.readString();
                             break;
                         default: reader.skipField();
@@ -3549,6 +3595,7 @@ export namespace atom {
                 resolvedMethod?: string;
                 paramTypes?: string[];
                 returnType?: string;
+                isExternal?: boolean;
                 lineNumber?: number;
                 columnNumber?: number;
             }) {
@@ -3566,6 +3613,9 @@ export namespace atom {
                     }
                     if ("returnType" in data && data.returnType != undefined) {
                         this.returnType = data.returnType;
+                    }
+                    if ("isExternal" in data && data.isExternal != undefined) {
+                        this.isExternal = data.isExternal;
                     }
                     if ("lineNumber" in data && data.lineNumber != undefined) {
                         this.lineNumber = data.lineNumber;
@@ -3599,23 +3649,30 @@ export namespace atom {
             set returnType(value: string) {
                 pb_1.Message.setField(this, 4, value);
             }
-            get lineNumber() {
-                return pb_1.Message.getFieldWithDefault(this, 5, 0) as number;
+            get isExternal() {
+                return pb_1.Message.getFieldWithDefault(this, 5, false) as boolean;
             }
-            set lineNumber(value: number) {
+            set isExternal(value: boolean) {
                 pb_1.Message.setField(this, 5, value);
             }
-            get columnNumber() {
+            get lineNumber() {
                 return pb_1.Message.getFieldWithDefault(this, 6, 0) as number;
             }
-            set columnNumber(value: number) {
+            set lineNumber(value: number) {
                 pb_1.Message.setField(this, 6, value);
+            }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 7, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 7, value);
             }
             static fromObject(data: {
                 callName?: string;
                 resolvedMethod?: string;
                 paramTypes?: string[];
                 returnType?: string;
+                isExternal?: boolean;
                 lineNumber?: number;
                 columnNumber?: number;
             }): InvokedCalls {
@@ -3632,6 +3689,9 @@ export namespace atom {
                 if (data.returnType != null) {
                     message.returnType = data.returnType;
                 }
+                if (data.isExternal != null) {
+                    message.isExternal = data.isExternal;
+                }
                 if (data.lineNumber != null) {
                     message.lineNumber = data.lineNumber;
                 }
@@ -3646,6 +3706,7 @@ export namespace atom {
                     resolvedMethod?: string;
                     paramTypes?: string[];
                     returnType?: string;
+                    isExternal?: boolean;
                     lineNumber?: number;
                     columnNumber?: number;
                 } = {};
@@ -3660,6 +3721,9 @@ export namespace atom {
                 }
                 if (this.returnType != null) {
                     data.returnType = this.returnType;
+                }
+                if (this.isExternal != null) {
+                    data.isExternal = this.isExternal;
                 }
                 if (this.lineNumber != null) {
                     data.lineNumber = this.lineNumber;
@@ -3681,10 +3745,12 @@ export namespace atom {
                     writer.writeRepeatedString(3, this.paramTypes);
                 if (this.returnType.length)
                     writer.writeString(4, this.returnType);
+                if (this.isExternal != false)
+                    writer.writeBool(5, this.isExternal);
                 if (this.lineNumber != 0)
-                    writer.writeUint32(5, this.lineNumber);
+                    writer.writeUint32(6, this.lineNumber);
                 if (this.columnNumber != 0)
-                    writer.writeUint32(6, this.columnNumber);
+                    writer.writeUint32(7, this.columnNumber);
                 if (!w)
                     return writer.getResultBuffer();
             }
@@ -3707,9 +3773,12 @@ export namespace atom {
                             message.returnType = reader.readString();
                             break;
                         case 5:
-                            message.lineNumber = reader.readUint32();
+                            message.isExternal = reader.readBool();
                             break;
                         case 6:
+                            message.lineNumber = reader.readUint32();
+                            break;
+                        case 7:
                             message.columnNumber = reader.readUint32();
                             break;
                         default: reader.skipField();
@@ -3732,6 +3801,7 @@ export namespace atom {
                 paramTypes?: string[];
                 returnType?: string;
                 position?: number;
+                isExternal?: boolean;
                 lineNumber?: number;
                 columnNumber?: number;
             }) {
@@ -3752,6 +3822,9 @@ export namespace atom {
                     }
                     if ("position" in data && data.position != undefined) {
                         this.position = data.position;
+                    }
+                    if ("isExternal" in data && data.isExternal != undefined) {
+                        this.isExternal = data.isExternal;
                     }
                     if ("lineNumber" in data && data.lineNumber != undefined) {
                         this.lineNumber = data.lineNumber;
@@ -3791,17 +3864,23 @@ export namespace atom {
             set position(value: number) {
                 pb_1.Message.setField(this, 5, value);
             }
-            get lineNumber() {
-                return pb_1.Message.getFieldWithDefault(this, 6, 0) as number;
+            get isExternal() {
+                return pb_1.Message.getFieldWithDefault(this, 6, false) as boolean;
             }
-            set lineNumber(value: number) {
+            set isExternal(value: boolean) {
                 pb_1.Message.setField(this, 6, value);
             }
-            get columnNumber() {
+            get lineNumber() {
                 return pb_1.Message.getFieldWithDefault(this, 7, 0) as number;
             }
-            set columnNumber(value: number) {
+            set lineNumber(value: number) {
                 pb_1.Message.setField(this, 7, value);
+            }
+            get columnNumber() {
+                return pb_1.Message.getFieldWithDefault(this, 8, 0) as number;
+            }
+            set columnNumber(value: number) {
+                pb_1.Message.setField(this, 8, value);
             }
             static fromObject(data: {
                 callName?: string;
@@ -3809,6 +3888,7 @@ export namespace atom {
                 paramTypes?: string[];
                 returnType?: string;
                 position?: number;
+                isExternal?: boolean;
                 lineNumber?: number;
                 columnNumber?: number;
             }): ArgToCalls {
@@ -3828,6 +3908,9 @@ export namespace atom {
                 if (data.position != null) {
                     message.position = data.position;
                 }
+                if (data.isExternal != null) {
+                    message.isExternal = data.isExternal;
+                }
                 if (data.lineNumber != null) {
                     message.lineNumber = data.lineNumber;
                 }
@@ -3843,6 +3926,7 @@ export namespace atom {
                     paramTypes?: string[];
                     returnType?: string;
                     position?: number;
+                    isExternal?: boolean;
                     lineNumber?: number;
                     columnNumber?: number;
                 } = {};
@@ -3860,6 +3944,9 @@ export namespace atom {
                 }
                 if (this.position != null) {
                     data.position = this.position;
+                }
+                if (this.isExternal != null) {
+                    data.isExternal = this.isExternal;
                 }
                 if (this.lineNumber != null) {
                     data.lineNumber = this.lineNumber;
@@ -3883,10 +3970,12 @@ export namespace atom {
                     writer.writeString(4, this.returnType);
                 if (this.position != 0)
                     writer.writeUint32(5, this.position);
+                if (this.isExternal != false)
+                    writer.writeBool(6, this.isExternal);
                 if (this.lineNumber != 0)
-                    writer.writeUint32(6, this.lineNumber);
+                    writer.writeUint32(7, this.lineNumber);
                 if (this.columnNumber != 0)
-                    writer.writeUint32(7, this.columnNumber);
+                    writer.writeUint32(8, this.columnNumber);
                 if (!w)
                     return writer.getResultBuffer();
             }
@@ -3912,9 +4001,12 @@ export namespace atom {
                             message.position = reader.readUint32();
                             break;
                         case 6:
-                            message.lineNumber = reader.readUint32();
+                            message.isExternal = reader.readBool();
                             break;
                         case 7:
+                            message.lineNumber = reader.readUint32();
+                            break;
+                        case 8:
                             message.columnNumber = reader.readUint32();
                             break;
                         default: reader.skipField();
