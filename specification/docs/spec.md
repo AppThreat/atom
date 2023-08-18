@@ -415,15 +415,16 @@ There are two lists. There is a list of MethodUsageSlice with key &#34;objectSli
 
 The calls this object is observed to be an argument of.
 
-| Field          | Type              | Label    | Description                      |
-| -------------- | ----------------- | -------- | -------------------------------- |
-| callName       | [string](#string) |          | Call method name                 |
-| resolvedMethod | [string](#string) |          | Full name of the resolved method |
-| paramTypes     | [string](#string) | repeated | Types of the parameters          |
-| returnType     | [string](#string) |          | Return type                      |
-| position       | [uint32](#uint32) |          | Argument position                |
-| lineNumber     | [uint32](#uint32) |          | Line number                      |
-| columnNumber   | [uint32](#uint32) |          | Column number                    |
+| Field          | Type              | Label    | Description                                                   |
+| -------------- | ----------------- | -------- | ------------------------------------------------------------- |
+| callName       | [string](#string) |          | Call method name                                              |
+| resolvedMethod | [string](#string) |          | Full name of the resolved method                              |
+| paramTypes     | [string](#string) | repeated | Types of the parameters                                       |
+| returnType     | [string](#string) |          | Return type                                                   |
+| position       | [uint32](#uint32) |          | Argument position                                             |
+| isExternal     | [bool](#bool)     |          | Boolean to indicate if the call belongs to an external method |
+| lineNumber     | [uint32](#uint32) |          | Line number                                                   |
+| columnNumber   | [uint32](#uint32) |          | Column number                                                 |
 
 <a name="atom-UsageSlice-DefinedBy"></a>
 
@@ -431,15 +432,16 @@ The calls this object is observed to be an argument of.
 
 Places where the given symbol is defined
 
-| Field          | Type              | Label | Description                                      |
-| -------------- | ----------------- | ----- | ------------------------------------------------ |
-| name           | [string](#string) |       | variable or parameter name                       |
-| typeFullName   | [string](#string) |       | Fullname of the data type                        |
-| resolvedMethod | [string](#string) |       | Method name                                      |
-| position       | [uint32](#uint32) |       | Position                                         |
-| lineNumber     | [uint32](#uint32) |       | Line number                                      |
-| columnNumber   | [uint32](#uint32) |       | Column number                                    |
-| label          | [string](#string) |       | Label describing the resolved method or position |
+| Field          | Type              | Label | Description                                                               |
+| -------------- | ----------------- | ----- | ------------------------------------------------------------------------- |
+| name           | [string](#string) |       | variable or parameter name                                                |
+| typeFullName   | [string](#string) |       | Fullname of the data type                                                 |
+| resolvedMethod | [string](#string) |       | Method name                                                               |
+| position       | [uint32](#uint32) |       | Position                                                                  |
+| isExternal     | [bool](#bool)     |       | Boolean to indicate if the call belongs to an external method. label=CALL |
+| lineNumber     | [uint32](#uint32) |       | Line number                                                               |
+| columnNumber   | [uint32](#uint32) |       | Column number                                                             |
+| label          | [string](#string) |       | Label describing the resolved method or position                          |
 
 <a name="atom-UsageSlice-Fields"></a>
 
@@ -461,14 +463,15 @@ Represents a local transfer of data via aliasing. The data defined is via some a
 
 The calls this object is observed to call.
 
-| Field          | Type              | Label    | Description                      |
-| -------------- | ----------------- | -------- | -------------------------------- |
-| callName       | [string](#string) |          | Call method name                 |
-| resolvedMethod | [string](#string) |          | Full name of the resolved method |
-| paramTypes     | [string](#string) | repeated | Types of the parameters          |
-| returnType     | [string](#string) |          | Return type                      |
-| lineNumber     | [uint32](#uint32) |          | Line number                      |
-| columnNumber   | [uint32](#uint32) |          | Column number                    |
+| Field          | Type              | Label    | Description                                                   |
+| -------------- | ----------------- | -------- | ------------------------------------------------------------- |
+| callName       | [string](#string) |          | Call method name                                              |
+| resolvedMethod | [string](#string) |          | Full name of the resolved method                              |
+| paramTypes     | [string](#string) | repeated | Types of the parameters                                       |
+| returnType     | [string](#string) |          | Return type                                                   |
+| isExternal     | [bool](#bool)     |          | Boolean to indicate if the call belongs to an external method |
+| lineNumber     | [uint32](#uint32) |          | Line number                                                   |
+| columnNumber   | [uint32](#uint32) |          | Column number                                                 |
 
 <a name="atom-UsageSlice-MethodUsageSlice"></a>
 
@@ -519,14 +522,15 @@ Details related to an observed call.
 
 Represents a source of data-generation, i.e., where data is defined and can be assigned to some variable or used in an argument.
 
-| Field        | Type                                               | Label | Description                           |
-| ------------ | -------------------------------------------------- | ----- | ------------------------------------- |
-| name         | [string](#string)                                  |       | variable or parameter name            |
-| typeFullName | [string](#string)                                  |       | Fullname of the data type             |
-| position     | [uint32](#uint32)                                  |       | Position of the parameter or argument |
-| lineNumber   | [uint32](#uint32)                                  |       | Line number in the file               |
-| columnNumber | [uint32](#uint32)                                  |       | Column number                         |
-| label        | [UsageSlice.LabelType](#atom-UsageSlice-LabelType) |       |                                       |
+| Field        | Type                                               | Label | Description                                                               |
+| ------------ | -------------------------------------------------- | ----- | ------------------------------------------------------------------------- |
+| name         | [string](#string)                                  |       | variable or parameter name                                                |
+| typeFullName | [string](#string)                                  |       | Fullname of the data type                                                 |
+| position     | [uint32](#uint32)                                  |       | Position of the parameter or argument                                     |
+| isExternal   | [bool](#bool)                                      |       | Boolean to indicate if the call belongs to an external method. label=CALL |
+| lineNumber   | [uint32](#uint32)                                  |       | Line number in the file                                                   |
+| columnNumber | [uint32](#uint32)                                  |       | Column number                                                             |
+| label        | [UsageSlice.LabelType](#atom-UsageSlice-LabelType) |       |                                                                           |
 
 <a name="atom-UsageSlice-UserDefinedTypes"></a>
 

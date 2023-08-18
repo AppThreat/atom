@@ -140,6 +140,7 @@ object UsageSlicing {
               Option(m.fullName),
               m.parameter.map(_.typeFullName).toList,
               m.methodReturn.typeFullName,
+              Option(m.isExternal),
               m.lineNumber.map(_.intValue()),
               m.columnNumber.map(_.intValue())
             )
@@ -217,6 +218,7 @@ object UsageSlicing {
                 Option(a.fullName),
                 List.empty,
                 "",
+                Option(m.isExternal),
                 a.lineNumber.map(_.intValue()),
                 a.columnNumber.map(_.intValue())
               )
@@ -356,6 +358,7 @@ object UsageSlicing {
           resolvedMethod,
           params,
           returnType,
+          baseCall.callee(resolver).isExternal.headOption,
           baseCall.lineNumber.map(_.intValue()),
           baseCall.columnNumber.map(_.intValue())
         )
@@ -374,7 +377,7 @@ object UsageSlicing {
       slices.foreach { case (_, usageSlices) =>
         usageSlices.foreach { slice =>
           slice.definedBy match {
-            case Some(CallDef(_, _, Some(resolvedMethod), _, _, _)) =>
+            case Some(CallDef(_, _, Some(resolvedMethod), _, _, _, _)) =>
               slices.get(resolvedMethod) match {
                 case Some(_) => // TODO: Handle match
                 case None    => // No match
@@ -383,7 +386,7 @@ object UsageSlicing {
           }
           slice.argToCalls
             .flatMap {
-              case ObservedCallWithArgPos(_, Some(resolvedMethod), _, _, Left(argName), _, _) =>
+              case ObservedCallWithArgPos(_, Some(resolvedMethod), _, _, Left(argName), _, _, _) =>
                 slices.get(resolvedMethod).flatMap { calleeSlices =>
                   calleeSlices.find { s =>
                     s.targetObj match {
@@ -392,7 +395,7 @@ object UsageSlicing {
                     }
                   }
                 }
-              case ObservedCallWithArgPos(_, Some(resolvedMethod), _, _, Right(argIdx), _, _) =>
+              case ObservedCallWithArgPos(_, Some(resolvedMethod), _, _, Right(argIdx), _, _, _) =>
                 slices.get(resolvedMethod).flatMap { calleeSlices =>
                   calleeSlices.find { s =>
                     s.targetObj match {

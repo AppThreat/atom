@@ -862,11 +862,13 @@ class UsageSliceTargetObj(betterproto.Message):
     type_full_name: str = betterproto.string_field(2)
     # Position of the parameter or argument
     position: int = betterproto.uint32_field(3)
+    # Boolean to indicate if the call belongs to an external method. label=CALL
+    is_external: bool = betterproto.bool_field(4)
     # Line number in the file
-    line_number: int = betterproto.uint32_field(4)
+    line_number: int = betterproto.uint32_field(5)
     # Column number
-    column_number: int = betterproto.uint32_field(5)
-    label: "UsageSliceLabelType" = betterproto.enum_field(6)
+    column_number: int = betterproto.uint32_field(6)
+    label: "UsageSliceLabelType" = betterproto.enum_field(7)
 
 
 @dataclass
@@ -881,12 +883,14 @@ class UsageSliceDefinedBy(betterproto.Message):
     resolved_method: str = betterproto.string_field(3)
     # Position
     position: int = betterproto.uint32_field(4)
+    # Boolean to indicate if the call belongs to an external method. label=CALL
+    is_external: bool = betterproto.bool_field(5)
     # Line number
-    line_number: int = betterproto.uint32_field(5)
+    line_number: int = betterproto.uint32_field(6)
     # Column number
-    column_number: int = betterproto.uint32_field(6)
+    column_number: int = betterproto.uint32_field(7)
     # Label describing the resolved method or position
-    label: str = betterproto.string_field(7)
+    label: str = betterproto.string_field(8)
 
 
 @dataclass
@@ -901,10 +905,12 @@ class UsageSliceInvokedCalls(betterproto.Message):
     param_types: List[str] = betterproto.string_field(3)
     # Return type
     return_type: str = betterproto.string_field(4)
+    # Boolean to indicate if the call belongs to an external method
+    is_external: bool = betterproto.bool_field(5)
     # Line number
-    line_number: int = betterproto.uint32_field(5)
+    line_number: int = betterproto.uint32_field(6)
     # Column number
-    column_number: int = betterproto.uint32_field(6)
+    column_number: int = betterproto.uint32_field(7)
 
 
 @dataclass
@@ -921,10 +927,12 @@ class UsageSliceArgToCalls(betterproto.Message):
     return_type: str = betterproto.string_field(4)
     # Argument position
     position: int = betterproto.uint32_field(5)
+    # Boolean to indicate if the call belongs to an external method
+    is_external: bool = betterproto.bool_field(6)
     # Line number
-    line_number: int = betterproto.uint32_field(6)
+    line_number: int = betterproto.uint32_field(7)
     # Column number
-    column_number: int = betterproto.uint32_field(7)
+    column_number: int = betterproto.uint32_field(8)
 
 
 @dataclass

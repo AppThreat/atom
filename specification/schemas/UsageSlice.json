@@ -49,6 +49,10 @@
                     "type": "integer",
                     "description": "Argument position"
                 },
+                "isExternal": {
+                    "type": "boolean",
+                    "description": "Boolean to indicate if the call belongs to an external method"
+                },
                 "lineNumber": {
                     "type": "integer",
                     "description": "Line number"
@@ -80,6 +84,10 @@
                 "position": {
                     "type": "integer",
                     "description": "Position"
+                },
+                "isExternal": {
+                    "type": "boolean",
+                    "description": "Boolean to indicate if the call belongs to an external method. label=CALL"
                 },
                 "lineNumber": {
                     "type": "integer",
@@ -173,6 +181,10 @@
                 "returnType": {
                     "type": "string",
                     "description": "Return type"
+                },
+                "isExternal": {
+                    "type": "boolean",
+                    "description": "Boolean to indicate if the call belongs to an external method"
                 },
                 "lineNumber": {
                     "type": "integer",
@@ -301,6 +313,10 @@
                 "position": {
                     "type": "integer",
                     "description": "Position of the parameter or argument"
+                },
+                "isExternal": {
+                    "type": "boolean",
+                    "description": "Boolean to indicate if the call belongs to an external method. label=CALL"
                 },
                 "lineNumber": {
                     "type": "integer",

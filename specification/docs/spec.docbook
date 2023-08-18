@@ -1519,6 +1519,13 @@
             </row>
             
             <row>
+              <entry>isExternal</entry>
+              <entry><link linkend="bool">bool</link></entry>
+              <entry></entry>
+              <entry><para>Boolean to indicate if the call belongs to an external method</para></entry>
+            </row>
+            
+            <row>
               <entry>lineNumber</entry>
               <entry><link linkend="uint32">uint32</link></entry>
               <entry></entry>
@@ -1586,6 +1593,13 @@
               <entry><link linkend="uint32">uint32</link></entry>
               <entry></entry>
               <entry><para>Position</para></entry>
+            </row>
+            
+            <row>
+              <entry>isExternal</entry>
+              <entry><link linkend="bool">bool</link></entry>
+              <entry></entry>
+              <entry><para>Boolean to indicate if the call belongs to an external method. label=CALL</para></entry>
             </row>
             
             <row>
@@ -1726,6 +1740,13 @@
               <entry><link linkend="string">string</link></entry>
               <entry></entry>
               <entry><para>Return type</para></entry>
+            </row>
+            
+            <row>
+              <entry>isExternal</entry>
+              <entry><link linkend="bool">bool</link></entry>
+              <entry></entry>
+              <entry><para>Boolean to indicate if the call belongs to an external method</para></entry>
             </row>
             
             <row>
@@ -1985,6 +2006,13 @@
               <entry><link linkend="uint32">uint32</link></entry>
               <entry></entry>
               <entry><para>Position of the parameter or argument</para></entry>
+            </row>
+            
+            <row>
+              <entry>isExternal</entry>
+              <entry><link linkend="bool">bool</link></entry>
+              <entry></entry>
+              <entry><para>Boolean to indicate if the call belongs to an external method. label=CALL</para></entry>
             </row>
             
             <row>

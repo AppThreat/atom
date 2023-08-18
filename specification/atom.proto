@@ -789,12 +789,14 @@ message UsageSlice {
         string typeFullName = 2;
         // Position of the parameter or argument
         uint32 position = 3;
+        // Boolean to indicate if the call belongs to an external method. label=CALL
+        bool isExternal = 4;
         // Line number in the file
-        uint32 lineNumber = 4;
+        uint32 lineNumber = 5;
         // Column number
-        uint32 columnNumber = 5;
+        uint32 columnNumber = 6;
 
-        LabelType label = 6;
+        LabelType label = 7;
     }
     // Places where the given symbol is defined
     message DefinedBy {
@@ -806,12 +808,14 @@ message UsageSlice {
         string resolvedMethod = 3;
         // Position
         uint32 position = 4;
+        // Boolean to indicate if the call belongs to an external method. label=CALL
+        bool isExternal = 5;
         // Line number
-        uint32 lineNumber = 5;
+        uint32 lineNumber = 6;
         // Column number
-        uint32 columnNumber = 6;
+        uint32 columnNumber = 7;
         // Label describing the resolved method or position
-        string label = 7;
+        string label = 8;
     }
     // The calls this object is observed to call.
     message InvokedCalls {
@@ -823,10 +827,12 @@ message UsageSlice {
         repeated string paramTypes = 3;
         // Return type
         string returnType = 4;
+        // Boolean to indicate if the call belongs to an external method
+        bool isExternal = 5;
         // Line number
-        uint32 lineNumber = 5;
+        uint32 lineNumber = 6;
         // Column number
-        uint32 columnNumber = 6;
+        uint32 columnNumber = 7;
     }
     // The calls this object is observed to be an argument of.
     message ArgToCalls {
@@ -840,10 +846,12 @@ message UsageSlice {
         string returnType = 4;
         // Argument position
         uint32 position = 5;
+        // Boolean to indicate if the call belongs to an external method
+        bool isExternal = 6;
         // Line number
-        uint32 lineNumber = 6;
+        uint32 lineNumber = 7;
         // Column number
-        uint32 columnNumber = 7;
+        uint32 columnNumber = 8;
     }
     // Describes where and how the given external object/type is used
     message ObjectUsageSlice {
