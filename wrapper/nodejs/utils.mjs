@@ -2,29 +2,33 @@ import { join, basename } from "node:path";
 import { readdirSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
-const IGNORE_DIRS = [
-  "node_modules",
-  "venv",
-  "docs",
-  "test",
-  "tests",
-  "e2e",
-  "e2e-beta",
-  "examples",
-  "cypress",
-  "jest-cache",
-  "eslint-rules",
-  "codemods",
-  "flow-typed",
-  "i18n",
-  "vendor",
-  "www",
-  "dist",
-  "build"
-];
+const IGNORE_DIRS = process.env.ASTGEN_IGNORE_DIRS
+  ? process.env.ASTGEN_IGNORE_DIRS.split(",")
+  : [
+      "node_modules",
+      "venv",
+      "docs",
+      "test",
+      "tests",
+      "e2e",
+      "e2e-beta",
+      "examples",
+      "cypress",
+      "jest-cache",
+      "eslint-rules",
+      "codemods",
+      "flow-typed",
+      "i18n",
+      "vendor",
+      "www",
+      "dist",
+      "build",
+      "__tests__"
+    ];
 
 const IGNORE_FILE_PATTERN = new RegExp(
-  "(conf|test|spec|min|\\.d)\\.(js|ts|jsx|tsx)$",
+  process.env.ASTGEN_IGNORE_FILE_PATTERN ||
+    "(conf|test|spec|min|three|\\.d)\\.(js|ts|jsx|tsx)$",
   "i"
 );
 
