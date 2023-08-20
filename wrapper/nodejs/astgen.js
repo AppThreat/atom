@@ -67,18 +67,19 @@ const getAllSrcJSAndTSFiles = (src) =>
     getAllFiles(src, ".cjs"),
     getAllFiles(src, ".mjs"),
     getAllFiles(src, ".ts"),
-    getAllFiles(src, ".tsx")
+    getAllFiles(src, ".tsx"),
+    getAllFiles(src, ".vue"),
+    getAllFiles(src, ".svelte")
   ]);
 
 /**
  * Convert a single JS/TS file to AST
  */
 const fileToJsAst = (file) => {
-  try {
-    return parse(readFileSync(file, "utf-8"), babelParserOptions);
-  } catch {
-    return parse(readFileSync(file, "utf-8"), babelSafeParserOptions);
+  if (file.endsWith(".vue") || file.endsWith(".svelte")) {
+    return toVueAst(file);
   }
+  return codeToJsAst(readFileSync(file, "utf-8"));
 };
 
 /**
