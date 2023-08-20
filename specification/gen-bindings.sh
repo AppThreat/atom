@@ -9,3 +9,6 @@ protoc -I . --python_betterproto_out=bindings/python atom.proto
 protoc -I . --ts_out=bindings/ts atom.proto
 protoc -I . --java_out=bindings/java atom.proto
 protoc -I . --go_out=bindings/go atom.proto
+
+cargo install protobuf-codegen
+protoc -I . --rust_out=bindings/rust atom.proto

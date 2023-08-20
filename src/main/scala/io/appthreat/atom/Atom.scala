@@ -318,7 +318,6 @@ object Atom {
             new ImportResolverPass(ag).createAndApply()
             new SafeJSTypeRecoveryPass(ag).createAndApply()
             new TypeHintPass(ag).createAndApply()
-            new NaiveCallLinker(ag).createAndApply()
             ag
           }
       case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
@@ -342,7 +341,6 @@ object Atom {
             new PythonTypeRecoveryPass(ag, XTypeRecoveryConfig(enabledDummyTypes = false))
               .createAndApply()
             new PythonTypeHintCallLinker(ag).createAndApply()
-            new NaiveCallLinker(ag).createAndApply()
             new AstLinkerPass(ag).createAndApply()
             ag
           }
