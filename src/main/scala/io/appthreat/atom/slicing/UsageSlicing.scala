@@ -350,6 +350,10 @@ object UsageSlicing {
         if (baseCallCode.contains(" ")) {
           baseCallCode = baseCallCode.split(" ").last
         }
+        // Retain the full code for route detection purposes
+        if (language.get == Languages.JSSRC && (baseCallCode.startsWith("route") || baseCallCode.startsWith("app"))) {
+          baseCallCode = baseCall.code.replaceAll("\n", "").replaceAll(" ", "")
+        }
         resolvedMethod = Option(baseCallCode)
       }
       Option(
