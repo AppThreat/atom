@@ -341,11 +341,7 @@ object UsageSlicing {
           .getOrElse("ANY")
       }
       // If resolvedMethod is null then use the code property to construct the method name
-      if (
-        resolvedMethod.isEmpty && baseCall.code.nonEmpty && baseCall.code.contains(
-          "("
-        ) && language.get == Languages.JSSRC
-      ) {
+      if (baseCall.code.nonEmpty && baseCall.code.contains("(") && language.get == Languages.JSSRC) {
         var baseCallCode = baseCall.code.takeWhile(_ != '(')
         if (baseCallCode.contains(" ")) {
           baseCallCode = baseCallCode.split(" ").last
