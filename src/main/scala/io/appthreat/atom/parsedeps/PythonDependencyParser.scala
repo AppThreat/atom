@@ -27,7 +27,7 @@ object PythonDependencyParser extends XDependencyParser {
 
   private def parseSetupPy(cpg: Cpg): Set[ModuleWithVersion] = {
     val dataFlowEnabled     = cpg.metaData.overlays.contains(OssDataFlow.overlayName)
-    val requirementsPattern = "([\\w_]+)((=>|<=|==|>=|=<|<|>|!=).*)".r
+    val requirementsPattern = "([/.\\w_-]+)((=>|<=|==|>=|=<|<|>|!=).*)".r
 
     def dataSourcesToRequires = (cpg.literal ++ cpg.identifier)
       .where(_.file.name(".*setup.py"))

@@ -61,6 +61,9 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = fa
         |    "packageB>=0.5.0,< 0.7.0",
         |    "PickyThing<1.6,>1.9,!=1.9.6,<2.0a0,==2.4c1",
         |    "PackageC==1.2.0.dev1+hg.5.b11e5e6f0b0b",
+        |    "typing-extensions==3.10.0.2",
+        |    "re-wx>=0.0.2",
+        |    "zope.interface>=5.1.0"
         |]
         |test_requirements = [
         |    "pytest-httpbin==2.0.0",
@@ -199,11 +202,14 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = fa
         ModuleWithVersion("certifi", "", ">=2017.4.17"),
         ModuleWithVersion("charset_normalizer", "", ">=2,<4"),
         ModuleWithVersion("idna", "", ">=2.5,<4"),
-        ModuleWithVersion("os"),
+        ModuleWithVersion("os", "", ""),
         ModuleWithVersion("packageA", "", ">=1.4.2,<1.9,!=1.5.*,!=1.6.*"),
         ModuleWithVersion("packageB", "", ">=0.5.0,< 0.7.0"),
-        ModuleWithVersion("socket"),
-        ModuleWithVersion("urllib3", "", ">=1.21.1,<3")
+        ModuleWithVersion("re-wx", "", ">=0.0.2"),
+        ModuleWithVersion("socket", "", ""),
+        ModuleWithVersion("typing-extensions", "3.10.0.2", ""),
+        ModuleWithVersion("urllib3", "", ">=1.21.1,<3"),
+        ModuleWithVersion("zope.interface", "", ">=5.1.0")
       )
     }
   }
