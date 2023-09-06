@@ -49,6 +49,25 @@ object Atom {
     if (File(androidHome).isDirectory) File(androidHome).glob("**/android.jar").map(_.pathAsString).toSeq.headOption
     else None
   }
+  private var C2CPG_INCLUDE_PATHS: scala.collection.mutable.Set[String] = scala.collection.mutable.Set(
+    "/usr/include",
+    "/usr/local/include",
+    "/usr/lib/gcc/x86_64-linux-gnu/11/include",
+    "/usr/lib/gcc/x86_64-linux-gnu/12/include",
+    "/usr/lib/gcc/x86_64-linux-gnu/13/include",
+    "/usr/include/c++/11",
+    "/usr/include/x86_64-linux-gnu/c++/11",
+    "/usr/include/c++/11/backward",
+    "/usr/lib/gcc/x86_64-redhat-linux",
+    "/opt/local/include/postgresql14",
+    "/opt/local/include",
+    "/usr/include/tcl8.6",
+    "/usr/include/tcl8.6/tcl-private/generic"
+  )
+  Option(System.getenv("C_INCLUDE_PATH")).flatMap { ipath =>
+    C2CPG_INCLUDE_PATHS ++ ipath.split(java.io.File.pathSeparator)
+    None
+  }
   private val optionParser: OptionParser[BaseConfig] = new scopt.OptionParser[BaseConfig]("atom") {
     arg[String]("input")
       .optional()
@@ -280,7 +299,8 @@ object Atom {
       case Languages.C | Languages.NEWC | "CPP" | "C++" =>
         new C2Cpg()
           .createCpgWithOverlays(
-            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = false)
+            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = true)
+              .withIncludePaths(C2CPG_INCLUDE_PATHS.toSet)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
               .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks).*")
