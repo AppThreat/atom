@@ -21,7 +21,9 @@ libraryDependencies ++= Seq(
   ),
   "io.joern"      %% "dataflowengineoss" % Versions.joern,
   "io.joern"      %% "pysrc2cpg"         % Versions.joern,
-  "io.joern"      %% "javasrc2cpg"       % Versions.joern,
+  "io.joern"      %% "javasrc2cpg"       % Versions.joern excludeAll (
+    ExclusionRule(organization = "org.gradle", name = "gradle-tooling-api"),
+  ),
   "io.joern"      %% "jssrc2cpg"         % Versions.joern,
   "io.joern"      %% "jimple2cpg"        % Versions.joern,
   "io.joern"      %% "semanticcpg"       % Versions.joern % Test classifier "tests",
@@ -84,6 +86,10 @@ ThisBuild / compile / javacOptions ++= Seq(
   val javaVersion = sys.props("java.specification.version").toFloat
   assert(javaVersion.toInt >= 11, s"this build requires JDK11+ - you're using $javaVersion")
   Nil
+}
+
+Universal / mappings := (Universal / mappings).value.filter {
+  case (_, path) => !path.contains("org.scala-lang.scala3-compiler") && !path.contains("io.get-coursier") && !path.contains("com.michaelpollmeier.scala-repl-pp")
 }
 
 enablePlugins(JavaAppPackaging)
