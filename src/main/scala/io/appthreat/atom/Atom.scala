@@ -52,17 +52,21 @@ object Atom {
   private var C2CPG_INCLUDE_PATHS: scala.collection.mutable.Set[String] = scala.collection.mutable.Set(
     "/usr/include",
     "/usr/local/include",
-    "/usr/lib/gcc/x86_64-linux-gnu/11/include",
-    "/usr/lib/gcc/x86_64-linux-gnu/12/include",
-    "/usr/lib/gcc/x86_64-linux-gnu/13/include",
+    "/usr/lib/gcc/x86_64-linux-gnu",
     "/usr/include/c++/11",
-    "/usr/include/x86_64-linux-gnu/c++/11",
     "/usr/include/c++/11/backward",
     "/usr/lib/gcc/x86_64-redhat-linux",
     "/opt/local/include/postgresql14",
     "/opt/local/include",
     "/usr/include/tcl8.6",
-    "/usr/include/tcl8.6/tcl-private/generic"
+    "/usr/include/tcl8.6/tcl-private/generic",
+    "/usr/include/4ti2",
+    "/usr/src/AMF",
+    "/usr/src/linux",
+    "/usr/share",
+    "/usr/lib64/R",
+    "/usr/lib/R",
+    "/opt/ebuilds"
   )
   Option(System.getenv("C_INCLUDE_PATH")).flatMap { ipath =>
     C2CPG_INCLUDE_PATHS ++ ipath.split(java.io.File.pathSeparator)
