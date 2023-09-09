@@ -6,7 +6,6 @@ import io.shiftleft.codepropertygraph.generated.{Languages, Operators, PropertyN
 import io.shiftleft.semanticcpg.language.*
 
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{ForkJoinPool, RecursiveTask}
 import java.util.regex.Pattern
 import scala.annotation.unused
 import scala.collection.concurrent.TrieMap

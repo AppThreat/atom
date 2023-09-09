@@ -1,13 +1,13 @@
-package io.appthreat.atom.frontends
+package io.appthreat.atom.frontends.clike
 
 import io.joern.c2cpg.Config
 import io.joern.c2cpg.datastructures.CGlobal
 import io.joern.c2cpg.passes.TypeDeclNodePass
-import io.shiftleft.codepropertygraph.Cpg
-import io.shiftleft.codepropertygraph.generated.Languages
-import io.joern.x2cpg.passes.frontend.{MetaDataPass, TypeNodePass}
 import io.joern.x2cpg.X2Cpg.withNewEmptyCpg
 import io.joern.x2cpg.X2CpgFrontend
+import io.joern.x2cpg.passes.frontend.{MetaDataPass, TypeNodePass}
+import io.shiftleft.codepropertygraph.Cpg
+import io.shiftleft.codepropertygraph.generated.Languages
 
 import scala.util.Try
 

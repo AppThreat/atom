@@ -1,7 +1,7 @@
-package io.appthreat.atom.frontends
+package io.appthreat.atom.frontends.clike
 
 import better.files.File
-import io.appthreat.atom.frontends.CdtParser.ParseResult
+import io.appthreat.atom.frontends.clike.CdtParser.ParseResult
 import io.joern.c2cpg.Config
 import io.joern.c2cpg.parser.{CustomFileContentProvider, FileDefaults, HeaderFileFinder, ParserConfig}
 import io.shiftleft.utils.IOUtils
@@ -9,8 +9,7 @@ import org.eclipse.cdt.core.dom.ast.gnu.c.GCCLanguage
 import org.eclipse.cdt.core.dom.ast.gnu.cpp.GPPLanguage
 import org.eclipse.cdt.core.dom.ast.{IASTPreprocessorStatement, IASTTranslationUnit}
 import org.eclipse.cdt.core.model.ILanguage
-import org.eclipse.cdt.core.parser.{DefaultLogService, ScannerInfo}
-import org.eclipse.cdt.core.parser.FileContent
+import org.eclipse.cdt.core.parser.{DefaultLogService, FileContent, ScannerInfo}
 import org.eclipse.cdt.internal.core.dom.parser.cpp.semantics.CPPVisitor
 import org.slf4j.LoggerFactory
 
@@ -30,7 +29,7 @@ object CdtParser {
 
 class CdtParser(config: Config) {
 
-  import io.joern.c2cpg.parser.CdtParser._
+  import io.joern.c2cpg.parser.CdtParser.*
 
   private val headerFileFinder = new HeaderFileFinder(config.inputPath)
   private val parserConfig     = ParserConfig.fromConfig(config)
