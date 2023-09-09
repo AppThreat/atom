@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration status="ERROR">
     <Appenders>
         <Console name="Console" target="SYSTEM_ERR">
             <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} %p %c{0}: %msg%n"/>
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="io.shiftleft.overflowdb" level="warn" />
+        <Logger name="io.shiftleft.overflowdb" level="ERROR" />
         <Root level="ERROR">
             <AppenderRef ref="Console" />
         </Root>
