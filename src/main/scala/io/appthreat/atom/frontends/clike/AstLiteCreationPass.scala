@@ -1,19 +1,18 @@
-package io.appthreat.atom.frontends
+package io.appthreat.atom.frontends.clike
 
+import io.appthreat.atom.passes.SafeConcurrentCpgPass
 import io.joern.c2cpg.Config
 import io.joern.c2cpg.astcreation.AstCreator
 import io.joern.c2cpg.parser.FileDefaults
-import io.joern.c2cpg.utils.TimeUtils
-import io.shiftleft.codepropertygraph.Cpg
-import io.shiftleft.passes.ConcurrentWriterCpgPass
 import io.joern.x2cpg.SourceFiles
+import io.shiftleft.codepropertygraph.Cpg
 
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import scala.util.matching.Regex
 
-class AstCreationPass(cpg: Cpg, config: Config) extends ConcurrentWriterCpgPass[String](cpg) {
+class AstLiteCreationPass(cpg: Cpg, config: Config) extends SafeConcurrentCpgPass[String](cpg) {
 
   private val file2OffsetTable: ConcurrentHashMap[String, Array[Int]] = new ConcurrentHashMap()
   private val parser: CdtParser                                       = new CdtParser(config)

@@ -1,13 +1,12 @@
 package io.appthreat.atom
 
 import better.files.File
-import io.appthreat.atom.Atom.loadFromOdb
 import io.appthreat.atom.dataflows.{DataFlowGraph, OssDataFlow, OssDataFlowOptions}
-import io.appthreat.atom.parsedeps.{AtomSlice, parseDependencies}
+import io.appthreat.atom.parsedeps.parseDependencies
 import io.appthreat.atom.passes.{SafeJSTypeRecoveryPass, TypeHintPass}
 import io.appthreat.atom.slicing.*
-import io.appthreat.atom.frontends.{C2Atom, H2Atom}
-import io.joern.c2cpg.{C2Cpg, Config as CConfig}
+import io.appthreat.atom.frontends.clike.{C2Atom, H2Atom}
+import io.joern.c2cpg.Config as CConfig
 import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.joern.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
 import io.joern.jssrc2cpg.passes.{ConstClosurePass, ImportResolverPass, JavaScriptInheritanceNamePass}
@@ -23,16 +22,14 @@ import io.joern.pysrc2cpg.{
   Py2CpgOnFileSystemConfig as PyConfig
 }
 import io.joern.x2cpg.passes.base.AstLinkerPass
-import io.joern.x2cpg.passes.callgraph.NaiveCallLinker
 import io.joern.x2cpg.passes.frontend.XTypeRecoveryConfig
 import io.shiftleft.codepropertygraph.Cpg
-import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
 import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 import scopt.OptionParser
 
 import scala.language.postfixOps
-import scala.util.{Failure, Properties, Success, Using}
+import scala.util.{Failure, Properties, Success}
 
 object Atom {
 
@@ -67,10 +64,36 @@ object Atom {
     "/usr/share",
     "/usr/lib64/R",
     "/usr/lib/R",
-    "/opt/ebuilds"
+    "/opt/ebuilds",
+    "/opt/homebrew/include",
+    "/home/linuxbrew/.linuxbrew/include"
   )
   Option(System.getenv("C_INCLUDE_PATH")).flatMap { ipath =>
     C2CPG_INCLUDE_PATHS ++ ipath.split(java.io.File.pathSeparator)
+    None
+  }
+  Option(System.getenv("%ProgramFiles(x86)%")).flatMap { ipath =>
+    C2CPG_INCLUDE_PATHS += ipath
+    None
+  }
+  Option(System.getenv("%CommonProgramFiles(x86)%")).flatMap { ipath =>
+    C2CPG_INCLUDE_PATHS += ipath
+    None
+  }
+  Option(System.getenv("%ProgramW6432%")).flatMap { ipath =>
+    C2CPG_INCLUDE_PATHS += ipath
+    None
+  }
+  Option(System.getenv("%CommonProgramW6432%")).flatMap { ipath =>
+    C2CPG_INCLUDE_PATHS += ipath
+    None
+  }
+  Option(System.getenv("%ProgramFiles%")).flatMap { ipath =>
+    C2CPG_INCLUDE_PATHS += ipath
+    None
+  }
+  Option(System.getenv("%CommonProgramFiles%")).flatMap { ipath =>
+    C2CPG_INCLUDE_PATHS += ipath
     None
   }
   private val optionParser: OptionParser[BaseConfig] = new scopt.OptionParser[BaseConfig]("atom") {
@@ -199,7 +222,6 @@ object Atom {
   private def run(config: BaseConfig, language: String): Either[String, String] = {
     for {
       _ <- generateAtom(config, language)
-      _ <- generateSlice(config)
     } yield newAtomCreatedString(config match
       case config: AtomConfig => config.outputAtomFile.pathAsString
       case _                  => DEFAULT_ATOM_OUT_FILE
@@ -211,7 +233,7 @@ object Atom {
     s"Atom created successfully at $absolutePath\n"
   }
 
-  private def generateSlice(config: BaseConfig): Either[String, String] = {
+  private def generateSlice(config: BaseConfig, cpg: Cpg): Either[String, String] = {
     def sliceCpg(cpg: Cpg): Option[ProgramSlice] =
       config match {
         case x: AtomDataFlowConfig =>
@@ -224,22 +246,17 @@ object Atom {
           None
       }
 
-    val outputAtomFile = config match
-      case x: AtomConfig => x.outputAtomFile.pathAsString
-      case _             => DEFAULT_ATOM_OUT_FILE
-
     try {
       migrateAtomConfigToSliceConfig(config) match {
         case _: DataFlowConfig =>
-          val dataFlowSlice =
-            Using.resource(loadFromOdb(outputAtomFile))(sliceCpg).collect { case x: DataFlowSlice => x }
+          val dataFlowSlice = sliceCpg(cpg).collect { case x: DataFlowSlice => x }
           val atomDataFlowSliceJson =
             dataFlowSlice.map(x => AtomDataFlowSlice(x, DataFlowGraph.buildFromSlice(x).paths).toJson)
           saveSlice(config.outputSliceFile, atomDataFlowSliceJson)
         case _: UsagesConfig =>
-          saveSlice(config.outputSliceFile, Using.resource(loadFromOdb(outputAtomFile))(sliceCpg).map(_.toJson))
+          saveSlice(config.outputSliceFile, sliceCpg(cpg).map(_.toJson))
         case x: AtomParseDepsConfig =>
-          Using.resource(loadFromOdb(outputAtomFile))(parseDependencies).map(_.toJson) match {
+          parseDependencies(cpg).map(_.toJson) match {
             case Left(err)    => return Left(err)
             case Right(slice) => saveSlice(x.outputSliceFile, Option(slice))
           }
@@ -267,12 +284,6 @@ object Atom {
     * @param filename
     *   name of the file that stores the CPG
     */
-  private def loadFromOdb(filename: String): Cpg = {
-    val odbConfig = overflowdb.Config.withDefaults().withStorageLocation(filename)
-    val config    = CpgLoaderConfig().withOverflowConfig(odbConfig).doNotCreateIndexesOnLoad
-    io.shiftleft.codepropertygraph.cpgloading.CpgLoader.loadFromOverflowDb(config)
-  }
-
   private def migrateAtomConfigToSliceConfig(x: BaseConfig): BaseConfig =
     (x match {
       case config: AtomDataFlowConfig =>
@@ -304,9 +315,8 @@ object Atom {
       case "H" | "HPP" =>
         new H2Atom()
           .createCpg(
-            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = false)
+            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = true)
               .withLogPreprocessor(false)
-              .withIncludePaths(C2CPG_INCLUDE_PATHS.toSet)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
               .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks).*")
@@ -314,9 +324,8 @@ object Atom {
       case Languages.C | Languages.NEWC | "CPP" | "C++" =>
         new C2Atom()
           .createCpgWithOverlays(
-            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = false)
+            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = true)
               .withLogPreprocessor(false)
-              .withIncludePaths(C2CPG_INCLUDE_PATHS.toSet)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
               .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks).*")
@@ -392,6 +401,8 @@ object Atom {
               .run(new LayerCreatorContext(ag))
           case _ =>
         }
+        println("Slicing the atom. Please wait ...")
+        generateSlice(config, ag)
         ag.close()
         Right("Atom generation successful")
     }
