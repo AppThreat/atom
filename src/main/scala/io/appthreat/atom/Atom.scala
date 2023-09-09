@@ -6,6 +6,7 @@ import io.appthreat.atom.dataflows.{DataFlowGraph, OssDataFlow, OssDataFlowOptio
 import io.appthreat.atom.parsedeps.{AtomSlice, parseDependencies}
 import io.appthreat.atom.passes.{SafeJSTypeRecoveryPass, TypeHintPass}
 import io.appthreat.atom.slicing.*
+import io.appthreat.atom.frontends.C2Atom
 import io.joern.c2cpg.{C2Cpg, Config as CConfig}
 import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.joern.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
@@ -300,10 +301,21 @@ object Atom {
       case _             => DEFAULT_ATOM_OUT_FILE
 
     (language match {
+      case "H" | "HPP" =>
+        new C2Atom()
+          .createCpg(
+            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = false)
+              .withLogPreprocessor(false)
+              .withIncludePaths(C2CPG_INCLUDE_PATHS.toSet)
+              .withInputPath(config.inputPath.pathAsString)
+              .withOutputPath(outputAtomFile)
+              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks).*")
+          )
       case Languages.C | Languages.NEWC | "CPP" | "C++" =>
         new C2Cpg()
           .createCpgWithOverlays(
-            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = true)
+            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = false)
+              .withLogPreprocessor(false)
               .withIncludePaths(C2CPG_INCLUDE_PATHS.toSet)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)

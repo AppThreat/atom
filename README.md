@@ -1,6 +1,6 @@
 # Atom (⚛)
 
-Atom is a novel intermediate representation for applications and a standalone tool powered by the [joern](https://joern.io) library. The intermediate representation is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md). 
+Atom is a novel intermediate representation for applications and a standalone tool powered by the [joern](https://joern.io) library. The intermediate representation is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md).
 
 Our vision is to make atom useful for a number of use cases such as:
 
@@ -94,6 +94,7 @@ Learn more about [slices](./specification/docs/slices.md) or view some [samples]
 ## Languages supported
 
 - C/C++ (Requires Java 17 or above)
+- H (C/C++ Header files alone)
 - Java (Requires compilation)
 - Jar
 - Android APK (Requires Android SDK. Set the environment variable `ANDROID_HOME`)

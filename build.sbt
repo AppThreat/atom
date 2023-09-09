@@ -3,11 +3,11 @@ ThisBuild / organization := "io.appthreat"
 ThisBuild / version      := "1.0.0"
 ThisBuild / scalaVersion := "3.3.0"
 
-val joernVersion      = "2.0.74"
+val joernVersion      = "2.0.81"
 
 lazy val atom = Projects.atom
 
-val astGenVersion = "3.4.0"
+val astGenVersion = "3.5.0"
 
 libraryDependencies ++= Seq(
   "com.github.pathikrit"    %% "better-files"      % "3.9.2",
