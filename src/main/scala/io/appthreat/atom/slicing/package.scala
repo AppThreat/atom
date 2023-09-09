@@ -3,11 +3,12 @@ package io.appthreat.atom
 import better.files.File
 import io.circe.{Decoder, Encoder, HCursor, Json}
 import io.shiftleft.codepropertygraph.generated.PropertyNames
-import io.shiftleft.codepropertygraph.generated.nodes._
-import io.shiftleft.semanticcpg.language._
+import io.shiftleft.codepropertygraph.generated.nodes.*
+import io.shiftleft.semanticcpg.language.*
 import overflowdb.PropertyKey
 
 import java.util.regex.Pattern
+import scala.collection.concurrent.TrieMap
 
 package object slicing {
 
@@ -400,6 +401,7 @@ package object slicing {
   object DefComponent {
 
     val unresolvedCallPattern: Pattern = Pattern.compile("^(<unknown|ANY).*$")
+    private val unknownMethodDeclCache = new TrieMap[String, DefComponent]()
 
     /** Attempts to generate an [[DefComponent]] from the given CPG node.
       *
@@ -477,7 +479,12 @@ package object slicing {
             label = annotation.label
           )
         case x: AstNode =>
-          UnknownDef(x.code, typeFullName, lineNumber, columnNumber)
+          var methodDecl = x.code.takeWhile(_ != ')')
+          if (methodDecl.contains("(") && !methodDecl.endsWith(")")) methodDecl = methodDecl + ")"
+          unknownMethodDeclCache.getOrElseUpdate(
+            s"${methodDecl}|${lineNumber}|${columnNumber}",
+            UnknownDef(methodDecl, typeFullName, lineNumber, columnNumber)
+          )
       }
     }
   }

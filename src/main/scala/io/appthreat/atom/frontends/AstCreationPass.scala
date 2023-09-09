@@ -37,17 +37,17 @@ class AstCreationPass(cpg: Cpg, config: Config) extends ConcurrentWriterCpgPass[
   override def runOnPart(diffGraph: DiffGraphBuilder, filename: String): Unit = {
     val path    = Paths.get(filename).toAbsolutePath
     val relPath = SourceFiles.toRelativePath(path.toString, config.inputPath)
-    val (_, _) = TimeUtils.time {
+    try {
       val parseResult = parser.parse(path)
       parseResult match {
         case Some(translationUnit) =>
           val localDiff =
             new AstCreator(relPath, config, translationUnit, file2OffsetTable)(config.schemaValidation).createAst()
           diffGraph.absorb(localDiff)
-          true
         case None =>
-          false
       }
+    } catch {
+      case e: Throwable =>
     }
   }
 
