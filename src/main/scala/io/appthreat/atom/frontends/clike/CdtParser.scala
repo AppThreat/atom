@@ -31,7 +31,7 @@ object CdtParser {
 class CdtParser(config: Config) {
 
   import io.joern.c2cpg.parser.CdtParser.*
-  val exec: ExecutorService    = Executors.newCachedThreadPool()
+
   private val headerFileFinder = new HeaderFileFinder(config.inputPath)
   private val parserConfig     = ParserConfig.fromConfig(config)
   private val definedSymbols   = parserConfig.definedSymbols.asJava
@@ -59,49 +59,40 @@ class CdtParser(config: Config) {
     else null
   }
 
-  private class ParseTask(file: Path) extends Callable[ParseResult] {
-
-    def call(): ParseResult = {
-      println(file)
-      val realPath = File(file)
-      if (realPath.isRegularFile) { // handling potentially broken symlinks
-        try {
-          val fileContent         = readFileAsFileContent(realPath.path)
-          val fileContentProvider = new CustomFileContentProvider(headerFileFinder)
-          val lang                = createParseLanguage(realPath.path)
-          val scannerInfo         = createScannerInfo(realPath.path)
-          val translationUnit =
-            lang.getASTTranslationUnit(fileContent, scannerInfo, fileContentProvider, EmptyCIndex.INSTANCE, opts, log)
-          ParseResult(Option(translationUnit))
-        } catch {
-          case u: UnsupportedClassVersionError =>
-            System.exit(1)
-            ParseResult(None, failure = Option(u)) // return value to make the compiler happy
-          case e: Throwable =>
-            ParseResult(None, failure = Option(e))
-        }
-      } else {
-        ParseResult(
-          None,
-          failure = Option(new NoSuchFileException(s"File '$realPath' does not exist. Check for broken symlinks!"))
-        )
+  private def parseInternal(file: Path): ParseResult = {
+    val realPath = File(file)
+    if (realPath.isRegularFile) { // handling potentially broken symlinks
+      try {
+        val fileContent         = readFileAsFileContent(realPath.path)
+        val fileContentProvider = new CustomFileContentProvider(headerFileFinder)
+        val lang                = createParseLanguage(realPath.path)
+        val scannerInfo         = createScannerInfo(realPath.path)
+        val translationUnit =
+          lang.getASTTranslationUnit(fileContent, scannerInfo, fileContentProvider, EmptyCIndex.INSTANCE, opts, log)
+        ParseResult(Option(translationUnit))
+      } catch {
+        case u: UnsupportedClassVersionError =>
+          System.exit(1)
+          ParseResult(None, failure = Option(u)) // return value to make the compiler happy
+        case e: Throwable =>
+          ParseResult(None, failure = Option(e))
       }
+    } else {
+      ParseResult(
+        None,
+        failure = Option(new NoSuchFileException(s"File '$realPath' does not exist. Check for broken symlinks!"))
+      )
     }
   }
 
   def parse(file: Path): Option[IASTTranslationUnit] = {
-    val callables = new util.ArrayList[Callable[ParseResult]]();
-    callables.add(new ParseTask(file));
-    val futures = exec.invokeAll(callables, 10, TimeUnit.SECONDS)
-    if futures.isEmpty then None
-    else
-      val parseResult = futures.get(0)
-      parseResult match {
-        case ParseResult(Some(t), _) =>
-          Option(t)
-        case ParseResult(_, _) =>
-          None
-      }
+    val parseResult = parseInternal(file)
+    parseResult match {
+      case ParseResult(Some(t), _) =>
+        Option(t)
+      case ParseResult(_, _) =>
+        None
+    }
   }
 
 }
