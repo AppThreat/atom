@@ -92,10 +92,10 @@ object UsageSlicing {
         code = im.code,
         fullName = im.importedEntity.get,
         signature = im.importedAs.get,
-        fileName = im.file.head.name,
+        fileName = if (im.file.nonEmpty) im.file.head.name else "",
         slices = Seq[ObjectUsageSlice]().toSet,
-        lineNumber = im.file.head.lineNumber.map(_.intValue()),
-        columnNumber = im.file.head.columnNumber.map(_.intValue())
+        lineNumber = if (im.file.nonEmpty) im.file.head.lineNumber.map(_.intValue()) else None,
+        columnNumber = if (im.file.nonEmpty) im.file.head.columnNumber.map(_.intValue()) else None
       )
     })
   }
