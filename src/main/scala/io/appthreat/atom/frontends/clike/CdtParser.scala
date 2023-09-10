@@ -7,11 +7,10 @@ import io.joern.c2cpg.parser.{CustomFileContentProvider, FileDefaults, HeaderFil
 import io.shiftleft.utils.IOUtils
 import org.eclipse.cdt.core.dom.ast.gnu.c.GCCLanguage
 import org.eclipse.cdt.core.dom.ast.gnu.cpp.GPPLanguage
-import org.eclipse.cdt.core.dom.ast.{IASTPreprocessorStatement, IASTTranslationUnit}
+import org.eclipse.cdt.core.dom.ast.IASTTranslationUnit
 import org.eclipse.cdt.core.model.ILanguage
 import org.eclipse.cdt.core.parser.{DefaultLogService, FileContent, ScannerInfo}
-import org.eclipse.cdt.internal.core.dom.parser.cpp.semantics.CPPVisitor
-import org.slf4j.LoggerFactory
+import org.eclipse.cdt.internal.core.index.EmptyCIndex
 
 import java.nio.file.{NoSuchFileException, Path}
 import scala.jdk.CollectionConverters.*
@@ -37,8 +36,9 @@ class CdtParser(config: Config) {
   private val includePaths     = parserConfig.userIncludePaths
   private val log              = new DefaultLogService
 
-  // enables parsing of code behind disabled preprocessor defines:
-  private val opts: Int = ILanguage.OPTION_PARSE_INACTIVE_CODE
+  // enables various options to speed up parsing
+  private val opts: Int =
+    ILanguage.OPTION_SKIP_FUNCTION_BODIES | ILanguage.OPTION_PARSE_INACTIVE_CODE | ILanguage.OPTION_SKIP_TRIVIAL_EXPRESSIONS_IN_AGGREGATE_INITIALIZERS | ILanguage.OPTION_NO_IMAGE_LOCATIONS
 
   private def createParseLanguage(file: Path): ILanguage = {
     if (FileDefaults.isCPPFile(file.toString)) {
@@ -63,7 +63,14 @@ class CdtParser(config: Config) {
         val fileContentProvider = new CustomFileContentProvider(headerFileFinder)
         val lang                = createParseLanguage(realPath.path)
         val scannerInfo         = createScannerInfo(realPath.path)
-        val translationUnit = lang.getASTTranslationUnit(fileContent, scannerInfo, fileContentProvider, null, opts, log)
+        val translationUnit = lang.getASTTranslationUnit(
+          fileContent,
+          scannerInfo,
+          fileContentProvider,
+          EmptyCIndex.INSTANCE,
+          ILanguage.OPTION_NO_IMAGE_LOCATIONS | ILanguage.OPTION_SKIP_FUNCTION_BODIES,
+          log
+        )
         ParseResult(Option(translationUnit))
       } catch {
         case u: UnsupportedClassVersionError =>

@@ -60,7 +60,11 @@ object UsageSlicing {
       .flatMap(TimedGet)
       .groupBy { case (scope, _) => scope }
       .view
-      .filterNot((m, _) => (m.fullName.startsWith("<operator") || m.fullName.startsWith("__builtin")))
+      .filterNot((m, _) =>
+        (m.fullName.startsWith("<operator") || m.fullName.startsWith("__builtin") || m.fullName.startsWith(
+          "<global>"
+        ) || m.fullName.startsWith("<clinit>"))
+      )
       .sortBy(_._1.fullName)
       .map { case (method, slices) =>
         MethodUsageSlice(
@@ -152,7 +156,7 @@ object UsageSlicing {
     }
 
     cpg.typeDecl
-      .filterNot(t => t.isExternal || t.name.matches("(:program|<module>|<init>|<meta>|<body>)"))
+      .filterNot(t => t.isExternal || t.name.matches("(:program|<module>|<init>|<meta>|<body>|<global>|<clinit>)"))
       .map(generateUDT)
       .filter(udt => udt.fields.nonEmpty || udt.procedures.nonEmpty)
       .l
