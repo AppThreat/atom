@@ -60,6 +60,7 @@ class CdtParser(config: Config) {
   }
 
   private def parseInternal(file: Path): ParseResult = {
+    println(file)
     val realPath = File(file)
     if (realPath.isRegularFile) { // handling potentially broken symlinks
       try {
