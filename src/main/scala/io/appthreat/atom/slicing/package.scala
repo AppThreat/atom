@@ -33,6 +33,8 @@ package object slicing {
 
     var methodAnnotationFilter: Option[String] = None
 
+    var includePathsAutoDiscovery: Boolean = false
+
     def withInputPath(x: File): BaseConfig = {
       this.inputPath = x
       this
@@ -68,6 +70,10 @@ package object slicing {
       this
     }
 
+    def withIncludePathsAuto(x: Boolean): BaseConfig = {
+      this.includePathsAutoDiscovery = x
+      this
+    }
   }
 
   case class DefaultSliceConfig() extends BaseConfig

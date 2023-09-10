@@ -30,7 +30,7 @@ npm install @appthreat/atom
 
 ## CLI Usage
 
-```
+```shell
 Usage: atom [parsedeps|data-flow|usages] [options] [input]
 
   input                    source file or directory
@@ -38,7 +38,9 @@ Usage: atom [parsedeps|data-flow|usages] [options] [input]
   --slice-outfile <value>  export intra-procedural slices as json
   -l, --language <value>   source language
   --with-data-deps         generate the atom with data-dependencies - defaults to `false`
-  --file-filter <value>    the name of the source file to generate slices from.
+  --with-auto-include-paths
+                           detect system include paths automatically for c/c++ - defaults to `false`
+  --file-filter <value>    the name of the source file to generate slices from. Uses regex.
   --method-name-filter <value>
                            filters in slices that go through specific methods by names. Uses regex.
   --method-parameter-filter <value>
@@ -87,6 +89,14 @@ atom data-flow -o app.atom --slice-outfile df.json -l java .
 
 ```shell
 atom usages -o app.atom --slice-outfile usages.json -l java .
+```
+
+### Create usages slice for a c project.
+
+By passing `--with-auto-include-paths` system include paths will be automatically detected and searched when processing an include directive. Ignore this argument to improve performance.
+
+```shell
+atom usages -o app.atom --slice-outfile usages.json -l c --with-auto-include-paths .
 ```
 
 Learn more about [slices](./specification/docs/slices.md) or view some [samples](https://github.com/AppThreat/atom-samples)

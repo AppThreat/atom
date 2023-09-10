@@ -31,6 +31,7 @@ class AstLiteCreationPass(cpg: Cpg, config: Config) extends SafeConcurrentCpgPas
         FileDefaults.HEADER_FILE_EXTENSIONS,
         config.withDefaultIgnoredFilesRegex(DefaultIgnoredFolders)
       )
+      .sorted(Ordering[String])
       .toArray
 
   override def runOnPart(diffGraph: DiffGraphBuilder, filename: String): Unit = {

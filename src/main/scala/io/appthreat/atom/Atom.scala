@@ -47,7 +47,8 @@ object Atom {
     if (File(androidHome).isDirectory) File(androidHome).glob("**/android.jar").map(_.pathAsString).toSeq.headOption
     else None
   }
-  private var C2CPG_INCLUDE_PATHS: scala.collection.mutable.Set[String] = scala.collection.mutable.Set(
+  // unused since it slows down the cdt parser
+  private var C2ATOM_INCLUDE_PATHS: scala.collection.mutable.Set[String] = scala.collection.mutable.Set(
     "/usr/include",
     "/usr/local/include",
     "/usr/lib/gcc/x86_64-linux-gnu",
@@ -69,31 +70,31 @@ object Atom {
     "/home/linuxbrew/.linuxbrew/include"
   )
   Option(System.getenv("C_INCLUDE_PATH")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS ++ ipath.split(java.io.File.pathSeparator)
+    C2ATOM_INCLUDE_PATHS ++ ipath.split(java.io.File.pathSeparator)
     None
   }
   Option(System.getenv("%ProgramFiles(x86)%")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS += ipath
+    C2ATOM_INCLUDE_PATHS += ipath
     None
   }
   Option(System.getenv("%CommonProgramFiles(x86)%")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS += ipath
+    C2ATOM_INCLUDE_PATHS += ipath
     None
   }
   Option(System.getenv("%ProgramW6432%")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS += ipath
+    C2ATOM_INCLUDE_PATHS += ipath
     None
   }
   Option(System.getenv("%CommonProgramW6432%")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS += ipath
+    C2ATOM_INCLUDE_PATHS += ipath
     None
   }
   Option(System.getenv("%ProgramFiles%")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS += ipath
+    C2ATOM_INCLUDE_PATHS += ipath
     None
   }
   Option(System.getenv("%CommonProgramFiles%")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS += ipath
+    C2ATOM_INCLUDE_PATHS += ipath
     None
   }
   private val optionParser: OptionParser[BaseConfig] = new scopt.OptionParser[BaseConfig]("atom") {
@@ -130,6 +131,13 @@ object Atom {
       .action((_, c) =>
         c match
           case config: AtomConfig => config.withDataDependencies(true)
+          case _                  => c
+      )
+    opt[Unit]("with-auto-include-paths")
+      .text("detect system include paths automatically for c/c++ - defaults to `false`")
+      .action((_, c) =>
+        c match
+          case config: AtomConfig => config.withIncludePathsAuto(true)
           case _                  => c
       )
     opt[String]("file-filter")
@@ -315,20 +323,28 @@ object Atom {
       case "H" | "HPP" =>
         new H2Atom()
           .createCpg(
-            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = true)
+            CConfig(
+              includeComments = false,
+              logProblems = false,
+              includePathsAutoDiscovery = config.includePathsAutoDiscovery
+            )
               .withLogPreprocessor(false)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
-              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks).*")
+              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks|Documentation).*")
           )
       case Languages.C | Languages.NEWC | "CPP" | "C++" =>
         new C2Atom()
           .createCpgWithOverlays(
-            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = true)
+            CConfig(
+              includeComments = false,
+              logProblems = false,
+              includePathsAutoDiscovery = config.includePathsAutoDiscovery
+            )
               .withLogPreprocessor(false)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
-              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks).*")
+              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks|Documentation).*")
           )
       case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
         new Jimple2Cpg()

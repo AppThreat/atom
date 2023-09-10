@@ -34,6 +34,7 @@ package object atom {
       this.maxNumDef = x
       this
     }
+
   }
 
   case class DefaultAtomConfig() extends AtomConfig
