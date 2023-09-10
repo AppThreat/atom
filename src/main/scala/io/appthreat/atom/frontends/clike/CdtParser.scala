@@ -38,7 +38,7 @@ class CdtParser(config: Config) {
 
   // enables various options to speed up parsing
   private val opts: Int =
-    ILanguage.OPTION_SKIP_FUNCTION_BODIES | ILanguage.OPTION_PARSE_INACTIVE_CODE | ILanguage.OPTION_SKIP_TRIVIAL_EXPRESSIONS_IN_AGGREGATE_INITIALIZERS | ILanguage.OPTION_NO_IMAGE_LOCATIONS
+    ILanguage.OPTION_PARSE_INACTIVE_CODE | ILanguage.OPTION_NO_IMAGE_LOCATIONS
 
   private def createParseLanguage(file: Path) =
     if (FileDefaults.isCPPFile(file.toString)) GPPLanguage.getDefault else GCCLanguage.getDefault
