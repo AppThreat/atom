@@ -41,8 +41,12 @@ object UsageSlicing {
 
     def typeMap      = TrieMap.from(cpg.typeDecl.map(f => (f.name, f.fullName)).toMap)
     val slices       = usageSlices(cpg, () => getDeclarations, typeMap)
+    val language     = cpg.metaData.language.headOption
     val userDefTypes = userDefinedTypes(cpg)
-    ProgramUsageSlice(slices, userDefTypes)
+    if (language.get == Languages.NEWC || language.get == Languages.C)
+      ProgramUsageSlice(slices ++ importsAsSlices(cpg), userDefTypes)
+    else
+      ProgramUsageSlice(slices, userDefTypes)
   }
 
   import io.shiftleft.semanticcpg.codedumper.CodeDumper.dump
@@ -61,9 +65,9 @@ object UsageSlicing {
       .groupBy { case (scope, _) => scope }
       .view
       .filterNot((m, _) =>
-        (m.fullName.startsWith("<operator") || m.fullName.startsWith("__builtin") || m.fullName.startsWith(
+        (m.fullName.startsWith("<operator") || m.fullName.startsWith("__builtin") || m.name.startsWith(
           "<global>"
-        ) || m.fullName.startsWith("<clinit>"))
+        ) || m.name.startsWith("<clinit>"))
       )
       .sortBy(_._1.fullName)
       .map { case (method, slices) =>
@@ -80,6 +84,20 @@ object UsageSlicing {
         )
       }
       .toList
+  }
+
+  private def importsAsSlices(cpg: Cpg): List[MethodUsageSlice] = {
+    cpg.imports.l.map(im => {
+      MethodUsageSlice(
+        code = im.code,
+        fullName = im.importedEntity.get,
+        signature = im.importedAs.get,
+        fileName = im.file.head.name,
+        slices = Seq[ObjectUsageSlice]().toSet,
+        lineNumber = im.file.head.lineNumber.map(_.intValue()),
+        columnNumber = im.file.head.columnNumber.map(_.intValue())
+      )
+    })
   }
 
   private def TimedGet(dsf: Future[Option[(Method, ObjectUsageSlice)]]) = {
