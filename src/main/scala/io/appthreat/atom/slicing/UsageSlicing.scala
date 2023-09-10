@@ -137,6 +137,7 @@ object UsageSlicing {
         typeDecl.fullName,
         typeDecl.member.map(m => DefComponent.fromNode(m, null)).collectAll[LocalDef].l,
         typeDecl.method
+          .filterNot(m => m.name.startsWith("<clinit>"))
           .map(m =>
             ObservedCall(
               m.name,

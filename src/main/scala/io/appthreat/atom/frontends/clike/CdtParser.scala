@@ -63,14 +63,8 @@ class CdtParser(config: Config) {
         val fileContentProvider = new CustomFileContentProvider(headerFileFinder)
         val lang                = createParseLanguage(realPath.path)
         val scannerInfo         = createScannerInfo(realPath.path)
-        val translationUnit = lang.getASTTranslationUnit(
-          fileContent,
-          scannerInfo,
-          fileContentProvider,
-          EmptyCIndex.INSTANCE,
-          ILanguage.OPTION_NO_IMAGE_LOCATIONS | ILanguage.OPTION_SKIP_FUNCTION_BODIES,
-          log
-        )
+        val translationUnit =
+          lang.getASTTranslationUnit(fileContent, scannerInfo, fileContentProvider, EmptyCIndex.INSTANCE, opts, log)
         ParseResult(Option(translationUnit))
       } catch {
         case u: UnsupportedClassVersionError =>
