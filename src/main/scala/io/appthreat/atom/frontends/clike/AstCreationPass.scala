@@ -28,9 +28,17 @@ class AstCreationPass(cpg: Cpg, config: Config) extends SafeConcurrentCpgPass[St
     SourceFiles
       .determine(
         config.inputPath,
-        FileDefaults.SOURCE_FILE_EXTENSIONS ++ FileDefaults.HEADER_FILE_EXTENSIONS,
+        FileDefaults.HEADER_FILE_EXTENSIONS,
         config.withDefaultIgnoredFilesRegex(DefaultIgnoredFolders)
       )
+      .sorted(Ordering[String])
+      .toArray ++ SourceFiles
+      .determine(
+        config.inputPath,
+        FileDefaults.SOURCE_FILE_EXTENSIONS,
+        config.withDefaultIgnoredFilesRegex(DefaultIgnoredFolders)
+      )
+      .sorted(Ordering[String])
       .toArray
 
   override def runOnPart(diffGraph: DiffGraphBuilder, filename: String): Unit = {

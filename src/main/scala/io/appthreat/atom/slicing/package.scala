@@ -481,8 +481,8 @@ package object slicing {
         case x: AstNode =>
           var methodDecl = x.code.takeWhile(_ != ')')
           if (methodDecl.contains("(") && !methodDecl.endsWith(")")) methodDecl = methodDecl + ")"
-          if ((methodDecl.contains("\\n") || methodDecl.contains("  ")) && methodDecl.contains("("))
-            methodDecl = methodDecl.takeWhile(_ != '(')
+          if ((methodDecl.contains("\n") || methodDecl.contains("  ")) && methodDecl.contains("("))
+            methodDecl = methodDecl.takeWhile(_ != '(').replace("\n", " ").replace("\t", " ")
           unknownMethodDeclCache.getOrElseUpdate(
             s"${methodDecl}|${lineNumber}|${columnNumber}",
             UnknownDef(methodDecl, typeFullName, lineNumber, columnNumber)
