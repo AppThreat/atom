@@ -47,7 +47,9 @@ object Atom {
     if (File(androidHome).isDirectory) File(androidHome).glob("**/android.jar").map(_.pathAsString).toSeq.headOption
     else None
   }
-  private var C2CPG_INCLUDE_PATHS: scala.collection.mutable.Set[String] = scala.collection.mutable.Set(
+
+  // unused since it slows down the cdt parser
+  private var C2ATOM_INCLUDE_PATHS: scala.collection.mutable.Set[String] = scala.collection.mutable.Set(
     "/usr/include",
     "/usr/local/include",
     "/usr/lib/gcc/x86_64-linux-gnu",
@@ -69,31 +71,31 @@ object Atom {
     "/home/linuxbrew/.linuxbrew/include"
   )
   Option(System.getenv("C_INCLUDE_PATH")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS ++ ipath.split(java.io.File.pathSeparator)
+    C2ATOM_INCLUDE_PATHS ++ ipath.split(java.io.File.pathSeparator)
     None
   }
   Option(System.getenv("%ProgramFiles(x86)%")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS += ipath
+    C2ATOM_INCLUDE_PATHS += ipath
     None
   }
   Option(System.getenv("%CommonProgramFiles(x86)%")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS += ipath
+    C2ATOM_INCLUDE_PATHS += ipath
     None
   }
   Option(System.getenv("%ProgramW6432%")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS += ipath
+    C2ATOM_INCLUDE_PATHS += ipath
     None
   }
   Option(System.getenv("%CommonProgramW6432%")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS += ipath
+    C2ATOM_INCLUDE_PATHS += ipath
     None
   }
   Option(System.getenv("%ProgramFiles%")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS += ipath
+    C2ATOM_INCLUDE_PATHS += ipath
     None
   }
   Option(System.getenv("%CommonProgramFiles%")).flatMap { ipath =>
-    C2CPG_INCLUDE_PATHS += ipath
+    C2ATOM_INCLUDE_PATHS += ipath
     None
   }
   private val optionParser: OptionParser[BaseConfig] = new scopt.OptionParser[BaseConfig]("atom") {
@@ -113,7 +115,7 @@ object Atom {
           case config: AtomConfig => config.withOutputAtomFile(File(x))
           case _                  => c
       )
-    opt[String]("slice-outfile")
+    opt[String]('s', "slice-outfile")
       .text("export intra-procedural slices as json")
       .action((x, c) => c.withOutputSliceFile(File(x)))
     opt[String]('l', "language")
@@ -319,7 +321,7 @@ object Atom {
               .withLogPreprocessor(false)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
-              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks).*")
+              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks|Documentation).*")
           )
       case Languages.C | Languages.NEWC | "CPP" | "C++" =>
         new C2Atom()
@@ -328,7 +330,7 @@ object Atom {
               .withLogPreprocessor(false)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
-              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks).*")
+              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks|Documentation).*")
           )
       case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
         new Jimple2Cpg()

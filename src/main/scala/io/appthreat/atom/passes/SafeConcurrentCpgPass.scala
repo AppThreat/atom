@@ -13,8 +13,8 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 /** SafeConcurrentCpgPass is a modified version of ConcurrentWriterCpgPass
   */
 object SafeConcurrentCpgPass {
-  private val writerQueueCapacity   = 2
   private val producerQueueCapacity = Runtime.getRuntime.availableProcessors() / 2
+  private val writerQueueCapacity   = producerQueueCapacity - 1
 }
 abstract class SafeConcurrentCpgPass[T <: AnyRef](
   cpg: Cpg,

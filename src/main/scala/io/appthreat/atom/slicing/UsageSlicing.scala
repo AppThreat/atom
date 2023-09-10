@@ -61,9 +61,9 @@ object UsageSlicing {
       .groupBy { case (scope, _) => scope }
       .view
       .filterNot((m, _) =>
-        (m.fullName.startsWith("<operator") || m.fullName.startsWith("__builtin") || m.fullName.startsWith(
+        (m.fullName.startsWith("<operator") || m.fullName.startsWith("__builtin") || m.name.startsWith(
           "<global>"
-        ) || m.fullName.startsWith("<clinit>"))
+        ) || m.name.startsWith("<clinit>"))
       )
       .sortBy(_._1.fullName)
       .map { case (method, slices) =>
