@@ -89,7 +89,7 @@ object UsageSlicing {
   private def importsAsSlices(cpg: Cpg): List[MethodUsageSlice] = {
     cpg.imports.l.map(im => {
       MethodUsageSlice(
-        code = im.code,
+        code = if (im.code.nonEmpty) im.code.replaceAll("\\s*", "") else "",
         fullName = im.importedEntity.get,
         signature = im.importedAs.get,
         fileName = if (im.file.nonEmpty) im.file.head.name else "",
