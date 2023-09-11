@@ -482,7 +482,13 @@ package object slicing {
           var methodDecl = x.code.takeWhile(_ != ')')
           if (methodDecl.contains("(") && !methodDecl.endsWith(")")) methodDecl = methodDecl + ")"
           if ((methodDecl.contains("\n") || methodDecl.contains("  ")) && methodDecl.contains("("))
-            methodDecl = methodDecl.takeWhile(_ != '(').replace("\n", " ").replace("\t", " ")
+            methodDecl = methodDecl.takeWhile(_ != '(')
+          methodDecl = methodDecl
+            .replaceAll("\n", "")
+            .replaceAll("\t", " ")
+            .replaceAll("\\n", "")
+            .replaceAll("\\t\\t", " ")
+            .replaceAll("\\s+", " ")
           unknownMethodDeclCache.getOrElseUpdate(
             s"${methodDecl}|${lineNumber}|${columnNumber}",
             UnknownDef(methodDecl, typeFullName, lineNumber, columnNumber)
