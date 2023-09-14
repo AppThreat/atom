@@ -1,8 +1,8 @@
 package io.appthreat.atom.dataflows
 
 import io.appthreat.atom.passes.DataDepsPass
-import io.joern.dataflowengineoss.DefaultSemantics
-import io.joern.dataflowengineoss.semanticsloader.{FlowSemantic, Semantics}
+import io.appthreat.dataflowengineoss.DefaultSemantics
+import io.appthreat.dataflowengineoss.semanticsloader.{FlowSemantic, Semantics}
 import io.shiftleft.semanticcpg.layers.{LayerCreator, LayerCreatorContext, LayerCreatorOptions}
 
 object OssDataFlow {

@@ -1,7 +1,7 @@
 package io.appthreat.atom
 
 import io.appthreat.atom.parsedeps.{ModuleWithVersion, PythonDependencyParser}
-import io.joern.pysrc2cpg.PySrc2CpgFixture
+import io.appthreat.pysrc2cpg.PySrc2CpgFixture
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

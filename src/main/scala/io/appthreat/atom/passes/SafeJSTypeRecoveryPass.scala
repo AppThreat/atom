@@ -1,9 +1,9 @@
 package io.appthreat.atom.passes
 
-import io.joern.jssrc2cpg.passes.{Defines, GlobalBuiltins}
-import io.joern.x2cpg.Defines.ConstructorMethodName
-import io.joern.x2cpg.passes.frontend.*
-import io.joern.x2cpg.Defines as XDefines
+import io.appthreat.jssrc2cpg.passes.{Defines, GlobalBuiltins}
+import io.appthreat.x2cpg.Defines.ConstructorMethodName
+import io.appthreat.x2cpg.passes.frontend.*
+import io.appthreat.x2cpg.Defines as XDefines
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.codepropertygraph.generated.{Operators, PropertyNames}

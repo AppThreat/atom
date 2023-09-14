@@ -27,7 +27,7 @@ jobs:
         java-version: '19'
     - name: Release
       run: |
-        sbt scalafmtCheck stage createDistribution
+        sbt scalafmtCheck stage assembly createDistribution
         sha512sum target/atom.zip > target/atom.zip.sha512
         npm config set //npm.pkg.github.com/:_authToken=$GITHUB_TOKEN
         npm config set //registry.npmjs.org/:_authToken=$NPMJS_AUTH_TOKEN

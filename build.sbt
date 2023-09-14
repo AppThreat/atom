@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
 ThisBuild / version      := "1.0.0"
-ThisBuild / scalaVersion := "3.3.0"
+ThisBuild / scalaVersion := "3.3.1"
 
-val joernVersion      = "2.0.81"
+val chenVersion      = "0.0.3"
 
 lazy val atom = Projects.atom
 
@@ -12,79 +12,40 @@ val astGenVersion = "3.5.0"
 libraryDependencies ++= Seq(
   "com.github.pathikrit"    %% "better-files"      % "3.9.2",
   "com.github.scopt"        %% "scopt"             % "4.1.0",
-  "org.apache.logging.log4j" % "log4j-core"        % "2.19.0" % Optional,
-  "org.apache.logging.log4j" % "log4j-slf4j2-impl" % "2.19.0" % Optional,
-  "io.joern"                %% "c2cpg"             % Versions.joern excludeAll (
+  "org.apache.logging.log4j" % "log4j-core"        % "2.20.0" % Optional,
+  "org.apache.logging.log4j" % "log4j-slf4j2-impl" % "2.20.0" % Optional,
+  "io.appthreat"                %% "c2cpg"             % Versions.chen excludeAll (
     ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface.text")
   ),
-  "io.joern"      %% "dataflowengineoss" % Versions.joern,
-  "io.joern"      %% "pysrc2cpg"         % Versions.joern,
-  "io.joern"      %% "javasrc2cpg"       % Versions.joern excludeAll (
-    ExclusionRule(organization = "org.gradle", name = "gradle-tooling-api"),
-  ),
-  "io.joern"      %% "jssrc2cpg"         % Versions.joern,
-  "io.joern"      %% "jimple2cpg"        % Versions.joern,
-  "io.joern"      %% "semanticcpg"       % Versions.joern % Test classifier "tests",
-  "io.joern"      %% "x2cpg"             % Versions.joern % Test classifier "tests",
-  "io.joern"      %% "pysrc2cpg"         % Versions.joern % Test classifier "tests",
+  "io.appthreat"      %% "dataflowengineoss" % Versions.chen,
+  "io.appthreat"      %% "pysrc2cpg"         % Versions.chen,
+  "io.appthreat"      %% "javasrc2cpg"       % Versions.chen,
+  "io.appthreat"      %% "jssrc2cpg"         % Versions.chen,
+  "io.appthreat"      %% "jimple2cpg"        % Versions.chen,
+  "io.appthreat"      %% "semanticcpg"       % Versions.chen % Test classifier "tests",
+  "io.appthreat"      %% "x2cpg"             % Versions.chen % Test classifier "tests",
+  "io.appthreat"      %% "pysrc2cpg"         % Versions.chen % Test classifier "tests",
   "org.scalatest" %% "scalatest"         % "3.2.15"       % Test
 )
 
 Compile / doc / scalacOptions ++= Seq("-doc-title", "atom apidocs", "-doc-version", version.value)
 
-scalacOptions ++= Seq() ++ (
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((3, _)) => Seq()
-    case _ =>
-      Seq(
-        "-deprecation", // Emit warning and location for usages of deprecated APIs.
-        "-encoding",
-        "utf-8",         // Specify character encoding used by source files.
-        "-explaintypes", // Explain type errors in more detail.
-        "-feature",      // Emit warning and location for usages of features that should be imported explicitly.
-        "-language:existentials",        // Existential types (besides wildcard types) can be written and inferred
-        "-language:experimental.macros", // Allow macro definition (besides implementation and application)
-        "-language:higherKinds",         // Allow higher-kinded types
-        "-language:implicitConversions", // Allow definition of implicit functions called views
-        "-unchecked",                    // Enable additional warnings where generated code depends on assumptions.
-        "-Xcheckinit",                   // Wrap field accessors to throw an exception on uninitialized access.
-        // "-Xfatal-warnings",              // Fail the compilation if there are any warnings.
-        "-Xlint:adapted-args",           // Warn if an argument list is modified to match the receiver.
-        "-Xlint:constant",               // Evaluation of a constant arithmetic expression results in an error.
-        "-Xlint:delayedinit-select",     // Selecting member of DelayedInit.
-        "-Xlint:doc-detached",           // A Scaladoc comment appears to be detached from its element.
-        "-Xlint:inaccessible",           // Warn about inaccessible types in method signatures.
-        "-Xlint:infer-any",              // Warn when a type argument is inferred to be `Any`.
-        "-Xlint:missing-interpolator",   // A string literal appears to be missing an interpolator id.
-        "-Xlint:option-implicit",        // Option.apply used implicit view.
-        "-Xlint:package-object-classes", // Class or object defined in package object.
-        "-Xlint:poly-implicit-overload", // Parameterized overloaded implicit methods are not visible as view bounds.
-        "-Xlint:private-shadow",         // A private field (or class parameter) shadows a superclass field.
-        "-Xlint:stars-align",            // Pattern sequence wildcard must align with sequence component.
-        "-Xlint:type-parameter-shadow",  // A local type parameter shadows a type already in scope.
-        "-Ywarn-dead-code",              // Warn when dead code is identified.
-        "-Ywarn-extra-implicit",         // Warn when more than one implicit parameter section is defined.
-        "-Xlint:nullary-unit",           // Warn when nullary methods return Unit.
-        "-Ywarn-numeric-widen",          // Warn when numerics are widened.
-        "-Ywarn-unused:implicits",       // Warn if an implicit parameter is unused.
-        "-Ywarn-unused:imports",         // Warn if an import selector is not referenced.
-        "-Ywarn-unused:locals",          // Warn if a local definition is unused.
-        "-Ywarn-unused:patvars",         // Warn if a variable bound in a pattern is unused.
-        "-Ywarn-unused:privates"         // Warn if a private member is unused.
-      )
-  }
+ThisBuild / scalacOptions ++= Seq(
+  "-deprecation", // Emit warning and location for usages of deprecated APIs.
+  "--release",
+  "17",
 )
 
 ThisBuild / compile / javacOptions ++= Seq(
   "-g", // debug symbols
   "-Xlint",
-  "--release=11"
+  "--release=17"
 ) ++ {
-  // fail early if users with JDK8 try to run this
+  // fail early if users with JDK11 try to run this
   val javaVersion = sys.props("java.specification.version").toFloat
-  assert(javaVersion.toInt >= 11, s"this build requires JDK11+ - you're using $javaVersion")
+  assert(javaVersion.toInt >= 17, s"this build requires JDK11+ - you're using $javaVersion")
   Nil
 }
 
@@ -189,11 +150,33 @@ createDistribution := {
 
 ThisBuild / resolvers ++= Seq(
   Resolver.mavenLocal,
+  Resolver.githubPackages("appthreat/chen"),
   "Sonatype OSS" at "https://oss.sonatype.org/content/repositories/public",
   "Atlassian" at "https://packages.atlassian.com/mvn/maven-atlassian-external",
   "Gradle Releases" at "https://repo.gradle.org/gradle/libs-releases/"
 )
+
+ThisBuild / assemblyMergeStrategy := {
+  case PathList("javax", "servlet", xs @ _*)         => MergeStrategy.first
+  case PathList(ps @ _*) if ps.last endsWith ".html" => MergeStrategy.first
+  case "application.conf"                            => MergeStrategy.concat
+  case x => MergeStrategy.preferProject
+}
+
+ThisBuild / versionScheme := Some("semver-spec")
+
 ThisBuild / Test / fork                := true
 Global / onChangedBuildSource          := ReloadOnSourceChanges
 Compile / doc / sources                := Seq.empty
 Compile / packageDoc / publishArtifact := false
+
+githubOwner := "appthreat"
+githubRepository := "atom"
+githubSuppressPublicationWarning := true
+credentials +=
+  Credentials(
+    "GitHub Package Registry",
+    "maven.pkg.github.com",
+    "appthreat",
+    sys.env.getOrElse("GITHUB_TOKEN", "N/A")
+  )

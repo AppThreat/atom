@@ -1,11 +1,11 @@
 package io.appthreat.atom.frontends.clike
 
-import io.joern.c2cpg.Config
-import io.joern.c2cpg.datastructures.CGlobal
-import io.joern.c2cpg.passes.TypeDeclNodePass
-import io.joern.x2cpg.X2Cpg.withNewEmptyCpg
-import io.joern.x2cpg.X2CpgFrontend
-import io.joern.x2cpg.passes.frontend.{MetaDataPass, TypeNodePass}
+import io.appthreat.c2cpg.Config
+import io.appthreat.c2cpg.datastructures.CGlobal
+import io.appthreat.c2cpg.passes.{AstCreationPass, TypeDeclNodePass}
+import io.appthreat.x2cpg.X2Cpg.withNewEmptyCpg
+import io.appthreat.x2cpg.X2CpgFrontend
+import io.appthreat.x2cpg.passes.frontend.{MetaDataPass, TypeNodePass}
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.Languages
 
@@ -17,8 +17,6 @@ class C2Atom extends X2CpgFrontend[Config] {
     withNewEmptyCpg(config.outputPath, config) { (cpg, config) =>
       new MetaDataPass(cpg, Languages.NEWC, config.inputPath).createAndApply()
       new AstCreationPass(cpg, config).createAndApply()
-      TypeNodePass.withRegisteredTypes(CGlobal.typesSeen(), cpg).createAndApply()
-      new TypeDeclNodePass(cpg)(config.schemaValidation).createAndApply()
     }
   }
 

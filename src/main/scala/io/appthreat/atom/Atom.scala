@@ -5,13 +5,13 @@ import io.appthreat.atom.dataflows.{DataFlowGraph, OssDataFlow, OssDataFlowOptio
 import io.appthreat.atom.parsedeps.parseDependencies
 import io.appthreat.atom.passes.{SafeJSTypeRecoveryPass, TypeHintPass}
 import io.appthreat.atom.slicing.*
-import io.appthreat.atom.frontends.clike.{C2Atom, H2Atom}
-import io.joern.c2cpg.Config as CConfig
-import io.joern.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
-import io.joern.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
-import io.joern.jssrc2cpg.passes.{ConstClosurePass, ImportResolverPass, JavaScriptInheritanceNamePass}
-import io.joern.jssrc2cpg.{JsSrc2Cpg, Config as JSConfig}
-import io.joern.pysrc2cpg.{
+import io.appthreat.atom.frontends.clike.C2Atom
+import io.appthreat.c2cpg.{C2Cpg, Config as CConfig}
+import io.appthreat.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
+import io.appthreat.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
+import io.appthreat.jssrc2cpg.passes.{ConstClosurePass, ImportResolverPass, JavaScriptInheritanceNamePass}
+import io.appthreat.jssrc2cpg.{JsSrc2Cpg, Config as JSConfig}
+import io.appthreat.pysrc2cpg.{
   DynamicTypeHintFullNamePass,
   Py2CpgOnFileSystem,
   PythonInheritanceNamePass,
@@ -21,8 +21,8 @@ import io.joern.pysrc2cpg.{
   ImportsPass as PythonImportsPass,
   Py2CpgOnFileSystemConfig as PyConfig
 }
-import io.joern.x2cpg.passes.base.AstLinkerPass
-import io.joern.x2cpg.passes.frontend.XTypeRecoveryConfig
+import io.appthreat.x2cpg.passes.base.AstLinkerPass
+import io.appthreat.x2cpg.passes.frontend.XTypeRecoveryConfig
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
@@ -315,21 +315,23 @@ object Atom {
 
     (language match {
       case "H" | "HPP" =>
-        new H2Atom()
+        new C2Atom()
           .createCpg(
             CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = true)
               .withLogPreprocessor(false)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
+              .withFunctionBodies(false)
               .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks|Documentation).*")
           )
       case Languages.C | Languages.NEWC | "CPP" | "C++" =>
-        new C2Atom()
+        new C2Cpg()
           .createCpgWithOverlays(
             CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = true)
               .withLogPreprocessor(false)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
+              .withFunctionBodies(true)
               .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks|Documentation).*")
           )
       case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
