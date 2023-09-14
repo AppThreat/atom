@@ -106,6 +106,8 @@ jobs:
           get-command atom
           get-command astgen
           astgen --version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: test
         shell: pwsh
         run: |

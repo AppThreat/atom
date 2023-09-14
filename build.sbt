@@ -1,6 +1,6 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "1.0.0"
+ThisBuild / version      := "1.2.0"
 ThisBuild / scalaVersion := "3.3.1"
 
 val chenVersion      = "0.0.3"
@@ -48,6 +48,8 @@ ThisBuild / compile / javacOptions ++= Seq(
   assert(javaVersion.toInt >= 17, s"this build requires JDK11+ - you're using $javaVersion")
   Nil
 }
+
+Universal / topLevelDirectory := None
 
 Universal / mappings := (Universal / mappings).value.filter {
   case (_, path) => !path.contains("org.scala-lang.scala3-compiler") && !path.contains("io.get-coursier") && !path.contains("com.michaelpollmeier.scala-repl-pp")
