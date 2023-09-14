@@ -1,7 +1,7 @@
 package io.appthreat.atom.passes
 
-import io.joern.dataflowengineoss.passes.reachingdef.*
-import io.joern.dataflowengineoss.semanticsloader.Semantics
+import io.appthreat.dataflowengineoss.passes.reachingdef.*
+import io.appthreat.dataflowengineoss.semanticsloader.Semantics
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*

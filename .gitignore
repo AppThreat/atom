@@ -11,7 +11,7 @@ bin
 project/metals.sbt
 project/project/
 .vscode/
-wrapper/nodejs/plugins/atom-1.0.0/
+wrapper/nodejs/plugins/
 atom.zip
 atom.zip.sha512
 node_modules/

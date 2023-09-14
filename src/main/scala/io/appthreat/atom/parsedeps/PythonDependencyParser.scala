@@ -2,9 +2,9 @@ package io.appthreat.atom.parsedeps
 
 import better.files.File as ScalaFile
 import io.appthreat.atom.dataflows.OssDataFlow
-import io.joern.dataflowengineoss.language.*
-import io.joern.dataflowengineoss.queryengine.{Engine, EngineContext}
-import io.joern.x2cpg.X2Cpg
+import io.appthreat.dataflowengineoss.language.*
+import io.appthreat.dataflowengineoss.queryengine.{Engine, EngineContext}
+import io.appthreat.x2cpg.X2Cpg
 import io.shiftleft.codepropertygraph.generated.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.{Call, CfgNode, Identifier, Literal}
 import io.shiftleft.semanticcpg.language.*

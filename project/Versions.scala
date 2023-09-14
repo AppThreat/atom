@@ -1,5 +1,5 @@
 object Versions {
-  val joern      = parseVersion("joernVersion")
+  val chen      = parseVersion("chenVersion")
   private def parseVersion(key: String): String = {
     val versionRegexp = s""".*val $key += ?"(.*?)"""".r
     val versions: List[String] = scala.io.Source

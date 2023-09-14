@@ -1,6 +1,6 @@
 package io.appthreat.atom.slicing
 
-import io.joern.dataflowengineoss.language.*
+import io.appthreat.dataflowengineoss.language.*
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.codepropertygraph.generated.{EdgeTypes, PropertyNames}
