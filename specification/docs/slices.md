@@ -1,6 +1,6 @@
 # Introduction
 
-Program slicing is a technique to extract parts of a program based on a criterion. Atom (powered by joern library) is a
+Program slicing is a technique to extract parts of a program based on a criterion. Atom (powered by chen library) is a
 static opinionated data flow slicer optimized for application and dependency analysis use cases with up to 100K LOC.
 
 ## Design principles

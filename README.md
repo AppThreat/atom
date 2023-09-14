@@ -1,6 +1,6 @@
 # Atom (⚛)
 
-Atom is a novel intermediate representation for applications and a standalone tool powered by the [joern](https://joern.io) library. The intermediate representation is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md).
+Atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md).
 
 Our vision is to make atom useful for a number of use cases such as:
 
@@ -21,7 +21,7 @@ and more.
 
 ## Installation
 
-Atom comprises a core (standalone joern application developed in scala) with a nodejs wrapper module. It is currently distributed as an npm package.
+Atom comprises a core (standalone chen application developed in scala) with a nodejs wrapper module. It is currently distributed as an npm package.
 
 ```shell
 npm install @appthreat/atom
@@ -145,6 +145,16 @@ Install Java 17 or 19 (Recommended)
 sbt clean stage scalafmt test createDistribution
 cd wrapper/nodejs
 bash build.sh && sudo npm install -g .
+```
+
+## Using atom with chennai
+
+[chennai](https://github.com/AppThreat/chen) is the recommended query interface for working with atom.
+
+```shell
+chennai> importAtom("/home/almalinux/work/sandbox/apollo/app.atom")
+Loading base CPG from: /home/almalinux/workspace/app.atom1/cpg.bin.tmp
+res1: Option[Cpg] = Some(value = Cpg (Graph [122094 nodes]))
 ```
 
 ## Using atom with joern

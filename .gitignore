@@ -2,7 +2,6 @@ cpg.bin
 target/
 .idea/
 /.bsp
-/joern-inst
 /workspace
 .local
 bin
