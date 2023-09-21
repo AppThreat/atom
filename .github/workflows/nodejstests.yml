@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
 jobs:
   nodejs-testing:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
         java-version: ['19']
         node-version: [20.x]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
