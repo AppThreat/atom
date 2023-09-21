@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
 ThisBuild / version      := "1.2.0"
-ThisBuild / scalaVersion := "3.3.1"
+ThisBuild / scalaVersion := "3.3.0"
 
-val chenVersion      = "0.0.3"
+val chenVersion      = "0.0.5"
 
 lazy val atom = Projects.atom
 
@@ -45,7 +45,7 @@ ThisBuild / compile / javacOptions ++= Seq(
 ) ++ {
   // fail early if users with JDK11 try to run this
   val javaVersion = sys.props("java.specification.version").toFloat
-  assert(javaVersion.toInt >= 17, s"this build requires JDK11+ - you're using $javaVersion")
+  assert(javaVersion.toInt >= 17, s"this build requires JDK17+ - you're using $javaVersion")
   Nil
 }
 
