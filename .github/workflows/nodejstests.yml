@@ -44,7 +44,6 @@ jobs:
           java-version: ${{ matrix.java-version }}
       - run: |
           sbt stage assembly createDistribution
-          sha512sum target/atom.zip > target/atom.zip.sha512
           cd wrapper/nodejs
           bash build.sh
           sudo npm install -g .
