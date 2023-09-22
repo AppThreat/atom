@@ -19,8 +19,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '19'
+          distribution: 'zulu'
+          java-version: '21'
       - run: |
           sbt stage astGenDlTask assembly createDistribution publish
           sha512sum target/atom.zip > target/atom.zip.sha512
