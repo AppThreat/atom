@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "1.2.2"
+ThisBuild / version      := "1.2.3"
 ThisBuild / scalaVersion := "3.3.1"
 
-val chenVersion      = "0.0.6"
+val chenVersion      = "0.0.8"
 
 lazy val atom = Projects.atom
 
@@ -55,7 +55,7 @@ Universal / mappings := (Universal / mappings).value.filter {
   case (_, path) => !path.contains("org.scala-lang.scala3-compiler") && !path.contains("io.get-coursier") && !path.contains("com.michaelpollmeier.scala-repl-pp")
 }
 
-enablePlugins(JavaAppPackaging)
+enablePlugins(JavaAppPackaging, ClasspathJarPlugin)
 
 lazy val AstgenWin      = "astgen-win.exe"
 lazy val AstgenLinux    = "astgen-linux"
@@ -138,8 +138,6 @@ packageSummary := "Create atom (⚛) representation"
 packageDescription := """Create atom (⚛) representation for your application, packages and libraries."""
 debianPackageDependencies := Seq("java17-runtime-headless")
 rpmVendor := "AppThreat"
-
-enablePlugins(ClasspathJarPlugin)
 
 lazy val createDistribution = taskKey[File]("Create a complete atom distribution")
 createDistribution := {
