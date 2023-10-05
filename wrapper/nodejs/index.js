@@ -22,7 +22,7 @@ export const JAVA_OPTS = `${
   process.env.JAVA_OPTS || ""
 } -Xmx${freeMemoryGB}G ${JVM_ARGS}`;
 export const APP_MAIN_CLASS = "io.appthreat.atom.Atom";
-export const ATOM_VERSION = "1.2.0";
+export const ATOM_VERSION = "1.2.5";
 export const APP_CLASSPATH = join(
   APP_LIB_DIR,
   `io.appthreat.atom-${ATOM_VERSION}-classpath.jar`
@@ -57,7 +57,7 @@ export const executeAtom = (atomArgs) => {
     .concat([
       "-cp",
       atomLibs.join(delimiter),
-      `-Dlog4j.configurationFile=${LOG4J_CONFIG}`,
+      `-Dlog4j2.configurationFile=${LOG4J_CONFIG}`,
       APP_MAIN_CLASS,
       ...atomArgs
     ]);

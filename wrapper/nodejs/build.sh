@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-rm -rf plugins/atom*
+rm -rf plugins/bin plugins/lib
 if [ -e "../../target/atom.zip" ]; then
     cp -rf ../../target/atom.zip plugins/
     unzip -q plugins/atom.zip -d plugins
