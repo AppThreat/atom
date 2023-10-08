@@ -74,7 +74,7 @@ object DataFlowGraph {
 
   private def DF_EDGES =
     Set(EdgeTypes.REACHING_DEF, EdgeTypes.CALL, EdgeTypes.REF)
-  val exec: ExecutorService = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors / 2)
+  val exec: ExecutorService = Executors.newVirtualThreadPerTaskExecutor()
 
   def buildFromSlice(slice: DataFlowSlice): DataFlowGraph = {
     val dfNodes = slice.nodes

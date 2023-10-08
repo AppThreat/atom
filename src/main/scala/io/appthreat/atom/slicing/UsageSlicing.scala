@@ -19,7 +19,7 @@ import java.util.concurrent.*
 object UsageSlicing {
 
   private val resolver               = NoResolve
-  val exec: ExecutorService          = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors() / 2)
+  val exec: ExecutorService          = Executors.newVirtualThreadPerTaskExecutor()
   private val constructorTypeMatcher = Pattern.compile(".*new (\\w+)\\(.*")
   private val excludeOperatorCalls   = new AtomicBoolean(true)
 

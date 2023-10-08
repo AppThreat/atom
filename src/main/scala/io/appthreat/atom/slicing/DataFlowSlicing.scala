@@ -13,7 +13,7 @@ import scala.collection.concurrent.TrieMap
 object DataFlowSlicing {
 
   implicit val resolver: ICallResolver = NoResolve
-  val exec: ExecutorService            = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors() / 2)
+  val exec: ExecutorService            = Executors.newVirtualThreadPerTaskExecutor()
   private val excludeOperatorCalls     = new AtomicBoolean(true)
   private val nodeCache                = new TrieMap[Long, SliceNode]()
   private var language: Option[String] = _
