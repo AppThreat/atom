@@ -1,6 +1,7 @@
 package io.appthreat.atom
 
 import better.files.File
+import io.appthreat.dataflowengineoss.language.Path
 import io.circe.{Decoder, Encoder, HCursor, Json}
 import io.shiftleft.codepropertygraph.generated.PropertyNames
 import io.shiftleft.codepropertygraph.generated.nodes.*
@@ -9,6 +10,7 @@ import overflowdb.PropertyKey
 
 import java.util.regex.Pattern
 import scala.collection.concurrent.TrieMap
+import scala.collection.mutable.ArrayBuffer
 
 package object slicing {
 
@@ -86,6 +88,8 @@ package object slicing {
     excludeMethodSource: Boolean = true
   ) extends BaseConfig
 
+  case class ReachablesConfig(sourceTag: String, sinkTag: String) extends BaseConfig
+
   /** Adds extensions to modify a method traversal based on config options
     */
   implicit class MethodFilterExt(trav: Iterator[Method]) {
@@ -131,9 +135,17 @@ package object slicing {
     def toJsonPretty: String = this.asJson.spaces2
   }
 
+  case class ReachableSlice(reachables: List[ReachableFlows]) extends ProgramSlice {
+    def toJson: String = this.asJson.toString()
+
+    def toJsonPretty: String = this.asJson.spaces2
+  }
+
   implicit val encodeDataFlowSlice: Encoder[DataFlowSlice] = Encoder.instance { case DataFlowSlice(nodes, edges) =>
     Json.obj("nodes" -> nodes.asJson, "edges" -> edges.asJson)
   }
+
+  case class ReachableFlows(flows: List[SliceNode], purls: Set[String])
 
   case class SliceNode(
     id: Long,
@@ -150,7 +162,8 @@ package object slicing {
     parentPackageName: String = "",
     parentClassName: String = "",
     lineNumber: Option[Integer] = None,
-    columnNumber: Option[Integer] = None
+    columnNumber: Option[Integer] = None,
+    tags: String = ""
   )
 
   implicit val encodeSliceNode: Encoder[SliceNode] = Encoder.instance {
@@ -169,7 +182,8 @@ package object slicing {
           parentPackageName,
           parentClassName,
           lineNumber,
-          columnNumber
+          columnNumber,
+          tags
         ) =>
       Json.obj(
         "id"                    -> id.asJson,
@@ -186,7 +200,8 @@ package object slicing {
         "parentPackageName"     -> parentPackageName.asJson,
         "parentClassName"       -> parentClassName.asJson,
         "lineNumber"            -> lineNumber.asJson,
-        "columnNumber"          -> columnNumber.asJson
+        "columnNumber"          -> columnNumber.asJson,
+        "tags"                  -> tags.asJson
       )
   }
 

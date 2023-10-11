@@ -5,13 +5,12 @@ import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.codepropertygraph.generated.{Languages, Operators, PropertyNames}
 import io.shiftleft.semanticcpg.language.*
 
+import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 import scala.annotation.unused
 import scala.collection.concurrent.TrieMap
 import scala.util.Try
-
-import java.util.concurrent.*
 
 /** A utility for slicing based off of usage references for identifiers and parameters. This is mainly tested around
   * JavaScript CPGs.

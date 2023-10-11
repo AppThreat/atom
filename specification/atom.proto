@@ -924,14 +924,7 @@ message UsageSlice {
     repeated UserDefinedTypes userDefinedTypes = 2;
 }
 
-/**
- * DataFlow slices offers a list of nodes and edges exported from data dependency graph
- *
- * ![Data Flow slices overview](./docs/Data%20Flows.png)
- */
-message DataFlowSlice {
-
-    message Nodes {
+message Nodes {
         // Id of the node
         uint32 id = 1;
         // Label
@@ -960,7 +953,16 @@ message DataFlowSlice {
         uint32 lineNumber = 13;
         // Column number
         uint32 columnNumber = 14;
-    }
+        // Tags. Can contain simple names including package url
+        string tags = 15;
+}
+
+/**
+ * DataFlow slices offers a list of nodes and edges exported from data dependency graph
+ *
+ * ![Data Flow slices overview](./docs/Data%20Flows.png)
+ */
+message DataFlowSlice {
 
     message Edges {
         // Source node id
@@ -988,4 +990,21 @@ message DataFlowSlice {
 
     Graph graph = 1;
     Paths path = 2;
+}
+
+/**
+ * Reachables slices offers a list of reachable nodes based on automated tags exported from data dependency graph
+ */
+message ReachableSlice {
+
+    message Reachables {
+      repeated Nodes nodes = 1;
+    }
+
+    message Purls {
+      repeated string purls = 1;
+    }
+
+    Reachables reachables = 1;
+    Purls purls = 2;
 }

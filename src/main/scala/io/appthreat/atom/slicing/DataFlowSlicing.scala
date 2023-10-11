@@ -2,18 +2,18 @@ package io.appthreat.atom.slicing
 
 import io.appthreat.dataflowengineoss.language.*
 import io.shiftleft.codepropertygraph.Cpg
+import io.shiftleft.codepropertygraph.generated.PropertyNames
 import io.shiftleft.codepropertygraph.generated.nodes.*
-import io.shiftleft.codepropertygraph.generated.{EdgeTypes, PropertyNames}
 import io.shiftleft.semanticcpg.language.*
 
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.concurrent.TrieMap
 
-object DataFlowSlicing {
+class DataFlowSlicing {
 
   implicit val resolver: ICallResolver = NoResolve
-  val exec: ExecutorService            = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors() / 2)
+  protected val exec: ExecutorService  = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors() / 2)
   private val excludeOperatorCalls     = new AtomicBoolean(true)
   private val nodeCache                = new TrieMap[Long, SliceNode]()
   private var language: Option[String] = _
@@ -42,7 +42,7 @@ object DataFlowSlicing {
     dataFlowSlice
   }
 
-  private def TimedGet(dsf: Future[Option[DataFlowSlice]]) = {
+  protected def TimedGet(dsf: Future[Option[DataFlowSlice]]) = {
     try {
       dsf.get(5, TimeUnit.SECONDS)
     } catch {
@@ -52,11 +52,11 @@ object DataFlowSlicing {
 
   /** Convert cfg node to a sliceable node with backing cache
     */
-  private def fromCfgNode(cfgNode: CfgNode): SliceNode = {
+  protected def fromCfgNode(cfgNode: CfgNode): SliceNode = {
     nodeCache.getOrElseUpdate(cfgNode.id(), cfgNodeToSliceNode(cfgNode))
   }
 
-  private def cfgNodeToSliceNode(cfgNode: CfgNode): SliceNode = {
+  protected def cfgNodeToSliceNode(cfgNode: CfgNode): SliceNode = {
     val sliceNode = SliceNode(
       cfgNode.id(),
       cfgNode.label,
@@ -67,7 +67,8 @@ object DataFlowSlicing {
       parentPackageName = cfgNode.method.location.packageName,
       parentClassName = cfgNode.method.location.className,
       lineNumber = cfgNode.lineNumber,
-      columnNumber = cfgNode.columnNumber
+      columnNumber = cfgNode.columnNumber,
+      tags = if (cfgNode.tag.nonEmpty) cfgNode.tag.name.mkString(", ") else ""
     )
     cfgNode match {
       case n: Call =>

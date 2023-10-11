@@ -56,6 +56,10 @@ Command: usages [options]
 Extract local variable and parameter usages
   --min-num-calls <value>  the minimum number of calls required for a usage slice - defaults to 1.
   --include-source         includes method source code in the slices - defaults to false.
+Command: reachables [options]
+Extract reachable data-flow slices based on automated framework tags
+--source-tag <value>     source tag - defaults to framework-input.
+--sink-tag <value>       sink tag - defaults to framework-output.
   --help                   display this help message
 ```
 

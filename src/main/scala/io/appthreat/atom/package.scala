@@ -53,6 +53,9 @@ package object atom {
     includeMethodSource: Boolean = false
   ) extends AtomConfig
 
+  case class AtomReachablesConfig(sourceTag: String = FRAMEWORK_INPUT_TAG, sinkTag: String = FRAMEWORK_OUTPUT_TAG)
+      extends AtomConfig
+
   import io.appthreat.atom.slicing._
   import io.circe.generic.auto._
   import io.circe.syntax.EncoderOps
