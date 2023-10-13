@@ -28,6 +28,12 @@ npm install @appthreat/atom
 # sudo npm install -g @appthreat/atom
 ```
 
+Install cdxgen to generate a Software Bill-of-Materials which is required for certain slicing.
+
+```shell
+npm install -g @cyclonedx/cdxgen --omit=optional
+```
+
 ## CLI Usage
 
 ```
@@ -79,6 +85,14 @@ atom -o app.atom -l jar <jar file>
 ```shell
 export ANDROID_HOME=<path to android sdk>
 atom -o app.atom -l apk <apk file>
+```
+
+### Create reachables slice for a java project.
+
+```shell
+cd <path to repo>
+cdxgen -t java --deep -o bom.json .
+atom reachables -o app.atom -s reachables.json -l java .
 ```
 
 ### Create data-flow slice for a java project.
