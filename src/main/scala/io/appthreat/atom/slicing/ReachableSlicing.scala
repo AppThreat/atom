@@ -17,11 +17,19 @@ object ReachableSlicing {
   val engineConfig                                 = EngineConfig()
   implicit val context: EngineContext              = EngineContext(semantics, engineConfig)
   private implicit val finder: NodeExtensionFinder = DefaultNodeExtensionFinder
+  private val API_TAG                              = "api"
 
   def calculateReachableSlice(atom: Cpg, config: ReachablesConfig): ReachableSlice = {
-    def source = atom.tag.name(config.sourceTag).parameter
-    def sink   = atom.ret.where(_.tag.name(config.sinkTag))
-    ReachableSlice(sink.reachableByFlows(source).map(toSlice).toList)
+    def source    = atom.tag.name(config.sourceTag).parameter
+    def sink      = atom.ret.where(_.tag.name(config.sinkTag))
+    var flowsList = sink.reachableByFlows(source).map(toSlice).toList
+    // If we did not identify any flows from input to output, fallback to looking for
+    // flows between two apis
+    if (flowsList.isEmpty) {
+      flowsList =
+        atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter).map(toSlice).toList
+    }
+    ReachableSlice(flowsList)
   }
 
   private def tagAsString(tag: Iterator[Tag]): String = if (tag.nonEmpty) tag.name.mkString(", ") else ""
