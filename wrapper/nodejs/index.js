@@ -22,7 +22,7 @@ export const JAVA_OPTS = `${
   process.env.JAVA_OPTS || ""
 } -Xmx${freeMemoryGB}G ${JVM_ARGS}`;
 export const APP_MAIN_CLASS = "io.appthreat.atom.Atom";
-export const ATOM_VERSION = "1.2.5";
+export const ATOM_VERSION = "1.5.0";
 export const APP_CLASSPATH = join(
   APP_LIB_DIR,
   `io.appthreat.atom-${ATOM_VERSION}-classpath.jar`

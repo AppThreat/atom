@@ -1,151 +1,22 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "$ref": "#/definitions/DataFlowSlice",
+    "$ref": "#/definitions/ReachableSlice",
     "definitions": {
-        "DataFlowSlice": {
+        "ReachableSlice": {
             "properties": {
-                "graph": {
-                    "$ref": "#/definitions/atom.DataFlowSlice.Graph",
+                "reachables": {
+                    "$ref": "#/definitions/atom.ReachableSlice.Reachables",
                     "additionalProperties": false
                 },
-                "path": {
-                    "$ref": "#/definitions/atom.DataFlowSlice.Paths",
+                "purls": {
+                    "$ref": "#/definitions/atom.ReachableSlice.Purls",
                     "additionalProperties": false
                 }
             },
             "additionalProperties": false,
             "type": "object",
-            "title": "Data Flow Slice",
-            "description": "* DataFlow slices offers a list of nodes and edges exported from data dependency graph ![Data Flow slices overview](./docs/Data%20Flows.png)"
-        },
-        "atom.DataFlowSlice.Edges": {
-            "properties": {
-                "src": {
-                    "type": "integer",
-                    "description": "Source node id"
-                },
-                "dst": {
-                    "type": "integer",
-                    "description": "Destination node id"
-                },
-                "label": {
-                    "enum": [
-                        "UNKNOWN_EDGE_TYPE",
-                        0,
-                        "AST",
-                        3,
-                        "CALL",
-                        6,
-                        "REF",
-                        10,
-                        "TAGGED_BY",
-                        11,
-                        "PARAMETER_LINK",
-                        12,
-                        "CFG",
-                        19,
-                        "EVAL_TYPE",
-                        21,
-                        "BINDS_TO",
-                        22,
-                        "INHERITS_FROM",
-                        23,
-                        "CONTAINS",
-                        28,
-                        "CAPTURE",
-                        40,
-                        "CAPTURED_BY",
-                        41,
-                        "RECEIVER",
-                        55,
-                        "CONDITION",
-                        56,
-                        "REACHING_DEF",
-                        137,
-                        "ALIAS_OF",
-                        138,
-                        "BINDS",
-                        155,
-                        "ARGUMENT",
-                        156,
-                        "SOURCE_FILE",
-                        157,
-                        "DOMINATE",
-                        181,
-                        "POST_DOMINATE",
-                        182,
-                        "CDG",
-                        183,
-                        "IMPORTS",
-                        23663,
-                        "IS_CALL_FOR_IMPORT",
-                        23664
-                    ],
-                    "oneOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "integer"
-                        }
-                    ],
-                    "title": "Edge Type",
-                    "description": "Edge type."
-                }
-            },
-            "additionalProperties": false,
-            "type": "object",
-            "title": "Edges"
-        },
-        "atom.DataFlowSlice.Flows": {
-            "properties": {
-                "id": {
-                    "items": {
-                        "type": "integer"
-                    },
-                    "type": "array",
-                    "description": "Node id"
-                }
-            },
-            "additionalProperties": false,
-            "type": "object",
-            "title": "Flows"
-        },
-        "atom.DataFlowSlice.Graph": {
-            "properties": {
-                "nodes": {
-                    "items": {
-                        "$ref": "#/definitions/atom.Nodes"
-                    },
-                    "additionalProperties": false,
-                    "type": "array"
-                },
-                "edges": {
-                    "items": {
-                        "$ref": "#/definitions/atom.DataFlowSlice.Edges"
-                    },
-                    "additionalProperties": false,
-                    "type": "array"
-                }
-            },
-            "additionalProperties": false,
-            "type": "object",
-            "title": "Graph"
-        },
-        "atom.DataFlowSlice.Paths": {
-            "properties": {
-                "flows": {
-                    "items": {
-                        "$ref": "#/definitions/atom.DataFlowSlice.Flows"
-                    },
-                    "additionalProperties": false,
-                    "type": "array",
-                    "description": "Flows from source to sink"
-                }
-            },
-            "additionalProperties": false,
-            "type": "object",
-            "title": "Paths"
+            "title": "Reachable Slice",
+            "description": "* Reachables slices offers a list of reachable nodes based on automated tags exported from data dependency graph"
         },
         "atom.Nodes": {
             "properties": {
@@ -311,6 +182,33 @@
             "additionalProperties": false,
             "type": "object",
             "title": "Nodes"
+        },
+        "atom.ReachableSlice.Purls": {
+            "properties": {
+                "purls": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Purls"
+        },
+        "atom.ReachableSlice.Reachables": {
+            "properties": {
+                "nodes": {
+                    "items": {
+                        "$ref": "#/definitions/atom.Nodes"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Reachables"
         }
     }
 }

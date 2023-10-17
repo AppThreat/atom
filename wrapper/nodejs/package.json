@@ -1,6 +1,6 @@
 {
   "name": "@appthreat/atom",
-  "version": "1.2.5",
+  "version": "1.5.0",
   "description": "Create atom (⚛) representation for your application, packages and libraries",
   "exports": "./index.js",
   "type": "module",
@@ -14,7 +14,7 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "eslint": "^8.50.0"
+    "eslint": "^8.51.0"
   },
   "bin": {
     "atom": "./index.js",

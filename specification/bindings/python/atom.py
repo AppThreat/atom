@@ -1019,18 +1019,7 @@ class UsageSliceUserDefinedTypes(betterproto.Message):
 
 
 @dataclass
-class DataFlowSlice(betterproto.Message):
-    """
-    * DataFlow slices offers a list of nodes and edges exported from data
-    dependency graph ![Data Flow slices overview](./docs/Data%20Flows.png)
-    """
-
-    graph: "DataFlowSliceGraph" = betterproto.message_field(1)
-    path: "DataFlowSlicePaths" = betterproto.message_field(2)
-
-
-@dataclass
-class DataFlowSliceNodes(betterproto.Message):
+class Nodes(betterproto.Message):
     # Id of the node
     id: int = betterproto.uint32_field(1)
     # Label
@@ -1059,6 +1048,19 @@ class DataFlowSliceNodes(betterproto.Message):
     line_number: int = betterproto.uint32_field(13)
     # Column number
     column_number: int = betterproto.uint32_field(14)
+    # Tags. Can contain simple names including package url
+    tags: str = betterproto.string_field(15)
+
+
+@dataclass
+class DataFlowSlice(betterproto.Message):
+    """
+    * DataFlow slices offers a list of nodes and edges exported from data
+    dependency graph ![Data Flow slices overview](./docs/Data%20Flows.png)
+    """
+
+    graph: "DataFlowSliceGraph" = betterproto.message_field(1)
+    path: "DataFlowSlicePaths" = betterproto.message_field(2)
 
 
 @dataclass
@@ -1085,5 +1087,26 @@ class DataFlowSlicePaths(betterproto.Message):
 
 @dataclass
 class DataFlowSliceGraph(betterproto.Message):
-    nodes: List["DataFlowSliceNodes"] = betterproto.message_field(1)
+    nodes: List["Nodes"] = betterproto.message_field(1)
     edges: List["DataFlowSliceEdges"] = betterproto.message_field(2)
+
+
+@dataclass
+class ReachableSlice(betterproto.Message):
+    """
+    * Reachables slices offers a list of reachable nodes based on automated
+    tags exported from data dependency graph
+    """
+
+    reachables: "ReachableSliceReachables" = betterproto.message_field(1)
+    purls: "ReachableSlicePurls" = betterproto.message_field(2)
+
+
+@dataclass
+class ReachableSliceReachables(betterproto.Message):
+    nodes: List["Nodes"] = betterproto.message_field(1)
+
+
+@dataclass
+class ReachableSlicePurls(betterproto.Message):
+    purls: List[str] = betterproto.string_field(1)

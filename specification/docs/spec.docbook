@@ -624,7 +624,7 @@
             
             <row>
               <entry>nodes</entry>
-              <entry><link linkend="atom.DataFlowSlice.Nodes">DataFlowSlice.Nodes</link></entry>
+              <entry><link linkend="atom.Nodes">Nodes</link></entry>
               <entry>repeated</entry>
               <entry><para></para></entry>
             </row>
@@ -634,132 +634,6 @@
               <entry><link linkend="atom.DataFlowSlice.Edges">DataFlowSlice.Edges</link></entry>
               <entry>repeated</entry>
               <entry><para></para></entry>
-            </row>
-            
-          </tbody>
-        </tgroup>
-      </table>
-      
-      
-    </section>
-    
-    <section id="atom.DataFlowSlice.Nodes">
-      <title>DataFlowSlice.Nodes</title>
-      <para></para>
-      
-      <table frame="all">
-        <title><classname>DataFlowSlice.Nodes</classname> Fields</title>
-        <tgroup cols="4">
-          <colspec colwidth="*"/>
-          <colspec colwidth="*"/>
-          <colspec colwidth="0.5*"/>
-          <colspec colwidth="3*"/>
-          <thead>
-            <row>
-              <entry>Field</entry>
-              <entry>Type</entry>
-              <entry>Label</entry>
-              <entry>Description</entry>
-            </row>
-          </thead>
-          <tbody>
-            
-            <row>
-              <entry>id</entry>
-              <entry><link linkend="uint32">uint32</link></entry>
-              <entry></entry>
-              <entry><para>Id of the node</para></entry>
-            </row>
-            
-            <row>
-              <entry>label</entry>
-              <entry><link linkend="atom.NodeType">NodeType</link></entry>
-              <entry></entry>
-              <entry><para>Label</para></entry>
-            </row>
-            
-            <row>
-              <entry>name</entry>
-              <entry><link linkend="string">string</link></entry>
-              <entry></entry>
-              <entry><para>Name of the call or identifier or parameter</para></entry>
-            </row>
-            
-            <row>
-              <entry>fullName</entry>
-              <entry><link linkend="string">string</link></entry>
-              <entry></entry>
-              <entry><para>Full name of the call</para></entry>
-            </row>
-            
-            <row>
-              <entry>signature</entry>
-              <entry><link linkend="string">string</link></entry>
-              <entry></entry>
-              <entry><para>Method signature of the call</para></entry>
-            </row>
-            
-            <row>
-              <entry>isExternal</entry>
-              <entry><link linkend="bool">bool</link></entry>
-              <entry></entry>
-              <entry><para>Boolean to indicate if this call belongs to an external method</para></entry>
-            </row>
-            
-            <row>
-              <entry>code</entry>
-              <entry><link linkend="string">string</link></entry>
-              <entry></entry>
-              <entry><para>Source code</para></entry>
-            </row>
-            
-            <row>
-              <entry>typeFullName</entry>
-              <entry><link linkend="string">string</link></entry>
-              <entry></entry>
-              <entry><para>Type full name</para></entry>
-            </row>
-            
-            <row>
-              <entry>parentMethodName</entry>
-              <entry><link linkend="string">string</link></entry>
-              <entry></entry>
-              <entry><para>Parent method name</para></entry>
-            </row>
-            
-            <row>
-              <entry>parentFileName</entry>
-              <entry><link linkend="string">string</link></entry>
-              <entry></entry>
-              <entry><para>Parent filename</para></entry>
-            </row>
-            
-            <row>
-              <entry>parentPackageName</entry>
-              <entry><link linkend="string">string</link></entry>
-              <entry></entry>
-              <entry><para>Parent package name</para></entry>
-            </row>
-            
-            <row>
-              <entry>parentClassName</entry>
-              <entry><link linkend="string">string</link></entry>
-              <entry></entry>
-              <entry><para>Parent class name</para></entry>
-            </row>
-            
-            <row>
-              <entry>lineNumber</entry>
-              <entry><link linkend="uint32">uint32</link></entry>
-              <entry></entry>
-              <entry><para>Line number</para></entry>
-            </row>
-            
-            <row>
-              <entry>columnNumber</entry>
-              <entry><link linkend="uint32">uint32</link></entry>
-              <entry></entry>
-              <entry><para>Column number</para></entry>
             </row>
             
           </tbody>
@@ -1266,6 +1140,139 @@
       
     </section>
     
+    <section id="atom.Nodes">
+      <title>Nodes</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>Nodes</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>id</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Id of the node</para></entry>
+            </row>
+            
+            <row>
+              <entry>label</entry>
+              <entry><link linkend="atom.NodeType">NodeType</link></entry>
+              <entry></entry>
+              <entry><para>Label</para></entry>
+            </row>
+            
+            <row>
+              <entry>name</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Name of the call or identifier or parameter</para></entry>
+            </row>
+            
+            <row>
+              <entry>fullName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Full name of the call</para></entry>
+            </row>
+            
+            <row>
+              <entry>signature</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Method signature of the call</para></entry>
+            </row>
+            
+            <row>
+              <entry>isExternal</entry>
+              <entry><link linkend="bool">bool</link></entry>
+              <entry></entry>
+              <entry><para>Boolean to indicate if this call belongs to an external method</para></entry>
+            </row>
+            
+            <row>
+              <entry>code</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Source code</para></entry>
+            </row>
+            
+            <row>
+              <entry>typeFullName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Type full name</para></entry>
+            </row>
+            
+            <row>
+              <entry>parentMethodName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Parent method name</para></entry>
+            </row>
+            
+            <row>
+              <entry>parentFileName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Parent filename</para></entry>
+            </row>
+            
+            <row>
+              <entry>parentPackageName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Parent package name</para></entry>
+            </row>
+            
+            <row>
+              <entry>parentClassName</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Parent class name</para></entry>
+            </row>
+            
+            <row>
+              <entry>lineNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Line number</para></entry>
+            </row>
+            
+            <row>
+              <entry>columnNumber</entry>
+              <entry><link linkend="uint32">uint32</link></entry>
+              <entry></entry>
+              <entry><para>Column number</para></entry>
+            </row>
+            
+            <row>
+              <entry>tags</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Tags. Can contain simple names including package url</para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
     <section id="atom.PropertyValue">
       <title>PropertyValue</title>
       <para>Message to store the property values such as string or int values</para>
@@ -1375,6 +1382,118 @@
               <entry>contained_refs</entry>
               <entry><link linkend="atom.ContainedRefs">ContainedRefs</link></entry>
               <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.ReachableSlice">
+      <title>ReachableSlice</title>
+      <para>Reachables slices offers a list of reachable nodes based on automated tags exported from data dependency graph</para>
+      
+      <table frame="all">
+        <title><classname>ReachableSlice</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>reachables</entry>
+              <entry><link linkend="atom.ReachableSlice.Reachables">ReachableSlice.Reachables</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+            <row>
+              <entry>purls</entry>
+              <entry><link linkend="atom.ReachableSlice.Purls">ReachableSlice.Purls</link></entry>
+              <entry></entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.ReachableSlice.Purls">
+      <title>ReachableSlice.Purls</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>ReachableSlice.Purls</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>purls</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry>repeated</entry>
+              <entry><para></para></entry>
+            </row>
+            
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+    </section>
+    
+    <section id="atom.ReachableSlice.Reachables">
+      <title>ReachableSlice.Reachables</title>
+      <para></para>
+      
+      <table frame="all">
+        <title><classname>ReachableSlice.Reachables</classname> Fields</title>
+        <tgroup cols="4">
+          <colspec colwidth="*"/>
+          <colspec colwidth="*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="3*"/>
+          <thead>
+            <row>
+              <entry>Field</entry>
+              <entry>Type</entry>
+              <entry>Label</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            
+            <row>
+              <entry>nodes</entry>
+              <entry><link linkend="atom.Nodes">Nodes</link></entry>
+              <entry>repeated</entry>
               <entry><para></para></entry>
             </row>
             

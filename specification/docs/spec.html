@@ -235,10 +235,6 @@
                 </li>
               
                 <li>
-                  <a href="#atom.DataFlowSlice.Nodes"><span class="badge">M</span>DataFlowSlice.Nodes</a>
-                </li>
-              
-                <li>
                   <a href="#atom.DataFlowSlice.Paths"><span class="badge">M</span>DataFlowSlice.Paths</a>
                 </li>
               
@@ -283,7 +279,23 @@
                 </li>
               
                 <li>
+                  <a href="#atom.Nodes"><span class="badge">M</span>Nodes</a>
+                </li>
+              
+                <li>
                   <a href="#atom.PropertyValue"><span class="badge">M</span>PropertyValue</a>
+                </li>
+              
+                <li>
+                  <a href="#atom.ReachableSlice"><span class="badge">M</span>ReachableSlice</a>
+                </li>
+              
+                <li>
+                  <a href="#atom.ReachableSlice.Purls"><span class="badge">M</span>ReachableSlice.Purls</a>
+                </li>
+              
+                <li>
+                  <a href="#atom.ReachableSlice.Reachables"><span class="badge">M</span>ReachableSlice.Reachables</a>
                 </li>
               
                 <li>
@@ -852,7 +864,7 @@
               
                 <tr>
                   <td>nodes</td>
-                  <td><a href="#atom.DataFlowSlice.Nodes">DataFlowSlice.Nodes</a></td>
+                  <td><a href="#atom.Nodes">Nodes</a></td>
                   <td>repeated</td>
                   <td><p> </p></td>
                 </tr>
@@ -862,121 +874,6 @@
                   <td><a href="#atom.DataFlowSlice.Edges">DataFlowSlice.Edges</a></td>
                   <td>repeated</td>
                   <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="atom.DataFlowSlice.Nodes">DataFlowSlice.Nodes</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>id</td>
-                  <td><a href="#uint32">uint32</a></td>
-                  <td></td>
-                  <td><p>Id of the node </p></td>
-                </tr>
-              
-                <tr>
-                  <td>label</td>
-                  <td><a href="#atom.NodeType">NodeType</a></td>
-                  <td></td>
-                  <td><p>Label </p></td>
-                </tr>
-              
-                <tr>
-                  <td>name</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>Name of the call or identifier or parameter </p></td>
-                </tr>
-              
-                <tr>
-                  <td>fullName</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>Full name of the call </p></td>
-                </tr>
-              
-                <tr>
-                  <td>signature</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>Method signature of the call </p></td>
-                </tr>
-              
-                <tr>
-                  <td>isExternal</td>
-                  <td><a href="#bool">bool</a></td>
-                  <td></td>
-                  <td><p>Boolean to indicate if this call belongs to an external method </p></td>
-                </tr>
-              
-                <tr>
-                  <td>code</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>Source code </p></td>
-                </tr>
-              
-                <tr>
-                  <td>typeFullName</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>Type full name </p></td>
-                </tr>
-              
-                <tr>
-                  <td>parentMethodName</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>Parent method name </p></td>
-                </tr>
-              
-                <tr>
-                  <td>parentFileName</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>Parent filename </p></td>
-                </tr>
-              
-                <tr>
-                  <td>parentPackageName</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>Parent package name </p></td>
-                </tr>
-              
-                <tr>
-                  <td>parentClassName</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>Parent class name </p></td>
-                </tr>
-              
-                <tr>
-                  <td>lineNumber</td>
-                  <td><a href="#uint32">uint32</a></td>
-                  <td></td>
-                  <td><p>Line number </p></td>
-                </tr>
-              
-                <tr>
-                  <td>columnNumber</td>
-                  <td><a href="#uint32">uint32</a></td>
-                  <td></td>
-                  <td><p>Column number </p></td>
                 </tr>
               
             </tbody>
@@ -1362,6 +1259,128 @@
 
         
       
+        <h3 id="atom.Nodes">Nodes</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>id</td>
+                  <td><a href="#uint32">uint32</a></td>
+                  <td></td>
+                  <td><p>Id of the node </p></td>
+                </tr>
+              
+                <tr>
+                  <td>label</td>
+                  <td><a href="#atom.NodeType">NodeType</a></td>
+                  <td></td>
+                  <td><p>Label </p></td>
+                </tr>
+              
+                <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Name of the call or identifier or parameter </p></td>
+                </tr>
+              
+                <tr>
+                  <td>fullName</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Full name of the call </p></td>
+                </tr>
+              
+                <tr>
+                  <td>signature</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Method signature of the call </p></td>
+                </tr>
+              
+                <tr>
+                  <td>isExternal</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p>Boolean to indicate if this call belongs to an external method </p></td>
+                </tr>
+              
+                <tr>
+                  <td>code</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Source code </p></td>
+                </tr>
+              
+                <tr>
+                  <td>typeFullName</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Type full name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>parentMethodName</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Parent method name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>parentFileName</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Parent filename </p></td>
+                </tr>
+              
+                <tr>
+                  <td>parentPackageName</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Parent package name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>parentClassName</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Parent class name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>lineNumber</td>
+                  <td><a href="#uint32">uint32</a></td>
+                  <td></td>
+                  <td><p>Line number </p></td>
+                </tr>
+              
+                <tr>
+                  <td>columnNumber</td>
+                  <td><a href="#uint32">uint32</a></td>
+                  <td></td>
+                  <td><p>Column number </p></td>
+                </tr>
+              
+                <tr>
+                  <td>tags</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Tags. Can contain simple names including package url </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="atom.PropertyValue">PropertyValue</h3>
         <p>Message to store the property values such as string or int values</p>
 
@@ -1460,6 +1479,85 @@
                   <td>contained_refs</td>
                   <td><a href="#atom.ContainedRefs">ContainedRefs</a></td>
                   <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="atom.ReachableSlice">ReachableSlice</h3>
+        <p>Reachables slices offers a list of reachable nodes based on automated tags exported from data dependency graph</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>reachables</td>
+                  <td><a href="#atom.ReachableSlice.Reachables">ReachableSlice.Reachables</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>purls</td>
+                  <td><a href="#atom.ReachableSlice.Purls">ReachableSlice.Purls</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="atom.ReachableSlice.Purls">ReachableSlice.Purls</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>purls</td>
+                  <td><a href="#string">string</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="atom.ReachableSlice.Reachables">ReachableSlice.Reachables</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>nodes</td>
+                  <td><a href="#atom.Nodes">Nodes</a></td>
+                  <td>repeated</td>
                   <td><p> </p></td>
                 </tr>
               

@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - feature/*
   workflow_dispatch:
 jobs:
   jvm-testing:
@@ -33,6 +34,10 @@ jobs:
           path: 'repotests/libexpat'
       - uses: actions/checkout@v3
         with:
+          repository: 'HooliCorp/java-sec-code'
+          path: 'repotests/java-sec-code'
+      - uses: actions/checkout@v3
+        with:
           repository: 'HooliCorp/DjanGoat'
           path: 'repotests/DjanGoat'
       - uses: coursier/cache-action@v6
@@ -41,6 +46,10 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
       - run: |
           sbt stage astGenDlTask
           ./atom.sh -o /tmp/java.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
@@ -61,5 +70,11 @@ jobs:
           ./atom.sh usages -o /tmp/ts3.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/ts.usages.json
           ./atom.sh usages -o /tmp/py3.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py.usages.json
           ./atom.sh usages -o /tmp/c3.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/c.usages.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          npm install -g @cyclonedx/cdxgen --omit=optional
+          cdxgen -t java --deep -o java-sec-code/bom.json java-sec-code
+          ./atom.sh reachables -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java-sec-code.reachables.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

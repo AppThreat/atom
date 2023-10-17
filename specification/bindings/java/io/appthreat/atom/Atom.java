@@ -39527,6 +39527,2760 @@ public final class Atom {
 
   }
 
+  public interface NodesOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:atom.Nodes)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     * Id of the node
+     * </pre>
+     *
+     * <code>uint32 id = 1;</code>
+     * @return The id.
+     */
+    int getId();
+
+    /**
+     * <pre>
+     * Label
+     * </pre>
+     *
+     * <code>.atom.NodeType label = 2;</code>
+     * @return The enum numeric value on the wire for label.
+     */
+    int getLabelValue();
+    /**
+     * <pre>
+     * Label
+     * </pre>
+     *
+     * <code>.atom.NodeType label = 2;</code>
+     * @return The label.
+     */
+    io.appthreat.atom.Atom.NodeType getLabel();
+
+    /**
+     * <pre>
+     * Name of the call or identifier or parameter
+     * </pre>
+     *
+     * <code>string name = 3;</code>
+     * @return The name.
+     */
+    java.lang.String getName();
+    /**
+     * <pre>
+     * Name of the call or identifier or parameter
+     * </pre>
+     *
+     * <code>string name = 3;</code>
+     * @return The bytes for name.
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    /**
+     * <pre>
+     * Full name of the call
+     * </pre>
+     *
+     * <code>string fullName = 4;</code>
+     * @return The fullName.
+     */
+    java.lang.String getFullName();
+    /**
+     * <pre>
+     * Full name of the call
+     * </pre>
+     *
+     * <code>string fullName = 4;</code>
+     * @return The bytes for fullName.
+     */
+    com.google.protobuf.ByteString
+        getFullNameBytes();
+
+    /**
+     * <pre>
+     * Method signature of the call
+     * </pre>
+     *
+     * <code>string signature = 5;</code>
+     * @return The signature.
+     */
+    java.lang.String getSignature();
+    /**
+     * <pre>
+     * Method signature of the call
+     * </pre>
+     *
+     * <code>string signature = 5;</code>
+     * @return The bytes for signature.
+     */
+    com.google.protobuf.ByteString
+        getSignatureBytes();
+
+    /**
+     * <pre>
+     * Boolean to indicate if this call belongs to an external method
+     * </pre>
+     *
+     * <code>bool isExternal = 6;</code>
+     * @return The isExternal.
+     */
+    boolean getIsExternal();
+
+    /**
+     * <pre>
+     * Source code
+     * </pre>
+     *
+     * <code>string code = 7;</code>
+     * @return The code.
+     */
+    java.lang.String getCode();
+    /**
+     * <pre>
+     * Source code
+     * </pre>
+     *
+     * <code>string code = 7;</code>
+     * @return The bytes for code.
+     */
+    com.google.protobuf.ByteString
+        getCodeBytes();
+
+    /**
+     * <pre>
+     * Type full name
+     * </pre>
+     *
+     * <code>string typeFullName = 8;</code>
+     * @return The typeFullName.
+     */
+    java.lang.String getTypeFullName();
+    /**
+     * <pre>
+     * Type full name
+     * </pre>
+     *
+     * <code>string typeFullName = 8;</code>
+     * @return The bytes for typeFullName.
+     */
+    com.google.protobuf.ByteString
+        getTypeFullNameBytes();
+
+    /**
+     * <pre>
+     * Parent method name
+     * </pre>
+     *
+     * <code>string parentMethodName = 9;</code>
+     * @return The parentMethodName.
+     */
+    java.lang.String getParentMethodName();
+    /**
+     * <pre>
+     * Parent method name
+     * </pre>
+     *
+     * <code>string parentMethodName = 9;</code>
+     * @return The bytes for parentMethodName.
+     */
+    com.google.protobuf.ByteString
+        getParentMethodNameBytes();
+
+    /**
+     * <pre>
+     * Parent filename
+     * </pre>
+     *
+     * <code>string parentFileName = 10;</code>
+     * @return The parentFileName.
+     */
+    java.lang.String getParentFileName();
+    /**
+     * <pre>
+     * Parent filename
+     * </pre>
+     *
+     * <code>string parentFileName = 10;</code>
+     * @return The bytes for parentFileName.
+     */
+    com.google.protobuf.ByteString
+        getParentFileNameBytes();
+
+    /**
+     * <pre>
+     * Parent package name
+     * </pre>
+     *
+     * <code>string parentPackageName = 11;</code>
+     * @return The parentPackageName.
+     */
+    java.lang.String getParentPackageName();
+    /**
+     * <pre>
+     * Parent package name
+     * </pre>
+     *
+     * <code>string parentPackageName = 11;</code>
+     * @return The bytes for parentPackageName.
+     */
+    com.google.protobuf.ByteString
+        getParentPackageNameBytes();
+
+    /**
+     * <pre>
+     * Parent class name
+     * </pre>
+     *
+     * <code>string parentClassName = 12;</code>
+     * @return The parentClassName.
+     */
+    java.lang.String getParentClassName();
+    /**
+     * <pre>
+     * Parent class name
+     * </pre>
+     *
+     * <code>string parentClassName = 12;</code>
+     * @return The bytes for parentClassName.
+     */
+    com.google.protobuf.ByteString
+        getParentClassNameBytes();
+
+    /**
+     * <pre>
+     * Line number
+     * </pre>
+     *
+     * <code>uint32 lineNumber = 13;</code>
+     * @return The lineNumber.
+     */
+    int getLineNumber();
+
+    /**
+     * <pre>
+     * Column number
+     * </pre>
+     *
+     * <code>uint32 columnNumber = 14;</code>
+     * @return The columnNumber.
+     */
+    int getColumnNumber();
+
+    /**
+     * <pre>
+     * Tags. Can contain simple names including package url
+     * </pre>
+     *
+     * <code>string tags = 15;</code>
+     * @return The tags.
+     */
+    java.lang.String getTags();
+    /**
+     * <pre>
+     * Tags. Can contain simple names including package url
+     * </pre>
+     *
+     * <code>string tags = 15;</code>
+     * @return The bytes for tags.
+     */
+    com.google.protobuf.ByteString
+        getTagsBytes();
+  }
+  /**
+   * Protobuf type {@code atom.Nodes}
+   */
+  public static final class Nodes extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:atom.Nodes)
+      NodesOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use Nodes.newBuilder() to construct.
+    private Nodes(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private Nodes() {
+      label_ = 0;
+      name_ = "";
+      fullName_ = "";
+      signature_ = "";
+      code_ = "";
+      typeFullName_ = "";
+      parentMethodName_ = "";
+      parentFileName_ = "";
+      parentPackageName_ = "";
+      parentClassName_ = "";
+      tags_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new Nodes();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.appthreat.atom.Atom.internal_static_atom_Nodes_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.appthreat.atom.Atom.internal_static_atom_Nodes_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.appthreat.atom.Atom.Nodes.class, io.appthreat.atom.Atom.Nodes.Builder.class);
+    }
+
+    public static final int ID_FIELD_NUMBER = 1;
+    private int id_ = 0;
+    /**
+     * <pre>
+     * Id of the node
+     * </pre>
+     *
+     * <code>uint32 id = 1;</code>
+     * @return The id.
+     */
+    @java.lang.Override
+    public int getId() {
+      return id_;
+    }
+
+    public static final int LABEL_FIELD_NUMBER = 2;
+    private int label_ = 0;
+    /**
+     * <pre>
+     * Label
+     * </pre>
+     *
+     * <code>.atom.NodeType label = 2;</code>
+     * @return The enum numeric value on the wire for label.
+     */
+    @java.lang.Override public int getLabelValue() {
+      return label_;
+    }
+    /**
+     * <pre>
+     * Label
+     * </pre>
+     *
+     * <code>.atom.NodeType label = 2;</code>
+     * @return The label.
+     */
+    @java.lang.Override public io.appthreat.atom.Atom.NodeType getLabel() {
+      io.appthreat.atom.Atom.NodeType result = io.appthreat.atom.Atom.NodeType.forNumber(label_);
+      return result == null ? io.appthreat.atom.Atom.NodeType.UNRECOGNIZED : result;
+    }
+
+    public static final int NAME_FIELD_NUMBER = 3;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object name_ = "";
+    /**
+     * <pre>
+     * Name of the call or identifier or parameter
+     * </pre>
+     *
+     * <code>string name = 3;</code>
+     * @return The name.
+     */
+    @java.lang.Override
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        name_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * Name of the call or identifier or parameter
+     * </pre>
+     *
+     * <code>string name = 3;</code>
+     * @return The bytes for name.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int FULLNAME_FIELD_NUMBER = 4;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object fullName_ = "";
+    /**
+     * <pre>
+     * Full name of the call
+     * </pre>
+     *
+     * <code>string fullName = 4;</code>
+     * @return The fullName.
+     */
+    @java.lang.Override
+    public java.lang.String getFullName() {
+      java.lang.Object ref = fullName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        fullName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * Full name of the call
+     * </pre>
+     *
+     * <code>string fullName = 4;</code>
+     * @return The bytes for fullName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getFullNameBytes() {
+      java.lang.Object ref = fullName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        fullName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int SIGNATURE_FIELD_NUMBER = 5;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object signature_ = "";
+    /**
+     * <pre>
+     * Method signature of the call
+     * </pre>
+     *
+     * <code>string signature = 5;</code>
+     * @return The signature.
+     */
+    @java.lang.Override
+    public java.lang.String getSignature() {
+      java.lang.Object ref = signature_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        signature_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * Method signature of the call
+     * </pre>
+     *
+     * <code>string signature = 5;</code>
+     * @return The bytes for signature.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getSignatureBytes() {
+      java.lang.Object ref = signature_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        signature_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int ISEXTERNAL_FIELD_NUMBER = 6;
+    private boolean isExternal_ = false;
+    /**
+     * <pre>
+     * Boolean to indicate if this call belongs to an external method
+     * </pre>
+     *
+     * <code>bool isExternal = 6;</code>
+     * @return The isExternal.
+     */
+    @java.lang.Override
+    public boolean getIsExternal() {
+      return isExternal_;
+    }
+
+    public static final int CODE_FIELD_NUMBER = 7;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object code_ = "";
+    /**
+     * <pre>
+     * Source code
+     * </pre>
+     *
+     * <code>string code = 7;</code>
+     * @return The code.
+     */
+    @java.lang.Override
+    public java.lang.String getCode() {
+      java.lang.Object ref = code_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        code_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * Source code
+     * </pre>
+     *
+     * <code>string code = 7;</code>
+     * @return The bytes for code.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getCodeBytes() {
+      java.lang.Object ref = code_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        code_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int TYPEFULLNAME_FIELD_NUMBER = 8;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object typeFullName_ = "";
+    /**
+     * <pre>
+     * Type full name
+     * </pre>
+     *
+     * <code>string typeFullName = 8;</code>
+     * @return The typeFullName.
+     */
+    @java.lang.Override
+    public java.lang.String getTypeFullName() {
+      java.lang.Object ref = typeFullName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        typeFullName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * Type full name
+     * </pre>
+     *
+     * <code>string typeFullName = 8;</code>
+     * @return The bytes for typeFullName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getTypeFullNameBytes() {
+      java.lang.Object ref = typeFullName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        typeFullName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int PARENTMETHODNAME_FIELD_NUMBER = 9;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object parentMethodName_ = "";
+    /**
+     * <pre>
+     * Parent method name
+     * </pre>
+     *
+     * <code>string parentMethodName = 9;</code>
+     * @return The parentMethodName.
+     */
+    @java.lang.Override
+    public java.lang.String getParentMethodName() {
+      java.lang.Object ref = parentMethodName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        parentMethodName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * Parent method name
+     * </pre>
+     *
+     * <code>string parentMethodName = 9;</code>
+     * @return The bytes for parentMethodName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getParentMethodNameBytes() {
+      java.lang.Object ref = parentMethodName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        parentMethodName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int PARENTFILENAME_FIELD_NUMBER = 10;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object parentFileName_ = "";
+    /**
+     * <pre>
+     * Parent filename
+     * </pre>
+     *
+     * <code>string parentFileName = 10;</code>
+     * @return The parentFileName.
+     */
+    @java.lang.Override
+    public java.lang.String getParentFileName() {
+      java.lang.Object ref = parentFileName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        parentFileName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * Parent filename
+     * </pre>
+     *
+     * <code>string parentFileName = 10;</code>
+     * @return The bytes for parentFileName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getParentFileNameBytes() {
+      java.lang.Object ref = parentFileName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        parentFileName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int PARENTPACKAGENAME_FIELD_NUMBER = 11;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object parentPackageName_ = "";
+    /**
+     * <pre>
+     * Parent package name
+     * </pre>
+     *
+     * <code>string parentPackageName = 11;</code>
+     * @return The parentPackageName.
+     */
+    @java.lang.Override
+    public java.lang.String getParentPackageName() {
+      java.lang.Object ref = parentPackageName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        parentPackageName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * Parent package name
+     * </pre>
+     *
+     * <code>string parentPackageName = 11;</code>
+     * @return The bytes for parentPackageName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getParentPackageNameBytes() {
+      java.lang.Object ref = parentPackageName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        parentPackageName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int PARENTCLASSNAME_FIELD_NUMBER = 12;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object parentClassName_ = "";
+    /**
+     * <pre>
+     * Parent class name
+     * </pre>
+     *
+     * <code>string parentClassName = 12;</code>
+     * @return The parentClassName.
+     */
+    @java.lang.Override
+    public java.lang.String getParentClassName() {
+      java.lang.Object ref = parentClassName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        parentClassName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * Parent class name
+     * </pre>
+     *
+     * <code>string parentClassName = 12;</code>
+     * @return The bytes for parentClassName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getParentClassNameBytes() {
+      java.lang.Object ref = parentClassName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        parentClassName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int LINENUMBER_FIELD_NUMBER = 13;
+    private int lineNumber_ = 0;
+    /**
+     * <pre>
+     * Line number
+     * </pre>
+     *
+     * <code>uint32 lineNumber = 13;</code>
+     * @return The lineNumber.
+     */
+    @java.lang.Override
+    public int getLineNumber() {
+      return lineNumber_;
+    }
+
+    public static final int COLUMNNUMBER_FIELD_NUMBER = 14;
+    private int columnNumber_ = 0;
+    /**
+     * <pre>
+     * Column number
+     * </pre>
+     *
+     * <code>uint32 columnNumber = 14;</code>
+     * @return The columnNumber.
+     */
+    @java.lang.Override
+    public int getColumnNumber() {
+      return columnNumber_;
+    }
+
+    public static final int TAGS_FIELD_NUMBER = 15;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object tags_ = "";
+    /**
+     * <pre>
+     * Tags. Can contain simple names including package url
+     * </pre>
+     *
+     * <code>string tags = 15;</code>
+     * @return The tags.
+     */
+    @java.lang.Override
+    public java.lang.String getTags() {
+      java.lang.Object ref = tags_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        tags_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * Tags. Can contain simple names including package url
+     * </pre>
+     *
+     * <code>string tags = 15;</code>
+     * @return The bytes for tags.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getTagsBytes() {
+      java.lang.Object ref = tags_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        tags_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (id_ != 0) {
+        output.writeUInt32(1, id_);
+      }
+      if (label_ != io.appthreat.atom.Atom.NodeType.UNKNOWN_NODE_TYPE.getNumber()) {
+        output.writeEnum(2, label_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, name_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(fullName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, fullName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(signature_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, signature_);
+      }
+      if (isExternal_ != false) {
+        output.writeBool(6, isExternal_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(code_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 7, code_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(typeFullName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 8, typeFullName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentMethodName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 9, parentMethodName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentFileName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 10, parentFileName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentPackageName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 11, parentPackageName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentClassName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 12, parentClassName_);
+      }
+      if (lineNumber_ != 0) {
+        output.writeUInt32(13, lineNumber_);
+      }
+      if (columnNumber_ != 0) {
+        output.writeUInt32(14, columnNumber_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tags_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 15, tags_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (id_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(1, id_);
+      }
+      if (label_ != io.appthreat.atom.Atom.NodeType.UNKNOWN_NODE_TYPE.getNumber()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(2, label_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, name_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(fullName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, fullName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(signature_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, signature_);
+      }
+      if (isExternal_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(6, isExternal_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(code_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, code_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(typeFullName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, typeFullName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentMethodName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, parentMethodName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentFileName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, parentFileName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentPackageName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, parentPackageName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentClassName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, parentClassName_);
+      }
+      if (lineNumber_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(13, lineNumber_);
+      }
+      if (columnNumber_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(14, columnNumber_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(tags_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(15, tags_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.appthreat.atom.Atom.Nodes)) {
+        return super.equals(obj);
+      }
+      io.appthreat.atom.Atom.Nodes other = (io.appthreat.atom.Atom.Nodes) obj;
+
+      if (getId()
+          != other.getId()) return false;
+      if (label_ != other.label_) return false;
+      if (!getName()
+          .equals(other.getName())) return false;
+      if (!getFullName()
+          .equals(other.getFullName())) return false;
+      if (!getSignature()
+          .equals(other.getSignature())) return false;
+      if (getIsExternal()
+          != other.getIsExternal()) return false;
+      if (!getCode()
+          .equals(other.getCode())) return false;
+      if (!getTypeFullName()
+          .equals(other.getTypeFullName())) return false;
+      if (!getParentMethodName()
+          .equals(other.getParentMethodName())) return false;
+      if (!getParentFileName()
+          .equals(other.getParentFileName())) return false;
+      if (!getParentPackageName()
+          .equals(other.getParentPackageName())) return false;
+      if (!getParentClassName()
+          .equals(other.getParentClassName())) return false;
+      if (getLineNumber()
+          != other.getLineNumber()) return false;
+      if (getColumnNumber()
+          != other.getColumnNumber()) return false;
+      if (!getTags()
+          .equals(other.getTags())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + ID_FIELD_NUMBER;
+      hash = (53 * hash) + getId();
+      hash = (37 * hash) + LABEL_FIELD_NUMBER;
+      hash = (53 * hash) + label_;
+      hash = (37 * hash) + NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getName().hashCode();
+      hash = (37 * hash) + FULLNAME_FIELD_NUMBER;
+      hash = (53 * hash) + getFullName().hashCode();
+      hash = (37 * hash) + SIGNATURE_FIELD_NUMBER;
+      hash = (53 * hash) + getSignature().hashCode();
+      hash = (37 * hash) + ISEXTERNAL_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getIsExternal());
+      hash = (37 * hash) + CODE_FIELD_NUMBER;
+      hash = (53 * hash) + getCode().hashCode();
+      hash = (37 * hash) + TYPEFULLNAME_FIELD_NUMBER;
+      hash = (53 * hash) + getTypeFullName().hashCode();
+      hash = (37 * hash) + PARENTMETHODNAME_FIELD_NUMBER;
+      hash = (53 * hash) + getParentMethodName().hashCode();
+      hash = (37 * hash) + PARENTFILENAME_FIELD_NUMBER;
+      hash = (53 * hash) + getParentFileName().hashCode();
+      hash = (37 * hash) + PARENTPACKAGENAME_FIELD_NUMBER;
+      hash = (53 * hash) + getParentPackageName().hashCode();
+      hash = (37 * hash) + PARENTCLASSNAME_FIELD_NUMBER;
+      hash = (53 * hash) + getParentClassName().hashCode();
+      hash = (37 * hash) + LINENUMBER_FIELD_NUMBER;
+      hash = (53 * hash) + getLineNumber();
+      hash = (37 * hash) + COLUMNNUMBER_FIELD_NUMBER;
+      hash = (53 * hash) + getColumnNumber();
+      hash = (37 * hash) + TAGS_FIELD_NUMBER;
+      hash = (53 * hash) + getTags().hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.appthreat.atom.Atom.Nodes parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.appthreat.atom.Atom.Nodes parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.appthreat.atom.Atom.Nodes parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.appthreat.atom.Atom.Nodes parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.appthreat.atom.Atom.Nodes parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.appthreat.atom.Atom.Nodes parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.appthreat.atom.Atom.Nodes parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.appthreat.atom.Atom.Nodes parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static io.appthreat.atom.Atom.Nodes parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static io.appthreat.atom.Atom.Nodes parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.appthreat.atom.Atom.Nodes parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.appthreat.atom.Atom.Nodes parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.appthreat.atom.Atom.Nodes prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code atom.Nodes}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:atom.Nodes)
+        io.appthreat.atom.Atom.NodesOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.appthreat.atom.Atom.internal_static_atom_Nodes_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.appthreat.atom.Atom.internal_static_atom_Nodes_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.appthreat.atom.Atom.Nodes.class, io.appthreat.atom.Atom.Nodes.Builder.class);
+      }
+
+      // Construct using io.appthreat.atom.Atom.Nodes.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        id_ = 0;
+        label_ = 0;
+        name_ = "";
+        fullName_ = "";
+        signature_ = "";
+        isExternal_ = false;
+        code_ = "";
+        typeFullName_ = "";
+        parentMethodName_ = "";
+        parentFileName_ = "";
+        parentPackageName_ = "";
+        parentClassName_ = "";
+        lineNumber_ = 0;
+        columnNumber_ = 0;
+        tags_ = "";
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.appthreat.atom.Atom.internal_static_atom_Nodes_descriptor;
+      }
+
+      @java.lang.Override
+      public io.appthreat.atom.Atom.Nodes getDefaultInstanceForType() {
+        return io.appthreat.atom.Atom.Nodes.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.appthreat.atom.Atom.Nodes build() {
+        io.appthreat.atom.Atom.Nodes result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.appthreat.atom.Atom.Nodes buildPartial() {
+        io.appthreat.atom.Atom.Nodes result = new io.appthreat.atom.Atom.Nodes(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(io.appthreat.atom.Atom.Nodes result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.id_ = id_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.label_ = label_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.name_ = name_;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.fullName_ = fullName_;
+        }
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.signature_ = signature_;
+        }
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.isExternal_ = isExternal_;
+        }
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          result.code_ = code_;
+        }
+        if (((from_bitField0_ & 0x00000080) != 0)) {
+          result.typeFullName_ = typeFullName_;
+        }
+        if (((from_bitField0_ & 0x00000100) != 0)) {
+          result.parentMethodName_ = parentMethodName_;
+        }
+        if (((from_bitField0_ & 0x00000200) != 0)) {
+          result.parentFileName_ = parentFileName_;
+        }
+        if (((from_bitField0_ & 0x00000400) != 0)) {
+          result.parentPackageName_ = parentPackageName_;
+        }
+        if (((from_bitField0_ & 0x00000800) != 0)) {
+          result.parentClassName_ = parentClassName_;
+        }
+        if (((from_bitField0_ & 0x00001000) != 0)) {
+          result.lineNumber_ = lineNumber_;
+        }
+        if (((from_bitField0_ & 0x00002000) != 0)) {
+          result.columnNumber_ = columnNumber_;
+        }
+        if (((from_bitField0_ & 0x00004000) != 0)) {
+          result.tags_ = tags_;
+        }
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.appthreat.atom.Atom.Nodes) {
+          return mergeFrom((io.appthreat.atom.Atom.Nodes)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.appthreat.atom.Atom.Nodes other) {
+        if (other == io.appthreat.atom.Atom.Nodes.getDefaultInstance()) return this;
+        if (other.getId() != 0) {
+          setId(other.getId());
+        }
+        if (other.label_ != 0) {
+          setLabelValue(other.getLabelValue());
+        }
+        if (!other.getName().isEmpty()) {
+          name_ = other.name_;
+          bitField0_ |= 0x00000004;
+          onChanged();
+        }
+        if (!other.getFullName().isEmpty()) {
+          fullName_ = other.fullName_;
+          bitField0_ |= 0x00000008;
+          onChanged();
+        }
+        if (!other.getSignature().isEmpty()) {
+          signature_ = other.signature_;
+          bitField0_ |= 0x00000010;
+          onChanged();
+        }
+        if (other.getIsExternal() != false) {
+          setIsExternal(other.getIsExternal());
+        }
+        if (!other.getCode().isEmpty()) {
+          code_ = other.code_;
+          bitField0_ |= 0x00000040;
+          onChanged();
+        }
+        if (!other.getTypeFullName().isEmpty()) {
+          typeFullName_ = other.typeFullName_;
+          bitField0_ |= 0x00000080;
+          onChanged();
+        }
+        if (!other.getParentMethodName().isEmpty()) {
+          parentMethodName_ = other.parentMethodName_;
+          bitField0_ |= 0x00000100;
+          onChanged();
+        }
+        if (!other.getParentFileName().isEmpty()) {
+          parentFileName_ = other.parentFileName_;
+          bitField0_ |= 0x00000200;
+          onChanged();
+        }
+        if (!other.getParentPackageName().isEmpty()) {
+          parentPackageName_ = other.parentPackageName_;
+          bitField0_ |= 0x00000400;
+          onChanged();
+        }
+        if (!other.getParentClassName().isEmpty()) {
+          parentClassName_ = other.parentClassName_;
+          bitField0_ |= 0x00000800;
+          onChanged();
+        }
+        if (other.getLineNumber() != 0) {
+          setLineNumber(other.getLineNumber());
+        }
+        if (other.getColumnNumber() != 0) {
+          setColumnNumber(other.getColumnNumber());
+        }
+        if (!other.getTags().isEmpty()) {
+          tags_ = other.tags_;
+          bitField0_ |= 0x00004000;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                id_ = input.readUInt32();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              case 16: {
+                label_ = input.readEnum();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 16
+              case 26: {
+                name_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+              case 34: {
+                fullName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+              case 42: {
+                signature_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 42
+              case 48: {
+                isExternal_ = input.readBool();
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 48
+              case 58: {
+                code_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 58
+              case 66: {
+                typeFullName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000080;
+                break;
+              } // case 66
+              case 74: {
+                parentMethodName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000100;
+                break;
+              } // case 74
+              case 82: {
+                parentFileName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000200;
+                break;
+              } // case 82
+              case 90: {
+                parentPackageName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000400;
+                break;
+              } // case 90
+              case 98: {
+                parentClassName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000800;
+                break;
+              } // case 98
+              case 104: {
+                lineNumber_ = input.readUInt32();
+                bitField0_ |= 0x00001000;
+                break;
+              } // case 104
+              case 112: {
+                columnNumber_ = input.readUInt32();
+                bitField0_ |= 0x00002000;
+                break;
+              } // case 112
+              case 122: {
+                tags_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00004000;
+                break;
+              } // case 122
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private int id_ ;
+      /**
+       * <pre>
+       * Id of the node
+       * </pre>
+       *
+       * <code>uint32 id = 1;</code>
+       * @return The id.
+       */
+      @java.lang.Override
+      public int getId() {
+        return id_;
+      }
+      /**
+       * <pre>
+       * Id of the node
+       * </pre>
+       *
+       * <code>uint32 id = 1;</code>
+       * @param value The id to set.
+       * @return This builder for chaining.
+       */
+      public Builder setId(int value) {
+
+        id_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Id of the node
+       * </pre>
+       *
+       * <code>uint32 id = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearId() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        id_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int label_ = 0;
+      /**
+       * <pre>
+       * Label
+       * </pre>
+       *
+       * <code>.atom.NodeType label = 2;</code>
+       * @return The enum numeric value on the wire for label.
+       */
+      @java.lang.Override public int getLabelValue() {
+        return label_;
+      }
+      /**
+       * <pre>
+       * Label
+       * </pre>
+       *
+       * <code>.atom.NodeType label = 2;</code>
+       * @param value The enum numeric value on the wire for label to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLabelValue(int value) {
+        label_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Label
+       * </pre>
+       *
+       * <code>.atom.NodeType label = 2;</code>
+       * @return The label.
+       */
+      @java.lang.Override
+      public io.appthreat.atom.Atom.NodeType getLabel() {
+        io.appthreat.atom.Atom.NodeType result = io.appthreat.atom.Atom.NodeType.forNumber(label_);
+        return result == null ? io.appthreat.atom.Atom.NodeType.UNRECOGNIZED : result;
+      }
+      /**
+       * <pre>
+       * Label
+       * </pre>
+       *
+       * <code>.atom.NodeType label = 2;</code>
+       * @param value The label to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLabel(io.appthreat.atom.Atom.NodeType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000002;
+        label_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Label
+       * </pre>
+       *
+       * <code>.atom.NodeType label = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLabel() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        label_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object name_ = "";
+      /**
+       * <pre>
+       * Name of the call or identifier or parameter
+       * </pre>
+       *
+       * <code>string name = 3;</code>
+       * @return The name.
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          name_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Name of the call or identifier or parameter
+       * </pre>
+       *
+       * <code>string name = 3;</code>
+       * @return The bytes for name.
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Name of the call or identifier or parameter
+       * </pre>
+       *
+       * <code>string name = 3;</code>
+       * @param value The name to set.
+       * @return This builder for chaining.
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        name_ = value;
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Name of the call or identifier or parameter
+       * </pre>
+       *
+       * <code>string name = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearName() {
+        name_ = getDefaultInstance().getName();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Name of the call or identifier or parameter
+       * </pre>
+       *
+       * <code>string name = 3;</code>
+       * @param value The bytes for name to set.
+       * @return This builder for chaining.
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        name_ = value;
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object fullName_ = "";
+      /**
+       * <pre>
+       * Full name of the call
+       * </pre>
+       *
+       * <code>string fullName = 4;</code>
+       * @return The fullName.
+       */
+      public java.lang.String getFullName() {
+        java.lang.Object ref = fullName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          fullName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Full name of the call
+       * </pre>
+       *
+       * <code>string fullName = 4;</code>
+       * @return The bytes for fullName.
+       */
+      public com.google.protobuf.ByteString
+          getFullNameBytes() {
+        java.lang.Object ref = fullName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          fullName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Full name of the call
+       * </pre>
+       *
+       * <code>string fullName = 4;</code>
+       * @param value The fullName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setFullName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        fullName_ = value;
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Full name of the call
+       * </pre>
+       *
+       * <code>string fullName = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearFullName() {
+        fullName_ = getDefaultInstance().getFullName();
+        bitField0_ = (bitField0_ & ~0x00000008);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Full name of the call
+       * </pre>
+       *
+       * <code>string fullName = 4;</code>
+       * @param value The bytes for fullName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setFullNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        fullName_ = value;
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object signature_ = "";
+      /**
+       * <pre>
+       * Method signature of the call
+       * </pre>
+       *
+       * <code>string signature = 5;</code>
+       * @return The signature.
+       */
+      public java.lang.String getSignature() {
+        java.lang.Object ref = signature_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          signature_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Method signature of the call
+       * </pre>
+       *
+       * <code>string signature = 5;</code>
+       * @return The bytes for signature.
+       */
+      public com.google.protobuf.ByteString
+          getSignatureBytes() {
+        java.lang.Object ref = signature_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          signature_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Method signature of the call
+       * </pre>
+       *
+       * <code>string signature = 5;</code>
+       * @param value The signature to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSignature(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        signature_ = value;
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Method signature of the call
+       * </pre>
+       *
+       * <code>string signature = 5;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSignature() {
+        signature_ = getDefaultInstance().getSignature();
+        bitField0_ = (bitField0_ & ~0x00000010);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Method signature of the call
+       * </pre>
+       *
+       * <code>string signature = 5;</code>
+       * @param value The bytes for signature to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSignatureBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        signature_ = value;
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
+      }
+
+      private boolean isExternal_ ;
+      /**
+       * <pre>
+       * Boolean to indicate if this call belongs to an external method
+       * </pre>
+       *
+       * <code>bool isExternal = 6;</code>
+       * @return The isExternal.
+       */
+      @java.lang.Override
+      public boolean getIsExternal() {
+        return isExternal_;
+      }
+      /**
+       * <pre>
+       * Boolean to indicate if this call belongs to an external method
+       * </pre>
+       *
+       * <code>bool isExternal = 6;</code>
+       * @param value The isExternal to set.
+       * @return This builder for chaining.
+       */
+      public Builder setIsExternal(boolean value) {
+
+        isExternal_ = value;
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Boolean to indicate if this call belongs to an external method
+       * </pre>
+       *
+       * <code>bool isExternal = 6;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearIsExternal() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        isExternal_ = false;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object code_ = "";
+      /**
+       * <pre>
+       * Source code
+       * </pre>
+       *
+       * <code>string code = 7;</code>
+       * @return The code.
+       */
+      public java.lang.String getCode() {
+        java.lang.Object ref = code_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          code_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Source code
+       * </pre>
+       *
+       * <code>string code = 7;</code>
+       * @return The bytes for code.
+       */
+      public com.google.protobuf.ByteString
+          getCodeBytes() {
+        java.lang.Object ref = code_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          code_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Source code
+       * </pre>
+       *
+       * <code>string code = 7;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
+       */
+      public Builder setCode(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        code_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Source code
+       * </pre>
+       *
+       * <code>string code = 7;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearCode() {
+        code_ = getDefaultInstance().getCode();
+        bitField0_ = (bitField0_ & ~0x00000040);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Source code
+       * </pre>
+       *
+       * <code>string code = 7;</code>
+       * @param value The bytes for code to set.
+       * @return This builder for chaining.
+       */
+      public Builder setCodeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        code_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object typeFullName_ = "";
+      /**
+       * <pre>
+       * Type full name
+       * </pre>
+       *
+       * <code>string typeFullName = 8;</code>
+       * @return The typeFullName.
+       */
+      public java.lang.String getTypeFullName() {
+        java.lang.Object ref = typeFullName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          typeFullName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Type full name
+       * </pre>
+       *
+       * <code>string typeFullName = 8;</code>
+       * @return The bytes for typeFullName.
+       */
+      public com.google.protobuf.ByteString
+          getTypeFullNameBytes() {
+        java.lang.Object ref = typeFullName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          typeFullName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Type full name
+       * </pre>
+       *
+       * <code>string typeFullName = 8;</code>
+       * @param value The typeFullName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTypeFullName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        typeFullName_ = value;
+        bitField0_ |= 0x00000080;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Type full name
+       * </pre>
+       *
+       * <code>string typeFullName = 8;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTypeFullName() {
+        typeFullName_ = getDefaultInstance().getTypeFullName();
+        bitField0_ = (bitField0_ & ~0x00000080);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Type full name
+       * </pre>
+       *
+       * <code>string typeFullName = 8;</code>
+       * @param value The bytes for typeFullName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTypeFullNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        typeFullName_ = value;
+        bitField0_ |= 0x00000080;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object parentMethodName_ = "";
+      /**
+       * <pre>
+       * Parent method name
+       * </pre>
+       *
+       * <code>string parentMethodName = 9;</code>
+       * @return The parentMethodName.
+       */
+      public java.lang.String getParentMethodName() {
+        java.lang.Object ref = parentMethodName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          parentMethodName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Parent method name
+       * </pre>
+       *
+       * <code>string parentMethodName = 9;</code>
+       * @return The bytes for parentMethodName.
+       */
+      public com.google.protobuf.ByteString
+          getParentMethodNameBytes() {
+        java.lang.Object ref = parentMethodName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          parentMethodName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Parent method name
+       * </pre>
+       *
+       * <code>string parentMethodName = 9;</code>
+       * @param value The parentMethodName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setParentMethodName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        parentMethodName_ = value;
+        bitField0_ |= 0x00000100;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Parent method name
+       * </pre>
+       *
+       * <code>string parentMethodName = 9;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearParentMethodName() {
+        parentMethodName_ = getDefaultInstance().getParentMethodName();
+        bitField0_ = (bitField0_ & ~0x00000100);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Parent method name
+       * </pre>
+       *
+       * <code>string parentMethodName = 9;</code>
+       * @param value The bytes for parentMethodName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setParentMethodNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        parentMethodName_ = value;
+        bitField0_ |= 0x00000100;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object parentFileName_ = "";
+      /**
+       * <pre>
+       * Parent filename
+       * </pre>
+       *
+       * <code>string parentFileName = 10;</code>
+       * @return The parentFileName.
+       */
+      public java.lang.String getParentFileName() {
+        java.lang.Object ref = parentFileName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          parentFileName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Parent filename
+       * </pre>
+       *
+       * <code>string parentFileName = 10;</code>
+       * @return The bytes for parentFileName.
+       */
+      public com.google.protobuf.ByteString
+          getParentFileNameBytes() {
+        java.lang.Object ref = parentFileName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          parentFileName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Parent filename
+       * </pre>
+       *
+       * <code>string parentFileName = 10;</code>
+       * @param value The parentFileName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setParentFileName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        parentFileName_ = value;
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Parent filename
+       * </pre>
+       *
+       * <code>string parentFileName = 10;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearParentFileName() {
+        parentFileName_ = getDefaultInstance().getParentFileName();
+        bitField0_ = (bitField0_ & ~0x00000200);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Parent filename
+       * </pre>
+       *
+       * <code>string parentFileName = 10;</code>
+       * @param value The bytes for parentFileName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setParentFileNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        parentFileName_ = value;
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object parentPackageName_ = "";
+      /**
+       * <pre>
+       * Parent package name
+       * </pre>
+       *
+       * <code>string parentPackageName = 11;</code>
+       * @return The parentPackageName.
+       */
+      public java.lang.String getParentPackageName() {
+        java.lang.Object ref = parentPackageName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          parentPackageName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Parent package name
+       * </pre>
+       *
+       * <code>string parentPackageName = 11;</code>
+       * @return The bytes for parentPackageName.
+       */
+      public com.google.protobuf.ByteString
+          getParentPackageNameBytes() {
+        java.lang.Object ref = parentPackageName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          parentPackageName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Parent package name
+       * </pre>
+       *
+       * <code>string parentPackageName = 11;</code>
+       * @param value The parentPackageName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setParentPackageName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        parentPackageName_ = value;
+        bitField0_ |= 0x00000400;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Parent package name
+       * </pre>
+       *
+       * <code>string parentPackageName = 11;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearParentPackageName() {
+        parentPackageName_ = getDefaultInstance().getParentPackageName();
+        bitField0_ = (bitField0_ & ~0x00000400);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Parent package name
+       * </pre>
+       *
+       * <code>string parentPackageName = 11;</code>
+       * @param value The bytes for parentPackageName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setParentPackageNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        parentPackageName_ = value;
+        bitField0_ |= 0x00000400;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object parentClassName_ = "";
+      /**
+       * <pre>
+       * Parent class name
+       * </pre>
+       *
+       * <code>string parentClassName = 12;</code>
+       * @return The parentClassName.
+       */
+      public java.lang.String getParentClassName() {
+        java.lang.Object ref = parentClassName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          parentClassName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Parent class name
+       * </pre>
+       *
+       * <code>string parentClassName = 12;</code>
+       * @return The bytes for parentClassName.
+       */
+      public com.google.protobuf.ByteString
+          getParentClassNameBytes() {
+        java.lang.Object ref = parentClassName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          parentClassName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Parent class name
+       * </pre>
+       *
+       * <code>string parentClassName = 12;</code>
+       * @param value The parentClassName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setParentClassName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        parentClassName_ = value;
+        bitField0_ |= 0x00000800;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Parent class name
+       * </pre>
+       *
+       * <code>string parentClassName = 12;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearParentClassName() {
+        parentClassName_ = getDefaultInstance().getParentClassName();
+        bitField0_ = (bitField0_ & ~0x00000800);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Parent class name
+       * </pre>
+       *
+       * <code>string parentClassName = 12;</code>
+       * @param value The bytes for parentClassName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setParentClassNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        parentClassName_ = value;
+        bitField0_ |= 0x00000800;
+        onChanged();
+        return this;
+      }
+
+      private int lineNumber_ ;
+      /**
+       * <pre>
+       * Line number
+       * </pre>
+       *
+       * <code>uint32 lineNumber = 13;</code>
+       * @return The lineNumber.
+       */
+      @java.lang.Override
+      public int getLineNumber() {
+        return lineNumber_;
+      }
+      /**
+       * <pre>
+       * Line number
+       * </pre>
+       *
+       * <code>uint32 lineNumber = 13;</code>
+       * @param value The lineNumber to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLineNumber(int value) {
+
+        lineNumber_ = value;
+        bitField0_ |= 0x00001000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Line number
+       * </pre>
+       *
+       * <code>uint32 lineNumber = 13;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLineNumber() {
+        bitField0_ = (bitField0_ & ~0x00001000);
+        lineNumber_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int columnNumber_ ;
+      /**
+       * <pre>
+       * Column number
+       * </pre>
+       *
+       * <code>uint32 columnNumber = 14;</code>
+       * @return The columnNumber.
+       */
+      @java.lang.Override
+      public int getColumnNumber() {
+        return columnNumber_;
+      }
+      /**
+       * <pre>
+       * Column number
+       * </pre>
+       *
+       * <code>uint32 columnNumber = 14;</code>
+       * @param value The columnNumber to set.
+       * @return This builder for chaining.
+       */
+      public Builder setColumnNumber(int value) {
+
+        columnNumber_ = value;
+        bitField0_ |= 0x00002000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Column number
+       * </pre>
+       *
+       * <code>uint32 columnNumber = 14;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearColumnNumber() {
+        bitField0_ = (bitField0_ & ~0x00002000);
+        columnNumber_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object tags_ = "";
+      /**
+       * <pre>
+       * Tags. Can contain simple names including package url
+       * </pre>
+       *
+       * <code>string tags = 15;</code>
+       * @return The tags.
+       */
+      public java.lang.String getTags() {
+        java.lang.Object ref = tags_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          tags_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Tags. Can contain simple names including package url
+       * </pre>
+       *
+       * <code>string tags = 15;</code>
+       * @return The bytes for tags.
+       */
+      public com.google.protobuf.ByteString
+          getTagsBytes() {
+        java.lang.Object ref = tags_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          tags_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Tags. Can contain simple names including package url
+       * </pre>
+       *
+       * <code>string tags = 15;</code>
+       * @param value The tags to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTags(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        tags_ = value;
+        bitField0_ |= 0x00004000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Tags. Can contain simple names including package url
+       * </pre>
+       *
+       * <code>string tags = 15;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTags() {
+        tags_ = getDefaultInstance().getTags();
+        bitField0_ = (bitField0_ & ~0x00004000);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Tags. Can contain simple names including package url
+       * </pre>
+       *
+       * <code>string tags = 15;</code>
+       * @param value The bytes for tags to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTagsBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        tags_ = value;
+        bitField0_ |= 0x00004000;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:atom.Nodes)
+    }
+
+    // @@protoc_insertion_point(class_scope:atom.Nodes)
+    private static final io.appthreat.atom.Atom.Nodes DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.appthreat.atom.Atom.Nodes();
+    }
+
+    public static io.appthreat.atom.Atom.Nodes getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<Nodes>
+        PARSER = new com.google.protobuf.AbstractParser<Nodes>() {
+      @java.lang.Override
+      public Nodes parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<Nodes> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Nodes> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.appthreat.atom.Atom.Nodes getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface DataFlowSliceOrBuilder extends
       // @@protoc_insertion_point(interface_extends:atom.DataFlowSlice)
       com.google.protobuf.MessageOrBuilder {
@@ -39601,2576 +42355,6 @@ public final class Atom {
       return io.appthreat.atom.Atom.internal_static_atom_DataFlowSlice_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.appthreat.atom.Atom.DataFlowSlice.class, io.appthreat.atom.Atom.DataFlowSlice.Builder.class);
-    }
-
-    public interface NodesOrBuilder extends
-        // @@protoc_insertion_point(interface_extends:atom.DataFlowSlice.Nodes)
-        com.google.protobuf.MessageOrBuilder {
-
-      /**
-       * <pre>
-       * Id of the node
-       * </pre>
-       *
-       * <code>uint32 id = 1;</code>
-       * @return The id.
-       */
-      int getId();
-
-      /**
-       * <pre>
-       * Label
-       * </pre>
-       *
-       * <code>.atom.NodeType label = 2;</code>
-       * @return The enum numeric value on the wire for label.
-       */
-      int getLabelValue();
-      /**
-       * <pre>
-       * Label
-       * </pre>
-       *
-       * <code>.atom.NodeType label = 2;</code>
-       * @return The label.
-       */
-      io.appthreat.atom.Atom.NodeType getLabel();
-
-      /**
-       * <pre>
-       * Name of the call or identifier or parameter
-       * </pre>
-       *
-       * <code>string name = 3;</code>
-       * @return The name.
-       */
-      java.lang.String getName();
-      /**
-       * <pre>
-       * Name of the call or identifier or parameter
-       * </pre>
-       *
-       * <code>string name = 3;</code>
-       * @return The bytes for name.
-       */
-      com.google.protobuf.ByteString
-          getNameBytes();
-
-      /**
-       * <pre>
-       * Full name of the call
-       * </pre>
-       *
-       * <code>string fullName = 4;</code>
-       * @return The fullName.
-       */
-      java.lang.String getFullName();
-      /**
-       * <pre>
-       * Full name of the call
-       * </pre>
-       *
-       * <code>string fullName = 4;</code>
-       * @return The bytes for fullName.
-       */
-      com.google.protobuf.ByteString
-          getFullNameBytes();
-
-      /**
-       * <pre>
-       * Method signature of the call
-       * </pre>
-       *
-       * <code>string signature = 5;</code>
-       * @return The signature.
-       */
-      java.lang.String getSignature();
-      /**
-       * <pre>
-       * Method signature of the call
-       * </pre>
-       *
-       * <code>string signature = 5;</code>
-       * @return The bytes for signature.
-       */
-      com.google.protobuf.ByteString
-          getSignatureBytes();
-
-      /**
-       * <pre>
-       * Boolean to indicate if this call belongs to an external method
-       * </pre>
-       *
-       * <code>bool isExternal = 6;</code>
-       * @return The isExternal.
-       */
-      boolean getIsExternal();
-
-      /**
-       * <pre>
-       * Source code
-       * </pre>
-       *
-       * <code>string code = 7;</code>
-       * @return The code.
-       */
-      java.lang.String getCode();
-      /**
-       * <pre>
-       * Source code
-       * </pre>
-       *
-       * <code>string code = 7;</code>
-       * @return The bytes for code.
-       */
-      com.google.protobuf.ByteString
-          getCodeBytes();
-
-      /**
-       * <pre>
-       * Type full name
-       * </pre>
-       *
-       * <code>string typeFullName = 8;</code>
-       * @return The typeFullName.
-       */
-      java.lang.String getTypeFullName();
-      /**
-       * <pre>
-       * Type full name
-       * </pre>
-       *
-       * <code>string typeFullName = 8;</code>
-       * @return The bytes for typeFullName.
-       */
-      com.google.protobuf.ByteString
-          getTypeFullNameBytes();
-
-      /**
-       * <pre>
-       * Parent method name
-       * </pre>
-       *
-       * <code>string parentMethodName = 9;</code>
-       * @return The parentMethodName.
-       */
-      java.lang.String getParentMethodName();
-      /**
-       * <pre>
-       * Parent method name
-       * </pre>
-       *
-       * <code>string parentMethodName = 9;</code>
-       * @return The bytes for parentMethodName.
-       */
-      com.google.protobuf.ByteString
-          getParentMethodNameBytes();
-
-      /**
-       * <pre>
-       * Parent filename
-       * </pre>
-       *
-       * <code>string parentFileName = 10;</code>
-       * @return The parentFileName.
-       */
-      java.lang.String getParentFileName();
-      /**
-       * <pre>
-       * Parent filename
-       * </pre>
-       *
-       * <code>string parentFileName = 10;</code>
-       * @return The bytes for parentFileName.
-       */
-      com.google.protobuf.ByteString
-          getParentFileNameBytes();
-
-      /**
-       * <pre>
-       * Parent package name
-       * </pre>
-       *
-       * <code>string parentPackageName = 11;</code>
-       * @return The parentPackageName.
-       */
-      java.lang.String getParentPackageName();
-      /**
-       * <pre>
-       * Parent package name
-       * </pre>
-       *
-       * <code>string parentPackageName = 11;</code>
-       * @return The bytes for parentPackageName.
-       */
-      com.google.protobuf.ByteString
-          getParentPackageNameBytes();
-
-      /**
-       * <pre>
-       * Parent class name
-       * </pre>
-       *
-       * <code>string parentClassName = 12;</code>
-       * @return The parentClassName.
-       */
-      java.lang.String getParentClassName();
-      /**
-       * <pre>
-       * Parent class name
-       * </pre>
-       *
-       * <code>string parentClassName = 12;</code>
-       * @return The bytes for parentClassName.
-       */
-      com.google.protobuf.ByteString
-          getParentClassNameBytes();
-
-      /**
-       * <pre>
-       * Line number
-       * </pre>
-       *
-       * <code>uint32 lineNumber = 13;</code>
-       * @return The lineNumber.
-       */
-      int getLineNumber();
-
-      /**
-       * <pre>
-       * Column number
-       * </pre>
-       *
-       * <code>uint32 columnNumber = 14;</code>
-       * @return The columnNumber.
-       */
-      int getColumnNumber();
-    }
-    /**
-     * Protobuf type {@code atom.DataFlowSlice.Nodes}
-     */
-    public static final class Nodes extends
-        com.google.protobuf.GeneratedMessageV3 implements
-        // @@protoc_insertion_point(message_implements:atom.DataFlowSlice.Nodes)
-        NodesOrBuilder {
-    private static final long serialVersionUID = 0L;
-      // Use Nodes.newBuilder() to construct.
-      private Nodes(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
-        super(builder);
-      }
-      private Nodes() {
-        label_ = 0;
-        name_ = "";
-        fullName_ = "";
-        signature_ = "";
-        code_ = "";
-        typeFullName_ = "";
-        parentMethodName_ = "";
-        parentFileName_ = "";
-        parentPackageName_ = "";
-        parentClassName_ = "";
-      }
-
-      @java.lang.Override
-      @SuppressWarnings({"unused"})
-      protected java.lang.Object newInstance(
-          UnusedPrivateParameter unused) {
-        return new Nodes();
-      }
-
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return io.appthreat.atom.Atom.internal_static_atom_DataFlowSlice_Nodes_descriptor;
-      }
-
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return io.appthreat.atom.Atom.internal_static_atom_DataFlowSlice_Nodes_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                io.appthreat.atom.Atom.DataFlowSlice.Nodes.class, io.appthreat.atom.Atom.DataFlowSlice.Nodes.Builder.class);
-      }
-
-      public static final int ID_FIELD_NUMBER = 1;
-      private int id_ = 0;
-      /**
-       * <pre>
-       * Id of the node
-       * </pre>
-       *
-       * <code>uint32 id = 1;</code>
-       * @return The id.
-       */
-      @java.lang.Override
-      public int getId() {
-        return id_;
-      }
-
-      public static final int LABEL_FIELD_NUMBER = 2;
-      private int label_ = 0;
-      /**
-       * <pre>
-       * Label
-       * </pre>
-       *
-       * <code>.atom.NodeType label = 2;</code>
-       * @return The enum numeric value on the wire for label.
-       */
-      @java.lang.Override public int getLabelValue() {
-        return label_;
-      }
-      /**
-       * <pre>
-       * Label
-       * </pre>
-       *
-       * <code>.atom.NodeType label = 2;</code>
-       * @return The label.
-       */
-      @java.lang.Override public io.appthreat.atom.Atom.NodeType getLabel() {
-        io.appthreat.atom.Atom.NodeType result = io.appthreat.atom.Atom.NodeType.forNumber(label_);
-        return result == null ? io.appthreat.atom.Atom.NodeType.UNRECOGNIZED : result;
-      }
-
-      public static final int NAME_FIELD_NUMBER = 3;
-      @SuppressWarnings("serial")
-      private volatile java.lang.Object name_ = "";
-      /**
-       * <pre>
-       * Name of the call or identifier or parameter
-       * </pre>
-       *
-       * <code>string name = 3;</code>
-       * @return The name.
-       */
-      @java.lang.Override
-      public java.lang.String getName() {
-        java.lang.Object ref = name_;
-        if (ref instanceof java.lang.String) {
-          return (java.lang.String) ref;
-        } else {
-          com.google.protobuf.ByteString bs = 
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          name_ = s;
-          return s;
-        }
-      }
-      /**
-       * <pre>
-       * Name of the call or identifier or parameter
-       * </pre>
-       *
-       * <code>string name = 3;</code>
-       * @return The bytes for name.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString
-          getNameBytes() {
-        java.lang.Object ref = name_;
-        if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          name_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-
-      public static final int FULLNAME_FIELD_NUMBER = 4;
-      @SuppressWarnings("serial")
-      private volatile java.lang.Object fullName_ = "";
-      /**
-       * <pre>
-       * Full name of the call
-       * </pre>
-       *
-       * <code>string fullName = 4;</code>
-       * @return The fullName.
-       */
-      @java.lang.Override
-      public java.lang.String getFullName() {
-        java.lang.Object ref = fullName_;
-        if (ref instanceof java.lang.String) {
-          return (java.lang.String) ref;
-        } else {
-          com.google.protobuf.ByteString bs = 
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          fullName_ = s;
-          return s;
-        }
-      }
-      /**
-       * <pre>
-       * Full name of the call
-       * </pre>
-       *
-       * <code>string fullName = 4;</code>
-       * @return The bytes for fullName.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString
-          getFullNameBytes() {
-        java.lang.Object ref = fullName_;
-        if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          fullName_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-
-      public static final int SIGNATURE_FIELD_NUMBER = 5;
-      @SuppressWarnings("serial")
-      private volatile java.lang.Object signature_ = "";
-      /**
-       * <pre>
-       * Method signature of the call
-       * </pre>
-       *
-       * <code>string signature = 5;</code>
-       * @return The signature.
-       */
-      @java.lang.Override
-      public java.lang.String getSignature() {
-        java.lang.Object ref = signature_;
-        if (ref instanceof java.lang.String) {
-          return (java.lang.String) ref;
-        } else {
-          com.google.protobuf.ByteString bs = 
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          signature_ = s;
-          return s;
-        }
-      }
-      /**
-       * <pre>
-       * Method signature of the call
-       * </pre>
-       *
-       * <code>string signature = 5;</code>
-       * @return The bytes for signature.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString
-          getSignatureBytes() {
-        java.lang.Object ref = signature_;
-        if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          signature_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-
-      public static final int ISEXTERNAL_FIELD_NUMBER = 6;
-      private boolean isExternal_ = false;
-      /**
-       * <pre>
-       * Boolean to indicate if this call belongs to an external method
-       * </pre>
-       *
-       * <code>bool isExternal = 6;</code>
-       * @return The isExternal.
-       */
-      @java.lang.Override
-      public boolean getIsExternal() {
-        return isExternal_;
-      }
-
-      public static final int CODE_FIELD_NUMBER = 7;
-      @SuppressWarnings("serial")
-      private volatile java.lang.Object code_ = "";
-      /**
-       * <pre>
-       * Source code
-       * </pre>
-       *
-       * <code>string code = 7;</code>
-       * @return The code.
-       */
-      @java.lang.Override
-      public java.lang.String getCode() {
-        java.lang.Object ref = code_;
-        if (ref instanceof java.lang.String) {
-          return (java.lang.String) ref;
-        } else {
-          com.google.protobuf.ByteString bs = 
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          code_ = s;
-          return s;
-        }
-      }
-      /**
-       * <pre>
-       * Source code
-       * </pre>
-       *
-       * <code>string code = 7;</code>
-       * @return The bytes for code.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString
-          getCodeBytes() {
-        java.lang.Object ref = code_;
-        if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          code_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-
-      public static final int TYPEFULLNAME_FIELD_NUMBER = 8;
-      @SuppressWarnings("serial")
-      private volatile java.lang.Object typeFullName_ = "";
-      /**
-       * <pre>
-       * Type full name
-       * </pre>
-       *
-       * <code>string typeFullName = 8;</code>
-       * @return The typeFullName.
-       */
-      @java.lang.Override
-      public java.lang.String getTypeFullName() {
-        java.lang.Object ref = typeFullName_;
-        if (ref instanceof java.lang.String) {
-          return (java.lang.String) ref;
-        } else {
-          com.google.protobuf.ByteString bs = 
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          typeFullName_ = s;
-          return s;
-        }
-      }
-      /**
-       * <pre>
-       * Type full name
-       * </pre>
-       *
-       * <code>string typeFullName = 8;</code>
-       * @return The bytes for typeFullName.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString
-          getTypeFullNameBytes() {
-        java.lang.Object ref = typeFullName_;
-        if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          typeFullName_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-
-      public static final int PARENTMETHODNAME_FIELD_NUMBER = 9;
-      @SuppressWarnings("serial")
-      private volatile java.lang.Object parentMethodName_ = "";
-      /**
-       * <pre>
-       * Parent method name
-       * </pre>
-       *
-       * <code>string parentMethodName = 9;</code>
-       * @return The parentMethodName.
-       */
-      @java.lang.Override
-      public java.lang.String getParentMethodName() {
-        java.lang.Object ref = parentMethodName_;
-        if (ref instanceof java.lang.String) {
-          return (java.lang.String) ref;
-        } else {
-          com.google.protobuf.ByteString bs = 
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          parentMethodName_ = s;
-          return s;
-        }
-      }
-      /**
-       * <pre>
-       * Parent method name
-       * </pre>
-       *
-       * <code>string parentMethodName = 9;</code>
-       * @return The bytes for parentMethodName.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString
-          getParentMethodNameBytes() {
-        java.lang.Object ref = parentMethodName_;
-        if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          parentMethodName_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-
-      public static final int PARENTFILENAME_FIELD_NUMBER = 10;
-      @SuppressWarnings("serial")
-      private volatile java.lang.Object parentFileName_ = "";
-      /**
-       * <pre>
-       * Parent filename
-       * </pre>
-       *
-       * <code>string parentFileName = 10;</code>
-       * @return The parentFileName.
-       */
-      @java.lang.Override
-      public java.lang.String getParentFileName() {
-        java.lang.Object ref = parentFileName_;
-        if (ref instanceof java.lang.String) {
-          return (java.lang.String) ref;
-        } else {
-          com.google.protobuf.ByteString bs = 
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          parentFileName_ = s;
-          return s;
-        }
-      }
-      /**
-       * <pre>
-       * Parent filename
-       * </pre>
-       *
-       * <code>string parentFileName = 10;</code>
-       * @return The bytes for parentFileName.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString
-          getParentFileNameBytes() {
-        java.lang.Object ref = parentFileName_;
-        if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          parentFileName_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-
-      public static final int PARENTPACKAGENAME_FIELD_NUMBER = 11;
-      @SuppressWarnings("serial")
-      private volatile java.lang.Object parentPackageName_ = "";
-      /**
-       * <pre>
-       * Parent package name
-       * </pre>
-       *
-       * <code>string parentPackageName = 11;</code>
-       * @return The parentPackageName.
-       */
-      @java.lang.Override
-      public java.lang.String getParentPackageName() {
-        java.lang.Object ref = parentPackageName_;
-        if (ref instanceof java.lang.String) {
-          return (java.lang.String) ref;
-        } else {
-          com.google.protobuf.ByteString bs = 
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          parentPackageName_ = s;
-          return s;
-        }
-      }
-      /**
-       * <pre>
-       * Parent package name
-       * </pre>
-       *
-       * <code>string parentPackageName = 11;</code>
-       * @return The bytes for parentPackageName.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString
-          getParentPackageNameBytes() {
-        java.lang.Object ref = parentPackageName_;
-        if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          parentPackageName_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-
-      public static final int PARENTCLASSNAME_FIELD_NUMBER = 12;
-      @SuppressWarnings("serial")
-      private volatile java.lang.Object parentClassName_ = "";
-      /**
-       * <pre>
-       * Parent class name
-       * </pre>
-       *
-       * <code>string parentClassName = 12;</code>
-       * @return The parentClassName.
-       */
-      @java.lang.Override
-      public java.lang.String getParentClassName() {
-        java.lang.Object ref = parentClassName_;
-        if (ref instanceof java.lang.String) {
-          return (java.lang.String) ref;
-        } else {
-          com.google.protobuf.ByteString bs = 
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          parentClassName_ = s;
-          return s;
-        }
-      }
-      /**
-       * <pre>
-       * Parent class name
-       * </pre>
-       *
-       * <code>string parentClassName = 12;</code>
-       * @return The bytes for parentClassName.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString
-          getParentClassNameBytes() {
-        java.lang.Object ref = parentClassName_;
-        if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          parentClassName_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-
-      public static final int LINENUMBER_FIELD_NUMBER = 13;
-      private int lineNumber_ = 0;
-      /**
-       * <pre>
-       * Line number
-       * </pre>
-       *
-       * <code>uint32 lineNumber = 13;</code>
-       * @return The lineNumber.
-       */
-      @java.lang.Override
-      public int getLineNumber() {
-        return lineNumber_;
-      }
-
-      public static final int COLUMNNUMBER_FIELD_NUMBER = 14;
-      private int columnNumber_ = 0;
-      /**
-       * <pre>
-       * Column number
-       * </pre>
-       *
-       * <code>uint32 columnNumber = 14;</code>
-       * @return The columnNumber.
-       */
-      @java.lang.Override
-      public int getColumnNumber() {
-        return columnNumber_;
-      }
-
-      private byte memoizedIsInitialized = -1;
-      @java.lang.Override
-      public final boolean isInitialized() {
-        byte isInitialized = memoizedIsInitialized;
-        if (isInitialized == 1) return true;
-        if (isInitialized == 0) return false;
-
-        memoizedIsInitialized = 1;
-        return true;
-      }
-
-      @java.lang.Override
-      public void writeTo(com.google.protobuf.CodedOutputStream output)
-                          throws java.io.IOException {
-        if (id_ != 0) {
-          output.writeUInt32(1, id_);
-        }
-        if (label_ != io.appthreat.atom.Atom.NodeType.UNKNOWN_NODE_TYPE.getNumber()) {
-          output.writeEnum(2, label_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 3, name_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(fullName_)) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 4, fullName_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(signature_)) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 5, signature_);
-        }
-        if (isExternal_ != false) {
-          output.writeBool(6, isExternal_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(code_)) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 7, code_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(typeFullName_)) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 8, typeFullName_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentMethodName_)) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 9, parentMethodName_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentFileName_)) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 10, parentFileName_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentPackageName_)) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 11, parentPackageName_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentClassName_)) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 12, parentClassName_);
-        }
-        if (lineNumber_ != 0) {
-          output.writeUInt32(13, lineNumber_);
-        }
-        if (columnNumber_ != 0) {
-          output.writeUInt32(14, columnNumber_);
-        }
-        getUnknownFields().writeTo(output);
-      }
-
-      @java.lang.Override
-      public int getSerializedSize() {
-        int size = memoizedSize;
-        if (size != -1) return size;
-
-        size = 0;
-        if (id_ != 0) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeUInt32Size(1, id_);
-        }
-        if (label_ != io.appthreat.atom.Atom.NodeType.UNKNOWN_NODE_TYPE.getNumber()) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeEnumSize(2, label_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
-          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, name_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(fullName_)) {
-          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, fullName_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(signature_)) {
-          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, signature_);
-        }
-        if (isExternal_ != false) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeBoolSize(6, isExternal_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(code_)) {
-          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, code_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(typeFullName_)) {
-          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, typeFullName_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentMethodName_)) {
-          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, parentMethodName_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentFileName_)) {
-          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, parentFileName_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentPackageName_)) {
-          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, parentPackageName_);
-        }
-        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(parentClassName_)) {
-          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, parentClassName_);
-        }
-        if (lineNumber_ != 0) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeUInt32Size(13, lineNumber_);
-        }
-        if (columnNumber_ != 0) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeUInt32Size(14, columnNumber_);
-        }
-        size += getUnknownFields().getSerializedSize();
-        memoizedSize = size;
-        return size;
-      }
-
-      @java.lang.Override
-      public boolean equals(final java.lang.Object obj) {
-        if (obj == this) {
-         return true;
-        }
-        if (!(obj instanceof io.appthreat.atom.Atom.DataFlowSlice.Nodes)) {
-          return super.equals(obj);
-        }
-        io.appthreat.atom.Atom.DataFlowSlice.Nodes other = (io.appthreat.atom.Atom.DataFlowSlice.Nodes) obj;
-
-        if (getId()
-            != other.getId()) return false;
-        if (label_ != other.label_) return false;
-        if (!getName()
-            .equals(other.getName())) return false;
-        if (!getFullName()
-            .equals(other.getFullName())) return false;
-        if (!getSignature()
-            .equals(other.getSignature())) return false;
-        if (getIsExternal()
-            != other.getIsExternal()) return false;
-        if (!getCode()
-            .equals(other.getCode())) return false;
-        if (!getTypeFullName()
-            .equals(other.getTypeFullName())) return false;
-        if (!getParentMethodName()
-            .equals(other.getParentMethodName())) return false;
-        if (!getParentFileName()
-            .equals(other.getParentFileName())) return false;
-        if (!getParentPackageName()
-            .equals(other.getParentPackageName())) return false;
-        if (!getParentClassName()
-            .equals(other.getParentClassName())) return false;
-        if (getLineNumber()
-            != other.getLineNumber()) return false;
-        if (getColumnNumber()
-            != other.getColumnNumber()) return false;
-        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
-        return true;
-      }
-
-      @java.lang.Override
-      public int hashCode() {
-        if (memoizedHashCode != 0) {
-          return memoizedHashCode;
-        }
-        int hash = 41;
-        hash = (19 * hash) + getDescriptor().hashCode();
-        hash = (37 * hash) + ID_FIELD_NUMBER;
-        hash = (53 * hash) + getId();
-        hash = (37 * hash) + LABEL_FIELD_NUMBER;
-        hash = (53 * hash) + label_;
-        hash = (37 * hash) + NAME_FIELD_NUMBER;
-        hash = (53 * hash) + getName().hashCode();
-        hash = (37 * hash) + FULLNAME_FIELD_NUMBER;
-        hash = (53 * hash) + getFullName().hashCode();
-        hash = (37 * hash) + SIGNATURE_FIELD_NUMBER;
-        hash = (53 * hash) + getSignature().hashCode();
-        hash = (37 * hash) + ISEXTERNAL_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-            getIsExternal());
-        hash = (37 * hash) + CODE_FIELD_NUMBER;
-        hash = (53 * hash) + getCode().hashCode();
-        hash = (37 * hash) + TYPEFULLNAME_FIELD_NUMBER;
-        hash = (53 * hash) + getTypeFullName().hashCode();
-        hash = (37 * hash) + PARENTMETHODNAME_FIELD_NUMBER;
-        hash = (53 * hash) + getParentMethodName().hashCode();
-        hash = (37 * hash) + PARENTFILENAME_FIELD_NUMBER;
-        hash = (53 * hash) + getParentFileName().hashCode();
-        hash = (37 * hash) + PARENTPACKAGENAME_FIELD_NUMBER;
-        hash = (53 * hash) + getParentPackageName().hashCode();
-        hash = (37 * hash) + PARENTCLASSNAME_FIELD_NUMBER;
-        hash = (53 * hash) + getParentClassName().hashCode();
-        hash = (37 * hash) + LINENUMBER_FIELD_NUMBER;
-        hash = (53 * hash) + getLineNumber();
-        hash = (37 * hash) + COLUMNNUMBER_FIELD_NUMBER;
-        hash = (53 * hash) + getColumnNumber();
-        hash = (29 * hash) + getUnknownFields().hashCode();
-        memoizedHashCode = hash;
-        return hash;
-      }
-
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes parseFrom(
-          java.nio.ByteBuffer data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes parseFrom(
-          java.nio.ByteBuffer data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes parseFrom(
-          com.google.protobuf.ByteString data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes parseFrom(
-          com.google.protobuf.ByteString data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes parseFrom(byte[] data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes parseFrom(
-          byte[] data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes parseFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input);
-      }
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes parseFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input, extensionRegistry);
-      }
-
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes parseDelimitedFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseDelimitedWithIOException(PARSER, input);
-      }
-
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes parseDelimitedFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-      }
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes parseFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input);
-      }
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes parseFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input, extensionRegistry);
-      }
-
-      @java.lang.Override
-      public Builder newBuilderForType() { return newBuilder(); }
-      public static Builder newBuilder() {
-        return DEFAULT_INSTANCE.toBuilder();
-      }
-      public static Builder newBuilder(io.appthreat.atom.Atom.DataFlowSlice.Nodes prototype) {
-        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-      }
-      @java.lang.Override
-      public Builder toBuilder() {
-        return this == DEFAULT_INSTANCE
-            ? new Builder() : new Builder().mergeFrom(this);
-      }
-
-      @java.lang.Override
-      protected Builder newBuilderForType(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-        Builder builder = new Builder(parent);
-        return builder;
-      }
-      /**
-       * Protobuf type {@code atom.DataFlowSlice.Nodes}
-       */
-      public static final class Builder extends
-          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-          // @@protoc_insertion_point(builder_implements:atom.DataFlowSlice.Nodes)
-          io.appthreat.atom.Atom.DataFlowSlice.NodesOrBuilder {
-        public static final com.google.protobuf.Descriptors.Descriptor
-            getDescriptor() {
-          return io.appthreat.atom.Atom.internal_static_atom_DataFlowSlice_Nodes_descriptor;
-        }
-
-        @java.lang.Override
-        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-            internalGetFieldAccessorTable() {
-          return io.appthreat.atom.Atom.internal_static_atom_DataFlowSlice_Nodes_fieldAccessorTable
-              .ensureFieldAccessorsInitialized(
-                  io.appthreat.atom.Atom.DataFlowSlice.Nodes.class, io.appthreat.atom.Atom.DataFlowSlice.Nodes.Builder.class);
-        }
-
-        // Construct using io.appthreat.atom.Atom.DataFlowSlice.Nodes.newBuilder()
-        private Builder() {
-
-        }
-
-        private Builder(
-            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-          super(parent);
-
-        }
-        @java.lang.Override
-        public Builder clear() {
-          super.clear();
-          bitField0_ = 0;
-          id_ = 0;
-          label_ = 0;
-          name_ = "";
-          fullName_ = "";
-          signature_ = "";
-          isExternal_ = false;
-          code_ = "";
-          typeFullName_ = "";
-          parentMethodName_ = "";
-          parentFileName_ = "";
-          parentPackageName_ = "";
-          parentClassName_ = "";
-          lineNumber_ = 0;
-          columnNumber_ = 0;
-          return this;
-        }
-
-        @java.lang.Override
-        public com.google.protobuf.Descriptors.Descriptor
-            getDescriptorForType() {
-          return io.appthreat.atom.Atom.internal_static_atom_DataFlowSlice_Nodes_descriptor;
-        }
-
-        @java.lang.Override
-        public io.appthreat.atom.Atom.DataFlowSlice.Nodes getDefaultInstanceForType() {
-          return io.appthreat.atom.Atom.DataFlowSlice.Nodes.getDefaultInstance();
-        }
-
-        @java.lang.Override
-        public io.appthreat.atom.Atom.DataFlowSlice.Nodes build() {
-          io.appthreat.atom.Atom.DataFlowSlice.Nodes result = buildPartial();
-          if (!result.isInitialized()) {
-            throw newUninitializedMessageException(result);
-          }
-          return result;
-        }
-
-        @java.lang.Override
-        public io.appthreat.atom.Atom.DataFlowSlice.Nodes buildPartial() {
-          io.appthreat.atom.Atom.DataFlowSlice.Nodes result = new io.appthreat.atom.Atom.DataFlowSlice.Nodes(this);
-          if (bitField0_ != 0) { buildPartial0(result); }
-          onBuilt();
-          return result;
-        }
-
-        private void buildPartial0(io.appthreat.atom.Atom.DataFlowSlice.Nodes result) {
-          int from_bitField0_ = bitField0_;
-          if (((from_bitField0_ & 0x00000001) != 0)) {
-            result.id_ = id_;
-          }
-          if (((from_bitField0_ & 0x00000002) != 0)) {
-            result.label_ = label_;
-          }
-          if (((from_bitField0_ & 0x00000004) != 0)) {
-            result.name_ = name_;
-          }
-          if (((from_bitField0_ & 0x00000008) != 0)) {
-            result.fullName_ = fullName_;
-          }
-          if (((from_bitField0_ & 0x00000010) != 0)) {
-            result.signature_ = signature_;
-          }
-          if (((from_bitField0_ & 0x00000020) != 0)) {
-            result.isExternal_ = isExternal_;
-          }
-          if (((from_bitField0_ & 0x00000040) != 0)) {
-            result.code_ = code_;
-          }
-          if (((from_bitField0_ & 0x00000080) != 0)) {
-            result.typeFullName_ = typeFullName_;
-          }
-          if (((from_bitField0_ & 0x00000100) != 0)) {
-            result.parentMethodName_ = parentMethodName_;
-          }
-          if (((from_bitField0_ & 0x00000200) != 0)) {
-            result.parentFileName_ = parentFileName_;
-          }
-          if (((from_bitField0_ & 0x00000400) != 0)) {
-            result.parentPackageName_ = parentPackageName_;
-          }
-          if (((from_bitField0_ & 0x00000800) != 0)) {
-            result.parentClassName_ = parentClassName_;
-          }
-          if (((from_bitField0_ & 0x00001000) != 0)) {
-            result.lineNumber_ = lineNumber_;
-          }
-          if (((from_bitField0_ & 0x00002000) != 0)) {
-            result.columnNumber_ = columnNumber_;
-          }
-        }
-
-        @java.lang.Override
-        public Builder clone() {
-          return super.clone();
-        }
-        @java.lang.Override
-        public Builder setField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            java.lang.Object value) {
-          return super.setField(field, value);
-        }
-        @java.lang.Override
-        public Builder clearField(
-            com.google.protobuf.Descriptors.FieldDescriptor field) {
-          return super.clearField(field);
-        }
-        @java.lang.Override
-        public Builder clearOneof(
-            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-          return super.clearOneof(oneof);
-        }
-        @java.lang.Override
-        public Builder setRepeatedField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            int index, java.lang.Object value) {
-          return super.setRepeatedField(field, index, value);
-        }
-        @java.lang.Override
-        public Builder addRepeatedField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            java.lang.Object value) {
-          return super.addRepeatedField(field, value);
-        }
-        @java.lang.Override
-        public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof io.appthreat.atom.Atom.DataFlowSlice.Nodes) {
-            return mergeFrom((io.appthreat.atom.Atom.DataFlowSlice.Nodes)other);
-          } else {
-            super.mergeFrom(other);
-            return this;
-          }
-        }
-
-        public Builder mergeFrom(io.appthreat.atom.Atom.DataFlowSlice.Nodes other) {
-          if (other == io.appthreat.atom.Atom.DataFlowSlice.Nodes.getDefaultInstance()) return this;
-          if (other.getId() != 0) {
-            setId(other.getId());
-          }
-          if (other.label_ != 0) {
-            setLabelValue(other.getLabelValue());
-          }
-          if (!other.getName().isEmpty()) {
-            name_ = other.name_;
-            bitField0_ |= 0x00000004;
-            onChanged();
-          }
-          if (!other.getFullName().isEmpty()) {
-            fullName_ = other.fullName_;
-            bitField0_ |= 0x00000008;
-            onChanged();
-          }
-          if (!other.getSignature().isEmpty()) {
-            signature_ = other.signature_;
-            bitField0_ |= 0x00000010;
-            onChanged();
-          }
-          if (other.getIsExternal() != false) {
-            setIsExternal(other.getIsExternal());
-          }
-          if (!other.getCode().isEmpty()) {
-            code_ = other.code_;
-            bitField0_ |= 0x00000040;
-            onChanged();
-          }
-          if (!other.getTypeFullName().isEmpty()) {
-            typeFullName_ = other.typeFullName_;
-            bitField0_ |= 0x00000080;
-            onChanged();
-          }
-          if (!other.getParentMethodName().isEmpty()) {
-            parentMethodName_ = other.parentMethodName_;
-            bitField0_ |= 0x00000100;
-            onChanged();
-          }
-          if (!other.getParentFileName().isEmpty()) {
-            parentFileName_ = other.parentFileName_;
-            bitField0_ |= 0x00000200;
-            onChanged();
-          }
-          if (!other.getParentPackageName().isEmpty()) {
-            parentPackageName_ = other.parentPackageName_;
-            bitField0_ |= 0x00000400;
-            onChanged();
-          }
-          if (!other.getParentClassName().isEmpty()) {
-            parentClassName_ = other.parentClassName_;
-            bitField0_ |= 0x00000800;
-            onChanged();
-          }
-          if (other.getLineNumber() != 0) {
-            setLineNumber(other.getLineNumber());
-          }
-          if (other.getColumnNumber() != 0) {
-            setColumnNumber(other.getColumnNumber());
-          }
-          this.mergeUnknownFields(other.getUnknownFields());
-          onChanged();
-          return this;
-        }
-
-        @java.lang.Override
-        public final boolean isInitialized() {
-          return true;
-        }
-
-        @java.lang.Override
-        public Builder mergeFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-          if (extensionRegistry == null) {
-            throw new java.lang.NullPointerException();
-          }
-          try {
-            boolean done = false;
-            while (!done) {
-              int tag = input.readTag();
-              switch (tag) {
-                case 0:
-                  done = true;
-                  break;
-                case 8: {
-                  id_ = input.readUInt32();
-                  bitField0_ |= 0x00000001;
-                  break;
-                } // case 8
-                case 16: {
-                  label_ = input.readEnum();
-                  bitField0_ |= 0x00000002;
-                  break;
-                } // case 16
-                case 26: {
-                  name_ = input.readStringRequireUtf8();
-                  bitField0_ |= 0x00000004;
-                  break;
-                } // case 26
-                case 34: {
-                  fullName_ = input.readStringRequireUtf8();
-                  bitField0_ |= 0x00000008;
-                  break;
-                } // case 34
-                case 42: {
-                  signature_ = input.readStringRequireUtf8();
-                  bitField0_ |= 0x00000010;
-                  break;
-                } // case 42
-                case 48: {
-                  isExternal_ = input.readBool();
-                  bitField0_ |= 0x00000020;
-                  break;
-                } // case 48
-                case 58: {
-                  code_ = input.readStringRequireUtf8();
-                  bitField0_ |= 0x00000040;
-                  break;
-                } // case 58
-                case 66: {
-                  typeFullName_ = input.readStringRequireUtf8();
-                  bitField0_ |= 0x00000080;
-                  break;
-                } // case 66
-                case 74: {
-                  parentMethodName_ = input.readStringRequireUtf8();
-                  bitField0_ |= 0x00000100;
-                  break;
-                } // case 74
-                case 82: {
-                  parentFileName_ = input.readStringRequireUtf8();
-                  bitField0_ |= 0x00000200;
-                  break;
-                } // case 82
-                case 90: {
-                  parentPackageName_ = input.readStringRequireUtf8();
-                  bitField0_ |= 0x00000400;
-                  break;
-                } // case 90
-                case 98: {
-                  parentClassName_ = input.readStringRequireUtf8();
-                  bitField0_ |= 0x00000800;
-                  break;
-                } // case 98
-                case 104: {
-                  lineNumber_ = input.readUInt32();
-                  bitField0_ |= 0x00001000;
-                  break;
-                } // case 104
-                case 112: {
-                  columnNumber_ = input.readUInt32();
-                  bitField0_ |= 0x00002000;
-                  break;
-                } // case 112
-                default: {
-                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                    done = true; // was an endgroup tag
-                  }
-                  break;
-                } // default:
-              } // switch (tag)
-            } // while (!done)
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.unwrapIOException();
-          } finally {
-            onChanged();
-          } // finally
-          return this;
-        }
-        private int bitField0_;
-
-        private int id_ ;
-        /**
-         * <pre>
-         * Id of the node
-         * </pre>
-         *
-         * <code>uint32 id = 1;</code>
-         * @return The id.
-         */
-        @java.lang.Override
-        public int getId() {
-          return id_;
-        }
-        /**
-         * <pre>
-         * Id of the node
-         * </pre>
-         *
-         * <code>uint32 id = 1;</code>
-         * @param value The id to set.
-         * @return This builder for chaining.
-         */
-        public Builder setId(int value) {
-
-          id_ = value;
-          bitField0_ |= 0x00000001;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Id of the node
-         * </pre>
-         *
-         * <code>uint32 id = 1;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearId() {
-          bitField0_ = (bitField0_ & ~0x00000001);
-          id_ = 0;
-          onChanged();
-          return this;
-        }
-
-        private int label_ = 0;
-        /**
-         * <pre>
-         * Label
-         * </pre>
-         *
-         * <code>.atom.NodeType label = 2;</code>
-         * @return The enum numeric value on the wire for label.
-         */
-        @java.lang.Override public int getLabelValue() {
-          return label_;
-        }
-        /**
-         * <pre>
-         * Label
-         * </pre>
-         *
-         * <code>.atom.NodeType label = 2;</code>
-         * @param value The enum numeric value on the wire for label to set.
-         * @return This builder for chaining.
-         */
-        public Builder setLabelValue(int value) {
-          label_ = value;
-          bitField0_ |= 0x00000002;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Label
-         * </pre>
-         *
-         * <code>.atom.NodeType label = 2;</code>
-         * @return The label.
-         */
-        @java.lang.Override
-        public io.appthreat.atom.Atom.NodeType getLabel() {
-          io.appthreat.atom.Atom.NodeType result = io.appthreat.atom.Atom.NodeType.forNumber(label_);
-          return result == null ? io.appthreat.atom.Atom.NodeType.UNRECOGNIZED : result;
-        }
-        /**
-         * <pre>
-         * Label
-         * </pre>
-         *
-         * <code>.atom.NodeType label = 2;</code>
-         * @param value The label to set.
-         * @return This builder for chaining.
-         */
-        public Builder setLabel(io.appthreat.atom.Atom.NodeType value) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          bitField0_ |= 0x00000002;
-          label_ = value.getNumber();
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Label
-         * </pre>
-         *
-         * <code>.atom.NodeType label = 2;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearLabel() {
-          bitField0_ = (bitField0_ & ~0x00000002);
-          label_ = 0;
-          onChanged();
-          return this;
-        }
-
-        private java.lang.Object name_ = "";
-        /**
-         * <pre>
-         * Name of the call or identifier or parameter
-         * </pre>
-         *
-         * <code>string name = 3;</code>
-         * @return The name.
-         */
-        public java.lang.String getName() {
-          java.lang.Object ref = name_;
-          if (!(ref instanceof java.lang.String)) {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            name_ = s;
-            return s;
-          } else {
-            return (java.lang.String) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Name of the call or identifier or parameter
-         * </pre>
-         *
-         * <code>string name = 3;</code>
-         * @return The bytes for name.
-         */
-        public com.google.protobuf.ByteString
-            getNameBytes() {
-          java.lang.Object ref = name_;
-          if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            name_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Name of the call or identifier or parameter
-         * </pre>
-         *
-         * <code>string name = 3;</code>
-         * @param value The name to set.
-         * @return This builder for chaining.
-         */
-        public Builder setName(
-            java.lang.String value) {
-          if (value == null) { throw new NullPointerException(); }
-          name_ = value;
-          bitField0_ |= 0x00000004;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Name of the call or identifier or parameter
-         * </pre>
-         *
-         * <code>string name = 3;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearName() {
-          name_ = getDefaultInstance().getName();
-          bitField0_ = (bitField0_ & ~0x00000004);
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Name of the call or identifier or parameter
-         * </pre>
-         *
-         * <code>string name = 3;</code>
-         * @param value The bytes for name to set.
-         * @return This builder for chaining.
-         */
-        public Builder setNameBytes(
-            com.google.protobuf.ByteString value) {
-          if (value == null) { throw new NullPointerException(); }
-          checkByteStringIsUtf8(value);
-          name_ = value;
-          bitField0_ |= 0x00000004;
-          onChanged();
-          return this;
-        }
-
-        private java.lang.Object fullName_ = "";
-        /**
-         * <pre>
-         * Full name of the call
-         * </pre>
-         *
-         * <code>string fullName = 4;</code>
-         * @return The fullName.
-         */
-        public java.lang.String getFullName() {
-          java.lang.Object ref = fullName_;
-          if (!(ref instanceof java.lang.String)) {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            fullName_ = s;
-            return s;
-          } else {
-            return (java.lang.String) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Full name of the call
-         * </pre>
-         *
-         * <code>string fullName = 4;</code>
-         * @return The bytes for fullName.
-         */
-        public com.google.protobuf.ByteString
-            getFullNameBytes() {
-          java.lang.Object ref = fullName_;
-          if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            fullName_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Full name of the call
-         * </pre>
-         *
-         * <code>string fullName = 4;</code>
-         * @param value The fullName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setFullName(
-            java.lang.String value) {
-          if (value == null) { throw new NullPointerException(); }
-          fullName_ = value;
-          bitField0_ |= 0x00000008;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Full name of the call
-         * </pre>
-         *
-         * <code>string fullName = 4;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearFullName() {
-          fullName_ = getDefaultInstance().getFullName();
-          bitField0_ = (bitField0_ & ~0x00000008);
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Full name of the call
-         * </pre>
-         *
-         * <code>string fullName = 4;</code>
-         * @param value The bytes for fullName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setFullNameBytes(
-            com.google.protobuf.ByteString value) {
-          if (value == null) { throw new NullPointerException(); }
-          checkByteStringIsUtf8(value);
-          fullName_ = value;
-          bitField0_ |= 0x00000008;
-          onChanged();
-          return this;
-        }
-
-        private java.lang.Object signature_ = "";
-        /**
-         * <pre>
-         * Method signature of the call
-         * </pre>
-         *
-         * <code>string signature = 5;</code>
-         * @return The signature.
-         */
-        public java.lang.String getSignature() {
-          java.lang.Object ref = signature_;
-          if (!(ref instanceof java.lang.String)) {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            signature_ = s;
-            return s;
-          } else {
-            return (java.lang.String) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Method signature of the call
-         * </pre>
-         *
-         * <code>string signature = 5;</code>
-         * @return The bytes for signature.
-         */
-        public com.google.protobuf.ByteString
-            getSignatureBytes() {
-          java.lang.Object ref = signature_;
-          if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            signature_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Method signature of the call
-         * </pre>
-         *
-         * <code>string signature = 5;</code>
-         * @param value The signature to set.
-         * @return This builder for chaining.
-         */
-        public Builder setSignature(
-            java.lang.String value) {
-          if (value == null) { throw new NullPointerException(); }
-          signature_ = value;
-          bitField0_ |= 0x00000010;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Method signature of the call
-         * </pre>
-         *
-         * <code>string signature = 5;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearSignature() {
-          signature_ = getDefaultInstance().getSignature();
-          bitField0_ = (bitField0_ & ~0x00000010);
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Method signature of the call
-         * </pre>
-         *
-         * <code>string signature = 5;</code>
-         * @param value The bytes for signature to set.
-         * @return This builder for chaining.
-         */
-        public Builder setSignatureBytes(
-            com.google.protobuf.ByteString value) {
-          if (value == null) { throw new NullPointerException(); }
-          checkByteStringIsUtf8(value);
-          signature_ = value;
-          bitField0_ |= 0x00000010;
-          onChanged();
-          return this;
-        }
-
-        private boolean isExternal_ ;
-        /**
-         * <pre>
-         * Boolean to indicate if this call belongs to an external method
-         * </pre>
-         *
-         * <code>bool isExternal = 6;</code>
-         * @return The isExternal.
-         */
-        @java.lang.Override
-        public boolean getIsExternal() {
-          return isExternal_;
-        }
-        /**
-         * <pre>
-         * Boolean to indicate if this call belongs to an external method
-         * </pre>
-         *
-         * <code>bool isExternal = 6;</code>
-         * @param value The isExternal to set.
-         * @return This builder for chaining.
-         */
-        public Builder setIsExternal(boolean value) {
-
-          isExternal_ = value;
-          bitField0_ |= 0x00000020;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Boolean to indicate if this call belongs to an external method
-         * </pre>
-         *
-         * <code>bool isExternal = 6;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearIsExternal() {
-          bitField0_ = (bitField0_ & ~0x00000020);
-          isExternal_ = false;
-          onChanged();
-          return this;
-        }
-
-        private java.lang.Object code_ = "";
-        /**
-         * <pre>
-         * Source code
-         * </pre>
-         *
-         * <code>string code = 7;</code>
-         * @return The code.
-         */
-        public java.lang.String getCode() {
-          java.lang.Object ref = code_;
-          if (!(ref instanceof java.lang.String)) {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            code_ = s;
-            return s;
-          } else {
-            return (java.lang.String) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Source code
-         * </pre>
-         *
-         * <code>string code = 7;</code>
-         * @return The bytes for code.
-         */
-        public com.google.protobuf.ByteString
-            getCodeBytes() {
-          java.lang.Object ref = code_;
-          if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            code_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Source code
-         * </pre>
-         *
-         * <code>string code = 7;</code>
-         * @param value The code to set.
-         * @return This builder for chaining.
-         */
-        public Builder setCode(
-            java.lang.String value) {
-          if (value == null) { throw new NullPointerException(); }
-          code_ = value;
-          bitField0_ |= 0x00000040;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Source code
-         * </pre>
-         *
-         * <code>string code = 7;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearCode() {
-          code_ = getDefaultInstance().getCode();
-          bitField0_ = (bitField0_ & ~0x00000040);
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Source code
-         * </pre>
-         *
-         * <code>string code = 7;</code>
-         * @param value The bytes for code to set.
-         * @return This builder for chaining.
-         */
-        public Builder setCodeBytes(
-            com.google.protobuf.ByteString value) {
-          if (value == null) { throw new NullPointerException(); }
-          checkByteStringIsUtf8(value);
-          code_ = value;
-          bitField0_ |= 0x00000040;
-          onChanged();
-          return this;
-        }
-
-        private java.lang.Object typeFullName_ = "";
-        /**
-         * <pre>
-         * Type full name
-         * </pre>
-         *
-         * <code>string typeFullName = 8;</code>
-         * @return The typeFullName.
-         */
-        public java.lang.String getTypeFullName() {
-          java.lang.Object ref = typeFullName_;
-          if (!(ref instanceof java.lang.String)) {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            typeFullName_ = s;
-            return s;
-          } else {
-            return (java.lang.String) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Type full name
-         * </pre>
-         *
-         * <code>string typeFullName = 8;</code>
-         * @return The bytes for typeFullName.
-         */
-        public com.google.protobuf.ByteString
-            getTypeFullNameBytes() {
-          java.lang.Object ref = typeFullName_;
-          if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            typeFullName_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Type full name
-         * </pre>
-         *
-         * <code>string typeFullName = 8;</code>
-         * @param value The typeFullName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setTypeFullName(
-            java.lang.String value) {
-          if (value == null) { throw new NullPointerException(); }
-          typeFullName_ = value;
-          bitField0_ |= 0x00000080;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Type full name
-         * </pre>
-         *
-         * <code>string typeFullName = 8;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearTypeFullName() {
-          typeFullName_ = getDefaultInstance().getTypeFullName();
-          bitField0_ = (bitField0_ & ~0x00000080);
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Type full name
-         * </pre>
-         *
-         * <code>string typeFullName = 8;</code>
-         * @param value The bytes for typeFullName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setTypeFullNameBytes(
-            com.google.protobuf.ByteString value) {
-          if (value == null) { throw new NullPointerException(); }
-          checkByteStringIsUtf8(value);
-          typeFullName_ = value;
-          bitField0_ |= 0x00000080;
-          onChanged();
-          return this;
-        }
-
-        private java.lang.Object parentMethodName_ = "";
-        /**
-         * <pre>
-         * Parent method name
-         * </pre>
-         *
-         * <code>string parentMethodName = 9;</code>
-         * @return The parentMethodName.
-         */
-        public java.lang.String getParentMethodName() {
-          java.lang.Object ref = parentMethodName_;
-          if (!(ref instanceof java.lang.String)) {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            parentMethodName_ = s;
-            return s;
-          } else {
-            return (java.lang.String) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Parent method name
-         * </pre>
-         *
-         * <code>string parentMethodName = 9;</code>
-         * @return The bytes for parentMethodName.
-         */
-        public com.google.protobuf.ByteString
-            getParentMethodNameBytes() {
-          java.lang.Object ref = parentMethodName_;
-          if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            parentMethodName_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Parent method name
-         * </pre>
-         *
-         * <code>string parentMethodName = 9;</code>
-         * @param value The parentMethodName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setParentMethodName(
-            java.lang.String value) {
-          if (value == null) { throw new NullPointerException(); }
-          parentMethodName_ = value;
-          bitField0_ |= 0x00000100;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Parent method name
-         * </pre>
-         *
-         * <code>string parentMethodName = 9;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearParentMethodName() {
-          parentMethodName_ = getDefaultInstance().getParentMethodName();
-          bitField0_ = (bitField0_ & ~0x00000100);
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Parent method name
-         * </pre>
-         *
-         * <code>string parentMethodName = 9;</code>
-         * @param value The bytes for parentMethodName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setParentMethodNameBytes(
-            com.google.protobuf.ByteString value) {
-          if (value == null) { throw new NullPointerException(); }
-          checkByteStringIsUtf8(value);
-          parentMethodName_ = value;
-          bitField0_ |= 0x00000100;
-          onChanged();
-          return this;
-        }
-
-        private java.lang.Object parentFileName_ = "";
-        /**
-         * <pre>
-         * Parent filename
-         * </pre>
-         *
-         * <code>string parentFileName = 10;</code>
-         * @return The parentFileName.
-         */
-        public java.lang.String getParentFileName() {
-          java.lang.Object ref = parentFileName_;
-          if (!(ref instanceof java.lang.String)) {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            parentFileName_ = s;
-            return s;
-          } else {
-            return (java.lang.String) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Parent filename
-         * </pre>
-         *
-         * <code>string parentFileName = 10;</code>
-         * @return The bytes for parentFileName.
-         */
-        public com.google.protobuf.ByteString
-            getParentFileNameBytes() {
-          java.lang.Object ref = parentFileName_;
-          if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            parentFileName_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Parent filename
-         * </pre>
-         *
-         * <code>string parentFileName = 10;</code>
-         * @param value The parentFileName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setParentFileName(
-            java.lang.String value) {
-          if (value == null) { throw new NullPointerException(); }
-          parentFileName_ = value;
-          bitField0_ |= 0x00000200;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Parent filename
-         * </pre>
-         *
-         * <code>string parentFileName = 10;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearParentFileName() {
-          parentFileName_ = getDefaultInstance().getParentFileName();
-          bitField0_ = (bitField0_ & ~0x00000200);
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Parent filename
-         * </pre>
-         *
-         * <code>string parentFileName = 10;</code>
-         * @param value The bytes for parentFileName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setParentFileNameBytes(
-            com.google.protobuf.ByteString value) {
-          if (value == null) { throw new NullPointerException(); }
-          checkByteStringIsUtf8(value);
-          parentFileName_ = value;
-          bitField0_ |= 0x00000200;
-          onChanged();
-          return this;
-        }
-
-        private java.lang.Object parentPackageName_ = "";
-        /**
-         * <pre>
-         * Parent package name
-         * </pre>
-         *
-         * <code>string parentPackageName = 11;</code>
-         * @return The parentPackageName.
-         */
-        public java.lang.String getParentPackageName() {
-          java.lang.Object ref = parentPackageName_;
-          if (!(ref instanceof java.lang.String)) {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            parentPackageName_ = s;
-            return s;
-          } else {
-            return (java.lang.String) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Parent package name
-         * </pre>
-         *
-         * <code>string parentPackageName = 11;</code>
-         * @return The bytes for parentPackageName.
-         */
-        public com.google.protobuf.ByteString
-            getParentPackageNameBytes() {
-          java.lang.Object ref = parentPackageName_;
-          if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            parentPackageName_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Parent package name
-         * </pre>
-         *
-         * <code>string parentPackageName = 11;</code>
-         * @param value The parentPackageName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setParentPackageName(
-            java.lang.String value) {
-          if (value == null) { throw new NullPointerException(); }
-          parentPackageName_ = value;
-          bitField0_ |= 0x00000400;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Parent package name
-         * </pre>
-         *
-         * <code>string parentPackageName = 11;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearParentPackageName() {
-          parentPackageName_ = getDefaultInstance().getParentPackageName();
-          bitField0_ = (bitField0_ & ~0x00000400);
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Parent package name
-         * </pre>
-         *
-         * <code>string parentPackageName = 11;</code>
-         * @param value The bytes for parentPackageName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setParentPackageNameBytes(
-            com.google.protobuf.ByteString value) {
-          if (value == null) { throw new NullPointerException(); }
-          checkByteStringIsUtf8(value);
-          parentPackageName_ = value;
-          bitField0_ |= 0x00000400;
-          onChanged();
-          return this;
-        }
-
-        private java.lang.Object parentClassName_ = "";
-        /**
-         * <pre>
-         * Parent class name
-         * </pre>
-         *
-         * <code>string parentClassName = 12;</code>
-         * @return The parentClassName.
-         */
-        public java.lang.String getParentClassName() {
-          java.lang.Object ref = parentClassName_;
-          if (!(ref instanceof java.lang.String)) {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            parentClassName_ = s;
-            return s;
-          } else {
-            return (java.lang.String) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Parent class name
-         * </pre>
-         *
-         * <code>string parentClassName = 12;</code>
-         * @return The bytes for parentClassName.
-         */
-        public com.google.protobuf.ByteString
-            getParentClassNameBytes() {
-          java.lang.Object ref = parentClassName_;
-          if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            parentClassName_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
-        }
-        /**
-         * <pre>
-         * Parent class name
-         * </pre>
-         *
-         * <code>string parentClassName = 12;</code>
-         * @param value The parentClassName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setParentClassName(
-            java.lang.String value) {
-          if (value == null) { throw new NullPointerException(); }
-          parentClassName_ = value;
-          bitField0_ |= 0x00000800;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Parent class name
-         * </pre>
-         *
-         * <code>string parentClassName = 12;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearParentClassName() {
-          parentClassName_ = getDefaultInstance().getParentClassName();
-          bitField0_ = (bitField0_ & ~0x00000800);
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Parent class name
-         * </pre>
-         *
-         * <code>string parentClassName = 12;</code>
-         * @param value The bytes for parentClassName to set.
-         * @return This builder for chaining.
-         */
-        public Builder setParentClassNameBytes(
-            com.google.protobuf.ByteString value) {
-          if (value == null) { throw new NullPointerException(); }
-          checkByteStringIsUtf8(value);
-          parentClassName_ = value;
-          bitField0_ |= 0x00000800;
-          onChanged();
-          return this;
-        }
-
-        private int lineNumber_ ;
-        /**
-         * <pre>
-         * Line number
-         * </pre>
-         *
-         * <code>uint32 lineNumber = 13;</code>
-         * @return The lineNumber.
-         */
-        @java.lang.Override
-        public int getLineNumber() {
-          return lineNumber_;
-        }
-        /**
-         * <pre>
-         * Line number
-         * </pre>
-         *
-         * <code>uint32 lineNumber = 13;</code>
-         * @param value The lineNumber to set.
-         * @return This builder for chaining.
-         */
-        public Builder setLineNumber(int value) {
-
-          lineNumber_ = value;
-          bitField0_ |= 0x00001000;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Line number
-         * </pre>
-         *
-         * <code>uint32 lineNumber = 13;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearLineNumber() {
-          bitField0_ = (bitField0_ & ~0x00001000);
-          lineNumber_ = 0;
-          onChanged();
-          return this;
-        }
-
-        private int columnNumber_ ;
-        /**
-         * <pre>
-         * Column number
-         * </pre>
-         *
-         * <code>uint32 columnNumber = 14;</code>
-         * @return The columnNumber.
-         */
-        @java.lang.Override
-        public int getColumnNumber() {
-          return columnNumber_;
-        }
-        /**
-         * <pre>
-         * Column number
-         * </pre>
-         *
-         * <code>uint32 columnNumber = 14;</code>
-         * @param value The columnNumber to set.
-         * @return This builder for chaining.
-         */
-        public Builder setColumnNumber(int value) {
-
-          columnNumber_ = value;
-          bitField0_ |= 0x00002000;
-          onChanged();
-          return this;
-        }
-        /**
-         * <pre>
-         * Column number
-         * </pre>
-         *
-         * <code>uint32 columnNumber = 14;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearColumnNumber() {
-          bitField0_ = (bitField0_ & ~0x00002000);
-          columnNumber_ = 0;
-          onChanged();
-          return this;
-        }
-        @java.lang.Override
-        public final Builder setUnknownFields(
-            final com.google.protobuf.UnknownFieldSet unknownFields) {
-          return super.setUnknownFields(unknownFields);
-        }
-
-        @java.lang.Override
-        public final Builder mergeUnknownFields(
-            final com.google.protobuf.UnknownFieldSet unknownFields) {
-          return super.mergeUnknownFields(unknownFields);
-        }
-
-
-        // @@protoc_insertion_point(builder_scope:atom.DataFlowSlice.Nodes)
-      }
-
-      // @@protoc_insertion_point(class_scope:atom.DataFlowSlice.Nodes)
-      private static final io.appthreat.atom.Atom.DataFlowSlice.Nodes DEFAULT_INSTANCE;
-      static {
-        DEFAULT_INSTANCE = new io.appthreat.atom.Atom.DataFlowSlice.Nodes();
-      }
-
-      public static io.appthreat.atom.Atom.DataFlowSlice.Nodes getDefaultInstance() {
-        return DEFAULT_INSTANCE;
-      }
-
-      private static final com.google.protobuf.Parser<Nodes>
-          PARSER = new com.google.protobuf.AbstractParser<Nodes>() {
-        @java.lang.Override
-        public Nodes parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
-          }
-          return builder.buildPartial();
-        }
-      };
-
-      public static com.google.protobuf.Parser<Nodes> parser() {
-        return PARSER;
-      }
-
-      @java.lang.Override
-      public com.google.protobuf.Parser<Nodes> getParserForType() {
-        return PARSER;
-      }
-
-      @java.lang.Override
-      public io.appthreat.atom.Atom.DataFlowSlice.Nodes getDefaultInstanceForType() {
-        return DEFAULT_INSTANCE;
-      }
-
     }
 
     public interface EdgesOrBuilder extends
@@ -44449,27 +44633,27 @@ public final class Atom {
         com.google.protobuf.MessageOrBuilder {
 
       /**
-       * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+       * <code>repeated .atom.Nodes nodes = 1;</code>
        */
-      java.util.List<io.appthreat.atom.Atom.DataFlowSlice.Nodes> 
+      java.util.List<io.appthreat.atom.Atom.Nodes> 
           getNodesList();
       /**
-       * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+       * <code>repeated .atom.Nodes nodes = 1;</code>
        */
-      io.appthreat.atom.Atom.DataFlowSlice.Nodes getNodes(int index);
+      io.appthreat.atom.Atom.Nodes getNodes(int index);
       /**
-       * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+       * <code>repeated .atom.Nodes nodes = 1;</code>
        */
       int getNodesCount();
       /**
-       * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+       * <code>repeated .atom.Nodes nodes = 1;</code>
        */
-      java.util.List<? extends io.appthreat.atom.Atom.DataFlowSlice.NodesOrBuilder> 
+      java.util.List<? extends io.appthreat.atom.Atom.NodesOrBuilder> 
           getNodesOrBuilderList();
       /**
-       * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+       * <code>repeated .atom.Nodes nodes = 1;</code>
        */
-      io.appthreat.atom.Atom.DataFlowSlice.NodesOrBuilder getNodesOrBuilder(
+      io.appthreat.atom.Atom.NodesOrBuilder getNodesOrBuilder(
           int index);
 
       /**
@@ -44535,41 +44719,41 @@ public final class Atom {
 
       public static final int NODES_FIELD_NUMBER = 1;
       @SuppressWarnings("serial")
-      private java.util.List<io.appthreat.atom.Atom.DataFlowSlice.Nodes> nodes_;
+      private java.util.List<io.appthreat.atom.Atom.Nodes> nodes_;
       /**
-       * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+       * <code>repeated .atom.Nodes nodes = 1;</code>
        */
       @java.lang.Override
-      public java.util.List<io.appthreat.atom.Atom.DataFlowSlice.Nodes> getNodesList() {
+      public java.util.List<io.appthreat.atom.Atom.Nodes> getNodesList() {
         return nodes_;
       }
       /**
-       * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+       * <code>repeated .atom.Nodes nodes = 1;</code>
        */
       @java.lang.Override
-      public java.util.List<? extends io.appthreat.atom.Atom.DataFlowSlice.NodesOrBuilder> 
+      public java.util.List<? extends io.appthreat.atom.Atom.NodesOrBuilder> 
           getNodesOrBuilderList() {
         return nodes_;
       }
       /**
-       * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+       * <code>repeated .atom.Nodes nodes = 1;</code>
        */
       @java.lang.Override
       public int getNodesCount() {
         return nodes_.size();
       }
       /**
-       * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+       * <code>repeated .atom.Nodes nodes = 1;</code>
        */
       @java.lang.Override
-      public io.appthreat.atom.Atom.DataFlowSlice.Nodes getNodes(int index) {
+      public io.appthreat.atom.Atom.Nodes getNodes(int index) {
         return nodes_.get(index);
       }
       /**
-       * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+       * <code>repeated .atom.Nodes nodes = 1;</code>
        */
       @java.lang.Override
-      public io.appthreat.atom.Atom.DataFlowSlice.NodesOrBuilder getNodesOrBuilder(
+      public io.appthreat.atom.Atom.NodesOrBuilder getNodesOrBuilder(
           int index) {
         return nodes_.get(index);
       }
@@ -45015,9 +45199,9 @@ public final class Atom {
                   done = true;
                   break;
                 case 10: {
-                  io.appthreat.atom.Atom.DataFlowSlice.Nodes m =
+                  io.appthreat.atom.Atom.Nodes m =
                       input.readMessage(
-                          io.appthreat.atom.Atom.DataFlowSlice.Nodes.parser(),
+                          io.appthreat.atom.Atom.Nodes.parser(),
                           extensionRegistry);
                   if (nodesBuilder_ == null) {
                     ensureNodesIsMutable();
@@ -45057,22 +45241,22 @@ public final class Atom {
         }
         private int bitField0_;
 
-        private java.util.List<io.appthreat.atom.Atom.DataFlowSlice.Nodes> nodes_ =
+        private java.util.List<io.appthreat.atom.Atom.Nodes> nodes_ =
           java.util.Collections.emptyList();
         private void ensureNodesIsMutable() {
           if (!((bitField0_ & 0x00000001) != 0)) {
-            nodes_ = new java.util.ArrayList<io.appthreat.atom.Atom.DataFlowSlice.Nodes>(nodes_);
+            nodes_ = new java.util.ArrayList<io.appthreat.atom.Atom.Nodes>(nodes_);
             bitField0_ |= 0x00000001;
            }
         }
 
         private com.google.protobuf.RepeatedFieldBuilderV3<
-            io.appthreat.atom.Atom.DataFlowSlice.Nodes, io.appthreat.atom.Atom.DataFlowSlice.Nodes.Builder, io.appthreat.atom.Atom.DataFlowSlice.NodesOrBuilder> nodesBuilder_;
+            io.appthreat.atom.Atom.Nodes, io.appthreat.atom.Atom.Nodes.Builder, io.appthreat.atom.Atom.NodesOrBuilder> nodesBuilder_;
 
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
-        public java.util.List<io.appthreat.atom.Atom.DataFlowSlice.Nodes> getNodesList() {
+        public java.util.List<io.appthreat.atom.Atom.Nodes> getNodesList() {
           if (nodesBuilder_ == null) {
             return java.util.Collections.unmodifiableList(nodes_);
           } else {
@@ -45080,7 +45264,7 @@ public final class Atom {
           }
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
         public int getNodesCount() {
           if (nodesBuilder_ == null) {
@@ -45090,9 +45274,9 @@ public final class Atom {
           }
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
-        public io.appthreat.atom.Atom.DataFlowSlice.Nodes getNodes(int index) {
+        public io.appthreat.atom.Atom.Nodes getNodes(int index) {
           if (nodesBuilder_ == null) {
             return nodes_.get(index);
           } else {
@@ -45100,10 +45284,10 @@ public final class Atom {
           }
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
         public Builder setNodes(
-            int index, io.appthreat.atom.Atom.DataFlowSlice.Nodes value) {
+            int index, io.appthreat.atom.Atom.Nodes value) {
           if (nodesBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -45117,10 +45301,10 @@ public final class Atom {
           return this;
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
         public Builder setNodes(
-            int index, io.appthreat.atom.Atom.DataFlowSlice.Nodes.Builder builderForValue) {
+            int index, io.appthreat.atom.Atom.Nodes.Builder builderForValue) {
           if (nodesBuilder_ == null) {
             ensureNodesIsMutable();
             nodes_.set(index, builderForValue.build());
@@ -45131,9 +45315,9 @@ public final class Atom {
           return this;
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
-        public Builder addNodes(io.appthreat.atom.Atom.DataFlowSlice.Nodes value) {
+        public Builder addNodes(io.appthreat.atom.Atom.Nodes value) {
           if (nodesBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -45147,10 +45331,10 @@ public final class Atom {
           return this;
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
         public Builder addNodes(
-            int index, io.appthreat.atom.Atom.DataFlowSlice.Nodes value) {
+            int index, io.appthreat.atom.Atom.Nodes value) {
           if (nodesBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -45164,10 +45348,10 @@ public final class Atom {
           return this;
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
         public Builder addNodes(
-            io.appthreat.atom.Atom.DataFlowSlice.Nodes.Builder builderForValue) {
+            io.appthreat.atom.Atom.Nodes.Builder builderForValue) {
           if (nodesBuilder_ == null) {
             ensureNodesIsMutable();
             nodes_.add(builderForValue.build());
@@ -45178,10 +45362,10 @@ public final class Atom {
           return this;
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
         public Builder addNodes(
-            int index, io.appthreat.atom.Atom.DataFlowSlice.Nodes.Builder builderForValue) {
+            int index, io.appthreat.atom.Atom.Nodes.Builder builderForValue) {
           if (nodesBuilder_ == null) {
             ensureNodesIsMutable();
             nodes_.add(index, builderForValue.build());
@@ -45192,10 +45376,10 @@ public final class Atom {
           return this;
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
         public Builder addAllNodes(
-            java.lang.Iterable<? extends io.appthreat.atom.Atom.DataFlowSlice.Nodes> values) {
+            java.lang.Iterable<? extends io.appthreat.atom.Atom.Nodes> values) {
           if (nodesBuilder_ == null) {
             ensureNodesIsMutable();
             com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -45207,7 +45391,7 @@ public final class Atom {
           return this;
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
         public Builder clearNodes() {
           if (nodesBuilder_ == null) {
@@ -45220,7 +45404,7 @@ public final class Atom {
           return this;
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
         public Builder removeNodes(int index) {
           if (nodesBuilder_ == null) {
@@ -45233,16 +45417,16 @@ public final class Atom {
           return this;
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
-        public io.appthreat.atom.Atom.DataFlowSlice.Nodes.Builder getNodesBuilder(
+        public io.appthreat.atom.Atom.Nodes.Builder getNodesBuilder(
             int index) {
           return getNodesFieldBuilder().getBuilder(index);
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
-        public io.appthreat.atom.Atom.DataFlowSlice.NodesOrBuilder getNodesOrBuilder(
+        public io.appthreat.atom.Atom.NodesOrBuilder getNodesOrBuilder(
             int index) {
           if (nodesBuilder_ == null) {
             return nodes_.get(index);  } else {
@@ -45250,9 +45434,9 @@ public final class Atom {
           }
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
-        public java.util.List<? extends io.appthreat.atom.Atom.DataFlowSlice.NodesOrBuilder> 
+        public java.util.List<? extends io.appthreat.atom.Atom.NodesOrBuilder> 
              getNodesOrBuilderList() {
           if (nodesBuilder_ != null) {
             return nodesBuilder_.getMessageOrBuilderList();
@@ -45261,33 +45445,33 @@ public final class Atom {
           }
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
-        public io.appthreat.atom.Atom.DataFlowSlice.Nodes.Builder addNodesBuilder() {
+        public io.appthreat.atom.Atom.Nodes.Builder addNodesBuilder() {
           return getNodesFieldBuilder().addBuilder(
-              io.appthreat.atom.Atom.DataFlowSlice.Nodes.getDefaultInstance());
+              io.appthreat.atom.Atom.Nodes.getDefaultInstance());
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
-        public io.appthreat.atom.Atom.DataFlowSlice.Nodes.Builder addNodesBuilder(
+        public io.appthreat.atom.Atom.Nodes.Builder addNodesBuilder(
             int index) {
           return getNodesFieldBuilder().addBuilder(
-              index, io.appthreat.atom.Atom.DataFlowSlice.Nodes.getDefaultInstance());
+              index, io.appthreat.atom.Atom.Nodes.getDefaultInstance());
         }
         /**
-         * <code>repeated .atom.DataFlowSlice.Nodes nodes = 1;</code>
+         * <code>repeated .atom.Nodes nodes = 1;</code>
          */
-        public java.util.List<io.appthreat.atom.Atom.DataFlowSlice.Nodes.Builder> 
+        public java.util.List<io.appthreat.atom.Atom.Nodes.Builder> 
              getNodesBuilderList() {
           return getNodesFieldBuilder().getBuilderList();
         }
         private com.google.protobuf.RepeatedFieldBuilderV3<
-            io.appthreat.atom.Atom.DataFlowSlice.Nodes, io.appthreat.atom.Atom.DataFlowSlice.Nodes.Builder, io.appthreat.atom.Atom.DataFlowSlice.NodesOrBuilder> 
+            io.appthreat.atom.Atom.Nodes, io.appthreat.atom.Atom.Nodes.Builder, io.appthreat.atom.Atom.NodesOrBuilder> 
             getNodesFieldBuilder() {
           if (nodesBuilder_ == null) {
             nodesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                io.appthreat.atom.Atom.DataFlowSlice.Nodes, io.appthreat.atom.Atom.DataFlowSlice.Nodes.Builder, io.appthreat.atom.Atom.DataFlowSlice.NodesOrBuilder>(
+                io.appthreat.atom.Atom.Nodes, io.appthreat.atom.Atom.Nodes.Builder, io.appthreat.atom.Atom.NodesOrBuilder>(
                     nodes_,
                     ((bitField0_ & 0x00000001) != 0),
                     getParentForChildren(),
@@ -46334,6 +46518,2212 @@ public final class Atom {
 
   }
 
+  public interface ReachableSliceOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:atom.ReachableSlice)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+     * @return Whether the reachables field is set.
+     */
+    boolean hasReachables();
+    /**
+     * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+     * @return The reachables.
+     */
+    io.appthreat.atom.Atom.ReachableSlice.Reachables getReachables();
+    /**
+     * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+     */
+    io.appthreat.atom.Atom.ReachableSlice.ReachablesOrBuilder getReachablesOrBuilder();
+
+    /**
+     * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+     * @return Whether the purls field is set.
+     */
+    boolean hasPurls();
+    /**
+     * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+     * @return The purls.
+     */
+    io.appthreat.atom.Atom.ReachableSlice.Purls getPurls();
+    /**
+     * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+     */
+    io.appthreat.atom.Atom.ReachableSlice.PurlsOrBuilder getPurlsOrBuilder();
+  }
+  /**
+   * <pre>
+   **
+   * Reachables slices offers a list of reachable nodes based on automated tags exported from data dependency graph
+   * </pre>
+   *
+   * Protobuf type {@code atom.ReachableSlice}
+   */
+  public static final class ReachableSlice extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:atom.ReachableSlice)
+      ReachableSliceOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use ReachableSlice.newBuilder() to construct.
+    private ReachableSlice(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ReachableSlice() {
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new ReachableSlice();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.appthreat.atom.Atom.ReachableSlice.class, io.appthreat.atom.Atom.ReachableSlice.Builder.class);
+    }
+
+    public interface ReachablesOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:atom.ReachableSlice.Reachables)
+        com.google.protobuf.MessageOrBuilder {
+
+      /**
+       * <code>repeated .atom.Nodes nodes = 1;</code>
+       */
+      java.util.List<io.appthreat.atom.Atom.Nodes> 
+          getNodesList();
+      /**
+       * <code>repeated .atom.Nodes nodes = 1;</code>
+       */
+      io.appthreat.atom.Atom.Nodes getNodes(int index);
+      /**
+       * <code>repeated .atom.Nodes nodes = 1;</code>
+       */
+      int getNodesCount();
+      /**
+       * <code>repeated .atom.Nodes nodes = 1;</code>
+       */
+      java.util.List<? extends io.appthreat.atom.Atom.NodesOrBuilder> 
+          getNodesOrBuilderList();
+      /**
+       * <code>repeated .atom.Nodes nodes = 1;</code>
+       */
+      io.appthreat.atom.Atom.NodesOrBuilder getNodesOrBuilder(
+          int index);
+    }
+    /**
+     * Protobuf type {@code atom.ReachableSlice.Reachables}
+     */
+    public static final class Reachables extends
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:atom.ReachableSlice.Reachables)
+        ReachablesOrBuilder {
+    private static final long serialVersionUID = 0L;
+      // Use Reachables.newBuilder() to construct.
+      private Reachables(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        super(builder);
+      }
+      private Reachables() {
+        nodes_ = java.util.Collections.emptyList();
+      }
+
+      @java.lang.Override
+      @SuppressWarnings({"unused"})
+      protected java.lang.Object newInstance(
+          UnusedPrivateParameter unused) {
+        return new Reachables();
+      }
+
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_Reachables_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_Reachables_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.appthreat.atom.Atom.ReachableSlice.Reachables.class, io.appthreat.atom.Atom.ReachableSlice.Reachables.Builder.class);
+      }
+
+      public static final int NODES_FIELD_NUMBER = 1;
+      @SuppressWarnings("serial")
+      private java.util.List<io.appthreat.atom.Atom.Nodes> nodes_;
+      /**
+       * <code>repeated .atom.Nodes nodes = 1;</code>
+       */
+      @java.lang.Override
+      public java.util.List<io.appthreat.atom.Atom.Nodes> getNodesList() {
+        return nodes_;
+      }
+      /**
+       * <code>repeated .atom.Nodes nodes = 1;</code>
+       */
+      @java.lang.Override
+      public java.util.List<? extends io.appthreat.atom.Atom.NodesOrBuilder> 
+          getNodesOrBuilderList() {
+        return nodes_;
+      }
+      /**
+       * <code>repeated .atom.Nodes nodes = 1;</code>
+       */
+      @java.lang.Override
+      public int getNodesCount() {
+        return nodes_.size();
+      }
+      /**
+       * <code>repeated .atom.Nodes nodes = 1;</code>
+       */
+      @java.lang.Override
+      public io.appthreat.atom.Atom.Nodes getNodes(int index) {
+        return nodes_.get(index);
+      }
+      /**
+       * <code>repeated .atom.Nodes nodes = 1;</code>
+       */
+      @java.lang.Override
+      public io.appthreat.atom.Atom.NodesOrBuilder getNodesOrBuilder(
+          int index) {
+        return nodes_.get(index);
+      }
+
+      private byte memoizedIsInitialized = -1;
+      @java.lang.Override
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
+
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      @java.lang.Override
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        for (int i = 0; i < nodes_.size(); i++) {
+          output.writeMessage(1, nodes_.get(i));
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      @java.lang.Override
+      public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        for (int i = 0; i < nodes_.size(); i++) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(1, nodes_.get(i));
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSize = size;
+        return size;
+      }
+
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof io.appthreat.atom.Atom.ReachableSlice.Reachables)) {
+          return super.equals(obj);
+        }
+        io.appthreat.atom.Atom.ReachableSlice.Reachables other = (io.appthreat.atom.Atom.ReachableSlice.Reachables) obj;
+
+        if (!getNodesList()
+            .equals(other.getNodesList())) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+        return true;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptor().hashCode();
+        if (getNodesCount() > 0) {
+          hash = (37 * hash) + NODES_FIELD_NUMBER;
+          hash = (53 * hash) + getNodesList().hashCode();
+        }
+        hash = (29 * hash) + getUnknownFields().hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables parseFrom(
+          java.nio.ByteBuffer data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables parseFrom(
+          java.nio.ByteBuffer data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+      }
+
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      @java.lang.Override
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+      }
+      public static Builder newBuilder(io.appthreat.atom.Atom.ReachableSlice.Reachables prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      @java.lang.Override
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code atom.ReachableSlice.Reachables}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:atom.ReachableSlice.Reachables)
+          io.appthreat.atom.Atom.ReachableSlice.ReachablesOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_Reachables_descriptor;
+        }
+
+        @java.lang.Override
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_Reachables_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  io.appthreat.atom.Atom.ReachableSlice.Reachables.class, io.appthreat.atom.Atom.ReachableSlice.Reachables.Builder.class);
+        }
+
+        // Construct using io.appthreat.atom.Atom.ReachableSlice.Reachables.newBuilder()
+        private Builder() {
+
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          super(parent);
+
+        }
+        @java.lang.Override
+        public Builder clear() {
+          super.clear();
+          bitField0_ = 0;
+          if (nodesBuilder_ == null) {
+            nodes_ = java.util.Collections.emptyList();
+          } else {
+            nodes_ = null;
+            nodesBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000001);
+          return this;
+        }
+
+        @java.lang.Override
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_Reachables_descriptor;
+        }
+
+        @java.lang.Override
+        public io.appthreat.atom.Atom.ReachableSlice.Reachables getDefaultInstanceForType() {
+          return io.appthreat.atom.Atom.ReachableSlice.Reachables.getDefaultInstance();
+        }
+
+        @java.lang.Override
+        public io.appthreat.atom.Atom.ReachableSlice.Reachables build() {
+          io.appthreat.atom.Atom.ReachableSlice.Reachables result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        @java.lang.Override
+        public io.appthreat.atom.Atom.ReachableSlice.Reachables buildPartial() {
+          io.appthreat.atom.Atom.ReachableSlice.Reachables result = new io.appthreat.atom.Atom.ReachableSlice.Reachables(this);
+          buildPartialRepeatedFields(result);
+          if (bitField0_ != 0) { buildPartial0(result); }
+          onBuilt();
+          return result;
+        }
+
+        private void buildPartialRepeatedFields(io.appthreat.atom.Atom.ReachableSlice.Reachables result) {
+          if (nodesBuilder_ == null) {
+            if (((bitField0_ & 0x00000001) != 0)) {
+              nodes_ = java.util.Collections.unmodifiableList(nodes_);
+              bitField0_ = (bitField0_ & ~0x00000001);
+            }
+            result.nodes_ = nodes_;
+          } else {
+            result.nodes_ = nodesBuilder_.build();
+          }
+        }
+
+        private void buildPartial0(io.appthreat.atom.Atom.ReachableSlice.Reachables result) {
+          int from_bitField0_ = bitField0_;
+        }
+
+        @java.lang.Override
+        public Builder clone() {
+          return super.clone();
+        }
+        @java.lang.Override
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.setField(field, value);
+        }
+        @java.lang.Override
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return super.clearField(field);
+        }
+        @java.lang.Override
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return super.clearOneof(oneof);
+        }
+        @java.lang.Override
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, java.lang.Object value) {
+          return super.setRepeatedField(field, index, value);
+        }
+        @java.lang.Override
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.addRepeatedField(field, value);
+        }
+        @java.lang.Override
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof io.appthreat.atom.Atom.ReachableSlice.Reachables) {
+            return mergeFrom((io.appthreat.atom.Atom.ReachableSlice.Reachables)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(io.appthreat.atom.Atom.ReachableSlice.Reachables other) {
+          if (other == io.appthreat.atom.Atom.ReachableSlice.Reachables.getDefaultInstance()) return this;
+          if (nodesBuilder_ == null) {
+            if (!other.nodes_.isEmpty()) {
+              if (nodes_.isEmpty()) {
+                nodes_ = other.nodes_;
+                bitField0_ = (bitField0_ & ~0x00000001);
+              } else {
+                ensureNodesIsMutable();
+                nodes_.addAll(other.nodes_);
+              }
+              onChanged();
+            }
+          } else {
+            if (!other.nodes_.isEmpty()) {
+              if (nodesBuilder_.isEmpty()) {
+                nodesBuilder_.dispose();
+                nodesBuilder_ = null;
+                nodes_ = other.nodes_;
+                bitField0_ = (bitField0_ & ~0x00000001);
+                nodesBuilder_ = 
+                  com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                     getNodesFieldBuilder() : null;
+              } else {
+                nodesBuilder_.addAllMessages(other.nodes_);
+              }
+            }
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          onChanged();
+          return this;
+        }
+
+        @java.lang.Override
+        public final boolean isInitialized() {
+          return true;
+        }
+
+        @java.lang.Override
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
+          try {
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  io.appthreat.atom.Atom.Nodes m =
+                      input.readMessage(
+                          io.appthreat.atom.Atom.Nodes.parser(),
+                          extensionRegistry);
+                  if (nodesBuilder_ == null) {
+                    ensureNodesIsMutable();
+                    nodes_.add(m);
+                  } else {
+                    nodesBuilder_.addMessage(m);
+                  }
+                  break;
+                } // case 10
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.unwrapIOException();
+          } finally {
+            onChanged();
+          } // finally
+          return this;
+        }
+        private int bitField0_;
+
+        private java.util.List<io.appthreat.atom.Atom.Nodes> nodes_ =
+          java.util.Collections.emptyList();
+        private void ensureNodesIsMutable() {
+          if (!((bitField0_ & 0x00000001) != 0)) {
+            nodes_ = new java.util.ArrayList<io.appthreat.atom.Atom.Nodes>(nodes_);
+            bitField0_ |= 0x00000001;
+           }
+        }
+
+        private com.google.protobuf.RepeatedFieldBuilderV3<
+            io.appthreat.atom.Atom.Nodes, io.appthreat.atom.Atom.Nodes.Builder, io.appthreat.atom.Atom.NodesOrBuilder> nodesBuilder_;
+
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public java.util.List<io.appthreat.atom.Atom.Nodes> getNodesList() {
+          if (nodesBuilder_ == null) {
+            return java.util.Collections.unmodifiableList(nodes_);
+          } else {
+            return nodesBuilder_.getMessageList();
+          }
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public int getNodesCount() {
+          if (nodesBuilder_ == null) {
+            return nodes_.size();
+          } else {
+            return nodesBuilder_.getCount();
+          }
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public io.appthreat.atom.Atom.Nodes getNodes(int index) {
+          if (nodesBuilder_ == null) {
+            return nodes_.get(index);
+          } else {
+            return nodesBuilder_.getMessage(index);
+          }
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public Builder setNodes(
+            int index, io.appthreat.atom.Atom.Nodes value) {
+          if (nodesBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureNodesIsMutable();
+            nodes_.set(index, value);
+            onChanged();
+          } else {
+            nodesBuilder_.setMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public Builder setNodes(
+            int index, io.appthreat.atom.Atom.Nodes.Builder builderForValue) {
+          if (nodesBuilder_ == null) {
+            ensureNodesIsMutable();
+            nodes_.set(index, builderForValue.build());
+            onChanged();
+          } else {
+            nodesBuilder_.setMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public Builder addNodes(io.appthreat.atom.Atom.Nodes value) {
+          if (nodesBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureNodesIsMutable();
+            nodes_.add(value);
+            onChanged();
+          } else {
+            nodesBuilder_.addMessage(value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public Builder addNodes(
+            int index, io.appthreat.atom.Atom.Nodes value) {
+          if (nodesBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureNodesIsMutable();
+            nodes_.add(index, value);
+            onChanged();
+          } else {
+            nodesBuilder_.addMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public Builder addNodes(
+            io.appthreat.atom.Atom.Nodes.Builder builderForValue) {
+          if (nodesBuilder_ == null) {
+            ensureNodesIsMutable();
+            nodes_.add(builderForValue.build());
+            onChanged();
+          } else {
+            nodesBuilder_.addMessage(builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public Builder addNodes(
+            int index, io.appthreat.atom.Atom.Nodes.Builder builderForValue) {
+          if (nodesBuilder_ == null) {
+            ensureNodesIsMutable();
+            nodes_.add(index, builderForValue.build());
+            onChanged();
+          } else {
+            nodesBuilder_.addMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public Builder addAllNodes(
+            java.lang.Iterable<? extends io.appthreat.atom.Atom.Nodes> values) {
+          if (nodesBuilder_ == null) {
+            ensureNodesIsMutable();
+            com.google.protobuf.AbstractMessageLite.Builder.addAll(
+                values, nodes_);
+            onChanged();
+          } else {
+            nodesBuilder_.addAllMessages(values);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public Builder clearNodes() {
+          if (nodesBuilder_ == null) {
+            nodes_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000001);
+            onChanged();
+          } else {
+            nodesBuilder_.clear();
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public Builder removeNodes(int index) {
+          if (nodesBuilder_ == null) {
+            ensureNodesIsMutable();
+            nodes_.remove(index);
+            onChanged();
+          } else {
+            nodesBuilder_.remove(index);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public io.appthreat.atom.Atom.Nodes.Builder getNodesBuilder(
+            int index) {
+          return getNodesFieldBuilder().getBuilder(index);
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public io.appthreat.atom.Atom.NodesOrBuilder getNodesOrBuilder(
+            int index) {
+          if (nodesBuilder_ == null) {
+            return nodes_.get(index);  } else {
+            return nodesBuilder_.getMessageOrBuilder(index);
+          }
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public java.util.List<? extends io.appthreat.atom.Atom.NodesOrBuilder> 
+             getNodesOrBuilderList() {
+          if (nodesBuilder_ != null) {
+            return nodesBuilder_.getMessageOrBuilderList();
+          } else {
+            return java.util.Collections.unmodifiableList(nodes_);
+          }
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public io.appthreat.atom.Atom.Nodes.Builder addNodesBuilder() {
+          return getNodesFieldBuilder().addBuilder(
+              io.appthreat.atom.Atom.Nodes.getDefaultInstance());
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public io.appthreat.atom.Atom.Nodes.Builder addNodesBuilder(
+            int index) {
+          return getNodesFieldBuilder().addBuilder(
+              index, io.appthreat.atom.Atom.Nodes.getDefaultInstance());
+        }
+        /**
+         * <code>repeated .atom.Nodes nodes = 1;</code>
+         */
+        public java.util.List<io.appthreat.atom.Atom.Nodes.Builder> 
+             getNodesBuilderList() {
+          return getNodesFieldBuilder().getBuilderList();
+        }
+        private com.google.protobuf.RepeatedFieldBuilderV3<
+            io.appthreat.atom.Atom.Nodes, io.appthreat.atom.Atom.Nodes.Builder, io.appthreat.atom.Atom.NodesOrBuilder> 
+            getNodesFieldBuilder() {
+          if (nodesBuilder_ == null) {
+            nodesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+                io.appthreat.atom.Atom.Nodes, io.appthreat.atom.Atom.Nodes.Builder, io.appthreat.atom.Atom.NodesOrBuilder>(
+                    nodes_,
+                    ((bitField0_ & 0x00000001) != 0),
+                    getParentForChildren(),
+                    isClean());
+            nodes_ = null;
+          }
+          return nodesBuilder_;
+        }
+        @java.lang.Override
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        @java.lang.Override
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
+
+        // @@protoc_insertion_point(builder_scope:atom.ReachableSlice.Reachables)
+      }
+
+      // @@protoc_insertion_point(class_scope:atom.ReachableSlice.Reachables)
+      private static final io.appthreat.atom.Atom.ReachableSlice.Reachables DEFAULT_INSTANCE;
+      static {
+        DEFAULT_INSTANCE = new io.appthreat.atom.Atom.ReachableSlice.Reachables();
+      }
+
+      public static io.appthreat.atom.Atom.ReachableSlice.Reachables getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      private static final com.google.protobuf.Parser<Reachables>
+          PARSER = new com.google.protobuf.AbstractParser<Reachables>() {
+        @java.lang.Override
+        public Reachables parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
+        }
+      };
+
+      public static com.google.protobuf.Parser<Reachables> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<Reachables> getParserForType() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public io.appthreat.atom.Atom.ReachableSlice.Reachables getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
+    }
+
+    public interface PurlsOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:atom.ReachableSlice.Purls)
+        com.google.protobuf.MessageOrBuilder {
+
+      /**
+       * <code>repeated string purls = 1;</code>
+       * @return A list containing the purls.
+       */
+      java.util.List<java.lang.String>
+          getPurlsList();
+      /**
+       * <code>repeated string purls = 1;</code>
+       * @return The count of purls.
+       */
+      int getPurlsCount();
+      /**
+       * <code>repeated string purls = 1;</code>
+       * @param index The index of the element to return.
+       * @return The purls at the given index.
+       */
+      java.lang.String getPurls(int index);
+      /**
+       * <code>repeated string purls = 1;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the purls at the given index.
+       */
+      com.google.protobuf.ByteString
+          getPurlsBytes(int index);
+    }
+    /**
+     * Protobuf type {@code atom.ReachableSlice.Purls}
+     */
+    public static final class Purls extends
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:atom.ReachableSlice.Purls)
+        PurlsOrBuilder {
+    private static final long serialVersionUID = 0L;
+      // Use Purls.newBuilder() to construct.
+      private Purls(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        super(builder);
+      }
+      private Purls() {
+        purls_ =
+            com.google.protobuf.LazyStringArrayList.emptyList();
+      }
+
+      @java.lang.Override
+      @SuppressWarnings({"unused"})
+      protected java.lang.Object newInstance(
+          UnusedPrivateParameter unused) {
+        return new Purls();
+      }
+
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_Purls_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_Purls_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.appthreat.atom.Atom.ReachableSlice.Purls.class, io.appthreat.atom.Atom.ReachableSlice.Purls.Builder.class);
+      }
+
+      public static final int PURLS_FIELD_NUMBER = 1;
+      @SuppressWarnings("serial")
+      private com.google.protobuf.LazyStringArrayList purls_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+      /**
+       * <code>repeated string purls = 1;</code>
+       * @return A list containing the purls.
+       */
+      public com.google.protobuf.ProtocolStringList
+          getPurlsList() {
+        return purls_;
+      }
+      /**
+       * <code>repeated string purls = 1;</code>
+       * @return The count of purls.
+       */
+      public int getPurlsCount() {
+        return purls_.size();
+      }
+      /**
+       * <code>repeated string purls = 1;</code>
+       * @param index The index of the element to return.
+       * @return The purls at the given index.
+       */
+      public java.lang.String getPurls(int index) {
+        return purls_.get(index);
+      }
+      /**
+       * <code>repeated string purls = 1;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the purls at the given index.
+       */
+      public com.google.protobuf.ByteString
+          getPurlsBytes(int index) {
+        return purls_.getByteString(index);
+      }
+
+      private byte memoizedIsInitialized = -1;
+      @java.lang.Override
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
+
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      @java.lang.Override
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        for (int i = 0; i < purls_.size(); i++) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 1, purls_.getRaw(i));
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      @java.lang.Override
+      public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        {
+          int dataSize = 0;
+          for (int i = 0; i < purls_.size(); i++) {
+            dataSize += computeStringSizeNoTag(purls_.getRaw(i));
+          }
+          size += dataSize;
+          size += 1 * getPurlsList().size();
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSize = size;
+        return size;
+      }
+
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof io.appthreat.atom.Atom.ReachableSlice.Purls)) {
+          return super.equals(obj);
+        }
+        io.appthreat.atom.Atom.ReachableSlice.Purls other = (io.appthreat.atom.Atom.ReachableSlice.Purls) obj;
+
+        if (!getPurlsList()
+            .equals(other.getPurlsList())) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+        return true;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptor().hashCode();
+        if (getPurlsCount() > 0) {
+          hash = (37 * hash) + PURLS_FIELD_NUMBER;
+          hash = (53 * hash) + getPurlsList().hashCode();
+        }
+        hash = (29 * hash) + getUnknownFields().hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls parseFrom(
+          java.nio.ByteBuffer data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls parseFrom(
+          java.nio.ByteBuffer data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+      }
+
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      @java.lang.Override
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+      }
+      public static Builder newBuilder(io.appthreat.atom.Atom.ReachableSlice.Purls prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      @java.lang.Override
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code atom.ReachableSlice.Purls}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:atom.ReachableSlice.Purls)
+          io.appthreat.atom.Atom.ReachableSlice.PurlsOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_Purls_descriptor;
+        }
+
+        @java.lang.Override
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_Purls_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  io.appthreat.atom.Atom.ReachableSlice.Purls.class, io.appthreat.atom.Atom.ReachableSlice.Purls.Builder.class);
+        }
+
+        // Construct using io.appthreat.atom.Atom.ReachableSlice.Purls.newBuilder()
+        private Builder() {
+
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          super(parent);
+
+        }
+        @java.lang.Override
+        public Builder clear() {
+          super.clear();
+          bitField0_ = 0;
+          purls_ =
+              com.google.protobuf.LazyStringArrayList.emptyList();
+          return this;
+        }
+
+        @java.lang.Override
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_Purls_descriptor;
+        }
+
+        @java.lang.Override
+        public io.appthreat.atom.Atom.ReachableSlice.Purls getDefaultInstanceForType() {
+          return io.appthreat.atom.Atom.ReachableSlice.Purls.getDefaultInstance();
+        }
+
+        @java.lang.Override
+        public io.appthreat.atom.Atom.ReachableSlice.Purls build() {
+          io.appthreat.atom.Atom.ReachableSlice.Purls result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        @java.lang.Override
+        public io.appthreat.atom.Atom.ReachableSlice.Purls buildPartial() {
+          io.appthreat.atom.Atom.ReachableSlice.Purls result = new io.appthreat.atom.Atom.ReachableSlice.Purls(this);
+          if (bitField0_ != 0) { buildPartial0(result); }
+          onBuilt();
+          return result;
+        }
+
+        private void buildPartial0(io.appthreat.atom.Atom.ReachableSlice.Purls result) {
+          int from_bitField0_ = bitField0_;
+          if (((from_bitField0_ & 0x00000001) != 0)) {
+            purls_.makeImmutable();
+            result.purls_ = purls_;
+          }
+        }
+
+        @java.lang.Override
+        public Builder clone() {
+          return super.clone();
+        }
+        @java.lang.Override
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.setField(field, value);
+        }
+        @java.lang.Override
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return super.clearField(field);
+        }
+        @java.lang.Override
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return super.clearOneof(oneof);
+        }
+        @java.lang.Override
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, java.lang.Object value) {
+          return super.setRepeatedField(field, index, value);
+        }
+        @java.lang.Override
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.addRepeatedField(field, value);
+        }
+        @java.lang.Override
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof io.appthreat.atom.Atom.ReachableSlice.Purls) {
+            return mergeFrom((io.appthreat.atom.Atom.ReachableSlice.Purls)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(io.appthreat.atom.Atom.ReachableSlice.Purls other) {
+          if (other == io.appthreat.atom.Atom.ReachableSlice.Purls.getDefaultInstance()) return this;
+          if (!other.purls_.isEmpty()) {
+            if (purls_.isEmpty()) {
+              purls_ = other.purls_;
+              bitField0_ |= 0x00000001;
+            } else {
+              ensurePurlsIsMutable();
+              purls_.addAll(other.purls_);
+            }
+            onChanged();
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          onChanged();
+          return this;
+        }
+
+        @java.lang.Override
+        public final boolean isInitialized() {
+          return true;
+        }
+
+        @java.lang.Override
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
+          try {
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  java.lang.String s = input.readStringRequireUtf8();
+                  ensurePurlsIsMutable();
+                  purls_.add(s);
+                  break;
+                } // case 10
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.unwrapIOException();
+          } finally {
+            onChanged();
+          } // finally
+          return this;
+        }
+        private int bitField0_;
+
+        private com.google.protobuf.LazyStringArrayList purls_ =
+            com.google.protobuf.LazyStringArrayList.emptyList();
+        private void ensurePurlsIsMutable() {
+          if (!purls_.isModifiable()) {
+            purls_ = new com.google.protobuf.LazyStringArrayList(purls_);
+          }
+          bitField0_ |= 0x00000001;
+        }
+        /**
+         * <code>repeated string purls = 1;</code>
+         * @return A list containing the purls.
+         */
+        public com.google.protobuf.ProtocolStringList
+            getPurlsList() {
+          purls_.makeImmutable();
+          return purls_;
+        }
+        /**
+         * <code>repeated string purls = 1;</code>
+         * @return The count of purls.
+         */
+        public int getPurlsCount() {
+          return purls_.size();
+        }
+        /**
+         * <code>repeated string purls = 1;</code>
+         * @param index The index of the element to return.
+         * @return The purls at the given index.
+         */
+        public java.lang.String getPurls(int index) {
+          return purls_.get(index);
+        }
+        /**
+         * <code>repeated string purls = 1;</code>
+         * @param index The index of the value to return.
+         * @return The bytes of the purls at the given index.
+         */
+        public com.google.protobuf.ByteString
+            getPurlsBytes(int index) {
+          return purls_.getByteString(index);
+        }
+        /**
+         * <code>repeated string purls = 1;</code>
+         * @param index The index to set the value at.
+         * @param value The purls to set.
+         * @return This builder for chaining.
+         */
+        public Builder setPurls(
+            int index, java.lang.String value) {
+          if (value == null) { throw new NullPointerException(); }
+          ensurePurlsIsMutable();
+          purls_.set(index, value);
+          bitField0_ |= 0x00000001;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated string purls = 1;</code>
+         * @param value The purls to add.
+         * @return This builder for chaining.
+         */
+        public Builder addPurls(
+            java.lang.String value) {
+          if (value == null) { throw new NullPointerException(); }
+          ensurePurlsIsMutable();
+          purls_.add(value);
+          bitField0_ |= 0x00000001;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated string purls = 1;</code>
+         * @param values The purls to add.
+         * @return This builder for chaining.
+         */
+        public Builder addAllPurls(
+            java.lang.Iterable<java.lang.String> values) {
+          ensurePurlsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, purls_);
+          bitField0_ |= 0x00000001;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated string purls = 1;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearPurls() {
+          purls_ =
+            com.google.protobuf.LazyStringArrayList.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated string purls = 1;</code>
+         * @param value The bytes of the purls to add.
+         * @return This builder for chaining.
+         */
+        public Builder addPurlsBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
+          ensurePurlsIsMutable();
+          purls_.add(value);
+          bitField0_ |= 0x00000001;
+          onChanged();
+          return this;
+        }
+        @java.lang.Override
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        @java.lang.Override
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
+
+        // @@protoc_insertion_point(builder_scope:atom.ReachableSlice.Purls)
+      }
+
+      // @@protoc_insertion_point(class_scope:atom.ReachableSlice.Purls)
+      private static final io.appthreat.atom.Atom.ReachableSlice.Purls DEFAULT_INSTANCE;
+      static {
+        DEFAULT_INSTANCE = new io.appthreat.atom.Atom.ReachableSlice.Purls();
+      }
+
+      public static io.appthreat.atom.Atom.ReachableSlice.Purls getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      private static final com.google.protobuf.Parser<Purls>
+          PARSER = new com.google.protobuf.AbstractParser<Purls>() {
+        @java.lang.Override
+        public Purls parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
+        }
+      };
+
+      public static com.google.protobuf.Parser<Purls> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<Purls> getParserForType() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public io.appthreat.atom.Atom.ReachableSlice.Purls getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
+    }
+
+    public static final int REACHABLES_FIELD_NUMBER = 1;
+    private io.appthreat.atom.Atom.ReachableSlice.Reachables reachables_;
+    /**
+     * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+     * @return Whether the reachables field is set.
+     */
+    @java.lang.Override
+    public boolean hasReachables() {
+      return reachables_ != null;
+    }
+    /**
+     * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+     * @return The reachables.
+     */
+    @java.lang.Override
+    public io.appthreat.atom.Atom.ReachableSlice.Reachables getReachables() {
+      return reachables_ == null ? io.appthreat.atom.Atom.ReachableSlice.Reachables.getDefaultInstance() : reachables_;
+    }
+    /**
+     * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+     */
+    @java.lang.Override
+    public io.appthreat.atom.Atom.ReachableSlice.ReachablesOrBuilder getReachablesOrBuilder() {
+      return reachables_ == null ? io.appthreat.atom.Atom.ReachableSlice.Reachables.getDefaultInstance() : reachables_;
+    }
+
+    public static final int PURLS_FIELD_NUMBER = 2;
+    private io.appthreat.atom.Atom.ReachableSlice.Purls purls_;
+    /**
+     * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+     * @return Whether the purls field is set.
+     */
+    @java.lang.Override
+    public boolean hasPurls() {
+      return purls_ != null;
+    }
+    /**
+     * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+     * @return The purls.
+     */
+    @java.lang.Override
+    public io.appthreat.atom.Atom.ReachableSlice.Purls getPurls() {
+      return purls_ == null ? io.appthreat.atom.Atom.ReachableSlice.Purls.getDefaultInstance() : purls_;
+    }
+    /**
+     * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+     */
+    @java.lang.Override
+    public io.appthreat.atom.Atom.ReachableSlice.PurlsOrBuilder getPurlsOrBuilder() {
+      return purls_ == null ? io.appthreat.atom.Atom.ReachableSlice.Purls.getDefaultInstance() : purls_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (reachables_ != null) {
+        output.writeMessage(1, getReachables());
+      }
+      if (purls_ != null) {
+        output.writeMessage(2, getPurls());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (reachables_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getReachables());
+      }
+      if (purls_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getPurls());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.appthreat.atom.Atom.ReachableSlice)) {
+        return super.equals(obj);
+      }
+      io.appthreat.atom.Atom.ReachableSlice other = (io.appthreat.atom.Atom.ReachableSlice) obj;
+
+      if (hasReachables() != other.hasReachables()) return false;
+      if (hasReachables()) {
+        if (!getReachables()
+            .equals(other.getReachables())) return false;
+      }
+      if (hasPurls() != other.hasPurls()) return false;
+      if (hasPurls()) {
+        if (!getPurls()
+            .equals(other.getPurls())) return false;
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasReachables()) {
+        hash = (37 * hash) + REACHABLES_FIELD_NUMBER;
+        hash = (53 * hash) + getReachables().hashCode();
+      }
+      if (hasPurls()) {
+        hash = (37 * hash) + PURLS_FIELD_NUMBER;
+        hash = (53 * hash) + getPurls().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.appthreat.atom.Atom.ReachableSlice parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.appthreat.atom.Atom.ReachableSlice parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.appthreat.atom.Atom.ReachableSlice parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.appthreat.atom.Atom.ReachableSlice parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.appthreat.atom.Atom.ReachableSlice parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.appthreat.atom.Atom.ReachableSlice parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.appthreat.atom.Atom.ReachableSlice parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.appthreat.atom.Atom.ReachableSlice parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static io.appthreat.atom.Atom.ReachableSlice parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static io.appthreat.atom.Atom.ReachableSlice parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.appthreat.atom.Atom.ReachableSlice parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.appthreat.atom.Atom.ReachableSlice parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.appthreat.atom.Atom.ReachableSlice prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     **
+     * Reachables slices offers a list of reachable nodes based on automated tags exported from data dependency graph
+     * </pre>
+     *
+     * Protobuf type {@code atom.ReachableSlice}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:atom.ReachableSlice)
+        io.appthreat.atom.Atom.ReachableSliceOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.appthreat.atom.Atom.ReachableSlice.class, io.appthreat.atom.Atom.ReachableSlice.Builder.class);
+      }
+
+      // Construct using io.appthreat.atom.Atom.ReachableSlice.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        reachables_ = null;
+        if (reachablesBuilder_ != null) {
+          reachablesBuilder_.dispose();
+          reachablesBuilder_ = null;
+        }
+        purls_ = null;
+        if (purlsBuilder_ != null) {
+          purlsBuilder_.dispose();
+          purlsBuilder_ = null;
+        }
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.appthreat.atom.Atom.internal_static_atom_ReachableSlice_descriptor;
+      }
+
+      @java.lang.Override
+      public io.appthreat.atom.Atom.ReachableSlice getDefaultInstanceForType() {
+        return io.appthreat.atom.Atom.ReachableSlice.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.appthreat.atom.Atom.ReachableSlice build() {
+        io.appthreat.atom.Atom.ReachableSlice result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.appthreat.atom.Atom.ReachableSlice buildPartial() {
+        io.appthreat.atom.Atom.ReachableSlice result = new io.appthreat.atom.Atom.ReachableSlice(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(io.appthreat.atom.Atom.ReachableSlice result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.reachables_ = reachablesBuilder_ == null
+              ? reachables_
+              : reachablesBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.purls_ = purlsBuilder_ == null
+              ? purls_
+              : purlsBuilder_.build();
+        }
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.appthreat.atom.Atom.ReachableSlice) {
+          return mergeFrom((io.appthreat.atom.Atom.ReachableSlice)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.appthreat.atom.Atom.ReachableSlice other) {
+        if (other == io.appthreat.atom.Atom.ReachableSlice.getDefaultInstance()) return this;
+        if (other.hasReachables()) {
+          mergeReachables(other.getReachables());
+        }
+        if (other.hasPurls()) {
+          mergePurls(other.getPurls());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                input.readMessage(
+                    getReachablesFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                input.readMessage(
+                    getPurlsFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private io.appthreat.atom.Atom.ReachableSlice.Reachables reachables_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.appthreat.atom.Atom.ReachableSlice.Reachables, io.appthreat.atom.Atom.ReachableSlice.Reachables.Builder, io.appthreat.atom.Atom.ReachableSlice.ReachablesOrBuilder> reachablesBuilder_;
+      /**
+       * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+       * @return Whether the reachables field is set.
+       */
+      public boolean hasReachables() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+       * @return The reachables.
+       */
+      public io.appthreat.atom.Atom.ReachableSlice.Reachables getReachables() {
+        if (reachablesBuilder_ == null) {
+          return reachables_ == null ? io.appthreat.atom.Atom.ReachableSlice.Reachables.getDefaultInstance() : reachables_;
+        } else {
+          return reachablesBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+       */
+      public Builder setReachables(io.appthreat.atom.Atom.ReachableSlice.Reachables value) {
+        if (reachablesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          reachables_ = value;
+        } else {
+          reachablesBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+       */
+      public Builder setReachables(
+          io.appthreat.atom.Atom.ReachableSlice.Reachables.Builder builderForValue) {
+        if (reachablesBuilder_ == null) {
+          reachables_ = builderForValue.build();
+        } else {
+          reachablesBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+       */
+      public Builder mergeReachables(io.appthreat.atom.Atom.ReachableSlice.Reachables value) {
+        if (reachablesBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0) &&
+            reachables_ != null &&
+            reachables_ != io.appthreat.atom.Atom.ReachableSlice.Reachables.getDefaultInstance()) {
+            getReachablesBuilder().mergeFrom(value);
+          } else {
+            reachables_ = value;
+          }
+        } else {
+          reachablesBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+       */
+      public Builder clearReachables() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        reachables_ = null;
+        if (reachablesBuilder_ != null) {
+          reachablesBuilder_.dispose();
+          reachablesBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+       */
+      public io.appthreat.atom.Atom.ReachableSlice.Reachables.Builder getReachablesBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getReachablesFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+       */
+      public io.appthreat.atom.Atom.ReachableSlice.ReachablesOrBuilder getReachablesOrBuilder() {
+        if (reachablesBuilder_ != null) {
+          return reachablesBuilder_.getMessageOrBuilder();
+        } else {
+          return reachables_ == null ?
+              io.appthreat.atom.Atom.ReachableSlice.Reachables.getDefaultInstance() : reachables_;
+        }
+      }
+      /**
+       * <code>.atom.ReachableSlice.Reachables reachables = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.appthreat.atom.Atom.ReachableSlice.Reachables, io.appthreat.atom.Atom.ReachableSlice.Reachables.Builder, io.appthreat.atom.Atom.ReachableSlice.ReachablesOrBuilder> 
+          getReachablesFieldBuilder() {
+        if (reachablesBuilder_ == null) {
+          reachablesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              io.appthreat.atom.Atom.ReachableSlice.Reachables, io.appthreat.atom.Atom.ReachableSlice.Reachables.Builder, io.appthreat.atom.Atom.ReachableSlice.ReachablesOrBuilder>(
+                  getReachables(),
+                  getParentForChildren(),
+                  isClean());
+          reachables_ = null;
+        }
+        return reachablesBuilder_;
+      }
+
+      private io.appthreat.atom.Atom.ReachableSlice.Purls purls_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.appthreat.atom.Atom.ReachableSlice.Purls, io.appthreat.atom.Atom.ReachableSlice.Purls.Builder, io.appthreat.atom.Atom.ReachableSlice.PurlsOrBuilder> purlsBuilder_;
+      /**
+       * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+       * @return Whether the purls field is set.
+       */
+      public boolean hasPurls() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+       * @return The purls.
+       */
+      public io.appthreat.atom.Atom.ReachableSlice.Purls getPurls() {
+        if (purlsBuilder_ == null) {
+          return purls_ == null ? io.appthreat.atom.Atom.ReachableSlice.Purls.getDefaultInstance() : purls_;
+        } else {
+          return purlsBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+       */
+      public Builder setPurls(io.appthreat.atom.Atom.ReachableSlice.Purls value) {
+        if (purlsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          purls_ = value;
+        } else {
+          purlsBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+       */
+      public Builder setPurls(
+          io.appthreat.atom.Atom.ReachableSlice.Purls.Builder builderForValue) {
+        if (purlsBuilder_ == null) {
+          purls_ = builderForValue.build();
+        } else {
+          purlsBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+       */
+      public Builder mergePurls(io.appthreat.atom.Atom.ReachableSlice.Purls value) {
+        if (purlsBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) != 0) &&
+            purls_ != null &&
+            purls_ != io.appthreat.atom.Atom.ReachableSlice.Purls.getDefaultInstance()) {
+            getPurlsBuilder().mergeFrom(value);
+          } else {
+            purls_ = value;
+          }
+        } else {
+          purlsBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+       */
+      public Builder clearPurls() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        purls_ = null;
+        if (purlsBuilder_ != null) {
+          purlsBuilder_.dispose();
+          purlsBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+       */
+      public io.appthreat.atom.Atom.ReachableSlice.Purls.Builder getPurlsBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getPurlsFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+       */
+      public io.appthreat.atom.Atom.ReachableSlice.PurlsOrBuilder getPurlsOrBuilder() {
+        if (purlsBuilder_ != null) {
+          return purlsBuilder_.getMessageOrBuilder();
+        } else {
+          return purls_ == null ?
+              io.appthreat.atom.Atom.ReachableSlice.Purls.getDefaultInstance() : purls_;
+        }
+      }
+      /**
+       * <code>.atom.ReachableSlice.Purls purls = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.appthreat.atom.Atom.ReachableSlice.Purls, io.appthreat.atom.Atom.ReachableSlice.Purls.Builder, io.appthreat.atom.Atom.ReachableSlice.PurlsOrBuilder> 
+          getPurlsFieldBuilder() {
+        if (purlsBuilder_ == null) {
+          purlsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              io.appthreat.atom.Atom.ReachableSlice.Purls, io.appthreat.atom.Atom.ReachableSlice.Purls.Builder, io.appthreat.atom.Atom.ReachableSlice.PurlsOrBuilder>(
+                  getPurls(),
+                  getParentForChildren(),
+                  isClean());
+          purls_ = null;
+        }
+        return purlsBuilder_;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:atom.ReachableSlice)
+    }
+
+    // @@protoc_insertion_point(class_scope:atom.ReachableSlice)
+    private static final io.appthreat.atom.Atom.ReachableSlice DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.appthreat.atom.Atom.ReachableSlice();
+    }
+
+    public static io.appthreat.atom.Atom.ReachableSlice getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ReachableSlice>
+        PARSER = new com.google.protobuf.AbstractParser<ReachableSlice>() {
+      @java.lang.Override
+      public ReachableSlice parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<ReachableSlice> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ReachableSlice> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.appthreat.atom.Atom.ReachableSlice getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_atom_PropertyValue_descriptor;
   private static final 
@@ -46495,15 +48885,15 @@ public final class Atom {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_atom_UsageSlice_UserDefinedTypes_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_atom_Nodes_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_atom_Nodes_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_atom_DataFlowSlice_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_atom_DataFlowSlice_fieldAccessorTable;
-  private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_atom_DataFlowSlice_Nodes_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_atom_DataFlowSlice_Nodes_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_atom_DataFlowSlice_Edges_descriptor;
   private static final 
@@ -46524,6 +48914,21 @@ public final class Atom {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_atom_DataFlowSlice_Graph_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_atom_ReachableSlice_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_atom_ReachableSlice_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_atom_ReachableSlice_Reachables_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_atom_ReachableSlice_Reachables_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_atom_ReachableSlice_Purls_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_atom_ReachableSlice_Purls_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -46651,91 +49056,95 @@ public final class Atom {
       "ber\030\005 \001(\r\022\024\n\014columnNumber\030\006 \001(\r\"l\n\tLabel" +
       "Type\022\007\n\003ANY\020\000\022\t\n\005LOCAL\020\001\022\013\n\007LITERAL\020\002\022\t\n" +
       "\005PARAM\020\003\022\010\n\004CALL\020\004\022\016\n\nIDENTIFIER\020\005\022\014\n\010TY" +
-      "PE_REF\020\006\022\013\n\007UNKNOWN\020\n\"\210\005\n\rDataFlowSlice\022" +
-      "(\n\005graph\030\001 \001(\0132\031.atom.DataFlowSlice.Grap" +
-      "h\022\'\n\004path\030\002 \001(\0132\031.atom.DataFlowSlice.Pat" +
-      "hs\032\255\002\n\005Nodes\022\n\n\002id\030\001 \001(\r\022\035\n\005label\030\002 \001(\0162" +
-      "\016.atom.NodeType\022\014\n\004name\030\003 \001(\t\022\020\n\010fullNam" +
-      "e\030\004 \001(\t\022\021\n\tsignature\030\005 \001(\t\022\022\n\nisExternal" +
-      "\030\006 \001(\010\022\014\n\004code\030\007 \001(\t\022\024\n\014typeFullName\030\010 \001" +
-      "(\t\022\030\n\020parentMethodName\030\t \001(\t\022\026\n\016parentFi" +
-      "leName\030\n \001(\t\022\031\n\021parentPackageName\030\013 \001(\t\022" +
-      "\027\n\017parentClassName\030\014 \001(\t\022\022\n\nlineNumber\030\r" +
-      " \001(\r\022\024\n\014columnNumber\030\016 \001(\r\032O\n\005Edges\022\013\n\003s" +
-      "rc\030\001 \001(\r\022\013\n\003dst\030\002 \001(\r\022,\n\005label\030\003 \001(\0162\035.a" +
-      "tom.CpgStruct.Edge.EdgeType\032\023\n\005Flows\022\n\n\002" +
-      "id\030\001 \003(\r\0321\n\005Paths\022(\n\005flows\030\001 \003(\0132\031.atom." +
-      "DataFlowSlice.Flows\032[\n\005Graph\022(\n\005nodes\030\001 " +
-      "\003(\0132\031.atom.DataFlowSlice.Nodes\022(\n\005edges\030" +
-      "\002 \003(\0132\031.atom.DataFlowSlice.Edges*\245\007\n\020Nod" +
-      "ePropertyName\022\031\n\025UNKNOWN_NODE_PROPERTY\020\000" +
-      "\022\017\n\013LINE_NUMBER\020\002\022\024\n\020PARSER_TYPE_NAME\020\003\022" +
-      "\t\n\005ORDER\020\004\022\010\n\004NAME\020\005\022\r\n\tFULL_NAME\020\006\022\017\n\013I" +
-      "S_EXTERNAL\020\007\022\t\n\005VALUE\020\010\022\021\n\rCOLUMN_NUMBER" +
-      "\020\013\022\023\n\017LINE_NUMBER_END\020\014\022\013\n\007VERSION\020\r\022\027\n\023" +
-      "EVALUATION_STRATEGY\020\017\022\025\n\021COLUMN_NUMBER_E" +
-      "ND\020\020\022\014\n\010LANGUAGE\020\023\022\013\n\007CONTENT\020\024\022\010\n\004CODE\020" +
-      "\025\022\r\n\tSIGNATURE\020\026\022\021\n\rDISPATCH_TYPE\020\031\022\021\n\rM" +
-      "ODIFIER_TYPE\020\032\022\032\n\026CONTROL_STRUCTURE_TYPE" +
-      "\020\033\022\022\n\016ARGUMENT_INDEX\020(\022\026\n\022CLOSURE_BINDIN" +
-      "G_ID\0202\022\022\n\016TYPE_FULL_NAME\0203\022\027\n\023TYPE_DECL_" +
-      "FULL_NAME\0204\022 \n\034INHERITS_FROM_TYPE_FULL_N" +
-      "AME\0205\022\024\n\020METHOD_FULL_NAME\0206\022\023\n\017AST_PAREN" +
-      "T_TYPE\0208\022\030\n\024AST_PARENT_FULL_NAME\0209\022\027\n\023DE" +
-      "PENDENCY_GROUP_ID\020:\022\n\n\006SYMBOL\020d\022\025\n\021METHO" +
-      "D_SHORT_NAME\020f\022\020\n\014PACKAGE_NAME\020g\022\016\n\nCLAS" +
-      "S_NAME\020h\022\016\n\nNODE_LABEL\020i\022\014\n\010FILENAME\020j\022\014" +
-      "\n\010OVERLAYS\020v\022\010\n\004HASH\020x\022\022\n\rARGUMENT_NAME\020" +
-      "\202\001\022\010\n\003KEY\020\203\001\022\025\n\020CLASS_SHORT_NAME\020\204\001\022\031\n\024A" +
-      "LIAS_TYPE_FULL_NAME\020\236\001\022\032\n\025CLOSURE_ORIGIN" +
-      "AL_NAME\020\237\001\022\020\n\013IS_VARIADIC\020\335\001\022\t\n\004ROOT\020\257\t\022" +
-      " \n\033DYNAMIC_TYPE_HINT_FULL_NAME\020\267\014\022\n\n\005IND" +
-      "EX\020\257\021\022\024\n\016CANONICAL_NAME\020\304\221z\022\023\n\rCONTAINED" +
-      "_REF\020\371\300z*;\n\020EdgePropertyName\022\031\n\025UNKNOWN_" +
-      "EDGE_PROPERTY\020\000\022\014\n\010VARIABLE\020\013*\275\001\n\rModifi" +
-      "erTypes\022\031\n\025UNKNOWN_MODIFIER_TYPE\020\000\022\n\n\006ST" +
-      "ATIC\020\001\022\n\n\006PUBLIC\020\002\022\r\n\tPROTECTED\020\003\022\013\n\007PRI" +
-      "VATE\020\004\022\014\n\010ABSTRACT\020\005\022\n\n\006NATIVE\020\006\022\017\n\013CONS" +
-      "TRUCTOR\020\007\022\013\n\007VIRTUAL\020\010\022\014\n\010INTERNAL\020\t\022\t\n\005" +
-      "FINAL\020\n\022\014\n\010READONLY\020\013*\362\001\n\tLANGUAGES\022\024\n\020U" +
-      "NKNOWN_LANGUAGE\020\000\022\010\n\004JAVA\020\001\022\016\n\nJAVASCRIP" +
-      "T\020\002\022\n\n\006GOLANG\020\003\022\n\n\006CSHARP\020\004\022\005\n\001C\020\005\022\n\n\006PY" +
-      "THON\020\006\022\010\n\004LLVM\020\007\022\007\n\003PHP\020\010\022\023\n\017FUZZY_TEST_" +
-      "LANG\020\t\022\n\n\006GHIDRA\020\n\022\n\n\006KOTLIN\020\013\022\010\n\004NEWC\020\014" +
-      "\022\013\n\007JAVASRC\020\r\022\r\n\tPYTHONSRC\020\016\022\t\n\005JSSRC\020\017\022" +
-      "\014\n\010SOLIDITY\020\020\022\013\n\007RUBYSRC\020\021*g\n\024Evaluation" +
-      "Strategies\022\037\n\033UNKNOWN_EVALUATION_STRATEG" +
-      "Y\020\000\022\020\n\014BY_REFERENCE\020\001\022\016\n\nBY_SHARING\020\002\022\014\n" +
-      "\010BY_VALUE\020\003*b\n\rDispatchTypes\022\031\n\025UNKNOWN_" +
-      "DISPATCH_TYPE\020\000\022\023\n\017STATIC_DISPATCH\020\001\022\024\n\020" +
-      "DYNAMIC_DISPATCH\020\002\022\013\n\007INLINED\020\003*\304\001\n\027CONT" +
-      "ROL_STRUCTURE_TYPES\022\"\n\036UNKNOWN_CONTROL_S" +
-      "TRUCTURE_TYPE\020\000\022\t\n\005BREAK\020\001\022\014\n\010CONTINUE\020\002" +
-      "\022\t\n\005WHILE\020\003\022\006\n\002DO\020\004\022\007\n\003FOR\020\005\022\010\n\004GOTO\020\006\022\006" +
-      "\n\002IF\020\007\022\010\n\004ELSE\020\010\022\n\n\006SWITCH\020\t\022\007\n\003TRY\020\n\022\t\n" +
-      "\005THROW\020\013\022\t\n\005MATCH\020\014\022\t\n\005YIELD\020\r*\202\006\n\010NodeT" +
-      "ype\022\025\n\021UNKNOWN_NODE_TYPE\020\000\022\n\n\006METHOD\020\001\022\021" +
-      "\n\rMETHOD_RETURN\020\003\022\016\n\nANNOTATION\020\005\022\037\n\033ANN" +
-      "OTATION_PARAMETER_ASSIGN\020\006\022\030\n\024ANNOTATION" +
-      "_PARAMETER\020\007\022\013\n\007LITERAL\020\010\022\n\n\006MEMBER\020\t\022\025\n" +
-      "\021ARRAY_INITIALIZER\020\016\022\010\n\004CALL\020\017\022\t\n\005LOCAL\020" +
-      "\027\022\007\n\003TAG\020\030\022\014\n\010LOCATION\020\031\022\016\n\nIDENTIFIER\020\033" +
-      "\022\n\n\006RETURN\020\036\022\t\n\005BLOCK\020\037\022\030\n\024METHOD_PARAME" +
-      "TER_OUT\020!\022\027\n\023METHOD_PARAMETER_IN\020\"\022\016\n\nDE" +
-      "PENDENCY\020#\022\010\n\004FILE\020&\022\r\n\tMETA_DATA\020\'\022\r\n\tN" +
-      "AMESPACE\020(\022\023\n\017NAMESPACE_BLOCK\020)\022\013\n\007UNKNO" +
-      "WN\020,\022\010\n\004TYPE\020-\022\r\n\tTYPE_DECL\020.\022\022\n\016TYPE_PA" +
-      "RAMETER\020/\022\021\n\rTYPE_ARGUMENT\0200\022\026\n\022ANNOTATI" +
-      "ON_LITERAL\0201\022\017\n\013CONFIG_FILE\0202\022\014\n\007BINDING" +
-      "\020\222\001\022\022\n\rTAG_NODE_PAIR\020\320\001\022\014\n\007FINDING\020\326\001\022\023\n" +
-      "\016KEY_VALUE_PAIR\020\331\001\022\r\n\010MODIFIER\020\254\002\022\017\n\nMET" +
-      "HOD_REF\020\315\002\022\024\n\017CLOSURE_BINDING\020\316\002\022\r\n\010TYPE" +
-      "_REF\020\317\002\022\026\n\021CONTROL_STRUCTURE\020\323\002\022\020\n\013JUMP_" +
-      "TARGET\020\324\002\022\017\n\nJUMP_LABEL\020\325\002\022\021\n\014TEMPLATE_D" +
-      "OM\020\241\003\022\014\n\007COMMENT\020\377\003\022\026\n\020FIELD_IDENTIFIER\020" +
-      "\271\221zBH\n\021io.appthreat.atomB\004AtomZ\031github.c" +
-      "om/AppThreat/atom\252\002\021io.appthreat.atomb\006p" +
-      "roto3"
+      "PE_REF\020\006\022\013\n\007UNKNOWN\020\n\"\273\002\n\005Nodes\022\n\n\002id\030\001 " +
+      "\001(\r\022\035\n\005label\030\002 \001(\0162\016.atom.NodeType\022\014\n\004na" +
+      "me\030\003 \001(\t\022\020\n\010fullName\030\004 \001(\t\022\021\n\tsignature\030" +
+      "\005 \001(\t\022\022\n\nisExternal\030\006 \001(\010\022\014\n\004code\030\007 \001(\t\022" +
+      "\024\n\014typeFullName\030\010 \001(\t\022\030\n\020parentMethodNam" +
+      "e\030\t \001(\t\022\026\n\016parentFileName\030\n \001(\t\022\031\n\021paren" +
+      "tPackageName\030\013 \001(\t\022\027\n\017parentClassName\030\014 " +
+      "\001(\t\022\022\n\nlineNumber\030\r \001(\r\022\024\n\014columnNumber\030" +
+      "\016 \001(\r\022\014\n\004tags\030\017 \001(\t\"\312\002\n\rDataFlowSlice\022(\n" +
+      "\005graph\030\001 \001(\0132\031.atom.DataFlowSlice.Graph\022" +
+      "\'\n\004path\030\002 \001(\0132\031.atom.DataFlowSlice.Paths" +
+      "\032O\n\005Edges\022\013\n\003src\030\001 \001(\r\022\013\n\003dst\030\002 \001(\r\022,\n\005l" +
+      "abel\030\003 \001(\0162\035.atom.CpgStruct.Edge.EdgeTyp" +
+      "e\032\023\n\005Flows\022\n\n\002id\030\001 \003(\r\0321\n\005Paths\022(\n\005flows" +
+      "\030\001 \003(\0132\031.atom.DataFlowSlice.Flows\032M\n\005Gra" +
+      "ph\022\032\n\005nodes\030\001 \003(\0132\013.atom.Nodes\022(\n\005edges\030" +
+      "\002 \003(\0132\031.atom.DataFlowSlice.Edges\"\262\001\n\016Rea" +
+      "chableSlice\0223\n\nreachables\030\001 \001(\0132\037.atom.R" +
+      "eachableSlice.Reachables\022)\n\005purls\030\002 \001(\0132" +
+      "\032.atom.ReachableSlice.Purls\032(\n\nReachable" +
+      "s\022\032\n\005nodes\030\001 \003(\0132\013.atom.Nodes\032\026\n\005Purls\022\r" +
+      "\n\005purls\030\001 \003(\t*\245\007\n\020NodePropertyName\022\031\n\025UN" +
+      "KNOWN_NODE_PROPERTY\020\000\022\017\n\013LINE_NUMBER\020\002\022\024" +
+      "\n\020PARSER_TYPE_NAME\020\003\022\t\n\005ORDER\020\004\022\010\n\004NAME\020" +
+      "\005\022\r\n\tFULL_NAME\020\006\022\017\n\013IS_EXTERNAL\020\007\022\t\n\005VAL" +
+      "UE\020\010\022\021\n\rCOLUMN_NUMBER\020\013\022\023\n\017LINE_NUMBER_E" +
+      "ND\020\014\022\013\n\007VERSION\020\r\022\027\n\023EVALUATION_STRATEGY" +
+      "\020\017\022\025\n\021COLUMN_NUMBER_END\020\020\022\014\n\010LANGUAGE\020\023\022" +
+      "\013\n\007CONTENT\020\024\022\010\n\004CODE\020\025\022\r\n\tSIGNATURE\020\026\022\021\n" +
+      "\rDISPATCH_TYPE\020\031\022\021\n\rMODIFIER_TYPE\020\032\022\032\n\026C" +
+      "ONTROL_STRUCTURE_TYPE\020\033\022\022\n\016ARGUMENT_INDE" +
+      "X\020(\022\026\n\022CLOSURE_BINDING_ID\0202\022\022\n\016TYPE_FULL" +
+      "_NAME\0203\022\027\n\023TYPE_DECL_FULL_NAME\0204\022 \n\034INHE" +
+      "RITS_FROM_TYPE_FULL_NAME\0205\022\024\n\020METHOD_FUL" +
+      "L_NAME\0206\022\023\n\017AST_PARENT_TYPE\0208\022\030\n\024AST_PAR" +
+      "ENT_FULL_NAME\0209\022\027\n\023DEPENDENCY_GROUP_ID\020:" +
+      "\022\n\n\006SYMBOL\020d\022\025\n\021METHOD_SHORT_NAME\020f\022\020\n\014P" +
+      "ACKAGE_NAME\020g\022\016\n\nCLASS_NAME\020h\022\016\n\nNODE_LA" +
+      "BEL\020i\022\014\n\010FILENAME\020j\022\014\n\010OVERLAYS\020v\022\010\n\004HAS" +
+      "H\020x\022\022\n\rARGUMENT_NAME\020\202\001\022\010\n\003KEY\020\203\001\022\025\n\020CLA" +
+      "SS_SHORT_NAME\020\204\001\022\031\n\024ALIAS_TYPE_FULL_NAME" +
+      "\020\236\001\022\032\n\025CLOSURE_ORIGINAL_NAME\020\237\001\022\020\n\013IS_VA" +
+      "RIADIC\020\335\001\022\t\n\004ROOT\020\257\t\022 \n\033DYNAMIC_TYPE_HIN" +
+      "T_FULL_NAME\020\267\014\022\n\n\005INDEX\020\257\021\022\024\n\016CANONICAL_" +
+      "NAME\020\304\221z\022\023\n\rCONTAINED_REF\020\371\300z*;\n\020EdgePro" +
+      "pertyName\022\031\n\025UNKNOWN_EDGE_PROPERTY\020\000\022\014\n\010" +
+      "VARIABLE\020\013*\275\001\n\rModifierTypes\022\031\n\025UNKNOWN_" +
+      "MODIFIER_TYPE\020\000\022\n\n\006STATIC\020\001\022\n\n\006PUBLIC\020\002\022" +
+      "\r\n\tPROTECTED\020\003\022\013\n\007PRIVATE\020\004\022\014\n\010ABSTRACT\020" +
+      "\005\022\n\n\006NATIVE\020\006\022\017\n\013CONSTRUCTOR\020\007\022\013\n\007VIRTUA" +
+      "L\020\010\022\014\n\010INTERNAL\020\t\022\t\n\005FINAL\020\n\022\014\n\010READONLY" +
+      "\020\013*\362\001\n\tLANGUAGES\022\024\n\020UNKNOWN_LANGUAGE\020\000\022\010" +
+      "\n\004JAVA\020\001\022\016\n\nJAVASCRIPT\020\002\022\n\n\006GOLANG\020\003\022\n\n\006" +
+      "CSHARP\020\004\022\005\n\001C\020\005\022\n\n\006PYTHON\020\006\022\010\n\004LLVM\020\007\022\007\n" +
+      "\003PHP\020\010\022\023\n\017FUZZY_TEST_LANG\020\t\022\n\n\006GHIDRA\020\n\022" +
+      "\n\n\006KOTLIN\020\013\022\010\n\004NEWC\020\014\022\013\n\007JAVASRC\020\r\022\r\n\tPY" +
+      "THONSRC\020\016\022\t\n\005JSSRC\020\017\022\014\n\010SOLIDITY\020\020\022\013\n\007RU" +
+      "BYSRC\020\021*g\n\024EvaluationStrategies\022\037\n\033UNKNO" +
+      "WN_EVALUATION_STRATEGY\020\000\022\020\n\014BY_REFERENCE" +
+      "\020\001\022\016\n\nBY_SHARING\020\002\022\014\n\010BY_VALUE\020\003*b\n\rDisp" +
+      "atchTypes\022\031\n\025UNKNOWN_DISPATCH_TYPE\020\000\022\023\n\017" +
+      "STATIC_DISPATCH\020\001\022\024\n\020DYNAMIC_DISPATCH\020\002\022" +
+      "\013\n\007INLINED\020\003*\304\001\n\027CONTROL_STRUCTURE_TYPES" +
+      "\022\"\n\036UNKNOWN_CONTROL_STRUCTURE_TYPE\020\000\022\t\n\005" +
+      "BREAK\020\001\022\014\n\010CONTINUE\020\002\022\t\n\005WHILE\020\003\022\006\n\002DO\020\004" +
+      "\022\007\n\003FOR\020\005\022\010\n\004GOTO\020\006\022\006\n\002IF\020\007\022\010\n\004ELSE\020\010\022\n\n" +
+      "\006SWITCH\020\t\022\007\n\003TRY\020\n\022\t\n\005THROW\020\013\022\t\n\005MATCH\020\014" +
+      "\022\t\n\005YIELD\020\r*\202\006\n\010NodeType\022\025\n\021UNKNOWN_NODE" +
+      "_TYPE\020\000\022\n\n\006METHOD\020\001\022\021\n\rMETHOD_RETURN\020\003\022\016" +
+      "\n\nANNOTATION\020\005\022\037\n\033ANNOTATION_PARAMETER_A" +
+      "SSIGN\020\006\022\030\n\024ANNOTATION_PARAMETER\020\007\022\013\n\007LIT" +
+      "ERAL\020\010\022\n\n\006MEMBER\020\t\022\025\n\021ARRAY_INITIALIZER\020" +
+      "\016\022\010\n\004CALL\020\017\022\t\n\005LOCAL\020\027\022\007\n\003TAG\020\030\022\014\n\010LOCAT" +
+      "ION\020\031\022\016\n\nIDENTIFIER\020\033\022\n\n\006RETURN\020\036\022\t\n\005BLO" +
+      "CK\020\037\022\030\n\024METHOD_PARAMETER_OUT\020!\022\027\n\023METHOD" +
+      "_PARAMETER_IN\020\"\022\016\n\nDEPENDENCY\020#\022\010\n\004FILE\020" +
+      "&\022\r\n\tMETA_DATA\020\'\022\r\n\tNAMESPACE\020(\022\023\n\017NAMES" +
+      "PACE_BLOCK\020)\022\013\n\007UNKNOWN\020,\022\010\n\004TYPE\020-\022\r\n\tT" +
+      "YPE_DECL\020.\022\022\n\016TYPE_PARAMETER\020/\022\021\n\rTYPE_A" +
+      "RGUMENT\0200\022\026\n\022ANNOTATION_LITERAL\0201\022\017\n\013CON" +
+      "FIG_FILE\0202\022\014\n\007BINDING\020\222\001\022\022\n\rTAG_NODE_PAI" +
+      "R\020\320\001\022\014\n\007FINDING\020\326\001\022\023\n\016KEY_VALUE_PAIR\020\331\001\022" +
+      "\r\n\010MODIFIER\020\254\002\022\017\n\nMETHOD_REF\020\315\002\022\024\n\017CLOSU" +
+      "RE_BINDING\020\316\002\022\r\n\010TYPE_REF\020\317\002\022\026\n\021CONTROL_" +
+      "STRUCTURE\020\323\002\022\020\n\013JUMP_TARGET\020\324\002\022\017\n\nJUMP_L" +
+      "ABEL\020\325\002\022\021\n\014TEMPLATE_DOM\020\241\003\022\014\n\007COMMENT\020\377\003" +
+      "\022\026\n\020FIELD_IDENTIFIER\020\271\221zBH\n\021io.appthreat" +
+      ".atomB\004AtomZ\031github.com/AppThreat/atom\252\002" +
+      "\021io.appthreat.atomb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -46933,42 +49342,60 @@ public final class Atom {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_atom_UsageSlice_UserDefinedTypes_descriptor,
         new java.lang.String[] { "Name", "Fields", "Procedures", "FileName", "LineNumber", "ColumnNumber", });
-    internal_static_atom_DataFlowSlice_descriptor =
+    internal_static_atom_Nodes_descriptor =
       getDescriptor().getMessageTypes().get(14);
+    internal_static_atom_Nodes_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_atom_Nodes_descriptor,
+        new java.lang.String[] { "Id", "Label", "Name", "FullName", "Signature", "IsExternal", "Code", "TypeFullName", "ParentMethodName", "ParentFileName", "ParentPackageName", "ParentClassName", "LineNumber", "ColumnNumber", "Tags", });
+    internal_static_atom_DataFlowSlice_descriptor =
+      getDescriptor().getMessageTypes().get(15);
     internal_static_atom_DataFlowSlice_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_atom_DataFlowSlice_descriptor,
         new java.lang.String[] { "Graph", "Path", });
-    internal_static_atom_DataFlowSlice_Nodes_descriptor =
-      internal_static_atom_DataFlowSlice_descriptor.getNestedTypes().get(0);
-    internal_static_atom_DataFlowSlice_Nodes_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_atom_DataFlowSlice_Nodes_descriptor,
-        new java.lang.String[] { "Id", "Label", "Name", "FullName", "Signature", "IsExternal", "Code", "TypeFullName", "ParentMethodName", "ParentFileName", "ParentPackageName", "ParentClassName", "LineNumber", "ColumnNumber", });
     internal_static_atom_DataFlowSlice_Edges_descriptor =
-      internal_static_atom_DataFlowSlice_descriptor.getNestedTypes().get(1);
+      internal_static_atom_DataFlowSlice_descriptor.getNestedTypes().get(0);
     internal_static_atom_DataFlowSlice_Edges_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_atom_DataFlowSlice_Edges_descriptor,
         new java.lang.String[] { "Src", "Dst", "Label", });
     internal_static_atom_DataFlowSlice_Flows_descriptor =
-      internal_static_atom_DataFlowSlice_descriptor.getNestedTypes().get(2);
+      internal_static_atom_DataFlowSlice_descriptor.getNestedTypes().get(1);
     internal_static_atom_DataFlowSlice_Flows_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_atom_DataFlowSlice_Flows_descriptor,
         new java.lang.String[] { "Id", });
     internal_static_atom_DataFlowSlice_Paths_descriptor =
-      internal_static_atom_DataFlowSlice_descriptor.getNestedTypes().get(3);
+      internal_static_atom_DataFlowSlice_descriptor.getNestedTypes().get(2);
     internal_static_atom_DataFlowSlice_Paths_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_atom_DataFlowSlice_Paths_descriptor,
         new java.lang.String[] { "Flows", });
     internal_static_atom_DataFlowSlice_Graph_descriptor =
-      internal_static_atom_DataFlowSlice_descriptor.getNestedTypes().get(4);
+      internal_static_atom_DataFlowSlice_descriptor.getNestedTypes().get(3);
     internal_static_atom_DataFlowSlice_Graph_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_atom_DataFlowSlice_Graph_descriptor,
         new java.lang.String[] { "Nodes", "Edges", });
+    internal_static_atom_ReachableSlice_descriptor =
+      getDescriptor().getMessageTypes().get(16);
+    internal_static_atom_ReachableSlice_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_atom_ReachableSlice_descriptor,
+        new java.lang.String[] { "Reachables", "Purls", });
+    internal_static_atom_ReachableSlice_Reachables_descriptor =
+      internal_static_atom_ReachableSlice_descriptor.getNestedTypes().get(0);
+    internal_static_atom_ReachableSlice_Reachables_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_atom_ReachableSlice_Reachables_descriptor,
+        new java.lang.String[] { "Nodes", });
+    internal_static_atom_ReachableSlice_Purls_descriptor =
+      internal_static_atom_ReachableSlice_descriptor.getNestedTypes().get(1);
+    internal_static_atom_ReachableSlice_Purls_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_atom_ReachableSlice_Purls_descriptor,
+        new java.lang.String[] { "Purls", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

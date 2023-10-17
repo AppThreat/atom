@@ -23,6 +23,7 @@ import io.appthreat.pysrc2cpg.{
 }
 import io.appthreat.x2cpg.passes.base.AstLinkerPass
 import io.appthreat.x2cpg.passes.frontend.XTypeRecoveryConfig
+import io.appthreat.x2cpg.passes.taggers.{CdxPass, ChennaiTagsPass}
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
@@ -37,6 +38,8 @@ object Atom {
   val DEFAULT_SLICE_OUT_FILE              = "slices.json"
   val DEFAULT_SLICE_DEPTH                 = 7
   val DEFAULT_MAX_DEFS: Int               = 2000
+  val FRAMEWORK_INPUT_TAG: String         = "framework-input"
+  val FRAMEWORK_OUTPUT_TAG: String        = "framework-output"
   private val TYPE_PROPAGATION_ITERATIONS = 1
   private val MAVEN_JAR_PATH: File        = File.home / ".m2" / "repository"
   private val GRADLE_JAR_PATH: File       = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
@@ -199,6 +202,27 @@ object Atom {
             }
           )
       )
+    cmd("reachables")
+      .text("Extract reachable data-flow slices based on automated framework tags")
+      .action((_, c) => AtomReachablesConfig().withDataDependencies(true))
+      .children(
+        opt[String]("source-tag")
+          .text(s"source tag - defaults to framework-input.")
+          .action((x, c) =>
+            c match {
+              case c: AtomReachablesConfig => c.copy(sourceTag = x)
+              case _                       => c
+            }
+          ),
+        opt[String]("sink-tag")
+          .text(s"sink tag - defaults to framework-output.")
+          .action((x, c) =>
+            c match {
+              case c: AtomReachablesConfig => c.copy(sinkTag = x)
+              case _                       => c
+            }
+          )
+      )
     help("help").text("display this help message")
   }
 
@@ -239,11 +263,17 @@ object Atom {
     def sliceCpg(cpg: Cpg): Option[ProgramSlice] =
       config match {
         case x: AtomDataFlowConfig =>
+          println("Slicing the atom for data-flow. This might take a while ...")
           val dataFlowConfig = migrateAtomConfigToSliceConfig(x)
-          DataFlowSlicing.calculateDataFlowSlice(cpg, dataFlowConfig.asInstanceOf[DataFlowConfig])
+          new DataFlowSlicing().calculateDataFlowSlice(cpg, dataFlowConfig.asInstanceOf[DataFlowConfig])
         case x: AtomUsagesConfig =>
+          println("Slicing the atom for usages. This might take a few minutes ...")
           val usagesConfig = migrateAtomConfigToSliceConfig(x)
           Option(UsageSlicing.calculateUsageSlice(cpg, usagesConfig.asInstanceOf[UsagesConfig]))
+        case x: AtomReachablesConfig =>
+          println("Slicing the atom for reachables. This might take a few minutes ...")
+          val reachablesConfig = migrateAtomConfigToSliceConfig(x)
+          Some(ReachableSlicing.calculateReachableSlice(cpg, reachablesConfig.asInstanceOf[ReachablesConfig]))
         case _ =>
           None
       }
@@ -257,6 +287,8 @@ object Atom {
           saveSlice(config.outputSliceFile, atomDataFlowSliceJson)
         case _: UsagesConfig =>
           saveSlice(config.outputSliceFile, sliceCpg(cpg).map(_.toJson))
+        case _: ReachablesConfig =>
+          saveSlice(config.outputSliceFile, sliceCpg(cpg).map(_.toJsonPretty))
         case x: AtomParseDepsConfig =>
           parseDependencies(cpg).map(_.toJson) match {
             case Left(err)    => return Left(err)
@@ -297,6 +329,8 @@ object Atom {
         )
       case config: AtomUsagesConfig =>
         UsagesConfig(config.minNumCalls, config.excludeOperatorCalls, !config.includeMethodSource)
+      case config: AtomReachablesConfig =>
+        ReachablesConfig(config.sourceTag, config.sinkTag)
       case _ => x
     }).withInputPath(x.inputPath)
       .withOutputSliceFile(x.outputSliceFile)
@@ -401,11 +435,13 @@ object Atom {
         config match {
           case x: AtomConfig if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] =>
             println("Generating data-flow dependencies from atom. Please wait ...")
+            // Enhance with the BOM from cdxgen
+            new CdxPass(ag).createAndApply()
+            new ChennaiTagsPass(ag).createAndApply()
             new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
               .run(new LayerCreatorContext(ag))
           case _ =>
         }
-        println("Slicing the atom. Please wait ...")
         generateSlice(config, ag)
         ag.close()
         Right("Atom generation successful")
