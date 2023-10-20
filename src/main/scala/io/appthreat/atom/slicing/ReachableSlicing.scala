@@ -5,6 +5,7 @@ import io.appthreat.dataflowengineoss.language.*
 import io.appthreat.dataflowengineoss.queryengine.{EngineConfig, EngineContext}
 import io.appthreat.dataflowengineoss.semanticsloader.Semantics
 import io.shiftleft.codepropertygraph.Cpg
+import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
 
@@ -17,17 +18,41 @@ object ReachableSlicing {
   val engineConfig                                 = EngineConfig()
   implicit val context: EngineContext              = EngineContext(semantics, engineConfig)
   private implicit val finder: NodeExtensionFinder = DefaultNodeExtensionFinder
-  private val API_TAG                              = "api"
+  private def API_TAG                              = "api"
+  private def FRAMEWORK_TAG                        = "framework"
 
   def calculateReachableSlice(atom: Cpg, config: ReachablesConfig): ReachableSlice = {
+    val language  = atom.metaData.language.head
     def source    = atom.tag.name(config.sourceTag).parameter
     def sink      = atom.ret.where(_.tag.name(config.sinkTag))
     var flowsList = sink.reachableByFlows(source).map(toSlice).toList
-    // If we did not identify any flows from input to output, fallback to looking for
-    // flows between two apis
-    if (flowsList.isEmpty) {
-      flowsList =
-        atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter).map(toSlice).toList
+    flowsList ++=
+      atom.tag
+        .name(FRAMEWORK_TAG)
+        .method
+        .parameter
+        .reachableByFlows(atom.tag.name(config.sourceTag).parameter)
+        .map(toSlice)
+        .toList
+    flowsList ++=
+      atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter).map(toSlice).toList
+    // For JavaScript, we need flows between arguments of call nodes to track callbacks and middlewares
+    if (language == Languages.JSSRC || language == Languages.JAVASCRIPT) {
+      def jsCallSource          = atom.tag.name(config.sourceTag).call.argument.isIdentifier
+      def jsFrameworkIdentifier = atom.tag.name(FRAMEWORK_TAG).identifier
+      def jsFrameworkParameter  = atom.tag.name(FRAMEWORK_TAG).parameter
+      def jsSink                = atom.tag.name(config.sinkTag).call.argument.isIdentifier
+      flowsList ++= jsSink
+        .reachableByFlows(jsCallSource, jsFrameworkIdentifier, jsFrameworkParameter)
+        .map(toSlice)
+        .toList
+      flowsList ++= atom.tag
+        .name(FRAMEWORK_TAG)
+        .call
+        .argument
+        .reachableByFlows(jsFrameworkParameter)
+        .map(toSlice)
+        .toList
     }
     ReachableSlice(flowsList)
   }
@@ -39,7 +64,7 @@ object ReachableSlicing {
   private def toSlice(path: Path) = {
     val tableRows  = ArrayBuffer[SliceNode]()
     val addedPaths = mutable.Set[String]()
-    var purls      = mutable.Set[String]()
+    val purls      = mutable.Set[String]()
     path.elements.foreach { astNode =>
       val lineNumber   = astNode.lineNumber.getOrElse("").toString
       val fileName     = astNode.file.name.headOption.getOrElse("").replace("<unknown>", "")
@@ -58,6 +83,7 @@ object ReachableSlicing {
       )
       astNode match {
         case _: MethodReturn =>
+        case _: Block        =>
         case methodParameterIn: MethodParameterIn =>
           val methodName = methodParameterIn.method.name
           if (tags.isEmpty && methodParameterIn.method.tag.nonEmpty) {
@@ -104,7 +130,9 @@ object ReachableSlicing {
           if (!addedPaths.contains(s"${fileName}#${lineNumber}") && identifier.inCall.nonEmpty) {
             sliceNode = sliceNode.copy(
               name = identifier.name,
-              code = if (identifier.inCall.nonEmpty) identifier.inCall.head.code else identifier.code,
+              code =
+                if (identifier.inCall.nonEmpty) identifier.inCall.head.code
+                else identifier.code,
               parentMethodName = methodName,
               parentMethodSignature = identifier.method.signature,
               parentPackageName = identifier.method.location.packageName,
@@ -122,9 +150,10 @@ object ReachableSlicing {
         case call: Call =>
           if (!call.code.startsWith("<operator") || !call.methodFullName.startsWith("<operator")) {
             if (
-              tags.isEmpty && call.callee(NoResolve).head.isExternal && !call.methodFullName.startsWith(
-                "<operator"
-              ) && !call.name
+              tags.isEmpty && call.callee(NoResolve).nonEmpty && call
+                .callee(NoResolve)
+                .head
+                .isExternal && !call.methodFullName.startsWith("<operator") && !call.name
                 .startsWith("<operator") && !call.methodFullName.startsWith("new ")
             ) {
               tags = tagAsString(call.callee(NoResolve).head.tag)
@@ -132,14 +161,14 @@ object ReachableSlicing {
             }
             var isExternal =
               if (
-                call.callee(NoResolve).head.isExternal && !call.name
+                call.callee(NoResolve).nonEmpty && call.callee(NoResolve).head.isExternal && !call.name
                   .startsWith("<operator") && !call.methodFullName.startsWith("new ")
               ) true
               else false
             if (call.methodFullName.startsWith("<operator")) isExternal = false
             sliceNode = sliceNode.copy(
               name = call.name,
-              fullName = call.callee(NoResolve).head.fullName,
+              fullName = if (call.callee(NoResolve).nonEmpty) call.callee(NoResolve).head.fullName else "",
               code = call.code,
               isExternal = isExternal,
               parentMethodName = call.method.name,
