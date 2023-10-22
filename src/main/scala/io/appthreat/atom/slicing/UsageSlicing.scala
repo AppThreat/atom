@@ -24,42 +24,44 @@ object UsageSlicing {
 
   /** Generates object slices from the given CPG.
     *
-    * @param cpg
-    *   the CPG to slice.
+    * @param atom
+    *   the atom to slice.
     * @return
     *   a set of object slices.
     */
-  def calculateUsageSlice(cpg: Cpg, config: UsagesConfig): ProgramSlice = {
+  def calculateUsageSlice(atom: Cpg, config: UsagesConfig): ProgramSlice = {
     implicit val implicitConfig: UsagesConfig = config
     excludeOperatorCalls.set(config.excludeOperatorCalls)
 
     def getDeclarations: Traversal[Declaration] = (config.fileFilter match {
-      case Some(fileName) => cpg.file.nameExact(fileName).method
-      case None           => cpg.method
+      case Some(fileName) => atom.file.nameExact(fileName).method
+      case None           => atom.method
     }).withMethodNameFilter.withMethodParameterFilter.withMethodAnnotationFilter.declaration
 
-    def typeMap      = TrieMap.from(cpg.typeDecl.map(f => (f.name, f.fullName)).toMap)
-    val slices       = usageSlices(cpg, () => getDeclarations, typeMap)
-    val language     = cpg.metaData.language.headOption
-    val userDefTypes = userDefinedTypes(cpg)
+    def typeMap      = TrieMap.from(atom.typeDecl.map(f => (f.name, f.fullName)).toMap)
+    val slices       = usageSlices(atom, () => getDeclarations, typeMap)
+    val language     = atom.metaData.language.headOption
+    val userDefTypes = userDefinedTypes(atom)
     if (language.get == Languages.NEWC || language.get == Languages.C)
-      ProgramUsageSlice(slices ++ importsAsSlices(cpg), userDefTypes)
+      ProgramUsageSlice(slices ++ importsAsSlices(atom), userDefTypes)
     else
       ProgramUsageSlice(slices, userDefTypes)
   }
 
   import io.shiftleft.semanticcpg.codedumper.CodeDumper.dump
 
-  private def usageSlices(cpg: Cpg, getDeclIdentifiers: () => Traversal[Declaration], typeMap: TrieMap[String, String])(
-    implicit config: UsagesConfig
-  ): List[MethodUsageSlice] = {
-    val language = cpg.metaData.language.headOption
-    val root     = cpg.metaData.root.headOption
+  private def usageSlices(
+    atom: Cpg,
+    getDeclIdentifiers: () => Traversal[Declaration],
+    typeMap: TrieMap[String, String]
+  )(implicit config: UsagesConfig): List[MethodUsageSlice] = {
+    val language = atom.metaData.language.headOption
+    val root     = atom.metaData.root.headOption
     getDeclIdentifiers()
       .to(LazyList)
       .filterNot(a => a.name.equals("*"))
       .filter(a => !a.name.startsWith("_tmp_") && atLeastNCalls(a, config.minNumCalls))
-      .map(a => exec.submit(new TrackUsageTask(cpg, a, typeMap)))
+      .map(a => exec.submit(new TrackUsageTask(atom, a, typeMap)))
       .flatMap(TimedGet)
       .groupBy { case (scope, _) => scope }
       .view
@@ -85,8 +87,8 @@ object UsageSlicing {
       .toList
   }
 
-  private def importsAsSlices(cpg: Cpg): List[MethodUsageSlice] = {
-    cpg.imports.l.map(im => {
+  private def importsAsSlices(atom: Cpg): List[MethodUsageSlice] = {
+    atom.imports.l.map(im => {
       MethodUsageSlice(
         code = if (im.code.nonEmpty) im.code.replaceAll("\\s*", "") else "",
         fullName = im.importedEntity.get,
@@ -142,12 +144,12 @@ object UsageSlicing {
 
   /** Discovers internally defined types.
     *
-    * @param cpg
+    * @param atom
     *   the CPG to query for types.
     * @return
     *   a list of user defined types.
     */
-  def userDefinedTypes(cpg: Cpg): List[UserDefinedType] = {
+  def userDefinedTypes(atom: Cpg): List[UserDefinedType] = {
 
     def generateUDT(typeDecl: TypeDecl): UserDefinedType = {
       UserDefinedType(
@@ -173,14 +175,14 @@ object UsageSlicing {
       )
     }
 
-    cpg.typeDecl
+    atom.typeDecl
       .filterNot(t => t.isExternal || t.name.matches("(:program|<module>|<init>|<meta>|<body>|<global>|<clinit>)"))
       .map(generateUDT)
       .filter(udt => udt.fields.nonEmpty || udt.procedures.nonEmpty)
       .l
   }
 
-  private class TrackUsageTask(cpg: Cpg, tgt: Declaration, typeMap: TrieMap[String, String])(implicit
+  private class TrackUsageTask(atom: Cpg, tgt: Declaration, typeMap: TrieMap[String, String])(implicit
     config: UsagesConfig
   ) extends Callable[Option[(Method, ObjectUsageSlice)]] {
 
@@ -290,7 +292,7 @@ object UsageSlicing {
       *   an API call if present.
       */
     private def exprToObservedCall(baseCall: Call): Option[ObservedCall] = {
-      val language           = cpg.metaData.language.headOption
+      val language           = atom.metaData.language.headOption
       val isMemberInvocation = baseCall.name.equals(Operators.fieldAccess)
       val isConstructor =
         baseCall.name.equals(Operators.alloc) || baseCall.ast.isCall.nameExact(Operators.alloc).nonEmpty
@@ -353,7 +355,7 @@ object UsageSlicing {
         baseCall.argumentOut
           .flatMap {
             case x: Call if !DefComponent.unresolvedCallPattern.matcher(x.methodFullName).matches() =>
-              cpg.method.fullNameExact(x.methodFullName).methodReturn.typeFullName.headOption
+              atom.method.fullNameExact(x.methodFullName).methodReturn.typeFullName.headOption
             case x: Call =>
               x.callee(resolver).methodReturn.typeFullName.headOption
             case _ => None

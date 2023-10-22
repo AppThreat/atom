@@ -18,13 +18,13 @@ class DataFlowSlicing {
   private val nodeCache                = new TrieMap[Long, SliceNode]()
   private var language: Option[String] = _
 
-  def calculateDataFlowSlice(cpg: Cpg, config: DataFlowConfig): Option[DataFlowSlice] = {
-    language = cpg.metaData.language.headOption
+  def calculateDataFlowSlice(atom: Cpg, config: DataFlowConfig): Option[DataFlowSlice] = {
+    language = atom.metaData.language.headOption
     excludeOperatorCalls.set(config.excludeOperatorCalls)
 
     val dataFlowSlice = (config.fileFilter match {
-      case Some(fileRegex) => cpg.call.where(_.file.name(fileRegex))
-      case None            => cpg.call
+      case Some(fileRegex) => atom.call.where(_.file.name(fileRegex))
+      case None            => atom.call
     })
       .where(c => c.callee.isExternal)
       .flatMap {
