@@ -82,6 +82,6 @@ jobs:
       - run: |
           cdxgen -t js -o $GITHUB_WORKSPACE/repotests/juice-shop/bom.json $GITHUB_WORKSPACE/repotests/juice-shop
           ./atom.sh reachables -o /tmp/juice-shop.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/juice-shop.reachables.json
-        shell: bash
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+        if: runner.os != 'Windows'
