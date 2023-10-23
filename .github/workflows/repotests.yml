@@ -72,11 +72,16 @@ jobs:
           ./atom.sh usages -o /tmp/c3.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/c.usages.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
           npm install -g @cyclonedx/cdxgen --omit=optional
           cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/java-sec-code/bom.json $GITHUB_WORKSPACE/repotests/java-sec-code
           ./atom.sh reachables -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java-sec-code.reachables.json
+        env:
+          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
           cdxgen -t js -o $GITHUB_WORKSPACE/repotests/juice-shop/bom.json $GITHUB_WORKSPACE/repotests/juice-shop
           ./atom.sh reachables -o /tmp/juice-shop.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/juice-shop.reachables.json
         shell: bash
+        env:
+          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
