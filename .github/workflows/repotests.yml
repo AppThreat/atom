@@ -76,8 +76,7 @@ jobs:
           npm install -g @cyclonedx/cdxgen --omit=optional
           cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/java-sec-code/bom.json $GITHUB_WORKSPACE/repotests/java-sec-code
           ./atom.sh reachables -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java-sec-code.reachables.json
+      - run: |
           cdxgen -t js -o $GITHUB_WORKSPACE/repotests/juice-shop/bom.json $GITHUB_WORKSPACE/repotests/juice-shop
           ./atom.sh reachables -o /tmp/juice-shop.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/juice-shop.reachables.json
         shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
