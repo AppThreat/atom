@@ -80,7 +80,6 @@ object PythonDependencyParser extends XDependencyParser {
       .filterNot(_ == "N/A")
       .map(x => ScalaFile(x))
       .l
-    val parentList = fileList.flatMap(_.parentOption.map(_.pathAsString))
     cpg.imports
       .whereNot(_.call.file.name(".*setup.py"))
       .filterNot {
@@ -92,8 +91,7 @@ object PythonDependencyParser extends XDependencyParser {
       }
       .dedup
       .importedEntity
-      .flatMap(_.split('.').headOption)
-      .map(x => ModuleWithVersion(x))
+      .map(x => ModuleWithVersion(name = x.split('.').head, importedSymbols = x))
       .toSet
   }
 

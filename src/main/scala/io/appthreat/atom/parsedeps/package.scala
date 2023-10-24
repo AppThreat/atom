@@ -36,22 +36,35 @@ package object parsedeps {
   }
 
   implicit val moduleWithVersionEncoder: Encoder[ModuleWithVersion] =
-    Encoder.forProduct3("name", "version", "versionSpecifiers")(x => (x.name, x.version, x.versionSpecifiers))
+    Encoder.forProduct4("name", "version", "versionSpecifiers", "importedSymbols")(x =>
+      (x.name, x.version, x.versionSpecifiers, x.importedSymbols)
+    )
   implicit val moduleWithVersionDecoder: Decoder[ModuleWithVersion] =
-    Decoder.forProduct3("name", "version", "versionSpecifiers")(ModuleWithVersion.apply)
+    Decoder.forProduct4("name", "version", "versionSpecifiers", "importedSymbols")(ModuleWithVersion.apply)
 
   case class DependencySlice(modules: Seq[ModuleWithVersion]) extends AtomSlice {
     override def toJson: String = this.asJson.spaces2
   }
 
-  case class ModuleWithVersion(name: String, version: String = "", versionSpecifiers: String = "") {
+  case class ModuleWithVersion(
+    name: String,
+    version: String = "",
+    versionSpecifiers: String = "",
+    importedSymbols: String = ""
+  ) {
 
     def merge(x: ModuleWithVersion): ModuleWithVersion = {
       val vs = this.versions ++ x.versions
+      val is = this.importedSymbols + "," + x.importedSymbols
       vs.find(_.startsWith("==")) match
         case Some(exactVersion) =>
-          ModuleWithVersion(name, exactVersion.stripPrefix("=="), (vs diff Set(exactVersion)).mkString(","))
-        case None => ModuleWithVersion(name, versionSpecifiers = vs.mkString(","))
+          ModuleWithVersion(
+            name,
+            exactVersion.stripPrefix("=="),
+            (vs diff Set(exactVersion)).mkString(","),
+            importedSymbols = is
+          )
+        case None => ModuleWithVersion(name, versionSpecifiers = vs.mkString(","), importedSymbols = is)
 
     }
 
