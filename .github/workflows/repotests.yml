@@ -40,6 +40,10 @@ jobs:
         with:
           repository: 'HooliCorp/DjanGoat'
           path: 'repotests/DjanGoat'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'DefectDojo/django-DefectDojo'
+          path: 'repotests/django-DefectDojo'
       - uses: coursier/cache-action@v6
       - name: Set up JDK
         uses: actions/setup-java@v3
@@ -57,6 +61,7 @@ jobs:
           ./atom.sh -o /tmp/ts.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh -o /tmp/py.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh parsedeps -o /tmp/py.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml
+          ./atom.sh -o /tmp/py2.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh -o /tmp/c.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml
 
           ./atom.sh data-flow -o /tmp/java2.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java.slices.json
@@ -69,6 +74,7 @@ jobs:
           # ./atom.sh usages -o /tmp/juice3.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/juice.usages.json
           ./atom.sh usages -o /tmp/ts3.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/ts.usages.json
           ./atom.sh usages -o /tmp/py3.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py.usages.json
+          ./atom.sh usages -o /tmp/py4.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py4.usages.json
           ./atom.sh usages -o /tmp/c3.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/c.usages.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -77,6 +83,8 @@ jobs:
           npm install -g @cyclonedx/cdxgen --omit=optional
           cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/java-sec-code/bom.json $GITHUB_WORKSPACE/repotests/java-sec-code
           ./atom.sh reachables -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java-sec-code.reachables.json
+          cdxgen -t python --deep -o $GITHUB_WORKSPACE/repotests/django-DefectDojo/bom.json $GITHUB_WORKSPACE/repotests/django-DefectDojo
+          ./atom.sh reachables -o /tmp/django-DefectDojo.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/django-DefectDojo.reachables.json
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
