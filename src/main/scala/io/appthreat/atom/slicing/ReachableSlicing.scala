@@ -36,21 +36,23 @@ object ReachableSlicing {
         .toList
     flowsList ++=
       atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter).map(toSlice).toList
-    // For JavaScript, we need flows between arguments of call nodes to track callbacks and middlewares
-    if (language == Languages.JSSRC || language == Languages.JAVASCRIPT) {
-      def jsCallSource          = atom.tag.name(config.sourceTag).call.argument.isIdentifier
-      def jsFrameworkIdentifier = atom.tag.name(FRAMEWORK_TAG).identifier
-      def jsFrameworkParameter  = atom.tag.name(FRAMEWORK_TAG).parameter
-      def jsSink                = atom.tag.name(config.sinkTag).call.argument.isIdentifier
-      flowsList ++= jsSink
-        .reachableByFlows(jsCallSource, jsFrameworkIdentifier, jsFrameworkParameter)
+    // For JavaScript and Python, we need flows between arguments of call nodes to track callbacks and middlewares
+    if (
+      language == Languages.JSSRC || language == Languages.JAVASCRIPT || language == Languages.PYTHON || language == Languages.PYTHONSRC
+    ) {
+      def dynCallSource          = atom.tag.name(config.sourceTag).call.argument.isIdentifier
+      def dynFrameworkIdentifier = atom.tag.name(FRAMEWORK_TAG).identifier
+      def dynFrameworkParameter  = atom.tag.name(FRAMEWORK_TAG).parameter
+      def dynSink                = atom.tag.name(config.sinkTag).call.argument.isIdentifier
+      flowsList ++= dynSink
+        .reachableByFlows(dynCallSource, dynFrameworkIdentifier, dynFrameworkParameter)
         .map(toSlice)
         .toList
       flowsList ++= atom.tag
         .name(FRAMEWORK_TAG)
         .call
         .argument
-        .reachableByFlows(jsFrameworkParameter)
+        .reachableByFlows(dynFrameworkParameter)
         .map(toSlice)
         .toList
     }

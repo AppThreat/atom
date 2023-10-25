@@ -2,6 +2,8 @@
 
 import { freemem, platform as _platform } from "node:os";
 import { dirname, join, delimiter } from "node:path";
+import { readFileSync } from "node:fs";
+
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { detectJava } from "./utils.mjs";
@@ -12,7 +14,8 @@ if (!url.startsWith("file://")) {
   url = new URL(`file://${import.meta.url}`).toString();
 }
 const dirName = import.meta ? dirname(fileURLToPath(url)) : __dirname;
-
+const selfPJson = JSON.parse(readFileSync(join(dirName, "package.json")));
+const _version = selfPJson.version;
 export const LOG4J_CONFIG = join(dirName, "plugins", "log4j2.xml");
 export const ATOM_HOME = join(dirName, "plugins");
 export const APP_LIB_DIR = join(ATOM_HOME, "lib");
@@ -22,7 +25,7 @@ export const JAVA_OPTS = `${
   process.env.JAVA_OPTS || ""
 } -Xmx${freeMemoryGB}G ${JVM_ARGS}`;
 export const APP_MAIN_CLASS = "io.appthreat.atom.Atom";
-export const ATOM_VERSION = "1.5.2";
+export const ATOM_VERSION = _version;
 export const APP_CLASSPATH = join(
   APP_LIB_DIR,
   `io.appthreat.atom-${ATOM_VERSION}-classpath.jar`

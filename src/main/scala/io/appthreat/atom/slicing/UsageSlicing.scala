@@ -4,6 +4,7 @@ import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.codepropertygraph.generated.{Languages, Operators, PropertyNames}
 import io.shiftleft.semanticcpg.language.*
+import overflowdb.PropertyKey
 
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -21,6 +22,7 @@ object UsageSlicing {
   val exec: ExecutorService          = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors() / 2)
   private val constructorTypeMatcher = Pattern.compile(".*new (\\w+)\\(.*")
   private val excludeOperatorCalls   = new AtomicBoolean(true)
+  private val FRAMEWORK_ROUTE        = "framework-route"
 
   /** Generates object slices from the given CPG.
     *
@@ -44,6 +46,8 @@ object UsageSlicing {
     val userDefTypes = userDefinedTypes(atom)
     if (language.get == Languages.NEWC || language.get == Languages.C)
       ProgramUsageSlice(slices ++ importsAsSlices(atom), userDefTypes)
+    else if (language.get == Languages.PYTHON || language.get == Languages.PYTHONSRC)
+      ProgramUsageSlice(slices, userDefTypes ++ routesAsUDT(atom))
     else
       ProgramUsageSlice(slices, userDefTypes)
   }
@@ -99,6 +103,58 @@ object UsageSlicing {
         columnNumber = if (im.file.nonEmpty) im.file.head.columnNumber.map(_.intValue()) else None
       )
     })
+  }
+
+  /** Discovers internally defined routes.
+    *
+    * @param atom
+    *   the CPG to query for types.
+    * @return
+    *   a list of user defined types.
+    */
+  def routesAsUDT(atom: Cpg): List[UserDefinedType] = {
+
+    def generateUDT(call: Call): UserDefinedType = {
+      UserDefinedType(
+        call.name,
+        call.argument.isLiteral
+          .map(m =>
+            LocalDef(
+              name = m.code,
+              typeFullName = m.typeFullName,
+              lineNumber = Option(m.property(new PropertyKey[Integer](PropertyNames.LINE_NUMBER))).map(_.toInt),
+              columnNumber = Option(m.property(new PropertyKey[Integer](PropertyNames.COLUMN_NUMBER))).map(_.toInt)
+            )
+          )
+          .collectAll[LocalDef]
+          .l,
+        call
+          .callee(NoResolve)
+          .method
+          .filterNot(m => m.name.startsWith("<clinit>"))
+          .map(m =>
+            ObservedCall(
+              m.name,
+              Option(m.fullName),
+              m.parameter.map(_.typeFullName).toList,
+              m.methodReturn.typeFullName,
+              Option(m.isExternal),
+              m.lineNumber.map(_.intValue()),
+              m.columnNumber.map(_.intValue())
+            )
+          )
+          .l,
+        call.location.filename,
+        call.lineNumber.map(_.intValue()),
+        call.columnNumber.map(_.intValue())
+      )
+    }
+
+    atom.call
+      .where(_.argument.tag.nameExact(FRAMEWORK_ROUTE))
+      .map(generateUDT)
+      .filter(udt => udt.fields.nonEmpty || udt.procedures.nonEmpty)
+      .l
   }
 
   private def TimedGet(dsf: Future[Option[(Method, ObjectUsageSlice)]]) = {

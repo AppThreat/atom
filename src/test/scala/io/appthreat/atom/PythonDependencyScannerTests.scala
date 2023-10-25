@@ -197,19 +197,19 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = fa
     "have the modules scanned successfully" in {
       val scanResult = PythonDependencyParser.parse(cpg)
       scanResult.modules shouldBe List(
-        ModuleWithVersion("PackageC", "1.2.0.dev1+hg.5.b11e5e6f0b0b"),
-        ModuleWithVersion("PickyThing", "2.4c1", "<1.6,>1.9,!=1.9.6,<2.0a0"),
-        ModuleWithVersion("certifi", "", ">=2017.4.17"),
-        ModuleWithVersion("charset_normalizer", "", ">=2,<4"),
-        ModuleWithVersion("idna", "", ">=2.5,<4"),
-        ModuleWithVersion("os", "", ""),
-        ModuleWithVersion("packageA", "", ">=1.4.2,<1.9,!=1.5.*,!=1.6.*"),
-        ModuleWithVersion("packageB", "", ">=0.5.0,< 0.7.0"),
-        ModuleWithVersion("re-wx", "", ">=0.0.2"),
-        ModuleWithVersion("socket", "", ""),
-        ModuleWithVersion("typing-extensions", "3.10.0.2", ""),
-        ModuleWithVersion("urllib3", "", ">=1.21.1,<3"),
-        ModuleWithVersion("zope.interface", "", ">=5.1.0")
+        ModuleWithVersion("PackageC", "1.2.0.dev1+hg.5.b11e5e6f0b0b", ""),
+        ModuleWithVersion("PickyThing", "2.4c1", "<1.6,>1.9,!=1.9.6,<2.0a0", ""),
+        ModuleWithVersion("certifi", "", ">=2017.4.17", ""),
+        ModuleWithVersion("charset_normalizer", "", ">=2,<4", ""),
+        ModuleWithVersion("idna", "", ">=2.5,<4", ""),
+        ModuleWithVersion("os", "", "", "os.path"),
+        ModuleWithVersion("packageA", "", ">=1.4.2,<1.9,!=1.5.*,!=1.6.*", ""),
+        ModuleWithVersion("packageB", "", ">=0.5.0,< 0.7.0", ""),
+        ModuleWithVersion("re-wx", "", ">=0.0.2", ""),
+        ModuleWithVersion("socket", "", "", "socket"),
+        ModuleWithVersion("typing-extensions", "3.10.0.2", "", ""),
+        ModuleWithVersion("urllib3", "", ">=1.21.1,<3", "urllib3.poolmanager.proxy_from_url,urllib3.util.Timeout,urllib3.exceptions.LocationValueError,urllib3.contrib.socks.SOCKSProxyManager,urllib3.exceptions.HTTPError,urllib3.exceptions.SSLError,urllib3.exceptions.ProxyError,urllib3.exceptions.InvalidHeader,urllib3.exceptions.MaxRetryError,urllib3.exceptions.ConnectTimeoutError,urllib3.exceptions.ClosedPoolError,urllib3.exceptions.ProtocolError,urllib3.util.retry.Retry,urllib3.exceptions.ResponseError,,urllib3.exceptions.ReadTimeoutError,urllib3.exceptions.NewConnectionError,urllib3.util.parse_url,urllib3.poolmanager.PoolManager"),
+        ModuleWithVersion("zope.interface", "", ">=5.1.0", "")
       )
     }
   }
