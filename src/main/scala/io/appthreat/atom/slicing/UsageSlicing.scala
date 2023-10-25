@@ -47,7 +47,7 @@ object UsageSlicing {
     if (language.get == Languages.NEWC || language.get == Languages.C)
       ProgramUsageSlice(slices ++ importsAsSlices(atom), userDefTypes)
     else if (language.get == Languages.PYTHON || language.get == Languages.PYTHONSRC)
-      ProgramUsageSlice(slices, userDefTypes ++ routesAsUDT(atom))
+      ProgramUsageSlice(slices ++ externalCalleesAsSlices(atom, typeMap), userDefTypes ++ routesAsUDT(atom))
     else
       ProgramUsageSlice(slices, userDefTypes)
   }
@@ -103,6 +103,53 @@ object UsageSlicing {
         columnNumber = if (im.file.nonEmpty) im.file.head.columnNumber.map(_.intValue()) else None
       )
     })
+  }
+
+  private def externalCalleesAsSlices(atom: Cpg, typeMap: TrieMap[String, String]): List[MethodUsageSlice] = {
+    atom.call
+      .where(_.callee(NoResolve).isExternal)
+      .filterNot(_.name.startsWith("<operator"))
+      .l
+      .map(call => {
+        val taobj = CallDef(
+          if (call.callee(NoResolve).method.nonEmpty) call.callee(NoResolve).method.head.name else "",
+          "",
+          if (call.callee(NoResolve).method.nonEmpty) Option(call.callee(NoResolve).method.head.fullName)
+          else Option(""),
+          Option(call.callee(NoResolve).head.isExternal),
+          call.callee(NoResolve).head.method.lineNumber.map(_.intValue()),
+          call.callee(NoResolve).head.method.columnNumber.map(_.intValue())
+        )
+        val ocall = List(
+          ObservedCall(
+            callName = call.name,
+            resolvedMethod =
+              if (call.callee(NoResolve).method.nonEmpty) Option(call.callee(NoResolve).method.head.fullName)
+              else Option(""),
+            paramTypes = List.empty[String],
+            returnType = "",
+            isExternal = Option(true),
+            lineNumber = call.lineNumber.map(_.intValue()),
+            columnNumber = call.columnNumber.map(_.intValue())
+          )
+        )
+        MethodUsageSlice(
+          code = "",
+          fullName = call.method.fullName,
+          signature = call.method.signature,
+          fileName = call.method.filename,
+          slices = Set(
+            ObjectUsageSlice(
+              targetObj = taobj,
+              definedBy = Option(taobj),
+              invokedCalls = ocall,
+              argToCalls = List.empty[ObservedCallWithArgPos]
+            )
+          ),
+          lineNumber = call.method.lineNumber.map(_.intValue()),
+          columnNumber = call.method.columnNumber.map(_.intValue())
+        )
+      })
   }
 
   /** Discovers internally defined routes.
