@@ -85,6 +85,7 @@ jobs:
           ./atom.sh reachables -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java-sec-code.reachables.json
           cdxgen -t python --deep -o $GITHUB_WORKSPACE/repotests/django-DefectDojo/bom.json $GITHUB_WORKSPACE/repotests/django-DefectDojo
           ./atom.sh reachables -o /tmp/django-DefectDojo.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/django-DefectDojo.reachables.json
+        if: runner.os != 'Windows'
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |

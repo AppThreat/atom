@@ -22,6 +22,7 @@ object UsageSlicing {
   val exec: ExecutorService          = Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors() / 2)
   private val constructorTypeMatcher = Pattern.compile(".*new (\\w+)\\(.*")
   private val excludeOperatorCalls   = new AtomicBoolean(true)
+  private val FRAMEWORK_ROUTE        = "framework-route"
 
   /** Generates object slices from the given CPG.
     *
@@ -116,9 +117,7 @@ object UsageSlicing {
     def generateUDT(call: Call): UserDefinedType = {
       UserDefinedType(
         call.name,
-        call.argument
-          .order(1)
-          .isLiteral
+        call.argument.isLiteral
           .map(m =>
             LocalDef(
               name = m.code,
@@ -152,7 +151,7 @@ object UsageSlicing {
     }
 
     atom.call
-      .where(_.methodFullName("django/urls.py:<module>.(path|re_path)"))
+      .where(_.argument.tag.nameExact(FRAMEWORK_ROUTE))
       .map(generateUDT)
       .filter(udt => udt.fields.nonEmpty || udt.procedures.nonEmpty)
       .l

@@ -268,6 +268,7 @@ object Atom {
           new DataFlowSlicing().calculateDataFlowSlice(cpg, dataFlowConfig.asInstanceOf[DataFlowConfig])
         case x: AtomUsagesConfig =>
           println("Slicing the atom for usages. This might take a few minutes ...")
+          new ChennaiTagsPass(cpg).createAndApply()
           val usagesConfig = migrateAtomConfigToSliceConfig(x)
           Option(UsageSlicing.calculateUsageSlice(cpg, usagesConfig.asInstanceOf[UsagesConfig]))
         case x: AtomReachablesConfig =>
