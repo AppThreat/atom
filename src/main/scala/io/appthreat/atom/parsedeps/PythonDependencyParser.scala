@@ -3,15 +3,13 @@ package io.appthreat.atom.parsedeps
 import better.files.File as ScalaFile
 import io.appthreat.atom.dataflows.OssDataFlow
 import io.appthreat.dataflowengineoss.language.*
-import io.appthreat.dataflowengineoss.queryengine.{Engine, EngineContext}
+import io.appthreat.dataflowengineoss.queryengine.EngineContext
 import io.appthreat.x2cpg.X2Cpg
 import io.shiftleft.codepropertygraph.generated.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.{Call, CfgNode, Identifier, Literal}
 import io.shiftleft.semanticcpg.language.*
-import overflowdb.traversal.*
 
 import java.io.File as JFile
-import scala.annotation.tailrec
 
 object PythonDependencyParser extends XDependencyParser {
 

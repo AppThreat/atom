@@ -4,7 +4,6 @@ import io.appthreat.atom.slicing.{DataFlowSlice, SliceNode}
 import io.shiftleft.codepropertygraph.generated.EdgeTypes
 
 import java.util.concurrent.*
-import scala.annotation.unused
 import scala.collection.mutable
 
 private class DataFlowGraph(nodes: Set[Option[DFNode]]) {

@@ -2,8 +2,8 @@ package io.appthreat
 
 import better.files.File
 import io.appthreat.atom.Atom.*
-import io.circe.{Encoder, Json}
 import io.appthreat.atom.slicing.*
+import io.circe.{Encoder, Json}
 
 package object atom {
 
@@ -56,8 +56,8 @@ package object atom {
   case class AtomReachablesConfig(sourceTag: String = FRAMEWORK_INPUT_TAG, sinkTag: String = FRAMEWORK_OUTPUT_TAG)
       extends AtomConfig
 
-  import io.appthreat.atom.slicing._
-  import io.circe.generic.auto._
+  import io.appthreat.atom.slicing.*
+  import io.circe.generic.auto.*
   import io.circe.syntax.EncoderOps
 
   implicit val encodeDataFlowSlice: Encoder[AtomDataFlowSlice] = Encoder.instance {

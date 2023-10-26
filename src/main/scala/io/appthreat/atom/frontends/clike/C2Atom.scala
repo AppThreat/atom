@@ -1,11 +1,10 @@
 package io.appthreat.atom.frontends.clike
 
 import io.appthreat.c2cpg.Config
-import io.appthreat.c2cpg.datastructures.CGlobal
-import io.appthreat.c2cpg.passes.{AstCreationPass, TypeDeclNodePass}
+import io.appthreat.c2cpg.passes.AstCreationPass
 import io.appthreat.x2cpg.X2Cpg.withNewEmptyCpg
 import io.appthreat.x2cpg.X2CpgFrontend
-import io.appthreat.x2cpg.passes.frontend.{MetaDataPass, TypeNodePass}
+import io.appthreat.x2cpg.passes.frontend.MetaDataPass
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.Languages
 

@@ -1,7 +1,6 @@
 package io.appthreat.atom
 
 import better.files.File
-import io.appthreat.dataflowengineoss.language.Path
 import io.circe.{Decoder, Encoder, HCursor, Json}
 import io.shiftleft.codepropertygraph.generated.PropertyNames
 import io.shiftleft.codepropertygraph.generated.nodes.*
@@ -10,7 +9,6 @@ import overflowdb.PropertyKey
 
 import java.util.regex.Pattern
 import scala.collection.concurrent.TrieMap
-import scala.collection.mutable.ArrayBuffer
 
 package object slicing {
 
