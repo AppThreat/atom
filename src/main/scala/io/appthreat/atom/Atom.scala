@@ -414,7 +414,7 @@ object Atom {
               .withOutputPath(outputAtomFile)
               .withDefaultIgnoredFilesRegex(List("\\..*".r))
               .withIgnoredFilesRegex(
-                ".*(samples|examples|test|tests|unittests|docs|virtualenvs|venv|benchmarks|tutorials).*"
+                ".*(samples|examples|test|tests|unittests|docs|virtualenvs|venv|benchmarks|tutorials|noxfile).*"
               )
           )
           .map { ag =>

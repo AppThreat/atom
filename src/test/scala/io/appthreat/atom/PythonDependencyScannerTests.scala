@@ -63,7 +63,11 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = fa
         |    "PackageC==1.2.0.dev1+hg.5.b11e5e6f0b0b",
         |    "typing-extensions==3.10.0.2",
         |    "re-wx>=0.0.2",
-        |    "zope.interface>=5.1.0"
+        |    "zope.interface>=5.1.0",
+        |    "google-api-core[grpc] >= 1.34.0, <3.0.0dev,!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,!=2.8.*,!=2.9.*,!=2.10.*",
+        |    "proto-plus >= 1.22.0, <2.0.0dev",
+        |    "proto-plus >= 1.22.2, <2.0.0dev; python_version>='3.11'",
+        |    "protobuf>=3.19.5,<5.0.0dev,!=3.20.0,!=3.20.1,!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5"
         |]
         |test_requirements = [
         |    "pytest-httpbin==2.0.0",
@@ -197,18 +201,21 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = fa
     "have the modules scanned successfully" in {
       val scanResult = PythonDependencyParser.parse(cpg)
       scanResult.modules shouldBe List(
-        ModuleWithVersion("PackageC", "1.2.0.dev1+hg.5.b11e5e6f0b0b", ""),
+        ModuleWithVersion("PackageC", "1.2.0.dev1+hg.5.b11e5e6f0b0b", "", ""),
         ModuleWithVersion("PickyThing", "2.4c1", "<1.6,>1.9,!=1.9.6,<2.0a0", ""),
         ModuleWithVersion("certifi", "", ">=2017.4.17", ""),
         ModuleWithVersion("charset_normalizer", "", ">=2,<4", ""),
+        ModuleWithVersion("google-api-core[grpc]", "", ">= 1.34.0, <3.0.0dev,!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,!=2.8.*,!=2.9.*,!=2.10.*", ""),
         ModuleWithVersion("idna", "", ">=2.5,<4", ""),
         ModuleWithVersion("os", "", "", "os.path"),
         ModuleWithVersion("packageA", "", ">=1.4.2,<1.9,!=1.5.*,!=1.6.*", ""),
         ModuleWithVersion("packageB", "", ">=0.5.0,< 0.7.0", ""),
+        ModuleWithVersion("proto-plus", "", ">= 1.22.2, <2.0.0dev; python_version>='3.11',>= 1.22.0, <2.0.0dev", ""),
+        ModuleWithVersion("protobuf", "", ">=3.19.5,<5.0.0dev,!=3.20.0,!=3.20.1,!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5", ""),
         ModuleWithVersion("re-wx", "", ">=0.0.2", ""),
         ModuleWithVersion("socket", "", "", "socket"),
         ModuleWithVersion("typing-extensions", "3.10.0.2", "", ""),
-        ModuleWithVersion("urllib3", "", ">=1.21.1,<3", "urllib3.poolmanager.proxy_from_url,urllib3.util.Timeout,urllib3.exceptions.LocationValueError,urllib3.contrib.socks.SOCKSProxyManager,urllib3.exceptions.HTTPError,urllib3.exceptions.SSLError,urllib3.exceptions.ProxyError,urllib3.exceptions.InvalidHeader,urllib3.exceptions.MaxRetryError,urllib3.exceptions.ConnectTimeoutError,urllib3.exceptions.ClosedPoolError,urllib3.exceptions.ProtocolError,urllib3.util.retry.Retry,urllib3.exceptions.ResponseError,,urllib3.exceptions.ReadTimeoutError,urllib3.exceptions.NewConnectionError,urllib3.util.parse_url,urllib3.poolmanager.PoolManager"),
+        ModuleWithVersion("urllib3", "", ">=1.21.1,<3", "urllib3.poolmanager.proxy_from_url,urllib3.util.Timeout,urllib3.exceptions.LocationValueError,urllib3.contrib.socks.SOCKSProxyManager,urllib3.exceptions.HTTPError,urllib3.exceptions.SSLError,urllib3.exceptions.ProxyError,urllib3.exceptions.InvalidHeader,urllib3.exceptions.MaxRetryError,urllib3.exceptions.ConnectTimeoutError,urllib3.exceptions.ClosedPoolError,urllib3.exceptions.ProtocolError,urllib3.util.retry.Retry,urllib3.exceptions.ResponseError,urllib3.exceptions.ReadTimeoutError,urllib3.exceptions.NewConnectionError,urllib3.util.parse_url,urllib3.poolmanager.PoolManager"),
         ModuleWithVersion("zope.interface", "", ">=5.1.0", "")
       )
     }

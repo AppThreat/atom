@@ -25,12 +25,8 @@ object ReachableSlicing {
     val language  = atom.metaData.language.head
     def sourceP   = atom.tag.name(config.sourceTag).parameter
     def sourceI   = atom.tag.name(config.sourceTag).identifier
-    def sink      = atom.ret.where(_.tag.name(config.sinkTag))
-    var flowsList = sink.reachableByFlows(sourceP).map(toSlice).toList
-    flowsList ++= sink
-      .reachableByFlows(sourceI, sourceP)
-      .map(toSlice)
-      .toList
+    def sink      = atom.ret.where(_.method.tag.name(config.sourceTag))
+    var flowsList = sink.reachableByFlows(sourceP, sourceI).map(toSlice).toList
     flowsList ++=
       atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter).map(toSlice).toList
     // For JavaScript and Python, we need flows between arguments of call nodes to track callbacks and middlewares
@@ -57,7 +53,7 @@ object ReachableSlicing {
         .call
         .argument
         .isIdentifier
-        .reachableByFlows(sourceI)
+        .reachableByFlows(sourceI, dynFrameworkIdentifier)
         .map(toSlice)
         .toList
     }

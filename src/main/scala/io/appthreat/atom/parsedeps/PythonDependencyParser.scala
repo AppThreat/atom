@@ -25,7 +25,7 @@ object PythonDependencyParser extends XDependencyParser {
 
   private def parseSetupPy(cpg: Cpg): Set[ModuleWithVersion] = {
     val dataFlowEnabled     = cpg.metaData.overlays.contains(OssDataFlow.overlayName)
-    val requirementsPattern = "([/.\\w_-]+)((=>|<=|==|>=|=<|<|>|!=).*)".r
+    val requirementsPattern = """([\[\]/.\w_-]+)[\s]?((=>|<=|==|>=|=<|<|>|!=).*)""".r
 
     def dataSourcesToRequires = (cpg.literal ++ cpg.identifier)
       .where(_.file.name(".*setup.py"))
@@ -70,14 +70,9 @@ object PythonDependencyParser extends XDependencyParser {
     val localModuleNames = cpg.file.name
       .filterNot(_ == "N/A")
       .map(x => ScalaFile(x))
-      .flatMap(_.parentOption.map(_.pathAsString))
-      .filterNot(_ == root)
-      .flatMap(_.stripPrefix(s"$root${JFile.separatorChar}").split(JFile.separatorChar).headOption)
+      .map(_.pathAsString)
+      .map(_.stripPrefix(s"$root${JFile.separatorChar}").split(JFile.separatorChar).head.replaceFirst("\\.py", ""))
       .toSet
-    val fileList = cpg.file.name
-      .filterNot(_ == "N/A")
-      .map(x => ScalaFile(x))
-      .l
     cpg.imports
       .whereNot(_.call.file.name(".*setup.py"))
       .filterNot {

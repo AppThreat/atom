@@ -55,7 +55,7 @@ package object parsedeps {
 
     def merge(x: ModuleWithVersion): ModuleWithVersion = {
       val vs = this.versions ++ x.versions
-      val is = this.importedSymbols + "," + x.importedSymbols
+      val is = if (x.importedSymbols.nonEmpty) this.importedSymbols + "," + x.importedSymbols else this.importedSymbols
       vs.find(_.startsWith("==")) match
         case Some(exactVersion) =>
           ModuleWithVersion(
