@@ -357,7 +357,7 @@ object Atom {
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
               .withFunctionBodies(false)
-              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks|Documentation|demos).*")
+              .withIgnoredFilesRegex(".*(test|docs|example|samples|mocks|Documentation|demos).*")
           )
       case Languages.C | Languages.NEWC | "CPP" | "C++" =>
         new C2Cpg()
@@ -367,7 +367,7 @@ object Atom {
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
               .withFunctionBodies(true)
-              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks|Documentation|demos).*")
+              .withIgnoredFilesRegex(".*(test|docs|example|samples|mocks|Documentation|demos).*")
           )
       case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
         new Jimple2Cpg()
