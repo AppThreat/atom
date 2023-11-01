@@ -352,7 +352,7 @@ object Atom {
       case "H" | "HPP" =>
         new C2Atom()
           .createCpg(
-            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = true)
+            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = false)
               .withLogPreprocessor(false)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
