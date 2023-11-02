@@ -352,12 +352,12 @@ object Atom {
       case "H" | "HPP" =>
         new C2Atom()
           .createCpg(
-            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = true)
+            CConfig(includeComments = false, logProblems = false, includePathsAutoDiscovery = false)
               .withLogPreprocessor(false)
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
               .withFunctionBodies(false)
-              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks|Documentation|demos).*")
+              .withIgnoredFilesRegex(".*(test|docs|example|samples|mocks|Documentation|demos).*")
           )
       case Languages.C | Languages.NEWC | "CPP" | "C++" =>
         new C2Cpg()
@@ -367,7 +367,7 @@ object Atom {
               .withInputPath(config.inputPath.pathAsString)
               .withOutputPath(outputAtomFile)
               .withFunctionBodies(true)
-              .withIgnoredFilesRegex(".*(test|docs|examples|samples|mocks|Documentation|demos).*")
+              .withIgnoredFilesRegex(".*(test|docs|example|samples|mocks|Documentation|demos).*")
           )
       case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
         new Jimple2Cpg()
@@ -444,7 +444,12 @@ object Atom {
           case _ =>
         }
         generateSlice(config, ag)
-        ag.close()
+        try {
+          ag.close()
+        } catch {
+          case err: Throwable if err.getMessage == null => Left(err.getStackTrace.take(7).mkString("\n"))
+          case err: Throwable                           => Left(err.getMessage)
+        }
         Right("Atom generation successful")
     }
   }
