@@ -86,7 +86,6 @@ jobs:
       - run: |
           ./atom.sh usages -o /tmp/v8.atom -l h $GITHUB_WORKSPACE/repotests/nodejs/deps/v8 -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/v8.slices.json
           ./atom.sh usages -o /tmp/uv.atom -l h $GITHUB_WORKSPACE/repotests/nodejs/deps/uv -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/uv.slices.json
-          ./atom.sh usages -o /tmp/openssl.atom -l h $GITHUB_WORKSPACE/repotests/nodejs/deps/openssl -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/openssl.slices.json
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
         if: runner.os != 'Windows'

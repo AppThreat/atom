@@ -444,7 +444,12 @@ object Atom {
           case _ =>
         }
         generateSlice(config, ag)
-        ag.close()
+        try {
+          ag.close()
+        } catch {
+          case err: Throwable if err.getMessage == null => Left(err.getStackTrace.take(7).mkString("\n"))
+          case err: Throwable                           => Left(err.getMessage)
+        }
         Right("Atom generation successful")
     }
   }
