@@ -340,8 +340,8 @@ object UsageSlicing {
           val annotationCalls = m.annotation
             .map(a =>
               ObservedCall(
-                a.name,
-                Option(a.fullName),
+                if (a.fullName.nonEmpty) a.fullName else a.name,
+                if (a.code.nonEmpty) Option(a.code) else Option(a.fullName),
                 List.empty,
                 "",
                 Option(m.isExternal),
