@@ -4,8 +4,12 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:    # allow to manually trigger this workflow
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: appthreat/atom
 jobs:
   release:
+    if: github.repository_owner == 'appthreat'
     concurrency: release
     runs-on: ubuntu-latest
     permissions:
@@ -26,6 +30,17 @@ jobs:
           sha512sum target/atom.zip > target/atom.zip.sha512
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload atom to ghcr
+        run: |
+          cd target
+          echo $GITHUB_TOKEN | oras login ghcr.io -u $GITHUB_USERNAME --password-stdin
+          oras push ghcr.io/$IMAGE_NAME:v1 \
+            --annotation-file ../ci/annotations.json \
+            ./atom.zip:application/vnd.appthreat.atom.layer.v1+tar \
+            ./atom.zip.sha512:application/vnd.appthreat.atom.layer.v1+tar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
