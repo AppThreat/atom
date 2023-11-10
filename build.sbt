@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "1.5.7"
+ThisBuild / version      := "1.6.0"
 ThisBuild / scalaVersion := "3.3.1"
 
-val chenVersion      = "0.6.3"
+val chenVersion      = "1.0.0"
 
 lazy val atom = Projects.atom
 
@@ -169,6 +169,8 @@ ThisBuild / Test / fork                := true
 Global / onChangedBuildSource          := ReloadOnSourceChanges
 Compile / doc / sources                := Seq.empty
 Compile / packageDoc / publishArtifact := false
+
+wartremoverWarnings ++= Seq(Wart.NoNeedImport, Wart.ArrayEquals, Wart.Any, Wart.FinalCaseClass, Wart.FinalVal, Wart.ToString, Wart.TryPartial)
 
 githubOwner := "appthreat"
 githubRepository := "atom"

@@ -10,13 +10,10 @@ import io.shiftleft.codepropertygraph.generated.Languages
 
 import scala.util.Try
 
-class C2Atom extends X2CpgFrontend[Config] {
+class C2Atom extends X2CpgFrontend[Config]:
 
-  def createCpg(config: Config): Try[Cpg] = {
-    withNewEmptyCpg(config.outputPath, config) { (cpg, config) =>
-      new MetaDataPass(cpg, Languages.NEWC, config.inputPath).createAndApply()
-      new AstCreationPass(cpg, config).createAndApply()
-    }
-  }
-
-}
+    def createCpg(config: Config): Try[Cpg] =
+        withNewEmptyCpg(config.outputPath, config) { (cpg, config) =>
+            new MetaDataPass(cpg, Languages.NEWC, config.inputPath).createAndApply()
+            new AstCreationPass(cpg, config).createAndApply()
+        }
