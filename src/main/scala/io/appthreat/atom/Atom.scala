@@ -33,6 +33,7 @@ import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 import scopt.OptionParser
 
+import java.util.Locale
 import scala.language.postfixOps
 import scala.util.{Failure, Properties, Success}
 
@@ -363,7 +364,7 @@ object Atom:
             .withMethodAnnotationFilter(x.methodAnnotationFilter)
 
     private def generateAtom(config: BaseConfig, language: String): Either[String, String] =
-        generateForLanguage(language.toUpperCase, config)
+        generateForLanguage(language.toUpperCase(Locale.ROOT), config)
 
     private def generateForLanguage(language: String, config: BaseConfig): Either[String, String] =
         val outputAtomFile = config match

@@ -12,15 +12,12 @@ private class DataFlowGraph(nodes: Set[Option[DFNode]]):
     // Maximum number of data-flow paths to compute
     private val MAX_PATHS = 100
 
-    private val USEFUL_PATH_LABELS = List("METHOD_PARAMETER_IN", "CALL")
-
     def paths: Set[Path] =
         implicit val finalSet: mutable.Set[Path] = mutable.Set.empty
         implicit val nMap: Map[Long, DFNode]     = nodes.map(x => x.get.id -> x.get).toMap
         nodes.foreach { n =>
-            val currPath      = List(n.get.id)
-            val currLabelPath = List(n.get.label)
-            follow(currPath, currLabelPath, n.get.out.flatMap(nMap.get))
+            val currPath = List(n.get.id)
+            follow(currPath, n.get.out.flatMap(nMap.get))
         }
         finalSet.toSet
 
@@ -32,39 +29,30 @@ private class DataFlowGraph(nodes: Set[Option[DFNode]]):
     private def isSubList[A](lst: List[A])(implicit finalSet: mutable.Set[Path]): Boolean =
         finalSet.filterNot(_.size < lst.size).exists(xs => isSubList(lst, xs))
 
-    /** A given path is useful if it starts with a METHOD_PARAMETER_IN contains at least 1 CALL and
-      * a METHOD_PARAMETER_IN nodes
-      */
-    private def isUsefulPath(finalSet: mutable.Set[Path], path: List[String]): Boolean =
-        path.last == "METHOD_PARAMETER_IN" || (path.contains(
-          "CALL"
-        ) && path.size > 5) || path.count(x =>
-            x != "IDENTIFIER"
-        ) > 2
-
     /** Is there an existing path that starts and ends with the same node
       */
     private def isDuplicate(finalSet: mutable.Set[Path], path: Path): Boolean =
-        finalSet.exists(apath => apath.head == path.head && apath.last == path.last)
+        finalSet.exists(apath =>
+            apath.headOption == path.headOption && apath.lastOption == path.lastOption
+        )
 
-    private def follow(currPath: List[Long], currLabelPath: List[String], outNodes: Set[DFNode])(
+    private def follow(currPath: List[Long], outNodes: Set[DFNode])(
       implicit
       nMap: Map[Long, DFNode],
       finalSet: mutable.Set[Path]
     ): Unit =
         outNodes.foreach { x =>
-            val path      = currPath :+ x.id
-            val labelPath = currLabelPath :+ x.label
-            val queue     = x.out.filterNot(currPath.contains)
+            val path  = currPath :+ x.id
+            val queue = x.out.filterNot(currPath.contains)
             if queue.isEmpty then
                 if !isDuplicate(finalSet, path) && !isSubList(path) then
                     finalSet.add(path)
             else if finalSet.size < MAX_PATHS then
-                follow(path, labelPath, queue.flatMap(nMap.get))
+                follow(path, queue.flatMap(nMap.get))
         }
 end DataFlowGraph
 
-private case class DFNode(
+private final case class DFNode(
   id: Long,
   isExternal: Boolean,
   label: String,

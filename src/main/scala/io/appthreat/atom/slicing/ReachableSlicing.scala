@@ -72,7 +72,7 @@ object ReachableSlicing:
         val addedPaths = mutable.Set[String]()
         val purls      = mutable.Set[String]()
         path.elements.foreach { astNode =>
-            val lineNumber   = astNode.lineNumber.getOrElse("").toString
+            val lineNumber   = astNode.lineNumber.map(_.intValue())
             val fileName     = astNode.file.name.headOption.getOrElse("").replace("<unknown>", "")
             var fileLocation = s"${fileName}#${lineNumber}"
             var tags: String = tagAsString(astNode.tag)

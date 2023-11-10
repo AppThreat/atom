@@ -43,35 +43,31 @@ abstract class SafeConcurrentCpgPass[T <: AnyRef](
         writerThread.setName("Writer")
         writerThread.start()
         implicit val ec: ExecutionContext = ExecutionContextProvider.getExecutionContext
+        var done                          = false
         try
+            while !done || completedParts < nParts do
+                if completionQueue.size < producerQueueCapacity && partIter.hasNext then
+                    val next = partIter.next()
+                    completionQueue.prepend(Future.apply {
+                        val builder = new DiffGraphBuilder
+                        runOnPart(builder, next.asInstanceOf[T])
+                        builder
+                    })
+                else if completionQueue.nonEmpty then
+                    val future = completionQueue.removeLast()
+                    val res    = Await.result(future, Duration.Inf).build()
+                    nDiff += res.size
+                    writer.queue.put(Some(res))
+                    completedParts += 1
+                else
+                    writer.queue.put(None)
+                    completedParts += 1
+                    done = true
+        finally
             try
-                var done = false
-                while !done || completedParts < nParts do
-                    if completionQueue.size < producerQueueCapacity && partIter.hasNext then
-                        val next = partIter.next()
-                        completionQueue.prepend(Future.apply {
-                            val builder = new DiffGraphBuilder
-                            runOnPart(builder, next.asInstanceOf[T])
-                            builder
-                        })
-                    else if completionQueue.nonEmpty then
-                        val future = completionQueue.removeLast()
-                        val res    = Await.result(future, Duration.Inf).build()
-                        nDiff += res.size
-                        writer.queue.put(Some(res))
-                        completedParts += 1
-                    else {
-                        writer.queue.put(None)
-                        completedParts += 1
-                        done = true
-                    }
+                writerThread.join()
             finally
-                try
-                    writerThread.join()
-                finally finish()
-        finally {
-            // pass
-        }
+                finish()
         end try
     end createApplySerializeAndStore
 
@@ -83,11 +79,12 @@ abstract class SafeConcurrentCpgPass[T <: AnyRef](
             )
 
         override def run(): Unit =
-            try
-                nDiffT = 0
-                var terminate  = false
-                var index: Int = 0
-                while !terminate do
+            var terminate  = false
+            var index: Int = 0
+            nDiffT = 0
+            var hadErrors = false
+            while !terminate do
+                try
                     queue.take() match
                         case None =>
                             terminate = true
@@ -96,8 +93,7 @@ abstract class SafeConcurrentCpgPass[T <: AnyRef](
                                 .applyDiff(cpg.graph, diffGraph, keyPool.orNull, null)
                                 .transitiveModifications()
                             index += 1
-            finally {
-                // pass
-            }
+                finally
+                    hadErrors = true
     end Writer
 end SafeConcurrentCpgPass
