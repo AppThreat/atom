@@ -2,12 +2,12 @@
 
 Atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md).
 
-Our vision is to make atom useful for a number of use cases such as:
+Our vision is to make atom useful for many use cases such as:
 
 - **Supply-chain analysis:** Generate evidence of external library usage including the flow of data from sources to sinks. Atom is used by [OWASP cdxgen](https://github.com/CycloneDX/cdxgen) to improve the precision and comprehensiveness of the generated CycloneDX document.
 - **Vulnerability analysis:** Describe vulnerabilities with evidence of affected symbols, call paths, and data-flows. Enable variant and [reachability analysis](https://github.com/AppThreat/atom/blob/main/specification/docs/slices.md#reachables-slice) at scale.
 - **Exploit prediction:** Predict exploits using precise representations of vulnerabilities, libraries, and applications.
-- **Threat-model and attack vectors generation:** Generate precise threat-models and attack vectors for applications at scale.
+- **Threat-model and attack vectors generation:** Generate precise threat models and attack vectors for applications at scale.
 - **Application context detection:** Generate context useful for summarization and risk-profile generation (e.g. services, endpoints, and data attributes).
 - **Mind-maps for applications:** Automate summarization of large and complex applications as a developer tool.
 
@@ -157,7 +157,7 @@ Apache-2.0
 
 ## Developing / Contributing
 
-Install Java 17 or 19 (Recommended)
+Install Java 17 or 21 (Recommended)
 
 ```shell
 sbt clean stage scalafmt test createDistribution
@@ -175,18 +175,6 @@ Loading base CPG from: /home/almalinux/workspace/app.atom1/cpg.bin.tmp
 res1: Option[Cpg] = Some(value = Cpg (Graph [122094 nodes]))
 ```
 
-## Using atom with joern
-
-At present, atom files are compatible with joern 2.x. However, atom files have specific overlays and enhancements and therefore must be imported with `enhance=false` as shown:
-
-```shell
-joern> importCpg("/home/almalinux/work/sandbox/apollo/app.atom", enhance=false)
-Creating project `app.atom1` for CPG at `/home/almalinux/work/sandbox/apollo/app.atom`
-Creating working copy of CPG to be safe
-Loading base CPG from: /home/almalinux/workspace/app.atom1/cpg.bin.tmp
-res1: Option[Cpg] = Some(value = Cpg (Graph [122094 nodes]))
-```
-
 ## Enterprise support
 
-Enterprise support including custom language development and integration services are available via AppThreat Ltd. Free community support is also available via [discord](https://discord.gg/tmmtjCEHNV).
+Enterprise support including custom language development and integration services is available via AppThreat Ltd. Free community support is also available via [discord](https://discord.gg/tmmtjCEHNV).
