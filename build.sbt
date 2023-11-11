@@ -1,6 +1,6 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "1.6.0"
+ThisBuild / version      := "1.6.1"
 ThisBuild / scalaVersion := "3.3.1"
 
 val chenVersion      = "1.0.0"
@@ -55,7 +55,7 @@ Universal / mappings := (Universal / mappings).value.filter {
   case (_, path) => !path.contains("org.scala-lang.scala3-compiler") && !path.contains("io.get-coursier") && !path.contains("com.michaelpollmeier.scala-repl-pp")
 }
 
-enablePlugins(JavaAppPackaging, ClasspathJarPlugin)
+enablePlugins(JavaAppPackaging, ClasspathJarPlugin, GraalVMNativeImagePlugin)
 
 lazy val AstgenWin      = "astgen-win.exe"
 lazy val AstgenLinux    = "astgen-linux"
@@ -157,8 +157,6 @@ ThisBuild / resolvers ++= Seq(
 )
 
 ThisBuild / assemblyMergeStrategy := {
-  case PathList("javax", "servlet", xs @ _*)         => MergeStrategy.first
-  case PathList(ps @ _*) if ps.last endsWith ".html" => MergeStrategy.first
   case "application.conf"                            => MergeStrategy.concat
   case x => MergeStrategy.preferProject
 }
@@ -182,3 +180,5 @@ credentials +=
     "appthreat",
     sys.env.getOrElse("GITHUB_TOKEN", "N/A")
   )
+graalVMNativeImageGraalVersion := Some("22")
+graalVMNativeImageOptions := Seq("-H:+UnlockExperimentalVMOptions", "--no-fallback")
