@@ -28,10 +28,23 @@ npm install @appthreat/atom
 # sudo npm install -g @appthreat/atom
 ```
 
-Install cdxgen to generate a Software Bill-of-Materials which is required for certain slicing.
+Install cdxgen to generate a Software Bill-of-Materials which is required for reachables slicing.
 
 ```shell
 npm install -g @cyclonedx/cdxgen --omit=optional
+```
+
+### Java 21 version
+
+When working with large Java or C/C++ codebases (> 1 million lines of code), use the Java 21 version which uses the new language features to improve performance. You can download this via GitHub [releases](https://github.com/AppThreat/atom/releases).
+
+```shell
+mkdir -p atom
+cd atom
+wget https://github.com/AppThreat/atom/releases/latest/download/atom-java21.zip
+unzip atom-java21.zip
+cd bin
+./atom --help
 ```
 
 ## CLI Usage
