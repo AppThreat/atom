@@ -84,12 +84,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
-          ./atom.sh usages -o /tmp/v8.atom -l h $GITHUB_WORKSPACE/repotests/nodejs/deps/v8 -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/v8.slices.json
-          ./atom.sh usages -o /tmp/uv.atom -l h $GITHUB_WORKSPACE/repotests/nodejs/deps/uv -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/uv.slices.json
-        env:
-          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
-        if: runner.os != 'Windows'
-      - run: |
           npm install -g @cyclonedx/cdxgen --omit=optional
           cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/java-sec-code/bom.json $GITHUB_WORKSPACE/repotests/java-sec-code
           ./atom.sh reachables -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java-sec-code.reachables.json
