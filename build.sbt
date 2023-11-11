@@ -157,8 +157,6 @@ ThisBuild / resolvers ++= Seq(
 )
 
 ThisBuild / assemblyMergeStrategy := {
-  case PathList("javax", "servlet", xs @ _*)         => MergeStrategy.first
-  case PathList(ps @ _*) if ps.last endsWith ".html" => MergeStrategy.first
   case "application.conf"                            => MergeStrategy.concat
   case x => MergeStrategy.preferProject
 }
@@ -182,6 +180,5 @@ credentials +=
     "appthreat",
     sys.env.getOrElse("GITHUB_TOKEN", "N/A")
   )
-
-containerBuildImage := GraalVMNativeImagePlugin.generateContainerBuildImage("ghcr.io/graalvm/graalvm-community:21")
+graalVMNativeImageGraalVersion := Some("22")
 graalVMNativeImageOptions := Seq("-H:+UnlockExperimentalVMOptions", "--no-fallback")
