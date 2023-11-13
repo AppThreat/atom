@@ -25,8 +25,13 @@ object ReachableSlicing:
         val language  = atom.metaData.language.head
         def sourceP   = atom.tag.name(config.sourceTag).parameter
         def sourceI   = atom.tag.name(config.sourceTag).identifier
-        def sink      = atom.ret.where(_.method.tag.name(config.sourceTag))
+        def sink      = atom.ret.where(_.tag.name(config.sinkTag))
         var flowsList = sink.reachableByFlows(sourceP, sourceI).map(toSlice).toList
+        if flowsList.isEmpty then
+            flowsList = atom.ret.where(_.method.tag.name(config.sourceTag)).reachableByFlows(
+              sourceP,
+              sourceI
+            ).map(toSlice).toList
         flowsList ++=
             atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter).map(
               toSlice
