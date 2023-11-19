@@ -68,7 +68,9 @@ object ReachableSlicing:
     end calculateReachableSlice
 
     private def tagAsString(tag: Iterator[Tag]): String =
-        if tag.nonEmpty then tag.name.mkString(", ") else ""
+        if tag.nonEmpty then
+            tag.name.filterNot(v => v.toUpperCase() == v && v.contains("_")).mkString(", ")
+        else ""
     private def purlsFromTag(tag: Iterator[Tag]) =
         if tag.nonEmpty then tag.name.filter(_.startsWith("pkg:")).toSet else Set.empty
 
