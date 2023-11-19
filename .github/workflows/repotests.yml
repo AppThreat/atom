@@ -6,11 +6,55 @@ on:
       - feature/*
   workflow_dispatch:
 jobs:
+  jvm21-testing:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
+        java-version: [ '21' ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v3
+        with:
+          repository: 'HooliCorp/java-sec-code'
+          path: 'repotests/java-sec-code'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'DefectDojo/django-DefectDojo'
+          path: 'repotests/django-DefectDojo'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'nodejs/node'
+          path: 'repotests/nodejs'
+      - uses: coursier/cache-action@v6
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: ${{ matrix.java-version }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: '21.x'
+      - run: |
+          git apply --ignore-space-change --ignore-whitespace contrib/java21.patch
+          sbt stage astGenDlTask
+          npm install -g @cyclonedx/cdxgen --omit=optional
+          cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/java-sec-code/bom.json $GITHUB_WORKSPACE/repotests/java-sec-code
+          ./atom.sh reachables -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java-sec-code.reachables.json
+          cdxgen -t python --deep -o $GITHUB_WORKSPACE/repotests/django-DefectDojo/bom.json $GITHUB_WORKSPACE/repotests/django-DefectDojo
+          ./atom.sh reachables -o /tmp/django-DefectDojo.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/django-DefectDojo.reachables.json
+          ./atom.sh usages -o /tmp/v8.atom -l h $GITHUB_WORKSPACE/repotests/nodejs/deps/v8 -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/v8.slices.json
+          ./atom.sh usages -o /tmp/uv.atom -l h $GITHUB_WORKSPACE/repotests/nodejs/deps/uv -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/uv.slices.json
+        env:
+          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
   jvm-testing:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        java-version: ['17', '19', '20', '21']
+        java-version: ['17', '19', '20']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
