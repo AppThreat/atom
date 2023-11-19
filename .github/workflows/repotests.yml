@@ -50,6 +50,7 @@ jobs:
           ./atom.sh usages -o /tmp/uv.atom -l h $GITHUB_WORKSPACE/repotests/nodejs/deps/uv -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/uv.slices.json
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   jvm-testing:
     strategy:
       matrix:
