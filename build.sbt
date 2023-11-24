@@ -12,8 +12,8 @@ val astGenVersion = "3.5.0"
 libraryDependencies ++= Seq(
   "com.github.pathikrit"    %% "better-files"      % "3.9.2",
   "com.github.scopt"        %% "scopt"             % "4.1.0",
-  "org.apache.logging.log4j" % "log4j-core"        % "2.20.0" % Optional,
-  "org.apache.logging.log4j" % "log4j-slf4j2-impl" % "2.20.0" % Optional,
+  "org.apache.logging.log4j" % "log4j-core"        % "2.22.0" % Optional,
+  "org.apache.logging.log4j" % "log4j-slf4j2-impl" % "2.22.0" % Optional,
   "io.appthreat"                %% "c2cpg"             % Versions.chen excludeAll (
     ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface"),
@@ -27,7 +27,7 @@ libraryDependencies ++= Seq(
   "io.appthreat"      %% "semanticcpg"       % Versions.chen % Test classifier "tests",
   "io.appthreat"      %% "x2cpg"             % Versions.chen % Test classifier "tests",
   "io.appthreat"      %% "pysrc2cpg"         % Versions.chen % Test classifier "tests",
-  "org.scalatest" %% "scalatest"         % "3.2.15"       % Test
+  "org.scalatest" %% "scalatest"         % "3.2.17"       % Test
 )
 
 Compile / doc / scalacOptions ++= Seq("-doc-title", "atom apidocs", "-doc-version", version.value)
