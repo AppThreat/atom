@@ -13,6 +13,7 @@ package object atom:
         var outputAtomFile: File = File(DEFAULT_ATOM_OUT_FILE)
         var language: String     = ""
         var dataDeps: Boolean    = false
+        var removeAtom: Boolean  = false
         var maxNumDef: Int       = DEFAULT_MAX_DEFS
 
         def withOutputAtomFile(x: File): AtomConfig =
@@ -25,6 +26,10 @@ package object atom:
 
         def withDataDependencies(x: Boolean): AtomConfig =
             this.dataDeps = x
+            this
+
+        def withRemoveAtom(x: Boolean): AtomConfig =
+            this.removeAtom = x
             this
 
         def withMaxNumDef(x: Int): AtomConfig =

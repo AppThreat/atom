@@ -33,13 +33,16 @@ import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 import scopt.OptionParser
 
+import java.nio.charset.Charset
 import java.util.Locale
 import scala.language.postfixOps
 import scala.util.{Failure, Properties, Success}
 
 object Atom:
 
-    val DEFAULT_ATOM_OUT_FILE: String       = if Properties.isWin then "app.atom" else "app.⚛"
+    val DEFAULT_ATOM_OUT_FILE: String =
+        if Properties.isWin || Charset.defaultCharset() != Charset.forName("UTF-8") then "app.atom"
+        else "app.⚛"
     val DEFAULT_SLICE_OUT_FILE              = "slices.json"
     val DEFAULT_SLICE_DEPTH                 = 7
     val DEFAULT_MAX_DEFS: Int               = 2000
@@ -149,6 +152,13 @@ object Atom:
                     case config: AtomConfig => config.withDataDependencies(true)
                     case _                  => c
             )
+        opt[Unit]("remove-atom")
+            .text("do not persist the atom file - defaults to `false`")
+            .action((_, c) =>
+                c match
+                    case config: AtomConfig => config.withRemoveAtom(true)
+                    case _                  => c
+            )
         opt[String]("file-filter")
             .text(s"the name of the source file to generate slices from. Uses regex.")
             .action((x, c) => c.withFileFilter(Option(x)))
@@ -245,7 +255,6 @@ object Atom:
     def main(args: Array[String]): Unit =
         run(args) match
             case Right(msg) =>
-                println(msg)
             case Left(errMsg) =>
                 println(s"Failure: $errMsg")
                 System.exit(1)
@@ -257,19 +266,20 @@ object Atom:
             case Right(_)                  => Left("Invalid configuration generated")
             case Left(err)                 => Left(err)
 
-    private def run(config: BaseConfig, language: String): Either[String, String] =
+    private def run(config: AtomConfig, language: String): Either[String, String] =
         for
             _ <- generateAtom(config, language)
-        yield newAtomCreatedString(config match
-            case config: AtomConfig => config.outputAtomFile.pathAsString
-            case _                  => DEFAULT_ATOM_OUT_FILE
-        )
+        yield newAtomCreatedString(config)
 
-    private def newAtomCreatedString(path: String): String =
-        val absolutePath = File(path).path.toAbsolutePath
-        s"Atom created successfully at $absolutePath\n"
+    private def newAtomCreatedString(config: AtomConfig): String =
+        val absolutePath = config.outputAtomFile.path.toAbsolutePath
+        if config.removeAtom then
+            config.outputAtomFile.delete(true)
+            ""
+        else
+            s"Atom created successfully at $absolutePath\n"
 
-    private def generateSlice(config: BaseConfig, cpg: Cpg): Either[String, String] =
+    private def generateSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
         def sliceCpg(cpg: Cpg): Option[ProgramSlice] =
             config match
                 case x: AtomDataFlowConfig =>
@@ -300,18 +310,18 @@ object Atom:
         try
             migrateAtomConfigToSliceConfig(config) match
                 case _: DataFlowConfig =>
-                    val dataFlowSlice = sliceCpg(cpg).collect { case x: DataFlowSlice => x }
+                    val dataFlowSlice = sliceCpg(ag).collect { case x: DataFlowSlice => x }
                     val atomDataFlowSliceJson =
                         dataFlowSlice.map(x =>
                             AtomDataFlowSlice(x, DataFlowGraph.buildFromSlice(x).paths).toJson
                         )
                     saveSlice(config.outputSliceFile, atomDataFlowSliceJson)
                 case _: UsagesConfig =>
-                    saveSlice(config.outputSliceFile, sliceCpg(cpg).map(_.toJson))
+                    saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
                 case _: ReachablesConfig =>
-                    saveSlice(config.outputSliceFile, sliceCpg(cpg).map(_.toJsonPretty))
+                    saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJsonPretty))
                 case x: AtomParseDepsConfig =>
-                    parseDependencies(cpg).map(_.toJson) match
+                    parseDependencies(ag).map(_.toJson) match
                         case Left(err)    => return Left(err)
                         case Right(slice) => saveSlice(x.outputSliceFile, Option(slice))
                 case _ =>
@@ -333,11 +343,6 @@ object Atom:
             println(s"Slices have been successfully written to $finalOutputPath")
         }
 
-    /** Load code property graph from overflowDB
-      *
-      * @param filename
-      *   name of the file that stores the CPG
-      */
     private def migrateAtomConfigToSliceConfig(x: BaseConfig): BaseConfig =
         (x match
             case config: AtomDataFlowConfig =>
@@ -363,13 +368,11 @@ object Atom:
             .withMethodParamTypeFilter(x.methodParamTypeFilter)
             .withMethodAnnotationFilter(x.methodAnnotationFilter)
 
-    private def generateAtom(config: BaseConfig, language: String): Either[String, String] =
+    private def generateAtom(config: AtomConfig, language: String): Either[String, String] =
         generateForLanguage(language.toUpperCase(Locale.ROOT), config)
 
-    private def generateForLanguage(language: String, config: BaseConfig): Either[String, String] =
-        val outputAtomFile = config match
-            case x: AtomConfig => x.outputAtomFile.pathAsString
-            case _             => DEFAULT_ATOM_OUT_FILE
+    private def generateForLanguage(language: String, config: AtomConfig): Either[String, String] =
+        val outputAtomFile = config.outputAtomFile.pathAsString
 
         (language match
             case "H" | "HPP" =>

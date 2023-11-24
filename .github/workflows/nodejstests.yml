@@ -49,12 +49,12 @@ jobs:
           sudo npm install -g .
           curl -L https://github.com/joernio/astgen/releases/latest/download/astgen-linux -o /usr/local/bin/astgen
           chmod +x /usr/local/bin/astgen
-          atom -l java -o $GITHUB_WORKSPACE/repotests/shiftleft-java-example/app.atom $GITHUB_WORKSPACE/repotests/shiftleft-java-example
-          atom -l js -o $GITHUB_WORKSPACE/repotests/juice-shop/app.atom $GITHUB_WORKSPACE/repotests/juice-shop
-          atom -l js -o $GITHUB_WORKSPACE/repotests/shiftleft-ts-example/app.atom $GITHUB_WORKSPACE/repotests/shiftleft-ts-example
-          atom -l python -o $GITHUB_WORKSPACE/repotests/DjanGoat/app.atom $GITHUB_WORKSPACE/repotests/DjanGoat
-          atom parsedeps -l python -o $GITHUB_WORKSPACE/repotests/DjanGoat/app.atom $GITHUB_WORKSPACE/repotests/DjanGoat
-          atom -l c -o $GITHUB_WORKSPACE/repotests/libexpat/app.atom $GITHUB_WORKSPACE/repotests/libexpat
+          atom -l java --remove-atom -o $GITHUB_WORKSPACE/repotests/shiftleft-java-example/app.atom $GITHUB_WORKSPACE/repotests/shiftleft-java-example
+          atom -l js --remove-atom -o $GITHUB_WORKSPACE/repotests/juice-shop/app.atom $GITHUB_WORKSPACE/repotests/juice-shop
+          atom -l js --remove-atom -o $GITHUB_WORKSPACE/repotests/shiftleft-ts-example/app.atom $GITHUB_WORKSPACE/repotests/shiftleft-ts-example
+          atom -l python --remove-atom -o $GITHUB_WORKSPACE/repotests/DjanGoat/app.atom $GITHUB_WORKSPACE/repotests/DjanGoat
+          atom parsedeps -l python --remove-atom -o $GITHUB_WORKSPACE/repotests/DjanGoat/app.atom $GITHUB_WORKSPACE/repotests/DjanGoat
+          atom -l c --remove-atom -o $GITHUB_WORKSPACE/repotests/libexpat/app.atom $GITHUB_WORKSPACE/repotests/libexpat
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   nodejs-testing-windows:
@@ -110,15 +110,15 @@ jobs:
       - name: test
         shell: pwsh
         run: |
-          atom -l java -o $env:GITHUB_WORKSPACE\\repotests\\shiftleft-java-example\\app.atom $env:GITHUB_WORKSPACE\\repotests\\shiftleft-java-example
-          atom -l python -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\DjanGoat
-          atom parsedeps -l python -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\DjanGoat
+          atom -l java --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\shiftleft-java-example\\app.atom $env:GITHUB_WORKSPACE\\repotests\\shiftleft-java-example
+          atom -l python --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\DjanGoat
+          atom parsedeps --remove-atom -l python -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\DjanGoat
           atom -l c -o $env:GITHUB_WORKSPACE\\repotests\\libexpat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\libexpat
       - name: test2
         shell: cmd
         run: |
-          atom -l js -o %GITHUB_WORKSPACE%\\repotests\\juice-shop\\app.atom %GITHUB_WORKSPACE%\\repotests\\juice-shop
+          atom -l js --remove-atom -o %GITHUB_WORKSPACE%\\repotests\\juice-shop\\app.atom %GITHUB_WORKSPACE%\\repotests\\juice-shop
       - name: test3
         shell: cmd
         run: |
-          atom -l js -o %GITHUB_WORKSPACE%\\repotests\\shiftleft-ts-example\\app.atom %GITHUB_WORKSPACE%\\repotests\\shiftleft-ts-example
+          atom -l js --remove-atom -o %GITHUB_WORKSPACE%\\repotests\\shiftleft-ts-example\\app.atom %GITHUB_WORKSPACE%\\repotests\\shiftleft-ts-example
