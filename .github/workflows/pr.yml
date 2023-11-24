@@ -53,7 +53,6 @@ jobs:
           ./atom.sh data-flow --remove-atom -o /tmp/ts2.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/ts.slices.json
           ./atom.sh data-flow --remove-atom -o /tmp/py2.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py.slices.json
           ./atom.sh data-flow --sink-filter ".*print.*" --remove-atom -o /tmp/c2.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/c.slices.json
-          ls -lh /tmp/*.atom /tmp/*.json
 
           ./atom.sh usages --remove-atom -o /tmp/java3.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java.usages.json
           ./atom.sh usages --remove-atom -o /tmp/juice3.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/juice.usages.json
@@ -61,7 +60,6 @@ jobs:
           ./atom.sh usages --remove-atom -o /tmp/py3.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py.usages.json
           ./atom.sh usages --remove-atom -o /tmp/py4.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py4.usages.json
           ./atom.sh usages --remove-atom -o /tmp/c3.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/c.usages.json
-          ls -lh /tmp/*.atom /tmp/*.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: |
