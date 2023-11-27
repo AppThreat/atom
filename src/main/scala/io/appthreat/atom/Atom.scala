@@ -27,8 +27,9 @@ import io.appthreat.pysrc2cpg.{
 }
 import io.appthreat.x2cpg.passes.base.AstLinkerPass
 import io.appthreat.x2cpg.passes.frontend.XTypeRecoveryConfig
-import io.appthreat.x2cpg.passes.taggers.{CdxPass, ChennaiTagsPass}
+import io.appthreat.x2cpg.passes.taggers.{CdxPass, ChennaiTagsPass, EasyTagsPass}
 import io.shiftleft.codepropertygraph.Cpg
+import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
 import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 import scopt.OptionParser
@@ -36,7 +37,7 @@ import scopt.OptionParser
 import java.nio.charset.Charset
 import java.util.Locale
 import scala.language.postfixOps
-import scala.util.{Failure, Properties, Success}
+import scala.util.{Try, Failure, Properties, Success}
 
 object Atom:
 
@@ -60,6 +61,8 @@ object Atom:
                 File(androidHome).glob("**/android.jar").map(_.pathAsString).toSeq.headOption
             else None
         }
+
+    private val COMMON_IGNORE_REGEX = ".*(test|docs|example|samples|mocks|Documentation|demos).*"
 
     // unused since it slows down the cdt parser
     private var C2ATOM_INCLUDE_PATHS: scala.collection.mutable.Set[String] =
@@ -190,7 +193,7 @@ object Atom:
             )
         cmd("parsedeps")
             .text("Extract dependencies from the build file and imports")
-            .action((_, c) => AtomParseDepsConfig())
+            .action((_, c) => AtomParseDepsConfig().withRemoveAtom(true))
         cmd("data-flow")
             .text("Extract backward data-flow slices")
             .action((_, _) => AtomDataFlowConfig().withDataDependencies(true))
@@ -214,7 +217,7 @@ object Atom:
             )
         cmd("usages")
             .text("Extract local variable and parameter usages")
-            .action((_, c) => AtomUsagesConfig())
+            .action((_, c) => AtomUsagesConfig().withRemoveAtom(true))
             .children(
               opt[Int]("min-num-calls")
                   .text(s"the minimum number of calls required for a usage slice - defaults to 1.")
@@ -368,125 +371,151 @@ object Atom:
             .withMethodParamTypeFilter(x.methodParamTypeFilter)
             .withMethodAnnotationFilter(x.methodAnnotationFilter)
 
+    private def loadFromOdb(filename: String): Try[Cpg] =
+        val odbConfig = overflowdb.Config.withDefaults().withStorageLocation(filename)
+        val config    = CpgLoaderConfig().withOverflowConfig(odbConfig).doNotCreateIndexesOnLoad
+        try
+            Success(io.shiftleft.codepropertygraph.cpgloading.CpgLoader.loadFromOverflowDb(config))
+        catch
+            case err: Throwable =>
+                Failure(err)
+
     private def generateAtom(config: AtomConfig, language: String): Either[String, String] =
         generateForLanguage(language.toUpperCase(Locale.ROOT), config)
 
     private def generateForLanguage(language: String, config: AtomConfig): Either[String, String] =
         val outputAtomFile = config.outputAtomFile.pathAsString
-
-        (language match
-            case "H" | "HPP" =>
-                new C2Atom()
-                    .createCpg(
-                      CConfig(
-                        includeComments = false,
-                        logProblems = false,
-                        includePathsAutoDiscovery = false
-                      )
-                          .withLogPreprocessor(false)
-                          .withInputPath(config.inputPath.pathAsString)
-                          .withOutputPath(outputAtomFile)
-                          .withFunctionBodies(false)
-                          .withIgnoredFilesRegex(
-                            ".*(test|docs|example|samples|mocks|Documentation|demos).*"
-                          )
-                    )
-            case Languages.C | Languages.NEWC | "CPP" | "C++" =>
-                new C2Cpg()
-                    .createCpgWithOverlays(
-                      CConfig(
-                        includeComments = false,
-                        logProblems = false,
-                        includePathsAutoDiscovery = true
-                      )
-                          .withLogPreprocessor(false)
-                          .withInputPath(config.inputPath.pathAsString)
-                          .withOutputPath(outputAtomFile)
-                          .withFunctionBodies(true)
-                          .withIgnoredFilesRegex(
-                            ".*(test|docs|example|samples|mocks|Documentation|demos).*"
-                          )
-                    )
-            case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
-                new Jimple2Cpg()
-                    .createCpgWithOverlays(
-                      JimpleConfig(android = ANDROID_JAR_PATH)
-                          .withInputPath(config.inputPath.pathAsString)
-                          .withOutputPath(outputAtomFile)
-                          .withFullResolver(true)
-                    )
-            case Languages.JAVA | Languages.JAVASRC =>
-                new JavaSrc2Cpg()
-                    .createCpgWithOverlays(
-                      JavaConfig(
-                        fetchDependencies = true,
-                        inferenceJarPaths = JAR_INFERENCE_PATHS,
-                        enableTypeRecovery = true
-                      )
-                          .withInputPath(config.inputPath.pathAsString)
-                          .withDefaultIgnoredFilesRegex(
-                            List(
-                              "\\..*".r,
-                              ".*build/(generated|intermediates|outputs|tmp).*" r,
-                              ".*src/test.*" r
+        // Create a new atom
+        def createAtom =
+            (
+              language match
+                  case "H" | "HPP" =>
+                      new C2Atom()
+                          .createCpg(
+                            CConfig(
+                              includeComments = false,
+                              logProblems = false,
+                              includePathsAutoDiscovery = false
                             )
+                                .withLogPreprocessor(false)
+                                .withInputPath(config.inputPath.pathAsString)
+                                .withOutputPath(outputAtomFile)
+                                .withFunctionBodies(false)
+                                .withIgnoredFilesRegex(
+                                  COMMON_IGNORE_REGEX
+                                )
                           )
-                          .withOutputPath(outputAtomFile)
-                    )
-            case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
-                new JsSrc2Cpg()
-                    .createCpgWithOverlays(
-                      JSConfig()
-                          .withDisableDummyTypes(true)
-                          .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
-                          .withInputPath(config.inputPath.pathAsString)
-                          .withOutputPath(outputAtomFile)
-                    )
-                    .map { ag =>
-                        new JavaScriptInheritanceNamePass(ag).createAndApply()
-                        new ConstClosurePass(ag).createAndApply()
-                        new ImportResolverPass(ag).createAndApply()
-                        new SafeJSTypeRecoveryPass(ag).createAndApply()
-                        new TypeHintPass(ag).createAndApply()
-                        ag
-                    }
-            case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
-                new Py2CpgOnFileSystem()
-                    .createCpgWithOverlays(
-                      PyConfig()
-                          .withDisableDummyTypes(true)
-                          .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
-                          .withInputPath(config.inputPath.pathAsString)
-                          .withOutputPath(outputAtomFile)
-                          .withDefaultIgnoredFilesRegex(List("\\..*".r))
-                          .withIgnoredFilesRegex(
-                            ".*(samples|examples|test|tests|unittests|docs|virtualenvs|venv|benchmarks|tutorials|noxfile).*"
+                  case Languages.C | Languages.NEWC | "CPP" | "C++" =>
+                      new C2Cpg()
+                          .createCpgWithOverlays(
+                            CConfig(
+                              includeComments = false,
+                              logProblems = false,
+                              includePathsAutoDiscovery = true
+                            )
+                                .withLogPreprocessor(false)
+                                .withInputPath(config.inputPath.pathAsString)
+                                .withOutputPath(outputAtomFile)
+                                .withFunctionBodies(true)
+                                .withIgnoredFilesRegex(
+                                  COMMON_IGNORE_REGEX
+                                )
                           )
-                    )
-                    .map { ag =>
-                        new PythonImportsPass(ag).createAndApply()
-                        new PyImportResolverPass(ag).createAndApply()
-                        new DynamicTypeHintFullNamePass(ag).createAndApply()
-                        new PythonInheritanceNamePass(ag).createAndApply()
-                        new PythonTypeRecoveryPass(
-                          ag,
-                          XTypeRecoveryConfig(enabledDummyTypes = false)
+                  case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
+                      new Jimple2Cpg()
+                          .createCpgWithOverlays(
+                            JimpleConfig(android = ANDROID_JAR_PATH)
+                                .withInputPath(config.inputPath.pathAsString)
+                                .withOutputPath(outputAtomFile)
+                                .withFullResolver(true)
+                          )
+                  case Languages.JAVA | Languages.JAVASRC =>
+                      new JavaSrc2Cpg()
+                          .createCpgWithOverlays(
+                            JavaConfig(
+                              fetchDependencies = true,
+                              inferenceJarPaths = JAR_INFERENCE_PATHS,
+                              enableTypeRecovery = true
+                            )
+                                .withInputPath(config.inputPath.pathAsString)
+                                .withDefaultIgnoredFilesRegex(
+                                  List(
+                                    "\\..*".r,
+                                    ".*build/(generated|intermediates|outputs|tmp).*" r,
+                                    ".*src/test.*" r
+                                  )
+                                )
+                                .withOutputPath(outputAtomFile)
+                          )
+                  case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
+                      new JsSrc2Cpg()
+                          .createCpgWithOverlays(
+                            JSConfig()
+                                .withDisableDummyTypes(true)
+                                .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
+                                .withInputPath(config.inputPath.pathAsString)
+                                .withOutputPath(outputAtomFile)
+                          )
+                          .map { ag =>
+                              new JavaScriptInheritanceNamePass(ag).createAndApply()
+                              new ConstClosurePass(ag).createAndApply()
+                              new ImportResolverPass(ag).createAndApply()
+                              new SafeJSTypeRecoveryPass(ag).createAndApply()
+                              new TypeHintPass(ag).createAndApply()
+                              ag
+                          }
+                  case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
+                      new Py2CpgOnFileSystem()
+                          .createCpgWithOverlays(
+                            PyConfig()
+                                .withDisableDummyTypes(true)
+                                .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
+                                .withInputPath(config.inputPath.pathAsString)
+                                .withOutputPath(outputAtomFile)
+                                .withDefaultIgnoredFilesRegex(List("\\..*".r))
+                                .withIgnoredFilesRegex(
+                                  ".*(samples|examples|test|tests|unittests|docs|virtualenvs|venv|benchmarks|tutorials|noxfile).*"
+                                )
+                          )
+                          .map { ag =>
+                              new PythonImportsPass(ag).createAndApply()
+                              new PyImportResolverPass(ag).createAndApply()
+                              new DynamicTypeHintFullNamePass(ag).createAndApply()
+                              new PythonInheritanceNamePass(ag).createAndApply()
+                              new PythonTypeRecoveryPass(
+                                ag,
+                                XTypeRecoveryConfig(enabledDummyTypes = false)
+                              )
+                                  .createAndApply()
+                              new PythonTypeHintCallLinker(ag).createAndApply()
+                              new AstLinkerPass(ag).createAndApply()
+                              ag
+                          }
+                  case _ => Failure(
+                        new RuntimeException(
+                          s"No language frontend supported for language '$language'"
                         )
-                            .createAndApply()
-                        new PythonTypeHintCallLinker(ag).createAndApply()
-                        new AstLinkerPass(ag).createAndApply()
-                        ag
-                    }
-            case _ => Failure(
-                  new RuntimeException(s"No language frontend supported for language '$language'")
-                )
-        ) match
+                      )
+            )
+        // Should we reuse or create the atom
+        def getOrCreateAtom =
+            config match
+                case _: AtomUsagesConfig if config.outputAtomFile.exists() =>
+                    config.withRemoveAtom(false)
+                    loadFromOdb(outputAtomFile)
+                case _ =>
+                    config.outputAtomFile.delete(true)
+                    createAtom
+
+        getOrCreateAtom match
             case Failure(exception) =>
                 Left(exception.getMessage)
             case Success(ag) =>
                 config match
                     case x: AtomConfig if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] =>
                         println("Generating data-flow dependencies from atom. Please wait ...")
+                        // Enhance with simple and easy tags
+                        new EasyTagsPass(ag).createAndApply()
                         // Enhance with the BOM from cdxgen
                         new CdxPass(ag).createAndApply()
                         new ChennaiTagsPass(ag).createAndApply()
