@@ -1,6 +1,6 @@
 # Atom (⚛)
 
-Atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md).
+Atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation (a network with nodes and links) is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md).
 
 Our vision is to make atom useful for many use cases such as:
 
@@ -50,14 +50,16 @@ cd bin
 ## CLI Usage
 
 ```
-Usage: atom [parsedeps|data-flow|usages] [options] [input]
+Usage: atom [parsedeps|data-flow|usages|reachables] [options] [input]
 
   input                    source file or directory
   -o, --output <value>     output filename. Default app.⚛ or app.atom in windows
-  --slice-outfile <value>  export intra-procedural slices as json
+  -s, --slice-outfile <value>
+                           export intra-procedural slices as json
   -l, --language <value>   source language
   --with-data-deps         generate the atom with data-dependencies - defaults to `false`
-  --file-filter <value>    the name of the source file to generate slices from.
+  --remove-atom            do not persist the atom file - defaults to `false`
+  --file-filter <value>    the name of the source file to generate slices from. Uses regex.
   --method-name-filter <value>
                            filters in slices that go through specific methods by names. Uses regex.
   --method-parameter-filter <value>
@@ -77,8 +79,8 @@ Extract local variable and parameter usages
   --include-source         includes method source code in the slices - defaults to false.
 Command: reachables [options]
 Extract reachable data-flow slices based on automated framework tags
---source-tag <value>     source tag - defaults to framework-input.
---sink-tag <value>       sink tag - defaults to framework-output.
+  --source-tag <value>     source tag - defaults to framework-input.
+  --sink-tag <value>       sink tag - defaults to framework-output.
   --help                   display this help message
 ```
 
@@ -184,8 +186,6 @@ bash build.sh && sudo npm install -g .
 
 ```shell
 chennai> importAtom("/home/almalinux/work/sandbox/apollo/app.atom")
-Loading base CPG from: /home/almalinux/workspace/app.atom1/cpg.bin.tmp
-res1: Option[Cpg] = Some(value = Cpg (Graph [122094 nodes]))
 ```
 
 ## Enterprise support
