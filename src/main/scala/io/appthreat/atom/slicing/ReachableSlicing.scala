@@ -21,6 +21,11 @@ object ReachableSlicing:
     private def API_TAG                              = "api"
     private def FRAMEWORK_TAG                        = "framework"
 
+    private def LIBRARY_CALL_TAG  = "library-call"
+    private def CLI_SOURCE_TAG    = "cli-source"
+    private def DRIVER_SOURCE_TAG = "driver-source"
+    private def HTTP_TAG          = "http"
+
     def calculateReachableSlice(atom: Cpg, config: ReachablesConfig): ReachableSlice =
         val language  = atom.metaData.language.head
         def sourceP   = atom.tag.name(config.sourceTag).parameter
@@ -63,6 +68,50 @@ object ReachableSlicing:
                 .reachableByFlows(sourceI, dynFrameworkIdentifier)
                 .map(toSlice)
                 .toList
+        end if
+        if language == Languages.NEWC || language == Languages.C
+        then
+            flowsList ++= atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(atom.tag.name(
+              CLI_SOURCE_TAG
+            ).parameter).map(toSlice).toList
+            flowsList ++= atom.tag.name(HTTP_TAG).parameter.reachableByFlows(atom.tag.name(
+              CLI_SOURCE_TAG
+            ).parameter).map(toSlice).toList
+            flowsList ++= atom.tag.name(HTTP_TAG).parameter.reachableByFlows(atom.tag.name(
+              HTTP_TAG
+            ).parameter).map(toSlice).toList
+            flowsList ++= atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(atom.tag.name(
+              DRIVER_SOURCE_TAG
+            ).parameter).map(toSlice).toList
+            // Fallback to reverse reachability if we don't get any hits
+            if flowsList.isEmpty then
+                println(
+                  s"Falling back to using reverse reachability to determine flows. Max DDG depth used: ${config.sliceDepth}"
+                )
+                flowsList ++= atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(
+                  atom.tag.name(
+                    LIBRARY_CALL_TAG
+                  ).call.method.repeat(_.caller(NoResolve))(
+                    _.maxDepth(config.sliceDepth)
+                  ).parameter
+                ).map(toSlice).toList
+            // We still have nothing. Is there any http flows going on?
+            if flowsList.isEmpty then
+                flowsList ++= atom.tag.name(HTTP_TAG).parameter.reachableByFlows(
+                  atom.tag.name(
+                    HTTP_TAG
+                  ).parameter.method.repeat(_.caller(NoResolve))(
+                    _.until(_.method.parameter.tag.name(CLI_SOURCE_TAG))
+                  ).parameter
+                ).map(toSlice).toList
+            if flowsList.isEmpty then
+                flowsList ++= atom.tag.name(LIBRARY_CALL_TAG).parameter.reachableByFlows(
+                  atom.tag.name(
+                    LIBRARY_CALL_TAG
+                  ).parameter.method.repeat(_.caller(NoResolve))(
+                    _.until(_.method.parameter.tag.name(config.sourceTag))
+                  ).parameter
+                ).map(toSlice).toList
         end if
         ReachableSlice(flowsList)
     end calculateReachableSlice

@@ -46,8 +46,9 @@ object UsageSlicing:
         val language     = atom.metaData.language.headOption
         val userDefTypes = userDefinedTypes(atom)
         if language.get == Languages.NEWC || language.get == Languages.C then
-            ProgramUsageSlice(slices ++ importsAsSlices(atom), userDefTypes)
-        else if language.get == Languages.PYTHON || language.get == Languages.PYTHONSRC then
+            ProgramUsageSlice(slices ++ importsAsSlices(atom), userDefTypes ++ routesAsUDT(atom))
+        else if language.get == Languages.PYTHON || language.get == Languages.PYTHONSRC
+        then
             ProgramUsageSlice(
               slices ++ externalCalleesAsSlices(atom, typeMap),
               userDefTypes ++ routesAsUDT(atom)
@@ -221,6 +222,7 @@ object UsageSlicing:
               call.lineNumber.map(_.intValue()),
               call.columnNumber.map(_.intValue())
             )
+        end generateUDT
 
         atom.call
             .where(_.argument.tag.nameExact(FRAMEWORK_ROUTE))

@@ -64,57 +64,16 @@ object Atom:
 
     private val COMMON_IGNORE_REGEX = ".*(test|docs|example|samples|mocks|Documentation|demos).*"
 
-    // unused since it slows down the cdt parser
-    private var C2ATOM_INCLUDE_PATHS: scala.collection.mutable.Set[String] =
-        scala.collection.mutable.Set(
-          "/usr/include",
-          "/usr/local/include",
-          "/usr/lib/gcc/x86_64-linux-gnu",
-          "/usr/include/c++/11",
-          "/usr/include/c++/11/backward",
-          "/usr/lib/gcc/x86_64-redhat-linux",
-          "/opt/local/include/postgresql14",
-          "/opt/local/include",
-          "/usr/include/tcl8.6",
-          "/usr/include/tcl8.6/tcl-private/generic",
-          "/usr/include/4ti2",
-          "/usr/src/AMF",
-          "/usr/src/linux",
-          "/usr/share",
-          "/usr/lib64/R",
-          "/usr/lib/R",
-          "/opt/ebuilds",
-          "/opt/homebrew/include",
-          "/home/linuxbrew/.linuxbrew/include"
-        )
-    Option(System.getenv("C_INCLUDE_PATH")).flatMap { ipath =>
-        C2ATOM_INCLUDE_PATHS ++ ipath.split(java.io.File.pathSeparator)
-        None
-    }
-    Option(System.getenv("%ProgramFiles(x86)%")).flatMap { ipath =>
-        C2ATOM_INCLUDE_PATHS += ipath
-        None
-    }
-    Option(System.getenv("%CommonProgramFiles(x86)%")).flatMap { ipath =>
-        C2ATOM_INCLUDE_PATHS += ipath
-        None
-    }
-    Option(System.getenv("%ProgramW6432%")).flatMap { ipath =>
-        C2ATOM_INCLUDE_PATHS += ipath
-        None
-    }
-    Option(System.getenv("%CommonProgramW6432%")).flatMap { ipath =>
-        C2ATOM_INCLUDE_PATHS += ipath
-        None
-    }
-    Option(System.getenv("%ProgramFiles%")).flatMap { ipath =>
-        C2ATOM_INCLUDE_PATHS += ipath
-        None
-    }
-    Option(System.getenv("%CommonProgramFiles%")).flatMap { ipath =>
-        C2ATOM_INCLUDE_PATHS += ipath
-        None
-    }
+    private val CHEN_INCLUDE_PATH = sys.env.getOrElse("CHEN_INCLUDE_PATH", "")
+    // Custom include paths for c/c++
+    private val C2ATOM_INCLUDE_PATH =
+        if CHEN_INCLUDE_PATH.nonEmpty && File(
+              CHEN_INCLUDE_PATH
+            ).isDirectory
+        then CHEN_INCLUDE_PATH.split(java.io.File.pathSeparator).toSet
+        else
+            Set.empty
+
     private val optionParser: OptionParser[BaseConfig] = new scopt.OptionParser[BaseConfig]("atom"):
         arg[String]("input")
             .optional()
@@ -251,6 +210,15 @@ object Atom:
                       c match
                           case c: AtomReachablesConfig => c.copy(sinkTag = x)
                           case _                       => c
+                  ),
+              opt[Int]("slice-depth")
+                  .text(
+                    s"the max depth to traverse the DDG during reverse reachability - defaults to $DEFAULT_SLICE_DEPTH."
+                  )
+                  .action((x, c) =>
+                      c match
+                          case c: AtomReachablesConfig => c.copy(sliceDepth = x)
+                          case _                       => c
                   )
             )
         help("help").text("display this help message")
@@ -259,7 +227,15 @@ object Atom:
         run(args) match
             case Right(msg) =>
             case Left(errMsg) =>
-                println(s"Failure: $errMsg")
+                if errMsg.nonEmpty && errMsg.contains(
+                      "storage metadata does not contain version number"
+                    )
+                then
+                    println(
+                      "Existing app.atom appears to be corrupted. Please remove and re-run this command."
+                    )
+                else
+                    println(s"Failure: $errMsg")
                 System.exit(1)
 
     private def run(args: Array[String]): Either[String, String] =
@@ -362,7 +338,7 @@ object Atom:
                   !config.includeMethodSource
                 )
             case config: AtomReachablesConfig =>
-                ReachablesConfig(config.sourceTag, config.sinkTag)
+                ReachablesConfig(config.sourceTag, config.sinkTag, config.sliceDepth)
             case _ => x
         ).withInputPath(x.inputPath)
             .withOutputSliceFile(x.outputSliceFile)
@@ -420,6 +396,7 @@ object Atom:
                                 .withIgnoredFilesRegex(
                                   COMMON_IGNORE_REGEX
                                 )
+                                .withIncludePaths(C2ATOM_INCLUDE_PATH)
                           )
                   case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
                       new Jimple2Cpg()
@@ -502,7 +479,13 @@ object Atom:
             config match
                 case _: AtomUsagesConfig if config.outputAtomFile.exists() =>
                     config.withRemoveAtom(false)
-                    loadFromOdb(outputAtomFile)
+                    try
+                        loadFromOdb(outputAtomFile)
+                    catch
+                        case _: Throwable =>
+                            println("Removing the existing atom file since it is corrupted.")
+                            config.outputAtomFile.delete(true)
+                            createAtom
                 case _ =>
                     config.outputAtomFile.delete(true)
                     createAtom
