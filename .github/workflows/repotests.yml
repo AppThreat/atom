@@ -28,6 +28,10 @@ jobs:
         with:
           repository: 'nodejs/node'
           path: 'repotests/nodejs'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'awsdocs/aws-doc-sdk-examples'
+          path: 'repotests/aws-doc-sdk-examples'
       - uses: coursier/cache-action@v6
       - name: Set up JDK
         uses: actions/setup-java@v3
@@ -48,6 +52,7 @@ jobs:
           ./atom.sh reachables --remove-atom -o /tmp/django-DefectDojo.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/django-DefectDojo.reachables.json
           ./atom.sh usages --remove-atom -o /tmp/v8.atom -l h $GITHUB_WORKSPACE/repotests/nodejs/deps/v8 -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/v8.slices.json
           ./atom.sh usages --remove-atom -o /tmp/uv.atom -l h $GITHUB_WORKSPACE/repotests/nodejs/deps/uv -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/uv.slices.json
+          ./atom.sh usages --remove-atom -o /tmp/aws.atom -l h $GITHUB_WORKSPACE/repotests/aws-doc-sdk-examples/cpp -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/aws.slices.json
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -93,6 +98,10 @@ jobs:
         with:
           repository: 'nodejs/node'
           path: 'repotests/nodejs'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'awsdocs/aws-doc-sdk-examples'
+          path: 'repotests/aws-doc-sdk-examples'
       - uses: coursier/cache-action@v6
       - name: Set up JDK
         uses: actions/setup-java@v3
@@ -132,6 +141,8 @@ jobs:
           npm install -g @cyclonedx/cdxgen --omit=optional
           cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/java-sec-code/bom.json $GITHUB_WORKSPACE/repotests/java-sec-code
           ./atom.sh reachables --remove-atom -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java-sec-code.reachables.json
+          cdxgen -t c --deep -o $GITHUB_WORKSPACE/repotests/aws-doc-sdk-examples/cpp/bom.json $GITHUB_WORKSPACE/repotests/aws-doc-sdk-examples/cpp
+          ./atom.sh reachables --remove-atom -o /tmp/aws-doc-sdk-examples.atom -l c $GITHUB_WORKSPACE/repotests/aws-doc-sdk-examples/cpp -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/aws-doc-sdk-examples.reachables.json
           cdxgen -t python --deep -o $GITHUB_WORKSPACE/repotests/django-DefectDojo/bom.json $GITHUB_WORKSPACE/repotests/django-DefectDojo
           ./atom.sh reachables --remove-atom -o /tmp/django-DefectDojo.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/django-DefectDojo.reachables.json
         if: runner.os != 'Windows'
