@@ -131,7 +131,7 @@ Learn more about [slices](./specification/docs/slices.md) or view some [samples]
 It is possible to export each method along with data dependencies in an atom to graphml format. Simply pass `--export` to enable this feature.
 
 ```shell
-atom -o app.atom -l java --export --export-dir <export dir> <path to application>
+atom -o app.atom -l java --export-atom --export-dir <export dir> <path to application>
 ```
 
 The resulting graphml files could be imported into [Neo4j](https://neo4j.com/labs/apoc/4.1/import/graphml/) or NetworkX for further analysis.
