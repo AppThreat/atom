@@ -2,10 +2,10 @@ package io.appthreat.atom
 
 import better.files.File
 import io.appthreat.atom.dataflows.{DataFlowGraph, OssDataFlow, OssDataFlowOptions}
+import io.appthreat.atom.frontends.clike.C2Atom
 import io.appthreat.atom.parsedeps.parseDependencies
 import io.appthreat.atom.passes.{SafeJSTypeRecoveryPass, TypeHintPass}
 import io.appthreat.atom.slicing.*
-import io.appthreat.atom.frontends.clike.C2Atom
 import io.appthreat.c2cpg.{C2Cpg, Config as CConfig}
 import io.appthreat.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.appthreat.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
@@ -28,16 +28,16 @@ import io.appthreat.pysrc2cpg.{
 import io.appthreat.x2cpg.passes.base.AstLinkerPass
 import io.appthreat.x2cpg.passes.frontend.XTypeRecoveryConfig
 import io.appthreat.x2cpg.passes.taggers.{CdxPass, ChennaiTagsPass, EasyTagsPass}
-import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
-import io.shiftleft.codepropertygraph.generated.Languages
+import io.shiftleft.codepropertygraph.generated.{Cpg, Languages}
+import io.shiftleft.semanticcpg.language.*
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 import scopt.OptionParser
 
 import java.nio.charset.Charset
 import java.util.Locale
 import scala.language.postfixOps
-import scala.util.{Try, Failure, Properties, Success}
+import scala.util.{Failure, Properties, Success, Try}
 
 object Atom:
 
@@ -49,6 +49,7 @@ object Atom:
     val DEFAULT_MAX_DEFS: Int               = 2000
     val FRAMEWORK_INPUT_TAG: String         = "framework-input"
     val FRAMEWORK_OUTPUT_TAG: String        = "framework-output"
+    val DEFAULT_EXPORT_DIR: String          = "atom-exports"
     private val TYPE_PROPAGATION_ITERATIONS = 1
     private val MAVEN_JAR_PATH: File        = File.home / ".m2" / "repository"
     private val GRADLE_JAR_PATH: File = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
@@ -119,6 +120,21 @@ object Atom:
             .action((_, c) =>
                 c match
                     case config: AtomConfig => config.withRemoveAtom(true)
+                    case _                  => c
+            )
+        opt[Unit]("export-atom")
+            .text("export the atom file with data-dependencies to graphml - defaults to `false`")
+            .action((_, c) =>
+                c match
+                    case config: AtomConfig =>
+                        config.withExportAtom(true).withDataDependencies(true)
+                    case _ => c
+            )
+        opt[String]("export-dir")
+            .text(s"export directory. Default: $DEFAULT_EXPORT_DIR")
+            .action((x, c) =>
+                c match
+                    case config: AtomConfig => config.withExportDir(x)
                     case _                  => c
             )
         opt[String]("file-filter")
@@ -288,6 +304,11 @@ object Atom:
 
         try
             migrateAtomConfigToSliceConfig(config) match
+                case x: AtomConfig if config.exportAtom =>
+                    println(s"Exporting the atom to ${x.exportDir}")
+                    ag.method.filterNot(_.name.startsWith("<")).filterNot(
+                      _.name.startsWith("lambda")
+                    ).gml(x.exportDir)
                 case _: DataFlowConfig =>
                     val dataFlowSlice = sliceCpg(ag).collect { case x: DataFlowSlice => x }
                     val atomDataFlowSliceJson =
@@ -304,6 +325,7 @@ object Atom:
                         case Left(err)    => return Left(err)
                         case Right(slice) => saveSlice(x.outputSliceFile, Option(slice))
                 case _ =>
+            end match
             Right("Atom sliced successfully")
         catch
             case err: Throwable if err.getMessage == null =>
@@ -477,7 +499,10 @@ object Atom:
         // Should we reuse or create the atom
         def getOrCreateAtom =
             config match
-                case _: AtomUsagesConfig if config.outputAtomFile.exists() =>
+                case x: AtomConfig
+                    if (x.isInstanceOf[
+                      AtomUsagesConfig
+                    ] || config.exportAtom) && config.outputAtomFile.exists() =>
                     config.withRemoveAtom(false)
                     try
                         loadFromOdb(outputAtomFile)
