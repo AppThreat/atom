@@ -50,6 +50,7 @@ object Atom:
     val FRAMEWORK_INPUT_TAG: String         = "framework-input"
     val FRAMEWORK_OUTPUT_TAG: String        = "framework-output"
     val DEFAULT_EXPORT_DIR: String          = "atom-exports"
+    val DEFAULT_EXPORT_FORMAT: String       = "graphml"
     private val TYPE_PROPAGATION_ITERATIONS = 1
     private val MAVEN_JAR_PATH: File        = File.home / ".m2" / "repository"
     private val GRADLE_JAR_PATH: File = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
@@ -127,7 +128,7 @@ object Atom:
             .action((_, c) =>
                 c match
                     case config: AtomConfig =>
-                        config.withExportAtom(true).withDataDependencies(true)
+                        config.withExportAtom(true)
                     case _ => c
             )
         opt[String]("export-dir")
@@ -135,6 +136,13 @@ object Atom:
             .action((x, c) =>
                 c match
                     case config: AtomConfig => config.withExportDir(x)
+                    case _                  => c
+            )
+        opt[String]("export-format")
+            .text(s"export format graphml or dot. Default: $DEFAULT_EXPORT_FORMAT")
+            .action((x, c) =>
+                c match
+                    case config: AtomConfig => config.withExportFormat(x)
                     case _                  => c
             )
         opt[String]("file-filter")
@@ -305,10 +313,16 @@ object Atom:
         try
             migrateAtomConfigToSliceConfig(config) match
                 case x: AtomConfig if config.exportAtom =>
-                    println(s"Exporting the atom to ${x.exportDir}")
-                    ag.method.filterNot(_.name.startsWith("<")).filterNot(
-                      _.name.startsWith("lambda")
-                    ).gml(x.exportDir)
+                    println(s"Exporting the atom to the directory ${x.exportDir}")
+                    config.exportFormat match
+                        case "graphml" =>
+                            ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
+                              _.name.startsWith("lambda")
+                            ).gml(x.exportDir)
+                        case _ =>
+                            ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
+                              _.name.startsWith("lambda")
+                            ).dot(x.exportDir)
                 case _: DataFlowConfig =>
                     val dataFlowSlice = sliceCpg(ag).collect { case x: DataFlowSlice => x }
                     val atomDataFlowSliceJson =
