@@ -59,6 +59,8 @@ Usage: atom [parsedeps|data-flow|usages|reachables] [options] [input]
   -l, --language <value>   source language
   --with-data-deps         generate the atom with data-dependencies - defaults to `false`
   --remove-atom            do not persist the atom file - defaults to `false`
+  --export-atom            export the atom file with data-dependencies to graphml - defaults to `false`
+  --export-dir <value>     export directory. Default: atom-exports
   --file-filter <value>    the name of the source file to generate slices from. Uses regex.
   --method-name-filter <value>
                            filters in slices that go through specific methods by names. Uses regex.
@@ -123,6 +125,26 @@ atom usages -o app.atom --slice-outfile usages.json -l java .
 ```
 
 Learn more about [slices](./specification/docs/slices.md) or view some [samples](https://github.com/AppThreat/atom-samples)
+
+### Export atom to graphml or dot format
+
+It is possible to export each method along with data dependencies in an atom to graphml or dot format. Simply pass `--export` to enable this feature.
+
+```shell
+atom -o app.atom -l java --export-atom --export-dir <export dir> <path to application>
+```
+
+The resulting graphml files could be imported into [Neo4j](https://neo4j.com/labs/apoc/4.1/import/graphml/) or NetworkX for further analysis. Use the argument `--export-format` for dot format.
+
+```shell
+atom -o app.atom -l java --export-atom --export-format dot --export-dir <export dir> <path to application>
+```
+
+To also compute and include data-dependency graph (DDG) information in the exported files, pass `--with-data-deps`
+
+```shell
+atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-deps <path to application>
+```
 
 ## Languages supported
 

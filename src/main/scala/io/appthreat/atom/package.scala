@@ -15,6 +15,9 @@ package object atom:
         var dataDeps: Boolean    = false
         var removeAtom: Boolean  = false
         var maxNumDef: Int       = DEFAULT_MAX_DEFS
+        var exportAtom: Boolean  = false
+        var exportDir: String    = DEFAULT_EXPORT_DIR
+        var exportFormat: String = DEFAULT_EXPORT_FORMAT
 
         def withOutputAtomFile(x: File): AtomConfig =
             this.outputAtomFile = x
@@ -30,6 +33,18 @@ package object atom:
 
         def withRemoveAtom(x: Boolean): AtomConfig =
             this.removeAtom = x
+            this
+
+        def withExportAtom(x: Boolean): AtomConfig =
+            this.exportAtom = x
+            this
+
+        def withExportDir(x: String): AtomConfig =
+            this.exportDir = x
+            this
+
+        def withExportFormat(x: String): AtomConfig =
+            this.exportFormat = x
             this
 
         def withMaxNumDef(x: Int): AtomConfig =
