@@ -54,7 +54,7 @@ object UsageSlicing:
               userDefTypes ++ routesAsUDT(atom)
             )
         else
-            ProgramUsageSlice(slices, userDefTypes)
+            ProgramUsageSlice(slices ++ unusedTypeDeclAsSlices(atom), userDefTypes)
     end calculateUsageSlice
 
     import io.shiftleft.semanticcpg.codedumper.CodeDumper.dump
@@ -119,6 +119,21 @@ object UsageSlicing:
                   if im.file.nonEmpty then im.file.head.lineNumber.map(_.intValue()) else None,
               columnNumber =
                   if im.file.nonEmpty then im.file.head.columnNumber.map(_.intValue()) else None
+            )
+        )
+
+    private def unusedTypeDeclAsSlices(atom: Cpg): List[MethodUsageSlice] =
+        atom.typeDecl.annotation.filter(_.method.isEmpty).l.map(im =>
+            MethodUsageSlice(
+              code = if im.code.nonEmpty then im.code.replaceAll("\\s*", "") else "",
+              fullName = im.fullName,
+              signature = s"@${im.name}",
+              fileName = if im.file.nonEmpty then im.file.head.name else "",
+              slices = Seq[ObjectUsageSlice]().toSet,
+              lineNumber =
+                  im.lineNumber.map(_.intValue()),
+              columnNumber =
+                  im.columnNumber.map(_.intValue())
             )
         )
 
