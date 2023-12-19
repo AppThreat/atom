@@ -44,13 +44,16 @@ object Atom:
     val DEFAULT_ATOM_OUT_FILE: String =
         if Properties.isWin || Charset.defaultCharset() != Charset.forName("UTF-8") then "app.atom"
         else "app.⚛"
-    val DEFAULT_SLICE_OUT_FILE              = "slices.json"
-    val DEFAULT_SLICE_DEPTH                 = 7
-    val DEFAULT_MAX_DEFS: Int               = 2000
-    val FRAMEWORK_INPUT_TAG: String         = "framework-input"
-    val FRAMEWORK_OUTPUT_TAG: String        = "framework-output"
-    val DEFAULT_EXPORT_DIR: String          = "atom-exports"
-    val DEFAULT_EXPORT_FORMAT: String       = "graphml"
+    val DEFAULT_SLICE_OUT_FILE        = "slices.json"
+    val DEFAULT_SLICE_DEPTH           = 7
+    val DEFAULT_MAX_DEFS: Int         = 2000
+    val FRAMEWORK_INPUT_TAG: String   = "framework-input"
+    val FRAMEWORK_OUTPUT_TAG: String  = "framework-output"
+    val DEFAULT_EXPORT_DIR: String    = "atom-exports"
+    val DEFAULT_EXPORT_FORMAT: String = "graphml"
+    // Possible values: no-delombok, default, types-only, run-delombok
+    private val DEFAULT_DELOMBOK_MODE: String =
+        sys.env.getOrElse("CHEN_DELOMBOK_MODE", "types-only")
     private val TYPE_PROPAGATION_ITERATIONS = 1
     private val MAVEN_JAR_PATH: File        = File.home / ".m2" / "repository"
     private val GRADLE_JAR_PATH: File = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
@@ -448,7 +451,8 @@ object Atom:
                             JavaConfig(
                               fetchDependencies = true,
                               inferenceJarPaths = JAR_INFERENCE_PATHS,
-                              enableTypeRecovery = true
+                              enableTypeRecovery = true,
+                              delombokMode = Some(DEFAULT_DELOMBOK_MODE)
                             )
                                 .withInputPath(config.inputPath.pathAsString)
                                 .withDefaultIgnoredFilesRegex(
