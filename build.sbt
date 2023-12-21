@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "1.7.5"
+ThisBuild / version      := "1.8.0"
 ThisBuild / scalaVersion := "3.3.1"
 
-val chenVersion      = "1.0.10"
+val chenVersion      = "1.1.1"
 
 lazy val atom = Projects.atom
 

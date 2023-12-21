@@ -1,0 +1,45 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "license": "https://spdx.org/licenses/Apache-2.0",
+  "codeRepository": "git+https://github.com/AppThreat/atom.git",
+  "contIntegration": "https://github.com/AppThreat/atom/actions",
+  "downloadUrl": "https://github.com/AppThreat/atom",
+  "issueTracker": "https://github.com/AppThreat/atom/issues",
+  "name": "atom",
+  "version": "1.8.0",
+  "description": ".",
+  "applicationCategory": "code-analysis",
+  "keywords": [
+    "static-analysis",
+    "code-analysis",
+    "dependency-analysis",
+    "code-hierarchy-analysis",
+    "static-slicer",
+    "reachability-analysis"
+  ],
+  "programmingLanguage": [
+    "Scala 3",
+    "Node.js"
+  ],
+  "runtimePlatform": [
+    "JVM"
+  ],
+  "operatingSystem": [
+    "Linux",
+    "Windows",
+    "MacOS"
+  ],
+  "softwareRequirements": [
+    "Java >= 21",
+    "Node.js >= 16"
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Team",
+      "familyName": "AppThreat",
+      "email": "cloud@appthreat.com"
+    }
+  ]
+}
