@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "1.8.0"
+ThisBuild / version      := "1.8.1"
 ThisBuild / scalaVersion := "3.3.1"
 
-val chenVersion      = "1.1.1"
+val chenVersion      = "1.1.3"
 
 lazy val atom = Projects.atom
 
@@ -24,6 +24,7 @@ libraryDependencies ++= Seq(
   "io.appthreat"      %% "javasrc2cpg"       % Versions.chen,
   "io.appthreat"      %% "jssrc2cpg"         % Versions.chen,
   "io.appthreat"      %% "jimple2cpg"        % Versions.chen,
+  "io.appthreat"      %% "php2atom"        % Versions.chen,
   "io.appthreat"      %% "semanticcpg"       % Versions.chen % Test classifier "tests",
   "io.appthreat"      %% "x2cpg"             % Versions.chen % Test classifier "tests",
   "io.appthreat"      %% "pysrc2cpg"         % Versions.chen % Test classifier "tests",

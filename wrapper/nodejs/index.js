@@ -19,6 +19,7 @@ const _version = selfPJson.version;
 export const LOG4J_CONFIG = join(dirName, "plugins", "log4j2.xml");
 export const ATOM_HOME = join(dirName, "plugins");
 export const APP_LIB_DIR = join(ATOM_HOME, "lib");
+export const PHP_PARSER_BIN = join(ATOM_HOME, "bin", "php-parse");
 const freeMemoryGB = Math.max(Math.floor(freemem() / 1024 / 1024 / 1024), 4);
 export const JVM_ARGS = "-XX:+UseG1GC -XX:+UseStringDeduplication";
 export const JAVA_OPTS = `${
@@ -66,7 +67,8 @@ export const executeAtom = (atomArgs) => {
     ]);
   const env = {
     ...process.env,
-    ATOM_HOME
+    ATOM_HOME,
+    PHP_PARSER_BIN
   };
   const cwd = process.env.ATOM_CWD || process.cwd();
   spawnSync(JAVACMD, args, {

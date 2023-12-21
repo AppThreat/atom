@@ -164,7 +164,7 @@ docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthr
 
 ## Languages supported
 
-- C/C++ (Requires Java 17 or above)
+- C/C++
 - H (C/C++ Header files alone)
 - Java (Requires compilation)
 - Jar
@@ -172,6 +172,7 @@ docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthr
 - JavaScript
 - TypeScript
 - Python
+- PHP
 
 ## Atom Specification
 
@@ -210,7 +211,8 @@ Apache-2.0
 
 ## Developing / Contributing
 
-Install Java 17 or 21 (Recommended)
+Install Java 21
+Node.js > 21
 
 ```shell
 sbt clean stage scalafmt test createDistribution

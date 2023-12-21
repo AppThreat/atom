@@ -15,6 +15,8 @@ import io.appthreat.jssrc2cpg.passes.{
     JavaScriptInheritanceNamePass
 }
 import io.appthreat.jssrc2cpg.{JsSrc2Cpg, Config as JSConfig}
+import io.appthreat.php2atom.passes.PhpSetKnownTypesPass
+import io.appthreat.php2atom.{Php2Atom, Config as PhpConfig}
 import io.appthreat.pysrc2cpg.{
     DynamicTypeHintFullNamePass,
     Py2CpgOnFileSystem,
@@ -514,6 +516,18 @@ object Atom:
                               new AstLinkerPass(ag).createAndApply()
                               ag
                           }
+                  case Languages.PHP =>
+                      new Php2Atom().createCpgWithOverlays(
+                        PhpConfig()
+                            .withDisableDummyTypes(true)
+                            .withInputPath(config.inputPath.pathAsString)
+                            .withOutputPath(outputAtomFile)
+                            .withDefaultIgnoredFilesRegex(List("\\..*".r))
+                            .withIgnoredFilesRegex(".*(samples|examples|docs|tests).*")
+                      ).map { ag =>
+                          new PhpSetKnownTypesPass(ag).createAndApply()
+                          ag
+                      }
                   case _ => Failure(
                         new RuntimeException(
                           s"No language frontend supported for language '$language'"

@@ -86,3 +86,13 @@ export const detectJava = () => {
   }
   return true;
 };
+
+export const detectPhp = () => {
+  let result = spawnSync(process.env.JAVA_CMD || "php", ["--version"], {
+    encoding: "utf-8"
+  });
+  if (result.status !== 0 || result.error) {
+    return false;
+  }
+  return true;
+};

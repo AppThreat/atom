@@ -45,7 +45,8 @@ object UsageSlicing:
         val slices       = usageSlices(atom, () => getDeclarations, typeMap)
         val language     = atom.metaData.language.headOption
         val userDefTypes = userDefinedTypes(atom)
-        if language.get == Languages.NEWC || language.get == Languages.C then
+        if language.get == Languages.NEWC || language.get == Languages.C
+        then
             ProgramUsageSlice(slices ++ importsAsSlices(atom), userDefTypes ++ routesAsUDT(atom))
         else if language.get == Languages.PYTHON || language.get == Languages.PYTHONSRC
         then
@@ -53,6 +54,9 @@ object UsageSlicing:
               slices ++ externalCalleesAsSlices(atom, typeMap),
               userDefTypes ++ routesAsUDT(atom)
             )
+        else if language.get == Languages.PHP
+        then
+            ProgramUsageSlice(slices, userDefTypes ++ routesAsUDT(atom))
         else
             ProgramUsageSlice(slices ++ unusedTypeDeclAsSlices(atom), userDefTypes)
     end calculateUsageSlice
