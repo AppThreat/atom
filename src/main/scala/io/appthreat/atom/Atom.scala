@@ -44,12 +44,13 @@ object Atom:
     val DEFAULT_ATOM_OUT_FILE: String =
         if Properties.isWin || Charset.defaultCharset() != Charset.forName("UTF-8") then "app.atom"
         else "app.⚛"
-    val DEFAULT_SLICE_OUT_FILE        = "slices.json"
-    val DEFAULT_SLICE_DEPTH           = 7
-    val DEFAULT_MAX_DEFS: Int         = 2000
-    val FRAMEWORK_INPUT_TAG: String   = "framework-input"
-    val FRAMEWORK_OUTPUT_TAG: String  = "framework-output"
-    val DEFAULT_EXPORT_DIR: String    = "atom-exports"
+    val DEFAULT_SLICE_OUT_FILE       = "slices.json"
+    val DEFAULT_SLICE_DEPTH          = 7
+    val DEFAULT_MAX_DEFS: Int        = 2000
+    val FRAMEWORK_INPUT_TAG: String  = "framework-input"
+    val FRAMEWORK_OUTPUT_TAG: String = "framework-output"
+    val DEFAULT_EXPORT_DIR: String   = "atom-exports"
+    // Possible values: graphml, dot
     val DEFAULT_EXPORT_FORMAT: String = "graphml"
     // Possible values: no-delombok, default, types-only, run-delombok
     private val DEFAULT_DELOMBOK_MODE: String =
@@ -126,7 +127,7 @@ object Atom:
                     case config: AtomConfig => config.withRemoveAtom(true)
                     case _                  => c
             )
-        opt[Unit]("export-atom")
+        opt[Unit]('x', "export-atom")
             .text("export the atom file with data-dependencies to graphml - defaults to `false`")
             .action((_, c) =>
                 c match
@@ -323,9 +324,14 @@ object Atom:
                               _.name.startsWith("lambda")
                             ).gml(x.exportDir)
                         case _ =>
+                            // Export all representations
                             ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
                               _.name.startsWith("lambda")
                             ).dot(x.exportDir)
+                            // Export individual representations
+                            ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
+                              _.name.startsWith("lambda")
+                            ).exportAllRepr(x.exportDir)
                 case _: DataFlowConfig =>
                     val dataFlowSlice = sliceCpg(ag).collect { case x: DataFlowSlice => x }
                     val atomDataFlowSliceJson =

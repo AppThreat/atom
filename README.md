@@ -59,7 +59,7 @@ Usage: atom [parsedeps|data-flow|usages|reachables] [options] [input]
   -l, --language <value>   source language
   --with-data-deps         generate the atom with data-dependencies - defaults to `false`
   --remove-atom            do not persist the atom file - defaults to `false`
-  --export-atom            export the atom file with data-dependencies to graphml - defaults to `false`
+  -x, --export-atom        export the atom file with data-dependencies to graphml - defaults to `false`
   --export-dir <value>     export directory. Default: atom-exports
   --file-filter <value>    the name of the source file to generate slices from. Uses regex.
   --method-name-filter <value>
@@ -139,6 +139,8 @@ The resulting graphml files could be imported into [Neo4j](https://neo4j.com/lab
 ```shell
 atom -o app.atom -l java --export-atom --export-format dot --export-dir <export dir> <path to application>
 ```
+
+In dot format, individual representations such as ast, cdg, and cfg would also get exported.
 
 To also compute and include data-dependency graph (DDG) information in the exported files, pass `--with-data-deps`
 
