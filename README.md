@@ -148,6 +148,20 @@ To also compute and include data-dependency graph (DDG) information in the expor
 atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-deps <path to application>
 ```
 
+## container usage
+
+```shell
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom --help
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom --help
+```
+
+Example for java project.
+
+```shell
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom -l java -o /app/app.atom /app
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom -l java -o /app/app.atom /app
+```
+
 ## Languages supported
 
 - C/C++ (Requires Java 17 or above)
