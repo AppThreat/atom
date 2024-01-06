@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '21'      
+          java-version: '21'
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -74,7 +74,7 @@ jobs:
         with:
           file: ci/Dockerfile
           context: .
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
