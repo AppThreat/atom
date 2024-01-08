@@ -5,14 +5,14 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.authors="Team AppThreat <cloud@appthreat.com>" \
       org.opencontainers.image.source="https://github.com/appthreat/chen" \
       org.opencontainers.image.url="https://github.com/appthreat/atom" \
-      org.opencontainers.image.version="1.7.x" \
+      org.opencontainers.image.version="1.8.x" \
       org.opencontainers.image.vendor="appthreat" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.title="atom" \
       org.opencontainers.image.description="Container image for testing AppThreat atom with Oracle GraalVM" \
       org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom"
 
-ARG MAVEN_VERSION=3.9.5
+ARG MAVEN_VERSION=3.9.6
 
 ENV MAVEN_VERSION=$MAVEN_VERSION \
     MAVEN_HOME="/opt/maven/${MAVEN_VERSION}" \
@@ -36,7 +36,7 @@ RUN set -e; \
             ;; \
         *) echo >&2 "error: unsupported architecture: '$ARCH_NAME'"; exit 1 ;; \
     esac; \
-    echo -e "[nodejs]\nname=nodejs\nstream=21\nprofiles=\nstate=enabled\n" > /etc/dnf/modules.d/nodejs.module \
+    echo -e "[nodejs]\nname=nodejs\nstream=20\nprofiles=\nstate=enabled\n" > /etc/dnf/modules.d/nodejs.module \
     && microdnf install -y gcc git-core wget bash glibc-common glibc-all-langpacks \
         pcre2 findutils which tar gzip zip unzip sudo nodejs \
     && curl -s "https://get.sdkman.io" | bash \
