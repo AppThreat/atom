@@ -100,10 +100,15 @@ jobs:
         run: |
           sbt stage createDistribution
           cd wrapper\\nodejs
-          .\build.ps1
+          copy ..\..\target\atom.zip plugins\
+          Expand-Archive -Path ..\..\target\atom.zip -DestinationPath plugins\ -Force
+          Remove-Item -Force plugins\atom.zip
+          php --php-ini php.ini composer.phar require nikic/php-parser:4.18.0 --ignore-platform-reqs --optimize-autoloader
+          npm install
           npm install -g .
           get-command atom
           get-command astgen
+          get-command phpastgen
           astgen --version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
