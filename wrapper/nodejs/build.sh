@@ -12,7 +12,7 @@ php -r "if (hash_file('sha384', 'composer-setup.php') === 'e21205b207c3ff0319065
 php composer-setup.php
 php -r "unlink('composer-setup.php');"
 export COMPOSER_VENDOR_DIR=plugins
-php composer.phar require nikic/php-parser --ignore-platform-reqs --optimize-autoloader
+php composer.phar require nikic/php-parser:4.18.0 --ignore-platform-reqs --optimize-autoloader
 
 npm install
 
