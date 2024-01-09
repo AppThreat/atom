@@ -20,11 +20,17 @@ function main(argvs) {
     return false;
   }
   const cwd = process.env.ATOM_CWD || process.cwd();
-  spawnSync(PHP_PARSER_BIN, argvs, {
+  argvs.splice(
+    0,
+    1,
+    process.env.PHP_PARSER_BIN || join(PLUGINS_HOME, "bin", "php-parse")
+  );
+  spawnSync(process.env.PHP_CMD || "php", argvs, {
     encoding: "utf-8",
     cwd,
     stdio: "inherit",
     stderr: "inherit",
+    env: process.env,
     timeout: process.env.ATOM_TIMEOUT || process.env.ASTGEN_TIMEOUT
   });
 }
