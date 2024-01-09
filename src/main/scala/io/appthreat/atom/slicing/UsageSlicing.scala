@@ -45,7 +45,7 @@ object UsageSlicing:
         val slices       = usageSlices(atom, () => getDeclarations, typeMap)
         val language     = atom.metaData.language.headOption
         val userDefTypes = userDefinedTypes(atom)
-        if language.get == Languages.NEWC || language.get == Languages.C
+        if language.get == Languages.NEWC || language.get == Languages.C || language.get == Languages.PHP
         then
             ProgramUsageSlice(slices ++ importsAsSlices(atom), userDefTypes ++ routesAsUDT(atom))
         else if language.get == Languages.PYTHON || language.get == Languages.PYTHONSRC
@@ -54,9 +54,6 @@ object UsageSlicing:
               slices ++ externalCalleesAsSlices(atom, typeMap),
               userDefTypes ++ routesAsUDT(atom)
             )
-        else if language.get == Languages.PHP
-        then
-            ProgramUsageSlice(slices, userDefTypes ++ routesAsUDT(atom))
         else
             ProgramUsageSlice(slices ++ unusedTypeDeclAsSlices(atom), userDefTypes)
     end calculateUsageSlice
@@ -111,18 +108,31 @@ object UsageSlicing:
             .toList
     end usageSlices
 
+    private def cleanupImportCode(code: String) =
+        if code.startsWith("use") then code else code.replaceAll("\\s*", "")
+
+    private def importLineNumber(im: Import) =
+        if im.file.nonEmpty && im.file.head.lineNumber.nonEmpty then
+            im.file.head.lineNumber.map(_.intValue())
+        else if im.lineNumber.nonEmpty then im.lineNumber.map(_.intValue())
+        else None
+
+    private def importColumnNumber(im: Import) =
+        if im.file.nonEmpty && im.file.head.columnNumber.nonEmpty then
+            im.file.head.columnNumber.map(_.intValue())
+        else if im.columnNumber.nonEmpty then im.columnNumber.map(_.intValue())
+        else None
+
     private def importsAsSlices(atom: Cpg): List[MethodUsageSlice] =
         atom.imports.l.map(im =>
             MethodUsageSlice(
-              code = if im.code.nonEmpty then im.code.replaceAll("\\s*", "") else "",
+              code = if im.code.nonEmpty then cleanupImportCode(im.code) else "",
               fullName = im.importedEntity.get,
-              signature = im.importedAs.get,
+              signature = im.importedAs.getOrElse(""),
               fileName = if im.file.nonEmpty then im.file.head.name else "",
               slices = Seq[ObjectUsageSlice]().toSet,
-              lineNumber =
-                  if im.file.nonEmpty then im.file.head.lineNumber.map(_.intValue()) else None,
-              columnNumber =
-                  if im.file.nonEmpty then im.file.head.columnNumber.map(_.intValue()) else None
+              lineNumber = importLineNumber(im),
+              columnNumber = importColumnNumber(im)
             )
         )
 
