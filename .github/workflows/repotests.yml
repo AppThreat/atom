@@ -13,28 +13,32 @@ jobs:
         java-version: [ '21' ]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'HooliCorp/java-sec-code'
           path: 'repotests/java-sec-code'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'DefectDojo/django-DefectDojo'
           path: 'repotests/django-DefectDojo'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'nodejs/node'
           path: 'repotests/nodejs'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'awsdocs/aws-doc-sdk-examples'
           path: 'repotests/aws-doc-sdk-examples'
+      - uses: actions/checkout@v4
+        with:
+          repository: 'friendica/friendica'
+          path: 'repotests/friendica'
       - uses: coursier/cache-action@v6
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
@@ -53,6 +57,9 @@ jobs:
           ./atom.sh usages --remove-atom -o /tmp/v8.atom -l h $GITHUB_WORKSPACE/repotests/nodejs/deps/v8 -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/v8.slices.json
           ./atom.sh usages --remove-atom -o /tmp/uv.atom -l h $GITHUB_WORKSPACE/repotests/nodejs/deps/uv -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/uv.slices.json
           ./atom.sh usages --remove-atom -o /tmp/aws.atom -l h $GITHUB_WORKSPACE/repotests/aws-doc-sdk-examples/cpp -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/aws.slices.json
+          ./atom.sh usages --remove-atom -o /tmp/friendica.atom -l h $GITHUB_WORKSPACE/repotests/friendica -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/friend.slices.json
+          cdxgen -t php -o $GITHUB_WORKSPACE/repotests/friendica/bom.json $GITHUB_WORKSPACE/repotests/friendica
+          ./atom.sh reachables --remove-atom -o /tmp/friendica2.atom -l h $GITHUB_WORKSPACE/repotests/friendica -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/friend2.slices.json
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -63,48 +70,48 @@ jobs:
         java-version: ['17', '19', '20']
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'ShiftLeftSecurity/shiftleft-java-example'
           path: 'repotests/shiftleft-java-example'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'juice-shop/juice-shop'
           path: 'repotests/juice-shop'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'ShiftLeftSecurity/shiftleft-ts-example'
           path: 'repotests/shiftleft-ts-example'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'libexpat/libexpat'
           path: 'repotests/libexpat'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'HooliCorp/java-sec-code'
           path: 'repotests/java-sec-code'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'HooliCorp/DjanGoat'
           path: 'repotests/DjanGoat'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'DefectDojo/django-DefectDojo'
           path: 'repotests/django-DefectDojo'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'nodejs/node'
           path: 'repotests/nodejs'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'awsdocs/aws-doc-sdk-examples'
           path: 'repotests/aws-doc-sdk-examples'
       - uses: coursier/cache-action@v6
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}

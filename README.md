@@ -172,7 +172,7 @@ docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthr
 - JavaScript
 - TypeScript
 - Python
-- PHP
+- PHP (Requires PHP >= 7.0. Supports PHP 5.2 to 8.3)
 
 ## Atom Specification
 
