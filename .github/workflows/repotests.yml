@@ -56,7 +56,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'oracle'
           java-version: ${{ matrix.java-version }}
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
