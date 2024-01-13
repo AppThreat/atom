@@ -75,24 +75,3 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=atom
           cache-to: type=gha,mode=max,scope=atom
-      - name: Upload atom to ghcr
-        run: |
-          cd target
-          cp atom.zip atom-java21.zip
-          sha512sum atom.zip > atom.zip.sha512
-          sha512sum atom-java21.zip > atom-java21.zip.sha512
-          echo $GITHUB_TOKEN | oras login ghcr.io -u $GITHUB_USERNAME --password-stdin
-          oras push ghcr.io/appthreat/atom-java21:v1 \
-            --annotation-file ../ci/annotations.json \
-            ./atom.zip:application/vnd.appthreat.atom.layer.v1+tar \
-            ./atom.zip.sha512:application/vnd.appthreat.atom.layer.v1+tar
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_USERNAME: ${{ github.actor }}
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            target/atom-java21.zip
-            target/atom-java21.zip.sha512
