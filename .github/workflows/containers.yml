@@ -45,11 +45,6 @@ jobs:
             ~/.coursier
           key: ${{ runner.os }}-sbt-${{ hashfiles('**/build.sbt') }}
       - run: |
-          git apply --ignore-space-change --ignore-whitespace contrib/java21.patch
-          if [ $? != 0 ]; then
-            echo "Unable to patch the codebase correctly."
-            exit 1
-          fi
           sbt stage createDistribution
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

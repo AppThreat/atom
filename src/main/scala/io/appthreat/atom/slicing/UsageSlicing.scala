@@ -20,7 +20,7 @@ object UsageSlicing:
 
     private val resolver = NoResolve
     val exec: ExecutorService =
-        Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors() / 2)
+        Executors.newVirtualThreadPerTaskExecutor()
     private val constructorTypeMatcher = Pattern.compile(".*new (\\w+)\\(.*")
     private val excludeOperatorCalls   = new AtomicBoolean(true)
     private val FRAMEWORK_ROUTE        = "framework-route"
