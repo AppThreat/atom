@@ -24,7 +24,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
-        java-version: '19'
+        java-version: '21'
     - name: Release
       run: |
         sbt scalafmtCheck stage assembly createDistribution

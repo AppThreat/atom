@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "1.8.4"
+ThisBuild / version      := "2.0.0"
 ThisBuild / scalaVersion := "3.3.1"
 
-val chenVersion      = "1.1.6"
+val chenVersion      = "2.0.0"
 
 lazy val atom = Projects.atom
 
@@ -36,17 +36,17 @@ Compile / doc / scalacOptions ++= Seq("-doc-title", "atom apidocs", "-doc-versio
 ThisBuild / scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
   "--release",
-  "17",
+  "21",
 )
 
 ThisBuild / compile / javacOptions ++= Seq(
   "-g", // debug symbols
   "-Xlint",
-  "--release=17"
+  "--release=21"
 ) ++ {
   // fail early if users with JDK11 try to run this
   val javaVersion = sys.props("java.specification.version").toFloat
-  assert(javaVersion.toInt >= 17, s"this build requires JDK17+ - you're using $javaVersion")
+  assert(javaVersion.toInt >= 21, s"this build requires JDK21+ - you're using $javaVersion")
   Nil
 }
 
