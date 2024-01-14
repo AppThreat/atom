@@ -36,7 +36,7 @@ npm install -g @cyclonedx/cdxgen --omit=optional
 
 ### Java 21 version
 
-When working with large Java or C/C++ codebases (> 1 million lines of code), use the Java 21 version which uses the new language features to improve performance. You can download this via GitHub [releases](https://github.com/AppThreat/atom/releases).
+atom v2 is available as a native image built using GraalVM community edition.
 
 ```shell
 mkdir -p atom
@@ -46,6 +46,15 @@ unzip atom-java21.zip
 cd bin
 ./atom --help
 ```
+
+On Windows
+
+```pwsh
+curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.5/atom.exe
+.\atom.exe --help
+```
+
+NOTE: cdxgen is not bundled into the native image so needs to be installed separately.
 
 ## CLI Usage
 
