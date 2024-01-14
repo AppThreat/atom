@@ -76,7 +76,7 @@ RUN unzip -q atom.zip \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
     && sudo npm install -g /opt/nodejs \
     && rm -rf atom.zip composer.json composer.lock composer-setup.php \
-    && atom --help \
+    && /opt/bin/atom --help \
     && astgen --help \
     && phpastgen --help \
     && microdnf clean all
