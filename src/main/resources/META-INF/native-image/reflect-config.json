@@ -1,15 +1,21 @@
 [
 {
+  "name":"[B"
+},
+{
   "name":"[Lbetter.files.File;"
 },
 {
-  "name":"[Lcom.github.javaparser.ast.CompilationUnit;"
+  "name":"[Lio.appthreat.x2cpg.Ast;"
 },
 {
-  "name":"[Lio.shiftleft.codepropertygraph.generated.nodes.Call;"
+  "name":"[Lio.shiftleft.codepropertygraph.generated.nodes.AstNode;"
 },
 {
   "name":"[Lio.shiftleft.codepropertygraph.generated.nodes.Method;"
+},
+{
+  "name":"[Ljava.lang.Integer;"
 },
 {
   "name":"[Ljava.lang.Object;"
@@ -27,13 +33,79 @@
   "name":"[Ljava.nio.file.OpenOption;"
 },
 {
-  "name":"[Ljava.nio.file.attribute.FileAttribute;"
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTArrayModifier;"
 },
 {
-  "name":"[Lscala.Tuple2;"
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTAttribute;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTAttributeSpecifier;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTDeclaration;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTDeclarator;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTExpression;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTInitializerClause;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTName;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTNode;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTNodeLocation;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTParameterDeclaration;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTPointerOperator;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTStatement;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTToken;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.IBinding;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPASTNameSpecifier;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPASTTemplateParameter;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPClassTemplatePartialSpecialization;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPField;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPFunction;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPMethod;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPTemplateParameter;"
+},
+{
+  "name":"[Lsun.security.pkcs.SignerInfo;"
 },
 {
   "name":"[[Ljava.lang.Object;"
+},
+{
+  "name":"[[Lorg.eclipse.cdt.core.dom.ast.IASTNode;"
 },
 {
   "name":"[[[Ljava.lang.Object;"
@@ -46,148 +118,64 @@
   "fields":[{"name":"0bitmap$1"}]
 },
 {
-  "name":"cats.Later",
-  "fields":[{"name":"0bitmap$1"}]
+  "name":"io.appthreat.atom.slicing.package$$anon$1",
+  "fields":[{"name":"constructorNames$lzy1"}, {"name":"elemDecoders$lzy1"}, {"name":"elemDefaults$lzy1"}, {"name":"elemLabels$lzy5"}, {"name":"io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy1"}, {"name":"isSum$lzy5"}]
 },
 {
-  "name":"com.github.javaparser.ast.ArrayCreationLevel",
-  "allDeclaredFields":true
+  "name":"io.appthreat.atom.slicing.package$$anon$10",
+  "fields":[{"name":"constructorNames$lzy4"}, {"name":"elemDecoders$lzy4"}, {"name":"elemDefaults$lzy4"}, {"name":"elemLabels$lzy11"}, {"name":"io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy4"}, {"name":"isSum$lzy11"}]
 },
 {
-  "name":"com.github.javaparser.ast.CompilationUnit",
-  "allDeclaredFields":true
+  "name":"io.appthreat.atom.slicing.package$$anon$12",
+  "fields":[{"name":"elemEncoders$lzy8"}, {"name":"elemLabels$lzy12"}, {"name":"isSum$lzy12"}]
 },
 {
-  "name":"com.github.javaparser.ast.PackageDeclaration",
-  "allDeclaredFields":true
+  "name":"io.appthreat.atom.slicing.package$$anon$13",
+  "fields":[{"name":"constructorNames$lzy5"}, {"name":"elemDecoders$lzy5"}, {"name":"elemDefaults$lzy5"}, {"name":"elemLabels$lzy13"}, {"name":"io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy5"}, {"name":"isSum$lzy13"}]
 },
 {
-  "name":"com.github.javaparser.ast.body.BodyDeclaration",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.body.CallableDeclaration",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.body.ClassOrInterfaceDeclaration",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.body.ConstructorDeclaration",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.body.FieldDeclaration",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.body.InitializerDeclaration",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.body.MethodDeclaration",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.body.Parameter",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.body.TypeDeclaration",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.expr.ArrayCreationExpr",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.expr.ArrayInitializerExpr",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.expr.FieldAccessExpr",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.expr.MethodCallExpr",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.expr.NormalAnnotationExpr",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.expr.ObjectCreationExpr",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.expr.VariableDeclarationExpr",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.stmt.BlockStmt",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.stmt.ForStmt",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.stmt.TryStmt",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.type.ArrayType",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.type.ClassOrInterfaceType",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.type.PrimitiveType",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.type.ReferenceType",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.type.Type",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.type.UnionType",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.type.VoidType",
-  "allDeclaredFields":true
-},
-{
-  "name":"com.github.javaparser.ast.type.WildcardType",
-  "allDeclaredFields":true
+  "name":"io.appthreat.atom.slicing.package$$anon$15",
+  "fields":[{"name":"elemEncoders$lzy9"}, {"name":"elemLabels$lzy14"}, {"name":"isSum$lzy14"}]
 },
 {
   "name":"io.appthreat.atom.slicing.package$$anon$19",
   "fields":[{"name":"elemEncoders$lzy3"}, {"name":"elemLabels$lzy4"}, {"name":"isSum$lzy3"}]
 },
 {
+  "name":"io.appthreat.atom.slicing.package$$anon$3",
+  "fields":[{"name":"elemEncoders$lzy5"}, {"name":"elemLabels$lzy6"}, {"name":"isSum$lzy6"}]
+},
+{
+  "name":"io.appthreat.atom.slicing.package$$anon$4",
+  "fields":[{"name":"constructorNames$lzy2"}, {"name":"elemDecoders$lzy2"}, {"name":"elemDefaults$lzy2"}, {"name":"elemLabels$lzy7"}, {"name":"io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy2"}, {"name":"isSum$lzy7"}]
+},
+{
+  "name":"io.appthreat.atom.slicing.package$$anon$6",
+  "fields":[{"name":"elemEncoders$lzy6"}, {"name":"elemLabels$lzy8"}, {"name":"isSum$lzy8"}]
+},
+{
+  "name":"io.appthreat.atom.slicing.package$$anon$7",
+  "fields":[{"name":"constructorNames$lzy3"}, {"name":"elemDecoders$lzy3"}, {"name":"elemDefaults$lzy3"}, {"name":"elemLabels$lzy9"}, {"name":"io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy3"}, {"name":"isSum$lzy9"}]
+},
+{
+  "name":"io.appthreat.atom.slicing.package$$anon$9",
+  "fields":[{"name":"elemEncoders$lzy7"}, {"name":"elemLabels$lzy10"}, {"name":"isSum$lzy10"}]
+},
+{
   "name":"io.appthreat.atom.slicing.package$ReachableSlice$$anon$18",
   "fields":[{"name":"elemEncoders$lzy4"}, {"name":"elemLabels$lzy3"}, {"name":"isSum$lzy4"}]
 },
 {
-  "name":"io.appthreat.dataflowengineoss.passes.reachingdef.OptimizedReachingDefTransferFunction",
-  "fields":[{"name":"loneIdentifiers$lzy1"}]
+  "name":"io.appthreat.c2cpg.astcreation.AstCreator",
+  "fields":[{"name":"io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"}]
 },
 {
-  "name":"io.appthreat.javasrc2cpg.passes.AstCreator",
-  "fields":[{"name":"io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"}]
+  "name":"io.appthreat.dataflowengineoss.language.Path$",
+  "fields":[{"name":"maxTrackedWidth$lzy1"}]
+},
+{
+  "name":"io.appthreat.dataflowengineoss.passes.reachingdef.OptimizedReachingDefTransferFunction",
+  "fields":[{"name":"loneIdentifiers$lzy1"}]
 },
 {
   "name":"io.circe.Decoder$",
@@ -195,6 +183,10 @@
 },
 {
   "name":"io.circe.Encoder$",
+  "fields":[{"name":"0bitmap$1"}]
+},
+{
+  "name":"io.circe.JsonDecimal",
   "fields":[{"name":"0bitmap$1"}]
 },
 {
@@ -206,1696 +198,30 @@
   "fields":[{"name":"all$lzy1"}, {"name":"allAsJava$lzy1"}]
 },
 {
-  "name":"java.awt.image.BufferedImage"
-},
-{
-  "name":"java.io"
-},
-{
-  "name":"java.io.BufferedInputStream",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.BufferedReader",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.ByteArrayInputStream",
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.ByteArrayOutputStream",
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.Class"
-},
-{
-  "name":"java.io.Closeable",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.io.DataInput",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.io.DataOutput",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.io.Exception"
-},
-{
-  "name":"java.io.File",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.FileInputStream",
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.FileOutputStream",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.FilterOutputStream",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.io.Flushable",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.io.IOException",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.io.InputStream",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.io.InputStreamReader",
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.InvalidClassException",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.ObjectInput",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.io.ObjectInputStream",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.ObjectOutput",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.io.ObjectOutputStream",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.ObjectStreamClass",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.io.ObjectStreamConstants",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.io.ObjectStreamException",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.io.OutputStream",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.io.PrintStream",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.io.PrintWriter",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.io.Reader"
-},
-{
-  "name":"java.io.Serializable",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.io.String"
-},
-{
-  "name":"java.io.StringBuilder"
-},
-{
-  "name":"java.io.StringReader",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.StringWriter",
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.io.System"
-},
-{
-  "name":"java.io.URL"
-},
-{
-  "name":"java.io.Writer",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.io.buf"
-},
-{
-  "name":"java.io.builder"
-},
-{
-  "name":"java.io.child"
-},
-{
-  "name":"java.io.className"
-},
-{
-  "name":"java.io.cookie"
-},
-{
-  "name":"java.io.db"
-},
-{
-  "name":"java.io.dbf"
-},
-{
-  "name":"java.io.desc"
-},
-{
-  "name":"java.io.digester"
-},
-{
-  "name":"java.io.document"
-},
-{
-  "name":"java.io.e"
-},
-{
-  "name":"java.io.fileName"
-},
-{
-  "name":"java.io.headers"
-},
-{
-  "name":"java.io.httpService"
-},
-{
-  "name":"java.io.inputStream"
-},
-{
-  "name":"java.io.java"
-},
-{
-  "name":"java.io.java.io"
-},
-{
-  "name":"java.io.java.io.InputStream"
-},
-{
-  "name":"java.io.java.security"
-},
-{
-  "name":"java.io.java.util"
-},
-{
-  "name":"java.io.java.util.Scanner"
-},
-{
-  "name":"java.io.logger"
-},
-{
-  "name":"java.io.myObj"
-},
-{
-  "name":"java.io.node"
-},
-{
-  "name":"java.io.objectFromDisk"
-},
-{
-  "name":"java.io.ois"
-},
-{
-  "name":"java.io.org"
-},
-{
-  "name":"java.io.org.springframework"
-},
-{
-  "name":"java.io.org.springframework.web"
-},
-{
-  "name":"java.io.org.springframework.web.util"
-},
-{
-  "name":"java.io.os"
-},
-{
-  "name":"java.io.outputStream"
-},
-{
-  "name":"java.io.parser"
-},
-{
-  "name":"java.io.reader"
-},
-{
-  "name":"java.io.request"
-},
-{
-  "name":"java.io.response"
-},
-{
-  "name":"java.io.rootNode"
-},
-{
-  "name":"java.io.rootNodeList"
-},
-{
-  "name":"java.io.s"
-},
-{
-  "name":"java.io.saxParser"
-},
-{
-  "name":"java.io.spf"
-},
-{
-  "name":"java.io.sr"
-},
-{
-  "name":"java.io.u"
-},
-{
-  "name":"java.io.user"
-},
-{
-  "name":"java.io.xmlReader"
-},
-{
-  "name":"java.io.xxe"
-},
-{
-  "name":"java.io.xxeNode"
-},
-{
-  "name":"java.lang"
-},
-{
-  "name":"java.lang.AbstractStringBuilder",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.Appendable",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.AutoCloseable",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.Boolean"
-},
-{
-  "name":"java.lang.CharSequence",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.Class",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.ClassCastException"
-},
-{
-  "name":"java.lang.ClassLoader",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.ClassNotFoundException",
-  "queryAllDeclaredMethods":true
-},
-{
   "name":"java.lang.ClassValue"
 },
 {
-  "name":"java.lang.Cloneable",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.Comparable",
-  "allDeclaredFields":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.Configs"
-},
-{
-  "name":"java.lang.Double"
-},
-{
-  "name":"java.lang.Enum",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.Exception",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.FILTER_PATTERN"
-},
-{
-  "name":"java.lang.IllegalAccessException"
-},
-{
-  "name":"java.lang.IllegalArgumentException"
-},
-{
-  "name":"java.lang.IllegalStateException"
-},
-{
-  "name":"java.lang.InstantiationException"
-},
-{
-  "name":"java.lang.Integer",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.IpAddress"
-},
-{
-  "name":"java.lang.Iterable",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.LOGGER"
-},
-{
-  "name":"java.lang.Long"
-},
-{
-  "name":"java.lang.Module"
-},
-{
-  "name":"java.lang.NICK"
-},
-{
-  "name":"java.lang.NullPointerException",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.Number",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.Object",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.Process",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.ProcessBuilder",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.lang.ReflectiveOperationException",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.Runtime",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.RuntimeException",
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.lang.SECRET"
-},
-{
-  "name":"java.lang.String",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.lang.StringBuffer",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.StringBuilder",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.lang.Suffix"
-},
-{
-  "name":"java.lang.System",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.Thread",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.Throwable",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.UnsupportedOperationException"
-},
-{
-  "name":"java.lang.Void"
-},
-{
-  "name":"java.lang.aClass"
-},
-{
-  "name":"java.lang.acceptImpl"
-},
-{
-  "name":"java.lang.addr"
-},
-{
-  "name":"java.lang.address"
-},
-{
-  "name":"java.lang.allowOrigins"
-},
-{
-  "name":"java.lang.annotation.Annotation",
-  "methods":[{"name":"annotationType","parameterTypes":[] }]
-},
-{
-  "name":"java.lang.application"
-},
-{
-  "name":"java.lang.attach"
-},
-{
-  "name":"java.lang.auth"
-},
-{
-  "name":"java.lang.authentication"
-},
-{
-  "name":"java.lang.availableImpl"
-},
-{
-  "name":"java.lang.backdoorFilter"
-},
-{
-  "name":"java.lang.bindImpl"
-},
-{
-  "name":"java.lang.blockDomains"
-},
-{
-  "name":"java.lang.buf"
-},
-{
-  "name":"java.lang.bufferedReader"
-},
-{
-  "name":"java.lang.builder"
-},
-{
-  "name":"java.lang.cc"
-},
-{
-  "name":"java.lang.cell"
-},
-{
-  "name":"java.lang.cells"
-},
-{
-  "name":"java.lang.channel"
-},
-{
-  "name":"java.lang.child"
-},
-{
-  "name":"java.lang.claims"
-},
-{
-  "name":"java.lang.classBytes"
-},
-{
-  "name":"java.lang.className"
-},
-{
-  "name":"java.lang.clazz"
-},
-{
-  "name":"java.lang.client"
-},
-{
-  "name":"java.lang.closeImpl"
-},
-{
-  "name":"java.lang.com"
-},
-{
-  "name":"java.lang.com.squareup"
-},
-{
-  "name":"java.lang.com.squareup.okhttp"
-},
-{
-  "name":"java.lang.com.squareup.okhttp.Request"
-},
-{
-  "name":"java.lang.com.squareup.okhttp.Request.Builder"
-},
-{
-  "name":"java.lang.con"
-},
-{
-  "name":"java.lang.config"
-},
-{
-  "name":"java.lang.configuration"
-},
-{
-  "name":"java.lang.conn"
-},
-{
-  "name":"java.lang.connectHostImpl"
-},
-{
-  "name":"java.lang.connectInetAddressImpl"
-},
-{
-  "name":"java.lang.connectSocketAddressImpl"
-},
-{
-  "name":"java.lang.connection"
-},
-{
-  "name":"java.lang.constant.Constable",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.constant.ConstantDesc",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.constructor"
-},
-{
-  "name":"java.lang.content"
-},
-{
-  "name":"java.lang.context"
-},
-{
-  "name":"java.lang.convFile"
-},
-{
-  "name":"java.lang.cookie"
-},
-{
-  "name":"java.lang.cookieCsrfTokenRepository"
-},
-{
-  "name":"java.lang.createImpl"
-},
-{
-  "name":"java.lang.csrfToken"
-},
-{
-  "name":"java.lang.db"
-},
-{
-  "name":"java.lang.dbf"
-},
-{
-  "name":"java.lang.defineClassMethod"
-},
-{
-  "name":"java.lang.delFile"
-},
-{
-  "name":"java.lang.desc"
-},
-{
-  "name":"java.lang.digester"
-},
-{
-  "name":"java.lang.doc"
-},
-{
-  "name":"java.lang.document"
-},
-{
-  "name":"java.lang.domainsNode"
-},
-{
-  "name":"java.lang.e"
-},
-{
-  "name":"java.lang.engine"
-},
-{
-  "name":"java.lang.ex"
-},
-{
-  "name":"java.lang.exception"
-},
-{
-  "name":"java.lang.f"
-},
-{
-  "name":"java.lang.file"
-},
-{
-  "name":"java.lang.fileName"
-},
-{
-  "name":"java.lang.filterChain"
-},
-{
-  "name":"java.lang.filterConfigs"
-},
-{
-  "name":"java.lang.filterDef"
-},
-{
-  "name":"java.lang.filterMap"
-},
-{
-  "name":"java.lang.finalTagNode"
-},
-{
-  "name":"java.lang.fos"
-},
-{
-  "name":"java.lang.future"
-},
-{
-  "name":"java.lang.getInputStreamImpl"
-},
-{
-  "name":"java.lang.getOutputStreamImpl"
-},
-{
-  "name":"java.lang.groovyShell"
-},
-{
-  "name":"java.lang.headers"
-},
-{
-  "name":"java.lang.host"
-},
-{
-  "name":"java.lang.html"
-},
-{
-  "name":"java.lang.http"
-},
-{
-  "name":"java.lang.httpResponse"
-},
-{
-  "name":"java.lang.httpService"
-},
-{
-  "name":"java.lang.httpclient"
-},
-{
-  "name":"java.lang.implField"
-},
-{
-  "name":"java.lang.in"
-},
-{
-  "name":"java.lang.inBr"
-},
-{
-  "name":"java.lang.inputStream"
-},
-{
-  "name":"java.lang.invoke.CallSite"
-},
-{
-  "name":"java.lang.invoke.TypeDescriptor",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.invoke.TypeDescriptor$OfField",
-  "queryAllPublicMethods":true
+  "name":"java.lang.String"
 },
 {
   "name":"java.lang.invoke.VarHandle",
   "methods":[{"name":"releaseFence","parameterTypes":[] }]
 },
 {
-  "name":"java.lang.ip"
+  "name":"java.security.MessageDigestSpi"
 },
 {
-  "name":"java.lang.ipParts"
+  "name":"java.security.interfaces.RSAPrivateKey"
 },
 {
-  "name":"java.lang.java"
+  "name":"java.security.interfaces.RSAPublicKey"
 },
 {
-  "name":"java.lang.java.io"
-},
-{
-  "name":"java.lang.java.io.BufferedReader"
-},
-{
-  "name":"java.lang.java.io.InputStream"
-},
-{
-  "name":"java.lang.java.io.InputStreamReader"
-},
-{
-  "name":"java.lang.java.lang"
-},
-{
-  "name":"java.lang.java.lang.reflect"
-},
-{
-  "name":"java.lang.java.lang.reflect.Method"
-},
-{
-  "name":"java.lang.java.security"
-},
-{
-  "name":"java.lang.java.util"
-},
-{
-  "name":"java.lang.java.util.Scanner"
-},
-{
-  "name":"java.lang.jsonpObj"
-},
-{
-  "name":"java.lang.listenImpl"
-},
-{
-  "name":"java.lang.log"
-},
-{
-  "name":"java.lang.logger"
-},
-{
-  "name":"java.lang.m"
-},
-{
-  "name":"java.lang.map"
-},
-{
-  "name":"java.lang.matcher"
-},
-{
-  "name":"java.lang.method"
-},
-{
-  "name":"java.lang.model"
-},
-{
-  "name":"java.lang.multiFile"
-},
-{
-  "name":"java.lang.multifile"
-},
-{
-  "name":"java.lang.myObj"
-},
-{
-  "name":"java.lang.newDecimalIP"
-},
-{
-  "name":"java.lang.node"
-},
-{
-  "name":"java.lang.ob"
-},
-{
-  "name":"java.lang.objectFromDisk"
-},
-{
-  "name":"java.lang.ois"
-},
-{
-  "name":"java.lang.org"
-},
-{
-  "name":"java.lang.org.springframework"
-},
-{
-  "name":"java.lang.org.springframework.web"
-},
-{
-  "name":"java.lang.org.springframework.web.util"
-},
-{
-  "name":"java.lang.os"
-},
-{
-  "name":"java.lang.outputStream"
-},
-{
-  "name":"java.lang.p"
-},
-{
-  "name":"java.lang.parser"
-},
-{
-  "name":"java.lang.principal"
-},
-{
-  "name":"java.lang.process"
-},
-{
-  "name":"java.lang.processBuilder"
-},
-{
-  "name":"java.lang.rd"
-},
-{
-  "name":"java.lang.re"
-},
-{
-  "name":"java.lang.reader"
-},
-{
-  "name":"java.lang.redirectAttributes"
-},
-{
-  "name":"java.lang.reflect.AccessibleObject",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.reflect.AnnotatedElement",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.reflect.Constructor",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.reflect.Executable",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.reflect.Field",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.reflect.GenericDeclaration",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.reflect.InvocationHandler",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.reflect.InvocationTargetException"
-},
-{
-  "name":"java.lang.reflect.Member",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.reflect.Method",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.lang.reflect.Type",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.registry"
-},
-{
-  "name":"java.lang.req"
-},
-{
-  "name":"java.lang.request"
-},
-{
-  "name":"java.lang.res"
-},
-{
-  "name":"java.lang.resource"
-},
-{
-  "name":"java.lang.response"
-},
-{
-  "name":"java.lang.restTemplate"
-},
-{
-  "name":"java.lang.restTemplateBanRedirects"
-},
-{
-  "name":"java.lang.result"
-},
-{
-  "name":"java.lang.rootNode"
-},
-{
-  "name":"java.lang.rootNodeList"
-},
-{
-  "name":"java.lang.row"
-},
-{
-  "name":"java.lang.rows"
-},
-{
-  "name":"java.lang.rs"
-},
-{
-  "name":"java.lang.run"
-},
-{
-  "name":"java.lang.s"
-},
-{
-  "name":"java.lang.safeDomains"
-},
-{
-  "name":"java.lang.savedRequest"
-},
-{
-  "name":"java.lang.saxParser"
-},
-{
-  "name":"java.lang.sb"
-},
-{
-  "name":"java.lang.sbResult"
-},
-{
-  "name":"java.lang.sc"
-},
-{
-  "name":"java.lang.sec_pattern"
-},
-{
-  "name":"java.lang.sendUrgentDataImpl"
-},
-{
-  "name":"java.lang.servletRequest"
-},
-{
-  "name":"java.lang.servletResponse"
-},
-{
-  "name":"java.lang.session"
-},
-{
-  "name":"java.lang.sheet"
-},
-{
-  "name":"java.lang.shutdownInputImpl"
-},
-{
-  "name":"java.lang.shutdownOutputImpl"
-},
-{
-  "name":"java.lang.socket"
-},
-{
-  "name":"java.lang.socketConstructor"
-},
-{
-  "name":"java.lang.socketImpl"
-},
-{
-  "name":"java.lang.source"
-},
-{
-  "name":"java.lang.spf"
-},
-{
-  "name":"java.lang.sr"
-},
-{
-  "name":"java.lang.sra"
-},
-{
-  "name":"java.lang.ssrfBlockDomains"
-},
-{
-  "name":"java.lang.ssrfBlockIps"
-},
-{
-  "name":"java.lang.ssrfSafeDomains"
-},
-{
-  "name":"java.lang.st"
-},
-{
-  "name":"java.lang.standardContext"
-},
-{
-  "name":"java.lang.statement"
-},
-{
-  "name":"java.lang.str"
-},
-{
-  "name":"java.lang.stringBuilder"
-},
-{
-  "name":"java.lang.stub"
-},
-{
-  "name":"java.lang.tagChild"
-},
-{
-  "name":"java.lang.tagFinalNode"
-},
-{
-  "name":"java.lang.tagNode"
-},
-{
-  "name":"java.lang.temp"
-},
-{
-  "name":"java.lang.token"
-},
-{
-  "name":"java.lang.u"
-},
-{
-  "name":"java.lang.uri"
-},
-{
-  "name":"java.lang.url"
-},
-{
-  "name":"java.lang.urlConnection"
-},
-{
-  "name":"java.lang.user"
-},
-{
-  "name":"java.lang.userMapper"
-},
-{
-  "name":"java.lang.utils"
-},
-{
-  "name":"java.lang.values"
-},
-{
-  "name":"java.lang.verifier"
-},
-{
-  "name":"java.lang.view"
-},
-{
-  "name":"java.lang.vuln_pattern"
-},
-{
-  "name":"java.lang.wb"
-},
-{
-  "name":"java.lang.wc"
-},
-{
-  "name":"java.lang.webappClassLoaderBase"
-},
-{
-  "name":"java.lang.whiteDomainlists"
-},
-{
-  "name":"java.lang.whiteHost"
-},
-{
-  "name":"java.lang.wsc"
-},
-{
-  "name":"java.lang.xmlReader"
-},
-{
-  "name":"java.lang.xstream"
-},
-{
-  "name":"java.lang.xxe"
-},
-{
-  "name":"java.lang.xxeNode"
-},
-{
-  "name":"java.lang.y"
-},
-{
-  "name":"java.lang.z"
-},
-{
-  "name":"java.net"
-},
-{
-  "name":"java.net.Boolean"
-},
-{
-  "name":"java.net.Class"
-},
-{
-  "name":"java.net.ClassCastException"
-},
-{
-  "name":"java.net.Exception"
-},
-{
-  "name":"java.net.HttpURLConnection",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.net.IllegalAccessException"
-},
-{
-  "name":"java.net.IllegalArgumentException"
-},
-{
-  "name":"java.net.InetAddress",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.net.InetSocketAddress",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.net.Integer"
-},
-{
-  "name":"java.net.Object"
-},
-{
-  "name":"java.net.Proxy"
-},
-{
-  "name":"java.net.RuntimeException"
-},
-{
-  "name":"java.net.Socket",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.net.SocketAddress"
-},
-{
-  "name":"java.net.SocketImpl",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.net.SocketImplFactory",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.net.SocketOptions",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.net.String"
-},
-{
-  "name":"java.net.URI",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.net.URL",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.net.URLConnection",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.net.URLDecoder",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.net.acceptImpl"
-},
-{
-  "name":"java.net.addr"
-},
-{
-  "name":"java.net.address"
-},
-{
-  "name":"java.net.availableImpl"
-},
-{
-  "name":"java.net.bindImpl"
-},
-{
-  "name":"java.net.closeImpl"
-},
-{
-  "name":"java.net.connectHostImpl"
-},
-{
-  "name":"java.net.connectInetAddressImpl"
-},
-{
-  "name":"java.net.connectSocketAddressImpl"
-},
-{
-  "name":"java.net.createImpl"
-},
-{
-  "name":"java.net.e"
-},
-{
-  "name":"java.net.ex"
-},
-{
-  "name":"java.net.getInputStreamImpl"
-},
-{
-  "name":"java.net.getOutputStreamImpl"
-},
-{
-  "name":"java.net.headers"
-},
-{
-  "name":"java.net.httpService"
-},
-{
-  "name":"java.net.inputStream"
-},
-{
-  "name":"java.net.java"
-},
-{
-  "name":"java.net.java.security"
-},
-{
-  "name":"java.net.listenImpl"
-},
-{
-  "name":"java.net.logger"
-},
-{
-  "name":"java.net.outputStream"
-},
-{
-  "name":"java.net.response"
-},
-{
-  "name":"java.net.sendUrgentDataImpl"
-},
-{
-  "name":"java.net.shutdownInputImpl"
-},
-{
-  "name":"java.net.shutdownOutputImpl"
-},
-{
-  "name":"java.net.socketConstructor"
-},
-{
-  "name":"java.net.socketImpl"
-},
-{
-  "name":"java.net.u"
-},
-{
-  "name":"java.nio.Buffer",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.nio.ByteBuffer",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.nio.channels.AsynchronousByteChannel",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.nio.channels.AsynchronousChannel",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.nio.channels.AsynchronousSocketChannel",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.nio.channels.Channel",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.nio.channels.CompletionHandler",
-  "allDeclaredClasses":true
-},
-{
-  "name":"java.nio.channels.NetworkChannel",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.nio.charset.Charset",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.nio.charset.CharsetDecoder"
-},
-{
-  "name":"java.nio.charset.StandardCharsets",
-  "allDeclaredFields":true
-},
-{
-  "name":"java.nio.file.Files",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.nio.file.Path"
-},
-{
-  "name":"java.nio.file.Paths",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.rmi.Remote",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.rmi.RemoteException"
-},
-{
-  "name":"java.rmi.registry.LocateRegistry",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.rmi.registry.Registry",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.rmi.server.RemoteObject",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.rmi.server.RemoteServer",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.rmi.server.UnicastRemoteObject",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.security"
-},
-{
-  "name":"java.security.Key"
-},
-{
-  "name":"java.security.Principal",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.security.SecureRandomParameters"
-},
-{
-  "name":"java.security.Security",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.sql"
-},
-{
-  "name":"java.sql.Class"
-},
-{
-  "name":"java.sql.ClassNotFoundException"
-},
-{
-  "name":"java.sql.Connection",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.sql.DriverManager",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.sql.Integer"
-},
-{
-  "name":"java.sql.PreparedStatement",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.sql.ResultSet",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.sql.SQLException",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.sql.Statement",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.sql.String"
-},
-{
-  "name":"java.sql.StringBuilder"
-},
-{
-  "name":"java.sql.System"
-},
-{
-  "name":"java.sql.Wrapper",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.sql.con"
-},
-{
-  "name":"java.sql.e"
-},
-{
-  "name":"java.sql.logger"
-},
-{
-  "name":"java.sql.result"
-},
-{
-  "name":"java.sql.rs"
-},
-{
-  "name":"java.sql.st"
-},
-{
-  "name":"java.sql.statement"
-},
-{
-  "name":"java.sql.userMapper"
-},
-{
-  "name":"java.text.DecimalFormat"
-},
-{
-  "name":"java.text.DecimalFormatSymbols"
-},
-{
-  "name":"java.time.Instant"
-},
-{
-  "name":"java.util"
-},
-{
-  "name":"java.util.AbstractCollection",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.util.AbstractList",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.util.AbstractMap",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.util.ArrayList",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.util.Arrays",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.util.Base64",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.util.Base64$Decoder",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.util.Base64$Encoder",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.util.Class"
-},
-{
-  "name":"java.util.Collection",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.util.Comparator"
-},
-{
-  "name":"java.util.Configs"
-},
-{
-  "name":"java.util.Date",
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.util.Exception"
-},
-{
-  "name":"java.util.HashMap",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.util.Iterator",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.util.List",
-  "queryAllPublicMethods":true,
-  "methods":[{"name":"copyOf","parameterTypes":["java.util.Collection"] }]
-},
-{
-  "name":"java.util.Map",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.util.Optional",
-  "methods":[{"name":"isEmpty","parameterTypes":[] }]
-},
-{
-  "name":"java.util.Process"
-},
-{
-  "name":"java.util.RandomAccess",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.util.Runtime"
-},
-{
-  "name":"java.util.Scanner",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.util.SequencedCollection",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.util.Set"
-},
-{
-  "name":"java.util.String"
-},
-{
-  "name":"java.util.StringBuilder"
-},
-{
-  "name":"java.util.System"
-},
-{
-  "name":"java.util.Thread"
-},
-{
-  "name":"java.util.UUID"
-},
-{
-  "name":"java.util.aClass"
-},
-{
-  "name":"java.util.backdoorFilter"
-},
-{
-  "name":"java.util.bufferedReader"
-},
-{
-  "name":"java.util.concurrent"
-},
-{
-  "name":"java.util.concurrent.Exception"
+  "name":"java.util.Date"
 },
 {
   "name":"java.util.concurrent.ForkJoinTask",
   "fields":[{"name":"aux"}, {"name":"status"}]
-},
-{
-  "name":"java.util.concurrent.Future",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.util.concurrent.String"
-},
-{
-  "name":"java.util.concurrent.StringBuilder"
-},
-{
-  "name":"java.util.concurrent.TimeUnit",
-  "allPublicFields":true
 },
 {
   "name":"java.util.concurrent.atomic.AtomicBoolean",
@@ -1906,306 +232,20 @@
   "fields":[{"name":"value"}]
 },
 {
-  "name":"java.util.concurrent.client"
-},
-{
-  "name":"java.util.concurrent.com"
-},
-{
-  "name":"java.util.concurrent.com.squareup"
-},
-{
-  "name":"java.util.concurrent.com.squareup.okhttp"
-},
-{
-  "name":"java.util.concurrent.com.squareup.okhttp.Request"
-},
-{
-  "name":"java.util.concurrent.com.squareup.okhttp.Request.Builder"
-},
-{
-  "name":"java.util.concurrent.conn"
-},
-{
-  "name":"java.util.concurrent.doc"
-},
-{
-  "name":"java.util.concurrent.e"
-},
-{
-  "name":"java.util.concurrent.future"
-},
-{
-  "name":"java.util.concurrent.html"
-},
-{
-  "name":"java.util.concurrent.httpResponse"
-},
-{
-  "name":"java.util.concurrent.httpclient"
-},
-{
-  "name":"java.util.concurrent.in"
-},
-{
-  "name":"java.util.concurrent.logger"
-},
-{
-  "name":"java.util.concurrent.method"
-},
-{
-  "name":"java.util.concurrent.rd"
-},
-{
-  "name":"java.util.concurrent.response"
-},
-{
-  "name":"java.util.concurrent.result"
-},
-{
-  "name":"java.util.concurrent.u"
-},
-{
-  "name":"java.util.concurrent.urlConnection"
-},
-{
-  "name":"java.util.constructor"
-},
-{
-  "name":"java.util.e"
-},
-{
-  "name":"java.util.filterChain"
-},
-{
-  "name":"java.util.filterConfigs"
-},
-{
-  "name":"java.util.filterDef"
-},
-{
-  "name":"java.util.filterMap"
-},
-{
-  "name":"java.util.function.Function"
-},
-{
-  "name":"java.util.java"
-},
-{
-  "name":"java.util.java.io"
-},
-{
-  "name":"java.util.java.io.BufferedReader"
-},
-{
-  "name":"java.util.java.io.InputStreamReader"
-},
-{
-  "name":"java.util.process"
-},
-{
-  "name":"java.util.regex.Matcher",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.util.regex.Pattern",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.util.servletRequest"
-},
-{
-  "name":"java.util.servletResponse"
-},
-{
-  "name":"java.util.standardContext"
-},
-{
-  "name":"java.util.stringBuilder"
-},
-{
-  "name":"java.util.webappClassLoaderBase"
-},
-{
-  "name":"java.util.zip.DeflaterInputStream"
-},
-{
-  "name":"javax.imageio.ImageIO",
-  "queryAllDeclaredMethods":true
-},
-{
-  "name":"javax.management.MBeanRegistration",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"javax.management.NotificationBroadcaster",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"javax.management.NotificationEmitter",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"javax.script.Bindings"
-},
-{
-  "name":"javax.script.ScriptContext",
-  "allDeclaredFields":true
-},
-{
-  "name":"javax.script.ScriptEngine",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"javax.script.ScriptEngineManager",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"javax.servlet"
-},
-{
-  "name":"javax.servlet.Class"
-},
-{
-  "name":"javax.servlet.Configs"
-},
-{
-  "name":"javax.servlet.Exception"
-},
-{
-  "name":"javax.servlet.Map"
-},
-{
-  "name":"javax.servlet.Process"
-},
-{
-  "name":"javax.servlet.Runtime"
-},
-{
-  "name":"javax.servlet.String"
-},
-{
-  "name":"javax.servlet.StringBuilder"
-},
-{
-  "name":"javax.servlet.System"
-},
-{
-  "name":"javax.servlet.Thread"
-},
-{
-  "name":"javax.servlet.aClass"
-},
-{
-  "name":"javax.servlet.backdoorFilter"
-},
-{
-  "name":"javax.servlet.bufferedReader"
-},
-{
-  "name":"javax.servlet.constructor"
-},
-{
-  "name":"javax.servlet.e"
-},
-{
-  "name":"javax.servlet.filterChain"
-},
-{
-  "name":"javax.servlet.filterConfigs"
-},
-{
-  "name":"javax.servlet.filterDef"
-},
-{
-  "name":"javax.servlet.filterMap"
-},
-{
-  "name":"javax.servlet.java"
-},
-{
-  "name":"javax.servlet.java.io"
-},
-{
-  "name":"javax.servlet.java.io.BufferedReader"
-},
-{
-  "name":"javax.servlet.java.io.InputStreamReader"
-},
-{
-  "name":"javax.servlet.logger"
-},
-{
-  "name":"javax.servlet.matcher"
-},
-{
-  "name":"javax.servlet.process"
-},
-{
-  "name":"javax.servlet.request"
-},
-{
-  "name":"javax.servlet.response"
-},
-{
-  "name":"javax.servlet.servletRequest"
-},
-{
-  "name":"javax.servlet.servletResponse"
-},
-{
-  "name":"javax.servlet.standardContext"
-},
-{
-  "name":"javax.servlet.stringBuilder"
-},
-{
-  "name":"javax.servlet.webappClassLoaderBase"
-},
-{
-  "name":"javax.websocket"
-},
-{
-  "name":"javax.websocket.Exception"
-},
-{
-  "name":"javax.websocket.Process"
-},
-{
-  "name":"javax.websocket.Runtime"
-},
-{
-  "name":"javax.websocket.String"
-},
-{
-  "name":"javax.websocket.StringBuilder"
-},
-{
-  "name":"javax.websocket.System"
-},
-{
-  "name":"javax.websocket.Throwable"
-},
-{
-  "name":"javax.websocket.exception"
-},
-{
-  "name":"javax.websocket.inputStream"
-},
-{
-  "name":"javax.websocket.process"
-},
-{
-  "name":"javax.websocket.session"
-},
-{
-  "name":"javax.websocket.stringBuilder"
+  "name":"javax.security.auth.x500.X500Principal",
+  "fields":[{"name":"thisX500Name"}],
+  "methods":[{"name":"<init>","parameterTypes":["sun.security.x509.X500Name"] }]
 },
 {
   "name":"jdk.internal.misc.Unsafe"
+},
+{
+  "name":"org.eclipse.core.internal.runtime.Messages",
+  "allDeclaredFields":true
+},
+{
+  "name":"org.eclipse.core.internal.utils.Messages",
+  "allDeclaredFields":true
 },
 {
   "name":"org.h2.mvstore.MVStore$TxCounter",
@@ -2251,6 +291,22 @@
   "name":"org.h2.store.fs.FilePathZip"
 },
 {
+  "name":"scala.collection.concurrent.CNodeBase",
+  "fields":[{"name":"csize"}]
+},
+{
+  "name":"scala.collection.concurrent.INodeBase",
+  "fields":[{"name":"mainnode"}]
+},
+{
+  "name":"scala.collection.concurrent.MainNode",
+  "fields":[{"name":"prev"}]
+},
+{
+  "name":"scala.collection.concurrent.TrieMap",
+  "fields":[{"name":"root"}]
+},
+{
   "name":"scala.collection.parallel.ForkJoinTasks$",
   "fields":[{"name":"0bitmap$1"}]
 },
@@ -2267,11 +323,69 @@
   "fields":[{"name":"theUnsafe"}]
 },
 {
-  "name":"sun.security.provider.NativePRNG",
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+  "name":"sun.security.provider.SHA2$SHA256",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"sun.security.provider.SHA",
+  "name":"sun.security.provider.SHA5$SHA384",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.X509Factory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSAKeyFactory$Legacy",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSASignature$SHA256withRSA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSASignature$SHA384withRSA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.util.ObjectIdentifier"
+},
+{
+  "name":"sun.security.x509.AuthorityInfoAccessExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.AuthorityKeyIdentifierExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.BasicConstraintsExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.CRLDistributionPointsExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.CertificateExtensions"
+},
+{
+  "name":"sun.security.x509.CertificatePoliciesExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.ExtendedKeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.KeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.SubjectAlternativeNameExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.SubjectKeyIdentifierExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
 }
 ]

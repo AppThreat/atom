@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # bash ci/native-image.sh
 
+# sdk use java 21.0.1-graalce
+
 echo "About to build the native image. This would take a few minutes ..."
 sbt "GraalVMNativeImage / packageBin"
 
