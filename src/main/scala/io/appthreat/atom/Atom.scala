@@ -257,7 +257,9 @@ object Atom:
         run(args) match
             case Right(msg) =>
             case Left(errMsg) =>
-                if errMsg.nonEmpty && errMsg.contains(
+                if errMsg == null then
+                    println("Unexpected error")
+                else if errMsg.nonEmpty && errMsg.contains(
                       "storage metadata does not contain version number"
                     )
                 then

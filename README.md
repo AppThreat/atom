@@ -228,6 +228,24 @@ bash build.sh && sudo npm install -g .
 chennai> importAtom("/home/almalinux/work/sandbox/apollo/app.atom")
 ```
 
+## Generating Java 21 native-image
+
+[native-image](https://www.graalvm.org/latest/reference-manual/native-image/) generation for atom is possible. We have tested the generation with both graalce and graal versions for the following languages.
+
+- C/C++/h
+
+```shell
+sdk use java 21.0.1-graalce
+git clone https://github.com/AppThreat/atom
+cd atom
+git checkout release/2.x
+bash ci/native-image.sh
+./target/graalvm-native-image/atom --help
+./target/graalvm-native-image/atom -l c -o app.atom .
+```
+
+We will add support for more languages over time.
+
 ## Enterprise support
 
 Enterprise support including custom language development and integration services is available via AppThreat Ltd. Free community support is also available via [discord](https://discord.gg/tmmtjCEHNV).

@@ -21,13 +21,20 @@ jobs:
           fetch-depth: 0
       - uses: coursier/cache-action@v6
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: graalvm/setup-graalvm@v1
         with:
-          distribution: 'zulu'
+          distribution: 'graalvm-community'
           java-version: '21'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+          components: 'native-image'
+          cache: 'sbt'
       - run: |
           sbt stage astGenDlTask assembly createDistribution
           sha512sum target/atom.zip > target/atom.zip.sha512
+          bash ci/native-image.sh
+          cp target/graalvm-native-image/atom target/graalvm-native-image/c2atom
+          sha512sum target/graalvm-native-image/c2atom > target/graalvm-native-image/c2atom.sha512
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: sbt publish
@@ -38,10 +45,15 @@ jobs:
         run: |
           cd target
           echo $GITHUB_TOKEN | oras login ghcr.io -u $GITHUB_USERNAME --password-stdin
-          oras push ghcr.io/$IMAGE_NAME:v1 \
-            --annotation-file ../ci/annotations.json \
+          oras push ghcr.io/$IMAGE_NAME:v2 \
+            --artifact-type application/vnd.oras.config.v1+json \
             ./atom.zip:application/vnd.appthreat.atom.layer.v1+tar \
             ./atom.zip.sha512:application/vnd.appthreat.atom.layer.v1+tar
+          cd graalvm-native-image
+          oras push ghcr.io/appthreat/c2atom:v2 \
+            --artifact-type application/vnd.oras.config.v1+json \
+            ./c2atom:application/vnd.appthreat.atom.layer.v1+tar \
+            ./c2atom.sha512:application/vnd.appthreat.atom.layer.v1+tar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_USERNAME: ${{ github.actor }}
@@ -52,3 +64,5 @@ jobs:
           files: |
             target/atom.zip
             target/atom.zip.sha512
+            target/graalvm-native-image/c2atom
+            target/graalvm-native-image/c2atom.sha512
