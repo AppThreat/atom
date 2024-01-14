@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.0.0"
+ThisBuild / version      := "2.0.1"
 ThisBuild / scalaVersion := "3.3.1"
 
-val chenVersion      = "2.0.0"
+val chenVersion      = "2.0.1"
 
 lazy val atom = Projects.atom
 
@@ -12,10 +12,10 @@ val astGenVersion = "3.5.0"
 libraryDependencies ++= Seq(
   "com.github.pathikrit"    %% "better-files"      % "3.9.2",
   "com.github.scopt"        %% "scopt"             % "4.1.0",
-  "org.apache.logging.log4j" % "log4j-core"        % "2.22.0" % Optional,
-  "org.apache.logging.log4j" % "log4j-slf4j2-impl" % "2.22.0" % Optional,
+  "org.slf4j"                % "slf4j-simple"         % "2.0.11" % Optional,
   "io.appthreat"                %% "c2cpg"             % Versions.chen excludeAll (
     ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
+    ExclusionRule(organization = "org.jline", name = "jline"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface.text")
   ),
@@ -181,5 +181,5 @@ credentials +=
     "appthreat",
     sys.env.getOrElse("GITHUB_TOKEN", "N/A")
   )
-graalVMNativeImageGraalVersion := Some("22")
+//graalVMNativeImageGraalVersion := Some("22")
 graalVMNativeImageOptions := Seq("-H:+UnlockExperimentalVMOptions", "--no-fallback")
