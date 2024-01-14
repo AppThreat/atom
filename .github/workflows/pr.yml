@@ -41,7 +41,6 @@ jobs:
           java-version: '21'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
-          components: 'native-image'
           cache: 'sbt'
       - run: |
           sbt stage astGenDlTask
