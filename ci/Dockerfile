@@ -24,7 +24,7 @@ ENV JAVA_VERSION=$JAVA_VERSION \
     PHP_PARSER_BIN=/opt/vendor/bin/php-parse \
     COMPOSER_ALLOW_SUPERUSER=1
 
-ENV PATH=${PATH}:/opt/bin:/opt/vendor/bin:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:
+ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:
 
 WORKDIR /opt
 
@@ -76,7 +76,7 @@ RUN unzip -q atom.zip \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
     && cd /opt/nodejs && npm install --only=production && cd /opt \
     && sudo npm install -g /opt/nodejs \
-    && rm -rf atom.zip composer.json composer.lock composer-setup.php \
+    && rm -rf atom.zip composer.json composer.lock composer-setup.php /usr/local/bin/atom \
     && /opt/bin/atom --help \
     && which astgen \
     && which phpastgen \
