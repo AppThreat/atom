@@ -6,13 +6,40 @@
   "name":"[Lbetter.files.File;"
 },
 {
+  "name":"[Lcom.github.javaparser.ast.CompilationUnit;"
+},
+{
+  "name":"[Lio.appthreat.php2atom.passes.KnownFunction;"
+},
+{
   "name":"[Lio.appthreat.x2cpg.Ast;"
 },
 {
   "name":"[Lio.shiftleft.codepropertygraph.generated.nodes.AstNode;"
 },
 {
+  "name":"[Lio.shiftleft.codepropertygraph.generated.nodes.Call;"
+},
+{
+  "name":"[Lio.shiftleft.codepropertygraph.generated.nodes.CfgNode;"
+},
+{
+  "name":"[Lio.shiftleft.codepropertygraph.generated.nodes.ClosureBinding;"
+},
+{
+  "name":"[Lio.shiftleft.codepropertygraph.generated.nodes.Import;"
+},
+{
   "name":"[Lio.shiftleft.codepropertygraph.generated.nodes.Method;"
+},
+{
+  "name":"[Lio.shiftleft.codepropertygraph.generated.nodes.NamespaceBlock;"
+},
+{
+  "name":"[Lio.shiftleft.codepropertygraph.generated.nodes.TypeDecl;"
+},
+{
+  "name":"[Lio.shiftleft.semanticcpg.accesspath.AccessElement;"
 },
 {
   "name":"[Ljava.lang.Integer;"
@@ -31,6 +58,9 @@
 },
 {
   "name":"[Ljava.nio.file.OpenOption;"
+},
+{
+  "name":"[Ljava.nio.file.attribute.FileAttribute;"
 },
 {
   "name":"[Lorg.eclipse.cdt.core.dom.ast.IASTArrayModifier;"
@@ -99,6 +129,12 @@
   "name":"[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPTemplateParameter;"
 },
 {
+  "name":"[Lscala.Function0;"
+},
+{
+  "name":"[Lscala.Tuple2;"
+},
+{
   "name":"[Lsun.security.pkcs.SignerInfo;"
 },
 {
@@ -116,6 +152,194 @@
 {
   "name":"better.files.package$",
   "fields":[{"name":"0bitmap$1"}]
+},
+{
+  "name":"com.fasterxml.jackson.databind.ext.Java7SupportImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.github.javaparser.ast.ArrayCreationLevel",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.CompilationUnit",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.PackageDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.AnnotationDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.AnnotationMemberDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.BodyDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.CallableDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.ClassOrInterfaceDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.ConstructorDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.EnumConstantDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.EnumDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.FieldDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.InitializerDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.MethodDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.Parameter",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.RecordDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.body.TypeDeclaration",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.expr.ArrayCreationExpr",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.expr.ArrayInitializerExpr",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.expr.FieldAccessExpr",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.expr.LambdaExpr",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.expr.MethodCallExpr",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.expr.MethodReferenceExpr",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.expr.NormalAnnotationExpr",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.expr.ObjectCreationExpr",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.expr.PatternExpr",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.expr.SwitchExpr",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.expr.VariableDeclarationExpr",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.stmt.BlockStmt",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.stmt.ForStmt",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.stmt.SwitchEntry",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.stmt.SwitchStmt",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.stmt.TryStmt",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.type.ArrayType",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.type.ClassOrInterfaceType",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.type.PrimitiveType",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.type.ReferenceType",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.type.Type",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.type.TypeParameter",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.type.UnionType",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.type.UnknownType",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.type.VarType",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.type.VoidType",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.type.WildcardType",
+  "allDeclaredFields":true
+},
+{
+  "name":"io.appthreat.atom.passes.RecoverForJavaScriptFile",
+  "fields":[{"name":"exportedIdentifiers$lzy1"}]
 },
 {
   "name":"io.appthreat.atom.slicing.package$$anon$1",
@@ -178,6 +402,430 @@
   "fields":[{"name":"loneIdentifiers$lzy1"}]
 },
 {
+  "name":"io.appthreat.javasrc2cpg.passes.AstCreator",
+  "fields":[{"name":"io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.astcreation.AstCreator",
+  "fields":[{"name":"MethodAst$lzy1"}, {"name":"io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ArrayExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ArrayPattern$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ArrowFunctionExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$AssignmentExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$AssignmentPattern$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$AwaitExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$BinaryExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$BlockStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$BooleanLiteral$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$BreakStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$CallExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$CatchClause$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ClassDeclaration$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ClassMethod$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ClassProperty$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ConditionalExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ContinueStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$Decorator$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$EmptyStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ExportDefaultDeclaration$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ExportNamedDeclaration$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ExpressionStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$File$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ForInStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ForOfStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ForStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$FunctionDeclaration$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$FunctionExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$Identifier$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$IfStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$Import$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ImportDeclaration$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ImportDefaultSpecifier$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ImportNamespaceSpecifier$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ImportSpecifier$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$JSXAttribute$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$JSXClosingElement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$JSXElement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$JSXExpressionContainer$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$JSXOpeningElement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$JSXText$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$LogicalExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$MemberExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$NewExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$NullLiteral$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$NumericLiteral$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ObjectExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ObjectMethod$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ObjectPattern$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ObjectProperty$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$OptionalCallExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$OptionalMemberExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$Program$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$RegExpLiteral$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$RestElement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ReturnStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$SpreadElement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$StringLiteral$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$Super$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$SwitchCase$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$SwitchStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSAnyKeyword$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSArrayType$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSAsExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSBooleanKeyword$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSEnumDeclaration$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSEnumMember$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSExportAssignment$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSExpressionWithTypeArguments$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSExternalModuleReference$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSFunctionType$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSImportEqualsDeclaration$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSInterfaceDeclaration$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSMethodSignature$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSNumberKeyword$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSParameterProperty$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSPropertySignature$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSStringKeyword$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSThisType$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeAnnotation$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeLiteral$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeReference$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSUnionType$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSUnknownKeyword$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TSVoidKeyword$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TemplateElement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TemplateLiteral$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ThisExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$ThrowStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$TryStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$UnaryExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$UpdateExpression$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$VariableDeclaration$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$VariableDeclarator$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.parser.BabelAst$WhileStatement$",
+  "fields":[{"name":"MODULE$"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.passes.ConstClosurePass",
+  "fields":[{"name":"identifiersAssignedCount$lzy1"}]
+},
+{
+  "name":"io.appthreat.jssrc2cpg.utils.AstGenRunner$",
+  "fields":[{"name":"astGenCommand$lzy1"}, {"name":"executableDir$lzy1"}, {"name":"executableName$lzy1"}]
+},
+{
+  "name":"io.appthreat.php2atom.astcreation.AstCreator",
+  "fields":[{"name":"io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"}]
+},
+{
+  "name":"io.appthreat.php2atom.astcreation.PhpBuiltins$",
+  "fields":[{"name":"FuncNames$lzy1"}]
+},
+{
+  "name":"io.appthreat.php2atom.passes.LocalCreationPass",
+  "fields":[{"name":"io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"}]
+},
+{
+  "name":"io.appthreat.pysrc2cpg.ImportResolverPass",
+  "fields":[{"name":"root$lzy1"}]
+},
+{
+  "name":"io.appthreat.pysrc2cpg.PythonAstVisitor$",
+  "fields":[{"name":"allBuiltinClasses$lzy1"}, {"name":"typingClassesV3$lzy1"}]
+},
+{
+  "name":"io.appthreat.x2cpg.passes.frontend.XTypeRecovery$",
+  "fields":[{"name":"DummyTokens$lzy1"}]
+},
+{
+  "name":"io.appthreat.x2cpg.passes.frontend.XTypeRecoveryState",
+  "fields":[{"name":"isFinalIteration$lzy1"}, {"name":"isFirstIteration$lzy1"}]
+},
+{
   "name":"io.circe.Decoder$",
   "fields":[{"name":"0bitmap$1"}]
 },
@@ -198,17 +846,3702 @@
   "fields":[{"name":"all$lzy1"}, {"name":"allAsJava$lzy1"}]
 },
 {
+  "name":"java.io.BufferedReader",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.io.ByteArrayInputStream",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.io.ByteArrayOutputStream"
+},
+{
+  "name":"java.io.Closeable",
+  "allDeclaredFields":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.io.DataInput"
+},
+{
+  "name":"java.io.File",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.io.FileInputStream",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.io.FileNotFoundException"
+},
+{
+  "name":"java.io.FileReader",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.io.FileWriter",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.io.FilterInputStream",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.io.FilterOutputStream",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.io.Flushable",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.io.IOException",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.io.InputStream",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.io.InputStreamReader",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.io.ObjectOutputStream"
+},
+{
+  "name":"java.io.OutputStream",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.io.OutputStreamWriter",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.io.PrintStream",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.io.Reader"
+},
+{
+  "name":"java.io.Serializable",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.io.StringReader",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.io.StringWriter",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.io.UnsupportedEncodingException",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.io.Writer",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang"
+},
+{
+  "name":"java.lang.AbstractStringBuilder",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Appendable",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.ArrayIndexOutOfBoundsException",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.AuthCredentials"
+},
+{
+  "name":"java.lang.Author"
+},
+{
+  "name":"java.lang.AutoCloseable",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.Boolean",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.COMPARE_ATTRIBUTES_METHOD"
+},
+{
+  "name":"java.lang.CVE_JSON_11_BASE_META"
+},
+{
+  "name":"java.lang.CVE_JSON_11_BASE_URL"
+},
+{
+  "name":"java.lang.CWE_DICTIONARY"
+},
+{
+  "name":"java.lang.CWE_MAPPINGS"
+},
+{
+  "name":"java.lang.CharSequence",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.Class",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.ClassCastException"
+},
+{
+  "name":"java.lang.ClassLoader",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.ClassNotFoundException"
+},
+{
   "name":"java.lang.ClassValue"
 },
 {
-  "name":"java.lang.String"
+  "name":"java.lang.Classification"
+},
+{
+  "name":"java.lang.Client"
+},
+{
+  "name":"java.lang.Cloneable",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.Comparable",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.ComponentAgePolicyEvaluator"
+},
+{
+  "name":"java.lang.ComponentDocument"
+},
+{
+  "name":"java.lang.ComponentMetricsUpdateEvent"
+},
+{
+  "name":"java.lang.ComponentMetricsUpdateTask"
+},
+{
+  "name":"java.lang.ComponentQueryManager"
+},
+{
+  "name":"java.lang.ConfigProperty"
+},
+{
+  "name":"java.lang.ConfigProperty.PropertyType"
+},
+{
+  "name":"java.lang.Cpe"
+},
+{
+  "name":"java.lang.CvssV2Metric"
+},
+{
+  "name":"java.lang.CvssV3Metric"
+},
+{
+  "name":"java.lang.CycloneDXExporter"
+},
+{
+  "name":"java.lang.CycloneDXExporter.Format"
+},
+{
+  "name":"java.lang.CycloneDXExporter.Variant"
+},
+{
+  "name":"java.lang.DATE_FORMAT"
+},
+{
+  "name":"java.lang.DEFECTDOJO_API_KEY"
+},
+{
+  "name":"java.lang.DEFECTDOJO_ENABLED"
+},
+{
+  "name":"java.lang.DEFECTDOJO_URL"
+},
+{
+  "name":"java.lang.DISTANCE_PATTERN"
+},
+{
+  "name":"java.lang.DO_NOT_FUZZ"
+},
+{
+  "name":"java.lang.DependencyGraphResponse"
+},
+{
+  "name":"java.lang.Diff"
+},
+{
+  "name":"java.lang.Double",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.EMAIL_SMTP_ENABLED"
+},
+{
+  "name":"java.lang.EMAIL_SMTP_FROM_ADDR"
+},
+{
+  "name":"java.lang.EMAIL_SMTP_PASSWORD"
+},
+{
+  "name":"java.lang.EMAIL_SMTP_SERVER_HOSTNAME"
+},
+{
+  "name":"java.lang.EMAIL_SMTP_SERVER_PORT"
+},
+{
+  "name":"java.lang.EMAIL_SMTP_SSLTLS"
+},
+{
+  "name":"java.lang.EMAIL_SMTP_TRUSTCERT"
+},
+{
+  "name":"java.lang.EMAIL_SMTP_USERNAME"
+},
+{
+  "name":"java.lang.ENCRYPTED_PLACEHOLDER"
+},
+{
+  "name":"java.lang.ENGINE"
+},
+{
+  "name":"java.lang.EVENT_SERVICE"
+},
+{
+  "name":"java.lang.EVENT_SERVICE_ST"
+},
+{
+  "name":"java.lang.Enum",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Exception",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.ExternalReference"
+},
+{
+  "name":"java.lang.ExternalText"
+},
+{
+  "name":"java.lang.FORTIFY_SSC_ENABLED"
+},
+{
+  "name":"java.lang.FORTIFY_SSC_TOKEN"
+},
+{
+  "name":"java.lang.FORTIFY_SSC_URL"
+},
+{
+  "name":"java.lang.Float"
+},
+{
+  "name":"java.lang.GENERAL_BADGE_ENABLED"
+},
+{
+  "name":"java.lang.GENERAL_BASE_URL"
+},
+{
+  "name":"java.lang.IllegalAccessException"
+},
+{
+  "name":"java.lang.IllegalArgumentException",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.IllegalStateException",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.IndexType"
+},
+{
+  "name":"java.lang.InstantiationException"
+},
+{
+  "name":"java.lang.Integer",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.InterruptedException"
+},
+{
+  "name":"java.lang.Iterable",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.JIRA_PASSWORD"
+},
+{
+  "name":"java.lang.JIRA_URL"
+},
+{
+  "name":"java.lang.JIRA_USERNAME"
+},
+{
+  "name":"java.lang.K"
+},
+{
+  "name":"java.lang.KENNA_CONNECTOR_ID"
+},
+{
+  "name":"java.lang.KENNA_ENABLED"
+},
+{
+  "name":"java.lang.KENNA_TOKEN"
+},
+{
+  "name":"java.lang.LOGGER"
+},
+{
+  "name":"java.lang.LicenseDocument"
+},
+{
+  "name":"java.lang.Long",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Math",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Module"
+},
+{
+  "name":"java.lang.NOTIFICATION_SERVICE"
+},
+{
+  "name":"java.lang.NO_PROXY"
+},
+{
+  "name":"java.lang.NewVulnerableDependencyAnalysisEvent"
+},
+{
+  "name":"java.lang.NoSuchMethodException"
+},
+{
+  "name":"java.lang.NullPointerException"
+},
+{
+  "name":"java.lang.Number",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.NumberFormatException",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.NvdAdditionalInfo"
+},
+{
+  "name":"java.lang.OWASP_RR_LIKELIHOOD_TO_IMPACT_SEVERITY_MATRIX"
+},
+{
+  "name":"java.lang.Object",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.OsvDownloadTask"
+},
+{
+  "name":"java.lang.PolicyEngine"
+},
+{
+  "name":"java.lang.Product"
+},
+{
+  "name":"java.lang.ProjectDocument"
+},
+{
+  "name":"java.lang.ProjectProperty"
+},
+{
+  "name":"java.lang.ProjectProperty.PropertyType"
+},
+{
+  "name":"java.lang.PropertyType"
+},
+{
+  "name":"java.lang.REPOSITORY_PASSWORD"
+},
+{
+  "name":"java.lang.REPOSITORY_USER"
+},
+{
+  "name":"java.lang.RETRY"
+},
+{
+  "name":"java.lang.ReflectiveOperationException",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Runnable",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.Runtime",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.RuntimeException",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.SCANNER_ANALYSIS_CACHE_VALIDITY_PERIOD"
+},
+{
+  "name":"java.lang.SCANNER_SNYK_API_VERSION"
+},
+{
+  "name":"java.lang.SEARCH_INDEXES_CONSISTENCY_CHECK_DELTA_THRESHOLD"
+},
+{
+  "name":"java.lang.SKIP_LUCENE_FUZZING_FOR_TYPE"
+},
+{
+  "name":"java.lang.SUPPORTED_PURL_TYPES"
+},
+{
+  "name":"java.lang.SecurityException"
+},
+{
+  "name":"java.lang.ServiceComponentDocument"
+},
+{
+  "name":"java.lang.SnykError"
+},
+{
+  "name":"java.lang.Status"
+},
+{
+  "name":"java.lang.String",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.StringBuilder",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.System",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.T"
+},
+{
+  "name":"java.lang.TASK_SCHEDULER_COMPONENT_ANALYSIS_CACHE_CLEAR_CADENCE"
+},
+{
+  "name":"java.lang.TEMPLATE"
+},
+{
+  "name":"java.lang.Thread",
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.Thread.UncaughtExceptionHandler"
+},
+{
+  "name":"java.lang.Throwable",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.UPGRADE_ITEMS"
+},
+{
+  "name":"java.lang.UTF_8"
+},
+{
+  "name":"java.lang.UnsupportedOperationException"
+},
+{
+  "name":"java.lang.V"
+},
+{
+  "name":"java.lang.V2"
+},
+{
+  "name":"java.lang.VERSION_OPERATOR_PATTERN"
+},
+{
+  "name":"java.lang.VERSION_PATTERN"
+},
+{
+  "name":"java.lang.VULNERABILITY_SOURCE_EPSS_ENABLED"
+},
+{
+  "name":"java.lang.VULNERABILITY_SOURCE_EPSS_FEEDS_URL"
+},
+{
+  "name":"java.lang.VULNERABILITY_SOURCE_GITHUB_ADVISORIES_ACCESS_TOKEN"
+},
+{
+  "name":"java.lang.VULNERABILITY_SOURCE_GITHUB_ADVISORIES_ALIAS_SYNC_ENABLED"
+},
+{
+  "name":"java.lang.VULNERABILITY_SOURCE_GITHUB_ADVISORIES_ENABLED"
+},
+{
+  "name":"java.lang.VULNERABILITY_SOURCE_GOOGLE_OSV_ALIAS_SYNC_ENABLED"
+},
+{
+  "name":"java.lang.VULNERABILITY_SOURCE_GOOGLE_OSV_BASE_URL"
+},
+{
+  "name":"java.lang.VULNERABILITY_SOURCE_GOOGLE_OSV_ENABLED"
+},
+{
+  "name":"java.lang.VULNERABILITY_SOURCE_NVD_API_KEY"
+},
+{
+  "name":"java.lang.VULNERABILITY_SOURCE_NVD_API_LAST_MODIFIED_EPOCH_SECONDS"
+},
+{
+  "name":"java.lang.VULNERABILITY_SOURCE_NVD_API_URL"
+},
+{
+  "name":"java.lang.VULNERABILITY_SOURCE_NVD_FEEDS_URL"
+},
+{
+  "name":"java.lang.Vendor"
+},
+{
+  "name":"java.lang.Version"
+},
+{
+  "name":"java.lang.VersionDistancePolicyEvaluator"
+},
+{
+  "name":"java.lang.Void"
+},
+{
+  "name":"java.lang.Vulnerability"
+},
+{
+  "name":"java.lang.VulnerabilityAlias"
+},
+{
+  "name":"java.lang.VulnerabilityDocument"
+},
+{
+  "name":"java.lang.VulnerableSoftwareDocument"
+},
+{
+  "name":"java.lang._spdxExpression"
+},
+{
+  "name":"java.lang.a"
+},
+{
+  "name":"java.lang.about"
+},
+{
+  "name":"java.lang.ac"
+},
+{
+  "name":"java.lang.accessTeam"
+},
+{
+  "name":"java.lang.accessToken"
+},
+{
+  "name":"java.lang.activeProjects"
+},
+{
+  "name":"java.lang.addToDependencyGraph"
+},
+{
+  "name":"java.lang.admin"
+},
+{
+  "name":"java.lang.advisories"
+},
+{
+  "name":"java.lang.advisory"
+},
+{
+  "name":"java.lang.affect"
+},
+{
+  "name":"java.lang.affected"
+},
+{
+  "name":"java.lang.affectedComponent"
+},
+{
+  "name":"java.lang.affectedComponents"
+},
+{
+  "name":"java.lang.affectedPackage"
+},
+{
+  "name":"java.lang.affectedPackageJson"
+},
+{
+  "name":"java.lang.affectedPackages"
+},
+{
+  "name":"java.lang.affectedProjects"
+},
+{
+  "name":"java.lang.affects"
+},
+{
+  "name":"java.lang.agePeriod"
+},
+{
+  "name":"java.lang.ais"
+},
+{
+  "name":"java.lang.alias"
+},
+{
+  "name":"java.lang.aliasSyncEnabled"
+},
+{
+  "name":"java.lang.aliasSyncProperty"
+},
+{
+  "name":"java.lang.aliases"
+},
+{
+  "name":"java.lang.aliasesBuilder"
+},
+{
+  "name":"java.lang.aliasesSeen"
+},
+{
+  "name":"java.lang.allowUrls"
+},
+{
+  "name":"java.lang.alphabet"
+},
+{
+  "name":"java.lang.alpine"
+},
+{
+  "name":"java.lang.analysis"
+},
+{
+  "name":"java.lang.analysisBuilder"
+},
+{
+  "name":"java.lang.analysisComment"
+},
+{
+  "name":"java.lang.analysisDetails"
+},
+{
+  "name":"java.lang.analysisList"
+},
+{
+  "name":"java.lang.analysisQuery"
+},
+{
+  "name":"java.lang.analyzer"
+},
+{
+  "name":"java.lang.analyzerIdentity"
+},
+{
+  "name":"java.lang.annotation.Annotation",
+  "methods":[{"name":"annotationType","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.api"
+},
+{
+  "name":"java.lang.apiConsumerKey"
+},
+{
+  "name":"java.lang.apiConsumerSecret"
+},
+{
+  "name":"java.lang.apiKey"
+},
+{
+  "name":"java.lang.apiTeam"
+},
+{
+  "name":"java.lang.apiTokenProperty"
+},
+{
+  "name":"java.lang.apiTokenSupplier"
+},
+{
+  "name":"java.lang.apiUsernameProperty"
+},
+{
+  "name":"java.lang.apiVersionProperty"
+},
+{
+  "name":"java.lang.appPartList"
+},
+{
+  "name":"java.lang.applicableRules"
+},
+{
+  "name":"java.lang.applicationId"
+},
+{
+  "name":"java.lang.arguments"
+},
+{
+  "name":"java.lang.arr"
+},
+{
+  "name":"java.lang.artifactPart"
+},
+{
+  "name":"java.lang.asset"
+},
+{
+  "name":"java.lang.assets"
+},
+{
+  "name":"java.lang.attr"
+},
+{
+  "name":"java.lang.attribute"
+},
+{
+  "name":"java.lang.attributes"
+},
+{
+  "name":"java.lang.attribution"
+},
+{
+  "name":"java.lang.attributions"
+},
+{
+  "name":"java.lang.attributionsByVsId"
+},
+{
+  "name":"java.lang.auth"
+},
+{
+  "name":"java.lang.authService"
+},
+{
+  "name":"java.lang.author"
+},
+{
+  "name":"java.lang.authorList"
+},
+{
+  "name":"java.lang.authors"
+},
+{
+  "name":"java.lang.automation"
+},
+{
+  "name":"java.lang.b"
+},
+{
+  "name":"java.lang.badger"
+},
+{
+  "name":"java.lang.baseUrl"
+},
+{
+  "name":"java.lang.baseUrlProperty"
+},
+{
+  "name":"java.lang.bestMatch"
+},
+{
+  "name":"java.lang.bodyPartEntity"
+},
+{
+  "name":"java.lang.bom"
+},
+{
+  "name":"java.lang.bomFormat"
+},
+{
+  "name":"java.lang.bomProcessingFailedProject"
+},
+{
+  "name":"java.lang.bomRef"
+},
+{
+  "name":"java.lang.bomUploadEvent"
+},
+{
+  "name":"java.lang.bomUploadResponse"
+},
+{
+  "name":"java.lang.bomVuln"
+},
+{
+  "name":"java.lang.bomVulnerability"
+},
+{
+  "name":"java.lang.builder"
+},
+{
+  "name":"java.lang.byPassHost"
+},
+{
+  "name":"java.lang.bypassURL"
+},
+{
+  "name":"java.lang.bypassURLList"
+},
+{
+  "name":"java.lang.c"
+},
+{
+  "name":"java.lang.c1"
+},
+{
+  "name":"java.lang.cac"
+},
+{
+  "name":"java.lang.cacByHost"
+},
+{
+  "name":"java.lang.cacList"
+},
+{
+  "name":"java.lang.cacheClearPeriod"
+},
+{
+  "name":"java.lang.cacheLoader"
+},
+{
+  "name":"java.lang.cacheLoaders"
+},
+{
+  "name":"java.lang.cachePopulationFuture"
+},
+{
+  "name":"java.lang.cacheStampedeBlocker"
+},
+{
+  "name":"java.lang.cacheableScanTask"
+},
+{
+  "name":"java.lang.candidates"
+},
+{
+  "name":"java.lang.cdxAnalysis"
+},
+{
+  "name":"java.lang.cdxRef"
+},
+{
+  "name":"java.lang.cdxSource"
+},
+{
+  "name":"java.lang.cdxVuln"
+},
+{
+  "name":"java.lang.cdxVulnerability"
+},
+{
+  "name":"java.lang.checkIndex"
+},
+{
+  "name":"java.lang.child"
+},
+{
+  "name":"java.lang.childNode"
+},
+{
+  "name":"java.lang.children"
+},
+{
+  "name":"java.lang.ci"
+},
+{
+  "name":"java.lang.cid"
+},
+{
+  "name":"java.lang.citoken"
+},
+{
+  "name":"java.lang.classNames"
+},
+{
+  "name":"java.lang.classification"
+},
+{
+  "name":"java.lang.classificationList"
+},
+{
+  "name":"java.lang.classifications"
+},
+{
+  "name":"java.lang.clazz"
+},
+{
+  "name":"java.lang.client"
+},
+{
+  "name":"java.lang.clientBuilder"
+},
+{
+  "name":"java.lang.clonedComponents"
+},
+{
+  "name":"java.lang.cm"
+},
+{
+  "name":"java.lang.collection"
+},
+{
+  "name":"java.lang.columnValue"
+},
+{
+  "name":"java.lang.comp"
+},
+{
+  "name":"java.lang.comparedTo"
+},
+{
+  "name":"java.lang.component"
+},
+{
+  "name":"java.lang.componentBuilder"
+},
+{
+  "name":"java.lang.componentCounters"
+},
+{
+  "name":"java.lang.componentPurl"
+},
+{
+  "name":"java.lang.componentQueryManager"
+},
+{
+  "name":"java.lang.componentReport"
+},
+{
+  "name":"java.lang.componentReports"
+},
+{
+  "name":"java.lang.componentUuid"
+},
+{
+  "name":"java.lang.componentUuids"
+},
+{
+  "name":"java.lang.componentVersion"
+},
+{
+  "name":"java.lang.componentVuln"
+},
+{
+  "name":"java.lang.componentWithValidAnalysisFromCache"
+},
+{
+  "name":"java.lang.components"
+},
+{
+  "name":"java.lang.componentsPartitionByCacheValidity"
+},
+{
+  "name":"java.lang.composerPackage"
+},
+{
+  "name":"java.lang.condition"
+},
+{
+  "name":"java.lang.conditionCwes"
+},
+{
+  "name":"java.lang.conditionString"
+},
+{
+  "name":"java.lang.conditionValue"
+},
+{
+  "name":"java.lang.conditionVersion"
+},
+{
+  "name":"java.lang.conditions"
+},
+{
+  "name":"java.lang.config"
+},
+{
+  "name":"java.lang.configProperty"
+},
+{
+  "name":"java.lang.configPropertyConstants"
+},
+{
+  "name":"java.lang.configuration"
+},
+{
+  "name":"java.lang.configurations"
+},
+{
+  "name":"java.lang.connection"
+},
+{
+  "name":"java.lang.connectionManager"
+},
+{
+  "name":"java.lang.connector"
+},
+{
+  "name":"java.lang.constant.Constable",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.constant.ConstantDesc",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.constraint"
+},
+{
+  "name":"java.lang.consumer"
+},
+{
+  "name":"java.lang.contact"
+},
+{
+  "name":"java.lang.contacts"
+},
+{
+  "name":"java.lang.context"
+},
+{
+  "name":"java.lang.coordinates"
+},
+{
+  "name":"java.lang.coordinatesFilterParts"
+},
+{
+  "name":"java.lang.countDownLatch"
+},
+{
+  "name":"java.lang.counters"
+},
+{
+  "name":"java.lang.cpc"
+},
+{
+  "name":"java.lang.cpe"
+},
+{
+  "name":"java.lang.cpeMatch"
+},
+{
+  "name":"java.lang.cpeMatches"
+},
+{
+  "name":"java.lang.cpeMatchesByCpe"
+},
+{
+  "name":"java.lang.cpeMatchesByPart"
+},
+{
+  "name":"java.lang.cpeObject"
+},
+{
+  "name":"java.lang.cpeQueryFilterParts"
+},
+{
+  "name":"java.lang.cpeString"
+},
+{
+  "name":"java.lang.cpes"
+},
+{
+  "name":"java.lang.crate"
+},
+{
+  "name":"java.lang.credentials"
+},
+{
+  "name":"java.lang.credit"
+},
+{
+  "name":"java.lang.credits"
+},
+{
+  "name":"java.lang.creditsText"
+},
+{
+  "name":"java.lang.credsProvider"
+},
+{
+  "name":"java.lang.ctx"
+},
+{
+  "name":"java.lang.currentComparableVersion"
+},
+{
+  "name":"java.lang.currentReindexEvent"
+},
+{
+  "name":"java.lang.currentVersion"
+},
+{
+  "name":"java.lang.current_release"
+},
+{
+  "name":"java.lang.cve"
+},
+{
+  "name":"java.lang.cveItem"
+},
+{
+  "name":"java.lang.cvss"
+},
+{
+  "name":"java.lang.cvssArray"
+},
+{
+  "name":"java.lang.cvssList"
+},
+{
+  "name":"java.lang.cvssObject"
+},
+{
+  "name":"java.lang.cvssSeverity"
+},
+{
+  "name":"java.lang.cvssSourceHigh"
+},
+{
+  "name":"java.lang.cvssV2"
+},
+{
+  "name":"java.lang.cvssV2BaseScore"
+},
+{
+  "name":"java.lang.cvssV2MetricList"
+},
+{
+  "name":"java.lang.cvssV3"
+},
+{
+  "name":"java.lang.cvssV3BaseScore"
+},
+{
+  "name":"java.lang.cvssV3MetricList"
+},
+{
+  "name":"java.lang.cvssv2Metrics"
+},
+{
+  "name":"java.lang.cvssv3Metrics"
+},
+{
+  "name":"java.lang.cwe"
+},
+{
+  "name":"java.lang.cweIds"
+},
+{
+  "name":"java.lang.cweIdsToMatch"
+},
+{
+  "name":"java.lang.cweString"
+},
+{
+  "name":"java.lang.cwes"
+},
+{
+  "name":"java.lang.cwesBuilder"
+},
+{
+  "name":"java.lang.cycloneComponent"
+},
+{
+  "name":"java.lang.cycloneContact"
+},
+{
+  "name":"java.lang.cycloneDxBom"
+},
+{
+  "name":"java.lang.cycloneDxComponent"
+},
+{
+  "name":"java.lang.cycloneDxContact"
+},
+{
+  "name":"java.lang.cycloneDxRef"
+},
+{
+  "name":"java.lang.cycloneDxService"
+},
+{
+  "name":"java.lang.cycloneEntity"
+},
+{
+  "name":"java.lang.cycloneLicense"
+},
+{
+  "name":"java.lang.cycloneRef"
+},
+{
+  "name":"java.lang.cycloneService"
+},
+{
+  "name":"java.lang.d"
+},
+{
+  "name":"java.lang.d1"
+},
+{
+  "name":"java.lang.d2"
+},
+{
+  "name":"java.lang.data"
+},
+{
+  "name":"java.lang.dataClassifications"
+},
+{
+  "name":"java.lang.databaseSpecific"
+},
+{
+  "name":"java.lang.dateFormat"
+},
+{
+  "name":"java.lang.dc"
+},
+{
+  "name":"java.lang.debmatcher"
+},
+{
+  "name":"java.lang.debrx"
+},
+{
+  "name":"java.lang.def"
+},
+{
+  "name":"java.lang.defCveItem"
+},
+{
+  "name":"java.lang.defaultEmailPublisherClass"
+},
+{
+  "name":"java.lang.default_branch"
+},
+{
+  "name":"java.lang.defectDojoUrl"
+},
+{
+  "name":"java.lang.delete"
+},
+{
+  "name":"java.lang.deleteAttributionQuery"
+},
+{
+  "name":"java.lang.deltaThresholdProperty"
+},
+{
+  "name":"java.lang.dependencies"
+},
+{
+  "name":"java.lang.dependency"
+},
+{
+  "name":"java.lang.dependencyGraph"
+},
+{
+  "name":"java.lang.dependencyGraphResponse"
+},
+{
+  "name":"java.lang.dependencyGraphResponseEntry"
+},
+{
+  "name":"java.lang.deptrackOrgEntity"
+},
+{
+  "name":"java.lang.desc1"
+},
+{
+  "name":"java.lang.desc2"
+},
+{
+  "name":"java.lang.descO"
+},
+{
+  "name":"java.lang.description"
+},
+{
+  "name":"java.lang.descriptionBuilder"
+},
+{
+  "name":"java.lang.descriptions"
+},
+{
+  "name":"java.lang.dest"
+},
+{
+  "name":"java.lang.destination"
+},
+{
+  "name":"java.lang.destinationString"
+},
+{
+  "name":"java.lang.detached"
+},
+{
+  "name":"java.lang.detachedComponent"
+},
+{
+  "name":"java.lang.df"
+},
+{
+  "name":"java.lang.differ"
+},
+{
+  "name":"java.lang.diffs"
+},
+{
+  "name":"java.lang.dir"
+},
+{
+  "name":"java.lang.directDep"
+},
+{
+  "name":"java.lang.directDependencies"
+},
+{
+  "name":"java.lang.directDependenciesRaw"
+},
+{
+  "name":"java.lang.directDependency"
+},
+{
+  "name":"java.lang.directDependencyObject"
+},
+{
+  "name":"java.lang.distanceMatcher"
+},
+{
+  "name":"java.lang.dnProps"
+},
+{
+  "name":"java.lang.doNotReactivate"
+},
+{
+  "name":"java.lang.doc"
+},
+{
+  "name":"java.lang.docs"
+},
+{
+  "name":"java.lang.dojoObj"
+},
+{
+  "name":"java.lang.dojoTest"
+},
+{
+  "name":"java.lang.dojoTests"
+},
+{
+  "name":"java.lang.dtVulnerability"
+},
+{
+  "name":"java.lang.e"
+},
+{
+  "name":"java.lang.ecosystem"
+},
+{
+  "name":"java.lang.ecosystemConfig"
+},
+{
+  "name":"java.lang.ecosystemSpecific"
+},
+{
+  "name":"java.lang.ecosystems"
+},
+{
+  "name":"java.lang.edge"
+},
+{
+  "name":"java.lang.edges"
+},
+{
+  "name":"java.lang.element"
+},
+{
+  "name":"java.lang.emailNotificationPublisher"
+},
+{
+  "name":"java.lang.emailPublisher"
+},
+{
+  "name":"java.lang.enabled"
+},
+{
+  "name":"java.lang.enabledConstraint"
+},
+{
+  "name":"java.lang.enabledProperty"
+},
+{
+  "name":"java.lang.end"
+},
+{
+  "name":"java.lang.endExcluding"
+},
+{
+  "name":"java.lang.endIncluding"
+},
+{
+  "name":"java.lang.engagementId"
+},
+{
+  "name":"java.lang.entity"
+},
+{
+  "name":"java.lang.entry"
+},
+{
+  "name":"java.lang.enumSource"
+},
+{
+  "name":"java.lang.error"
+},
+{
+  "name":"java.lang.errorObject"
+},
+{
+  "name":"java.lang.errors"
+},
+{
+  "name":"java.lang.errorsArray"
+},
+{
+  "name":"java.lang.evaluator"
+},
+{
+  "name":"java.lang.evaluators"
+},
+{
+  "name":"java.lang.event"
+},
+{
+  "name":"java.lang.ex"
+},
+{
+  "name":"java.lang.exception"
+},
+{
+  "name":"java.lang.excludeClause"
+},
+{
+  "name":"java.lang.executor"
+},
+{
+  "name":"java.lang.existing"
+},
+{
+  "name":"java.lang.existingAttribution"
+},
+{
+  "name":"java.lang.existingComponent"
+},
+{
+  "name":"java.lang.existingNotificationPublisherWithModifiedName"
+},
+{
+  "name":"java.lang.existingPolicyViolations"
+},
+{
+  "name":"java.lang.existingPublisher"
+},
+{
+  "name":"java.lang.existingRepos"
+},
+{
+  "name":"java.lang.existingService"
+},
+{
+  "name":"java.lang.existingViolation"
+},
+{
+  "name":"java.lang.exp"
+},
+{
+  "name":"java.lang.exporter"
+},
+{
+  "name":"java.lang.expr"
+},
+{
+  "name":"java.lang.expr1"
+},
+{
+  "name":"java.lang.expr2"
+},
+{
+  "name":"java.lang.expr3"
+},
+{
+  "name":"java.lang.expressionLicense"
+},
+{
+  "name":"java.lang.expressionParser"
+},
+{
+  "name":"java.lang.expressions"
+},
+{
+  "name":"java.lang.extRefs"
+},
+{
+  "name":"java.lang.extTexts"
+},
+{
+  "name":"java.lang.externalId"
+},
+{
+  "name":"java.lang.externalReference"
+},
+{
+  "name":"java.lang.externalReferenceList"
+},
+{
+  "name":"java.lang.externalReferences"
+},
+{
+  "name":"java.lang.externalRefsJSONArray"
+},
+{
+  "name":"java.lang.externalText"
+},
+{
+  "name":"java.lang.externalTextList"
+},
+{
+  "name":"java.lang.factory"
+},
+{
+  "name":"java.lang.field"
+},
+{
+  "name":"java.lang.fieldNameIter"
+},
+{
+  "name":"java.lang.fields"
+},
+{
+  "name":"java.lang.file"
+},
+{
+  "name":"java.lang.filename"
+},
+{
+  "name":"java.lang.filter"
+},
+{
+  "name":"java.lang.filterBuilder"
+},
+{
+  "name":"java.lang.filterCriteria"
+},
+{
+  "name":"java.lang.filterParts"
+},
+{
+  "name":"java.lang.filteredList"
+},
+{
+  "name":"java.lang.filters"
+},
+{
+  "name":"java.lang.finding"
+},
+{
+  "name":"java.lang.findings"
+},
+{
+  "name":"java.lang.findingsUploader"
+},
+{
+  "name":"java.lang.firstPatchedVersion"
+},
+{
+  "name":"java.lang.firstReindexEvent"
+},
+{
+  "name":"java.lang.flatComponents"
+},
+{
+  "name":"java.lang.flattenedComponents"
+},
+{
+  "name":"java.lang.flattenedServices"
+},
+{
+  "name":"java.lang.fm"
+},
+{
+  "name":"java.lang.format"
+},
+{
+  "name":"java.lang.forwardExcludes"
+},
+{
+  "name":"java.lang.fpf"
+},
+{
+  "name":"java.lang.function"
+},
+{
+  "name":"java.lang.fuzzyList"
+},
+{
+  "name":"java.lang.gen"
+},
+{
+  "name":"java.lang.getter"
+},
+{
+  "name":"java.lang.github"
+},
+{
+  "name":"java.lang.group"
+},
+{
+  "name":"java.lang.groupLicense"
+},
+{
+  "name":"java.lang.groups"
+},
+{
+  "name":"java.lang.gzis"
+},
+{
+  "name":"java.lang.hash"
+},
+{
+  "name":"java.lang.header"
+},
+{
+  "name":"java.lang.hit"
+},
+{
+  "name":"java.lang.host"
+},
+{
+  "name":"java.lang.hostname"
+},
+{
+  "name":"java.lang.idBuilder"
+},
+{
+  "name":"java.lang.identifiableObject"
+},
+{
+  "name":"java.lang.identifier"
+},
+{
+  "name":"java.lang.identifiers"
+},
+{
+  "name":"java.lang.identity"
+},
+{
+  "name":"java.lang.imp0"
+},
+{
+  "name":"java.lang.imp1"
+},
+{
+  "name":"java.lang.imp2"
+},
+{
+  "name":"java.lang.imp3"
+},
+{
+  "name":"java.lang.imp4"
+},
+{
+  "name":"java.lang.importer"
+},
+{
+  "name":"java.lang.index"
+},
+{
+  "name":"java.lang.indexDir"
+},
+{
+  "name":"java.lang.indexDirectoryFile"
+},
+{
+  "name":"java.lang.indexManager"
+},
+{
+  "name":"java.lang.indexType"
+},
+{
+  "name":"java.lang.indexTypes"
+},
+{
+  "name":"java.lang.individualResult"
+},
+{
+  "name":"java.lang.infixOperators"
+},
+{
+  "name":"java.lang.info"
+},
+{
+  "name":"java.lang.initialNotification"
+},
+{
+  "name":"java.lang.input"
+},
+{
+  "name":"java.lang.inputFilter"
+},
+{
+  "name":"java.lang.internalAnalysisTask"
+},
+{
+  "name":"java.lang.internalGroupsRegexProperty"
+},
+{
+  "name":"java.lang.internalNamesRegexProperty"
+},
+{
+  "name":"java.lang.invoke.CallSite"
+},
+{
+  "name":"java.lang.invoke.TypeDescriptor",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.invoke.TypeDescriptor$OfField",
+  "queryAllPublicMethods":true
 },
 {
   "name":"java.lang.invoke.VarHandle",
   "methods":[{"name":"releaseFence","parameterTypes":[] }]
 },
 {
+  "name":"java.lang.ioException"
+},
+{
+  "name":"java.lang.it"
+},
+{
+  "name":"java.lang.item"
+},
+{
+  "name":"java.lang.iterator"
+},
+{
+  "name":"java.lang.iwriter"
+},
+{
+  "name":"java.lang.javax"
+},
+{
+  "name":"java.lang.javax.xml"
+},
+{
+  "name":"java.lang.javax.xml.bind"
+},
+{
+  "name":"java.lang.jiraPasswordProp"
+},
+{
+  "name":"java.lang.jiraUsernameProp"
+},
+{
+  "name":"java.lang.jr"
+},
+{
+  "name":"java.lang.jso"
+},
+{
+  "name":"java.lang.json"
+},
+{
+  "name":"java.lang.jsonArray"
+},
+{
+  "name":"java.lang.jsonBody"
+},
+{
+  "name":"java.lang.jsonComponent"
+},
+{
+  "name":"java.lang.jsonGenerator"
+},
+{
+  "name":"java.lang.jsonGroup"
+},
+{
+  "name":"java.lang.jsonLicense"
+},
+{
+  "name":"java.lang.jsonLicenseGroup"
+},
+{
+  "name":"java.lang.jsonNode"
+},
+{
+  "name":"java.lang.jsonNotificationPublisher"
+},
+{
+  "name":"java.lang.jsonObject"
+},
+{
+  "name":"java.lang.jsonParser"
+},
+{
+  "name":"java.lang.jsonPolicy"
+},
+{
+  "name":"java.lang.jsonPolicyCondition"
+},
+{
+  "name":"java.lang.jsonProject"
+},
+{
+  "name":"java.lang.jsonReader"
+},
+{
+  "name":"java.lang.jsonRepository"
+},
+{
+  "name":"java.lang.jsonRequest"
+},
+{
+  "name":"java.lang.jsonResponse"
+},
+{
+  "name":"java.lang.jsonRule"
+},
+{
+  "name":"java.lang.jsonService"
+},
+{
+  "name":"java.lang.jsonString"
+},
+{
+  "name":"java.lang.jsonTeam"
+},
+{
+  "name":"java.lang.jsonUser"
+},
+{
+  "name":"java.lang.jsonVuln"
+},
+{
+  "name":"java.lang.jsonVulnerability"
+},
+{
+  "name":"java.lang.justThePart"
+},
+{
+  "name":"java.lang.jw"
+},
+{
+  "name":"java.lang.jwt"
+},
+{
+  "name":"java.lang.kdi"
+},
+{
+  "name":"java.lang.kdiAsset"
+},
+{
+  "name":"java.lang.key"
+},
+{
+  "name":"java.lang.keysToDelete"
+},
+{
+  "name":"java.lang.km"
+},
+{
+  "name":"java.lang.lStr"
+},
+{
+  "name":"java.lang.lastAffectedRange"
+},
+{
+  "name":"java.lang.lastModifiedDateTime"
+},
+{
+  "name":"java.lang.lastUpdatedExpression"
+},
+{
+  "name":"java.lang.latestArray"
+},
+{
+  "name":"java.lang.latestExpression"
+},
+{
+  "name":"java.lang.latestMetrics"
+},
+{
+  "name":"java.lang.latestVersion"
+},
+{
+  "name":"java.lang.latest_release"
+},
+{
+  "name":"java.lang.ldap"
+},
+{
+  "name":"java.lang.left"
+},
+{
+  "name":"java.lang.lg"
+},
+{
+  "name":"java.lang.license"
+},
+{
+  "name":"java.lang.licenseChoice"
+},
+{
+  "name":"java.lang.licenseGroup"
+},
+{
+  "name":"java.lang.licenseGroups"
+},
+{
+  "name":"java.lang.licenseOptions"
+},
+{
+  "name":"java.lang.licenses"
+},
+{
+  "name":"java.lang.limitToProject"
+},
+{
+  "name":"java.lang.line"
+},
+{
+  "name":"java.lang.link"
+},
+{
+  "name":"java.lang.links"
+},
+{
+  "name":"java.lang.list"
+},
+{
+  "name":"java.lang.logger"
+},
+{
+  "name":"java.lang.luceneIndexDirectory"
+},
+{
+  "name":"java.lang.managers"
+},
+{
+  "name":"java.lang.manufacturer"
+},
+{
+  "name":"java.lang.map"
+},
+{
+  "name":"java.lang.mappedVulnerability"
+},
+{
+  "name":"java.lang.mapping"
+},
+{
+  "name":"java.lang.markedForDeletion"
+},
+{
+  "name":"java.lang.matcher"
+},
+{
+  "name":"java.lang.md5"
+},
+{
+  "name":"java.lang.measuredAt"
+},
+{
+  "name":"java.lang.meta"
+},
+{
+  "name":"java.lang.meta0"
+},
+{
+  "name":"java.lang.metaComponent"
+},
+{
+  "name":"java.lang.metaInfo"
+},
+{
+  "name":"java.lang.metadata"
+},
+{
+  "name":"java.lang.metric"
+},
+{
+  "name":"java.lang.metrics"
+},
+{
+  "name":"java.lang.mirrorPath"
+},
+{
+  "name":"java.lang.missingFactorException"
+},
+{
+  "name":"java.lang.model"
+},
+{
+  "name":"java.lang.modulePath"
+},
+{
+  "name":"java.lang.monitorThread"
+},
+{
+  "name":"java.lang.multiPart"
+},
+{
+  "name":"java.lang.name"
+},
+{
+  "name":"java.lang.nameToFuzz"
+},
+{
+  "name":"java.lang.nameValuePairList"
+},
+{
+  "name":"java.lang.newComponents"
+},
+{
+  "name":"java.lang.newPassword"
+},
+{
+  "name":"java.lang.newTags"
+},
+{
+  "name":"java.lang.newValue"
+},
+{
+  "name":"java.lang.nextFile"
+},
+{
+  "name":"java.lang.node"
+},
+{
+  "name":"java.lang.nodeList"
+},
+{
+  "name":"java.lang.nodes"
+},
+{
+  "name":"java.lang.notification"
+},
+{
+  "name":"java.lang.notificationPublisher"
+},
+{
+  "name":"java.lang.notifyOn"
+},
+{
+  "name":"java.lang.now"
+},
+{
+  "name":"java.lang.nvdAdditionalInfo"
+},
+{
+  "name":"java.lang.nvdInfo"
+},
+{
+  "name":"java.lang.o"
+},
+{
+  "name":"java.lang.o2"
+},
+{
+  "name":"java.lang.object"
+},
+{
+  "name":"java.lang.objectMapper"
+},
+{
+  "name":"java.lang.odt"
+},
+{
+  "name":"java.lang.oidcGroup"
+},
+{
+  "name":"java.lang.ol"
+},
+{
+  "name":"java.lang.oldVs"
+},
+{
+  "name":"java.lang.operation"
+},
+{
+  "name":"java.lang.operatorStack"
+},
+{
+  "name":"java.lang.org"
+},
+{
+  "name":"java.lang.org.apache"
+},
+{
+  "name":"java.lang.org.apache.commons"
+},
+{
+  "name":"java.lang.org.apache.commons.codec"
+},
+{
+  "name":"java.lang.org.apache.commons.codec.digest"
+},
+{
+  "name":"java.lang.org.cyclonedx"
+},
+{
+  "name":"java.lang.org.cyclonedx.model"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.Bom"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.Component"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.Component.Type"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.Dependency"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.ExternalReference"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.ExternalReference.Type"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.License"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.Metadata"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.OrganizationalContact"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.OrganizationalEntity"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.Service"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.ServiceData"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.Tool"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.vulnerability"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.vulnerability.Vulnerability"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.vulnerability.Vulnerability.Affect"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.vulnerability.Vulnerability.Analysis"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.vulnerability.Vulnerability.Analysis.Justification"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.vulnerability.Vulnerability.Analysis.Response"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.vulnerability.Vulnerability.Analysis.State"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.vulnerability.Vulnerability.Rating"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.vulnerability.Vulnerability.Rating.Method"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.vulnerability.Vulnerability.Rating.Severity"
+},
+{
+  "name":"java.lang.org.cyclonedx.model.vulnerability.Vulnerability.Source"
+},
+{
+  "name":"java.lang.org.dependencytrack"
+},
+{
+  "name":"java.lang.org.dependencytrack.model"
+},
+{
+  "name":"java.lang.org.dependencytrack.model.Vulnerability"
+},
+{
+  "name":"java.lang.org.dependencytrack.model.Vulnerability.Source"
+},
+{
+  "name":"java.lang.org.dependencytrack.parser"
+},
+{
+  "name":"java.lang.org.dependencytrack.parser.nvd"
+},
+{
+  "name":"java.lang.org.dependencytrack.parser.vulndb"
+},
+{
+  "name":"java.lang.org.dependencytrack.parser.vulndb.model"
+},
+{
+  "name":"java.lang.org.dependencytrack.parser.vulndb.model.Cpe"
+},
+{
+  "name":"java.lang.org.dependencytrack.parser.vulndb.model.Vulnerability"
+},
+{
+  "name":"java.lang.org.dependencytrack.policy"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v400"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v400.v400Updater"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v410"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v410.v410Updater"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v4100"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v4100.v4100Updater"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v420"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v420.v420Updater"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v440"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v440.v440Updater"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v450"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v450.v450Updater"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v460"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v460.v460Updater"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v463"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v463.v463Updater"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v470"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v470.v470Updater"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v480"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v480.v480Updater"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v490"
+},
+{
+  "name":"java.lang.org.dependencytrack.upgrade.v490.v490Updater"
+},
+{
+  "name":"java.lang.org.h2"
+},
+{
+  "name":"java.lang.org.h2.Driver"
+},
+{
+  "name":"java.lang.orgIdProperty"
+},
+{
+  "name":"java.lang.organizationalContact"
+},
+{
+  "name":"java.lang.original"
+},
+{
+  "name":"java.lang.osPartList"
+},
+{
+  "name":"java.lang.ossIndexAnalysisTask"
+},
+{
+  "name":"java.lang.ossIndexRetryer"
+},
+{
+  "name":"java.lang.osvAffectedPackage"
+},
+{
+  "name":"java.lang.osvAffectedPackageList"
+},
+{
+  "name":"java.lang.osvDownloadTask"
+},
+{
+  "name":"java.lang.other"
+},
+{
+  "name":"java.lang.otherVs"
+},
+{
+  "name":"java.lang.out"
+},
+{
+  "name":"java.lang.outputDir"
+},
+{
+  "name":"java.lang.outputQueue"
+},
+{
+  "name":"java.lang.owaspRRBusinessImpactScore"
+},
+{
+  "name":"java.lang.owaspRRLikelihoodScore"
+},
+{
+  "name":"java.lang.owaspRRSeverity"
+},
+{
+  "name":"java.lang.owaspRRTechnicalImpactScore"
+},
+{
+  "name":"java.lang.owaspRiskRating"
+},
+{
+  "name":"java.lang.p"
+},
+{
+  "name":"java.lang.packageBaseResource"
+},
+{
+  "name":"java.lang.packageObject"
+},
+{
+  "name":"java.lang.packageURL"
+},
+{
+  "name":"java.lang.packageUrl"
+},
+{
+  "name":"java.lang.pageInfo"
+},
+{
+  "name":"java.lang.pageableList"
+},
+{
+  "name":"java.lang.paginatedComponents"
+},
+{
+  "name":"java.lang.paginatedList"
+},
+{
+  "name":"java.lang.pair"
+},
+{
+  "name":"java.lang.parameters"
+},
+{
+  "name":"java.lang.params"
+},
+{
+  "name":"java.lang.parent"
+},
+{
+  "name":"java.lang.parentNode"
+},
+{
+  "name":"java.lang.parentNodeComponent"
+},
+{
+  "name":"java.lang.parsedCpe"
+},
+{
+  "name":"java.lang.parsedExpression"
+},
+{
+  "name":"java.lang.parser"
+},
+{
+  "name":"java.lang.part"
+},
+{
+  "name":"java.lang.parts"
+},
+{
+  "name":"java.lang.payload"
+},
+{
+  "name":"java.lang.pc"
+},
+{
+  "name":"java.lang.pcv"
+},
+{
+  "name":"java.lang.pe"
+},
+{
+  "name":"java.lang.permission"
+},
+{
+  "name":"java.lang.permissions"
+},
+{
+  "name":"java.lang.persistentVuln"
+},
+{
+  "name":"java.lang.pm"
+},
+{
+  "name":"java.lang.pmf"
+},
+{
+  "name":"java.lang.policy"
+},
+{
+  "name":"java.lang.policyCondition"
+},
+{
+  "name":"java.lang.policyConditionViolations"
+},
+{
+  "name":"java.lang.policyConditionViolationsFromEvaluator"
+},
+{
+  "name":"java.lang.policyConditions"
+},
+{
+  "name":"java.lang.policyTag"
+},
+{
+  "name":"java.lang.policyViolation"
+},
+{
+  "name":"java.lang.policyViolations"
+},
+{
+  "name":"java.lang.pooledHttpClient"
+},
+{
+  "name":"java.lang.portfolioVulnerabilities"
+},
+{
+  "name":"java.lang.principal"
+},
+{
+  "name":"java.lang.prob0"
+},
+{
+  "name":"java.lang.prob1"
+},
+{
+  "name":"java.lang.prob2"
+},
+{
+  "name":"java.lang.prob3"
+},
+{
+  "name":"java.lang.prob4"
+},
+{
+  "name":"java.lang.problem"
+},
+{
+  "name":"java.lang.problems"
+},
+{
+  "name":"java.lang.product"
+},
+{
+  "name":"java.lang.products"
+},
+{
+  "name":"java.lang.project"
+},
+{
+  "name":"java.lang.projectAnalysis"
+},
+{
+  "name":"java.lang.projectBuilder"
+},
+{
+  "name":"java.lang.projectJson"
+},
+{
+  "name":"java.lang.projectTag"
+},
+{
+  "name":"java.lang.projects"
+},
+{
+  "name":"java.lang.projectsBuilder"
+},
+{
+  "name":"java.lang.property"
+},
+{
+  "name":"java.lang.propertyType"
+},
+{
+  "name":"java.lang.propertyValue"
+},
+{
+  "name":"java.lang.provider"
+},
+{
+  "name":"java.lang.proxyInfo"
+},
+{
+  "name":"java.lang.proxyUrl"
+},
+{
+  "name":"java.lang.ps"
+},
+{
+  "name":"java.lang.published"
+},
+{
+  "name":"java.lang.publishedDate"
+},
+{
+  "name":"java.lang.publishedTime"
+},
+{
+  "name":"java.lang.publisher"
+},
+{
+  "name":"java.lang.publisherClass"
+},
+{
+  "name":"java.lang.purl"
+},
+{
+  "name":"java.lang.purlCoordinates"
+},
+{
+  "name":"java.lang.purlFilterParts"
+},
+{
+  "name":"java.lang.purlName"
+},
+{
+  "name":"java.lang.purlParts"
+},
+{
+  "name":"java.lang.purlType"
+},
+{
+  "name":"java.lang.pv"
+},
+{
+  "name":"java.lang.qm"
+},
+{
+  "name":"java.lang.qparser"
+},
+{
+  "name":"java.lang.query"
+},
+{
+  "name":"java.lang.query2"
+},
+{
+  "name":"java.lang.queryFilterElements"
+},
+{
+  "name":"java.lang.queryFilterParamsPair"
+},
+{
+  "name":"java.lang.queryFilterParts"
+},
+{
+  "name":"java.lang.queryParams"
+},
+{
+  "name":"java.lang.random"
+},
+{
+  "name":"java.lang.range"
+},
+{
+  "name":"java.lang.rangeEvents"
+},
+{
+  "name":"java.lang.ranges"
+},
+{
+  "name":"java.lang.rating"
+},
+{
+  "name":"java.lang.rb"
+},
+{
+  "name":"java.lang.reactivate"
+},
+{
+  "name":"java.lang.reader"
+},
+{
+  "name":"java.lang.recording"
+},
+{
+  "name":"java.lang.ref"
+},
+{
+  "name":"java.lang.ref0"
+},
+{
+  "name":"java.lang.ref1"
+},
+{
+  "name":"java.lang.ref2"
+},
+{
+  "name":"java.lang.reference"
+},
+{
+  "name":"java.lang.references"
+},
+{
+  "name":"java.lang.reflect.AccessibleObject",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.reflect.AnnotatedElement",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.reflect.Constructor",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.reflect.Executable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.reflect.GenericDeclaration",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.reflect.InvocationTargetException"
+},
+{
+  "name":"java.lang.reflect.Member",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.reflect.Method",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.reflect.Type",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.lang.registration"
+},
+{
+  "name":"java.lang.registrationsBaseResource"
+},
+{
+  "name":"java.lang.registry"
+},
+{
+  "name":"java.lang.reimport"
+},
+{
+  "name":"java.lang.release"
+},
+{
+  "name":"java.lang.releaseExpression"
+},
+{
+  "name":"java.lang.releases"
+},
+{
+  "name":"java.lang.releasesArray"
+},
+{
+  "name":"java.lang.remedies"
+},
+{
+  "name":"java.lang.repo"
+},
+{
+  "name":"java.lang.repoMetaComponent"
+},
+{
+  "name":"java.lang.repoMetaComponentSearchListHashMap"
+},
+{
+  "name":"java.lang.repoMetaComponentSearches"
+},
+{
+  "name":"java.lang.reportedVuln"
+},
+{
+  "name":"java.lang.repository"
+},
+{
+  "name":"java.lang.repositoryMetaComponent"
+},
+{
+  "name":"java.lang.repositoryMetaComponents"
+},
+{
+  "name":"java.lang.repositoryType"
+},
+{
+  "name":"java.lang.representation"
+},
+{
+  "name":"java.lang.request"
+},
+{
+  "name":"java.lang.resolvedTags"
+},
+{
+  "name":"java.lang.resourceType"
+},
+{
+  "name":"java.lang.resources"
+},
+{
+  "name":"java.lang.response"
+},
+{
+  "name":"java.lang.response1"
+},
+{
+  "name":"java.lang.responseJson"
+},
+{
+  "name":"java.lang.responsePackages"
+},
+{
+  "name":"java.lang.responseStrBuilder"
+},
+{
+  "name":"java.lang.responses"
+},
+{
+  "name":"java.lang.restrictedNotification"
+},
+{
+  "name":"java.lang.result"
+},
+{
+  "name":"java.lang.resultSet"
+},
+{
+  "name":"java.lang.results"
+},
+{
+  "name":"java.lang.retry"
+},
+{
+  "name":"java.lang.retryRegistry"
+},
+{
+  "name":"java.lang.returnList"
+},
+{
+  "name":"java.lang.right"
+},
+{
+  "name":"java.lang.rme"
+},
+{
+  "name":"java.lang.root"
+},
+{
+  "name":"java.lang.rootDependency"
+},
+{
+  "name":"java.lang.rowScanner"
+},
+{
+  "name":"java.lang.rr"
+},
+{
+  "name":"java.lang.rs"
+},
+{
+  "name":"java.lang.rso"
+},
+{
+  "name":"java.lang.rule"
+},
+{
+  "name":"java.lang.ruleProjectsUuids"
+},
+{
+  "name":"java.lang.rules"
+},
+{
+  "name":"java.lang.runnable"
+},
+{
+  "name":"java.lang.rwLock"
+},
+{
+  "name":"java.lang.rx"
+},
+{
+  "name":"java.lang.s"
+},
+{
+  "name":"java.lang.sValue"
+},
+{
+  "name":"java.lang.saxParser"
+},
+{
+  "name":"java.lang.sb"
+},
+{
+  "name":"java.lang.scanTask"
+},
+{
+  "name":"java.lang.scanner"
+},
+{
+  "name":"java.lang.scannerSnykCvssSource"
+},
+{
+  "name":"java.lang.score"
+},
+{
+  "name":"java.lang.scoreDoc"
+},
+{
+  "name":"java.lang.search"
+},
+{
+  "name":"java.lang.searchBoosts"
+},
+{
+  "name":"java.lang.searchManager"
+},
+{
+  "name":"java.lang.searchResult"
+},
+{
+  "name":"java.lang.searchedComponent"
+},
+{
+  "name":"java.lang.searches"
+},
+{
+  "name":"java.lang.securityAdvisories"
+},
+{
+  "name":"java.lang.securityAdvisoriesNodes"
+},
+{
+  "name":"java.lang.seeAlso"
+},
+{
+  "name":"java.lang.seen"
+},
+{
+  "name":"java.lang.selectedEcosystems"
+},
+{
+  "name":"java.lang.sendMail"
+},
+{
+  "name":"java.lang.service"
+},
+{
+  "name":"java.lang.services"
+},
+{
+  "name":"java.lang.servletContext"
+},
+{
+  "name":"java.lang.set"
+},
+{
+  "name":"java.lang.setter"
+},
+{
+  "name":"java.lang.severity"
+},
+{
+  "name":"java.lang.severityLevels"
+},
+{
+  "name":"java.lang.sha1"
+},
+{
+  "name":"java.lang.sha256"
+},
+{
+  "name":"java.lang.sha384"
+},
+{
+  "name":"java.lang.sha3_256"
+},
+{
+  "name":"java.lang.sha3_384"
+},
+{
+  "name":"java.lang.sha3_512"
+},
+{
+  "name":"java.lang.sha512"
+},
+{
+  "name":"java.lang.slots"
+},
+{
+  "name":"java.lang.smtpEnabled"
+},
+{
+  "name":"java.lang.smtpFrom"
+},
+{
+  "name":"java.lang.smtpHostname"
+},
+{
+  "name":"java.lang.smtpPass"
+},
+{
+  "name":"java.lang.smtpPort"
+},
+{
+  "name":"java.lang.smtpSslTls"
+},
+{
+  "name":"java.lang.smtpTrustCert"
+},
+{
+  "name":"java.lang.smtpUser"
+},
+{
+  "name":"java.lang.snykAnalysisTask"
+},
+{
+  "name":"java.lang.snykParser"
+},
+{
+  "name":"java.lang.source"
+},
+{
+  "name":"java.lang.sourceAnalysis"
+},
+{
+  "name":"java.lang.sourceAttribution"
+},
+{
+  "name":"java.lang.sourceComment"
+},
+{
+  "name":"java.lang.sourceComponent"
+},
+{
+  "name":"java.lang.sourceProject"
+},
+{
+  "name":"java.lang.sourceProperty"
+},
+{
+  "name":"java.lang.sourceService"
+},
+{
+  "name":"java.lang.spdxExpression"
+},
+{
+  "name":"java.lang.sr"
+},
+{
+  "name":"java.lang.sscUrl"
+},
+{
+  "name":"java.lang.start"
+},
+{
+  "name":"java.lang.startExcluding"
+},
+{
+  "name":"java.lang.startIncluding"
+},
+{
+  "name":"java.lang.status"
+},
+{
+  "name":"java.lang.stmt"
+},
+{
+  "name":"java.lang.stop"
+},
+{
+  "name":"java.lang.stopRequest"
+},
+{
+  "name":"java.lang.stopSignal"
+},
+{
+  "name":"java.lang.str"
+},
+{
+  "name":"java.lang.streamReader"
+},
+{
+  "name":"java.lang.string"
+},
+{
+  "name":"java.lang.stringResponse"
+},
+{
+  "name":"java.lang.stripedLock"
+},
+{
+  "name":"java.lang.subQuery"
+},
+{
+  "name":"java.lang.subject"
+},
+{
+  "name":"java.lang.summary"
+},
+{
+  "name":"java.lang.supplier"
+},
+{
+  "name":"java.lang.sw"
+},
+{
+  "name":"java.lang.swid"
+},
+{
+  "name":"java.lang.synchronizeVulnerability"
+},
+{
+  "name":"java.lang.synchronizedVulnerability"
+},
+{
+  "name":"java.lang.sysadmins"
+},
+{
+  "name":"java.lang.t"
+},
+{
+  "name":"java.lang.tag"
+},
+{
+  "name":"java.lang.tagArray"
+},
+{
+  "name":"java.lang.tags"
+},
+{
+  "name":"java.lang.tagsToShow"
+},
+{
+  "name":"java.lang.target"
+},
+{
+  "name":"java.lang.targetDep"
+},
+{
+  "name":"java.lang.targetUpdate"
+},
+{
+  "name":"java.lang.team"
+},
+{
+  "name":"java.lang.teams"
+},
+{
+  "name":"java.lang.temp"
+},
+{
+  "name":"java.lang.template"
+},
+{
+  "name":"java.lang.templateBaseDir"
+},
+{
+  "name":"java.lang.templateException"
+},
+{
+  "name":"java.lang.temporaryLicenseGroup"
+},
+{
+  "name":"java.lang.testId"
+},
+{
+  "name":"java.lang.that"
+},
+{
+  "name":"java.lang.thisPart"
+},
+{
+  "name":"java.lang.thisVersion"
+},
+{
+  "name":"java.lang.timeElapsed"
+},
+{
+  "name":"java.lang.timestampFile"
+},
+{
+  "name":"java.lang.tmpProject"
+},
+{
+  "name":"java.lang.token"
+},
+{
+  "name":"java.lang.tokenProperty"
+},
+{
+  "name":"java.lang.tokenValue"
+},
+{
+  "name":"java.lang.tokens"
+},
+{
+  "name":"java.lang.tool"
+},
+{
+  "name":"java.lang.transientComponent"
+},
+{
+  "name":"java.lang.transientLicense"
+},
+{
+  "name":"java.lang.transientProject"
+},
+{
+  "name":"java.lang.transientPublisher"
+},
+{
+  "name":"java.lang.transientRepoMetaComponent"
+},
+{
+  "name":"java.lang.transientRepositoryMetaComponent"
+},
+{
+  "name":"java.lang.transientRule"
+},
+{
+  "name":"java.lang.transientServiceComponent"
+},
+{
+  "name":"java.lang.transientVulnerability"
+},
+{
+  "name":"java.lang.trx"
+},
+{
+  "name":"java.lang.tsBufReader"
+},
+{
+  "name":"java.lang.tx"
+},
+{
+  "name":"java.lang.type"
+},
+{
+  "name":"java.lang.ump"
+},
+{
+  "name":"java.lang.uncompressedFile"
+},
+{
+  "name":"java.lang.uniqueAliases"
+},
+{
+  "name":"java.lang.unresolvedTags"
+},
+{
+  "name":"java.lang.uploader"
+},
+{
+  "name":"java.lang.uriBuilder"
+},
+{
+  "name":"java.lang.url"
+},
+{
+  "name":"java.lang.us"
+},
+{
+  "name":"java.lang.us.springett"
+},
+{
+  "name":"java.lang.us.springett.owasp"
+},
+{
+  "name":"java.lang.us.springett.owasp.riskrating"
+},
+{
+  "name":"java.lang.us.springett.owasp.riskrating.Score"
+},
+{
+  "name":"java.lang.us.springett.parsers"
+},
+{
+  "name":"java.lang.us.springett.parsers.cpe"
+},
+{
+  "name":"java.lang.us.springett.parsers.cpe.Cpe"
+},
+{
+  "name":"java.lang.user"
+},
+{
+  "name":"java.lang.userInTeam"
+},
+{
+  "name":"java.lang.userPrincipal"
+},
+{
+  "name":"java.lang.userProvidedTemplateFile"
+},
+{
+  "name":"java.lang.username"
+},
+{
+  "name":"java.lang.uuids"
+},
+{
+  "name":"java.lang.v"
+},
+{
+  "name":"java.lang.v1matcher"
+},
+{
+  "name":"java.lang.v2"
+},
+{
+  "name":"java.lang.v2matcher"
+},
+{
+  "name":"java.lang.v3"
+},
+{
+  "name":"java.lang.vae"
+},
+{
+  "name":"java.lang.validator"
+},
+{
+  "name":"java.lang.value"
+},
+{
+  "name":"java.lang.values"
+},
+{
+  "name":"java.lang.variable"
+},
+{
+  "name":"java.lang.variant"
+},
+{
+  "name":"java.lang.vector"
+},
+{
+  "name":"java.lang.vendor"
+},
+{
+  "name":"java.lang.vendors"
+},
+{
+  "name":"java.lang.version"
+},
+{
+  "name":"java.lang.versionDistance"
+},
+{
+  "name":"java.lang.versionDistanceList"
+},
+{
+  "name":"java.lang.versionEndExcluding"
+},
+{
+  "name":"java.lang.versionEndIncluding"
+},
+{
+  "name":"java.lang.versionOperatorMatcher"
+},
+{
+  "name":"java.lang.versionParts"
+},
+{
+  "name":"java.lang.versionStartExcluding"
+},
+{
+  "name":"java.lang.versionStartIncluding"
+},
+{
+  "name":"java.lang.version_pattern"
+},
+{
+  "name":"java.lang.versions"
+},
+{
+  "name":"java.lang.vex"
+},
+{
+  "name":"java.lang.vexFormat"
+},
+{
+  "name":"java.lang.vexImporter"
+},
+{
+  "name":"java.lang.vexUploadEvent"
+},
+{
+  "name":"java.lang.violation"
+},
+{
+  "name":"java.lang.violationAnalysis"
+},
+{
+  "name":"java.lang.violationAnalysisBuilder"
+},
+{
+  "name":"java.lang.violationAnalysisComment"
+},
+{
+  "name":"java.lang.violations"
+},
+{
+  "name":"java.lang.vo"
+},
+{
+  "name":"java.lang.vs"
+},
+{
+  "name":"java.lang.vsList"
+},
+{
+  "name":"java.lang.vsListOld"
+},
+{
+  "name":"java.lang.vsListToKeep"
+},
+{
+  "name":"java.lang.vsListToRemove"
+},
+{
+  "name":"java.lang.vsOld"
+},
+{
+  "name":"java.lang.vsOldList"
+},
+{
+  "name":"java.lang.vuln"
+},
+{
+  "name":"java.lang.vulnAttributes"
+},
+{
+  "name":"java.lang.vulnAuthoritativeSourceToggle"
+},
+{
+  "name":"java.lang.vulnDbAnalysisTask"
+},
+{
+  "name":"java.lang.vulnDbParser"
+},
+{
+  "name":"java.lang.vulnDbVuln"
+},
+{
+  "name":"java.lang.vulnDef"
+},
+{
+  "name":"java.lang.vulnDefs"
+},
+{
+  "name":"java.lang.vulnId"
+},
+{
+  "name":"java.lang.vulnIdBySource"
+},
+{
+  "name":"java.lang.vulnIdsBySource"
+},
+{
+  "name":"java.lang.vulnIndexEventPair"
+},
+{
+  "name":"java.lang.vulnObject"
+},
+{
+  "name":"java.lang.vulnSource"
+},
+{
+  "name":"java.lang.vulndbDir"
+},
+{
+  "name":"java.lang.vulnerabilities"
+},
+{
+  "name":"java.lang.vulnerability"
+},
+{
+  "name":"java.lang.vulnerabilityAlias"
+},
+{
+  "name":"java.lang.vulnerabilityAliasList"
+},
+{
+  "name":"java.lang.vulnerabilityBuilder"
+},
+{
+  "name":"java.lang.vulnerableComponent"
+},
+{
+  "name":"java.lang.vulnerableSoftware"
+},
+{
+  "name":"java.lang.vulnerableSoftwareInNode"
+},
+{
+  "name":"java.lang.vulnerableSoftwares"
+},
+{
+  "name":"java.lang.vulns"
+},
+{
+  "name":"java.lang.vulnsBuilder"
+},
+{
+  "name":"java.lang.weaknesses"
+},
+{
+  "name":"java.lang.whitelistUrlParams"
+},
+{
+  "name":"java.lang.writeLock"
+},
+{
+  "name":"java.lang.writer"
+},
+{
+  "name":"java.lang.xPathfactory"
+},
+{
+  "name":"java.lang.xpath"
+},
+{
+  "name":"java.lang.xpathFactory"
+},
+{
+  "name":"java.lang.ymm"
+},
+{
+  "name":"java.lang.zipIn"
+},
+{
+  "name":"java.net.InetAddress"
+},
+{
+  "name":"java.net.MalformedURLException"
+},
+{
+  "name":"java.net.NoRouteToHostException"
+},
+{
+  "name":"java.net.SocketTimeoutException"
+},
+{
+  "name":"java.net.URI",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.net.URISyntaxException"
+},
+{
+  "name":"java.net.URL",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.net.URLConnection"
+},
+{
+  "name":"java.net.URLDecoder",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.net.URLEncoder",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.nio.CharBuffer"
+},
+{
+  "name":"java.nio.charset.Charset",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.nio.charset.StandardCharsets",
+  "allDeclaredFields":true,
+  "allPublicFields":true,
+  "allDeclaredClasses":true
+},
+{
+  "name":"java.nio.charset.StandardCharsets.UTF_8"
+},
+{
+  "name":"java.nio.file.Files",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.nio.file.Path",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.nio.file.Paths",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.nio.file.StandardCopyOption",
+  "allPublicFields":true
+},
+{
+  "name":"java.nio.file.Watchable",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.security.CodeSource",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.security.KeyManagementException"
+},
+{
+  "name":"java.security.KeyStore"
+},
+{
+  "name":"java.security.KeyStoreException"
+},
+{
   "name":"java.security.MessageDigestSpi"
+},
+{
+  "name":"java.security.NoSuchAlgorithmException"
+},
+{
+  "name":"java.security.Principal",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.security.ProtectionDomain",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.security.SecureRandom",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.security.SecureRandomParameters"
+},
+{
+  "name":"java.security.cert.CertificateException"
 },
 {
   "name":"java.security.interfaces.RSAPrivateKey"
@@ -217,24 +4550,573 @@
   "name":"java.security.interfaces.RSAPublicKey"
 },
 {
-  "name":"java.util.Date"
+  "name":"java.sql.Connection",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.sql.Date",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.sql.PreparedStatement",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.sql.ResultSet",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.sql.SQLException"
+},
+{
+  "name":"java.sql.Statement",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.sql.Wrapper",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.text.DateFormat",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.text.Format",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.text.ParseException"
+},
+{
+  "name":"java.text.SimpleDateFormat",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.time.Duration",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.time.Instant",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.time.LocalDate",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.time.LocalDateTime",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.time.OffsetDateTime",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.time.Period",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.time.ZoneId",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.time.ZoneOffset",
+  "allDeclaredFields":true
+},
+{
+  "name":"java.time.ZonedDateTime",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.time.chrono.ChronoLocalDate",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.time.chrono.ChronoLocalDateTime",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.time.chrono.ChronoPeriod",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.time.chrono.ChronoZonedDateTime",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.time.format.DateTimeParseException"
+},
+{
+  "name":"java.time.temporal.Temporal",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.time.temporal.TemporalAccessor",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.time.temporal.TemporalAdjuster",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.time.temporal.TemporalAmount",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.time.zone.ZoneRules",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.AbstractCollection",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.AbstractList",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.AbstractMap",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.AbstractSet",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.ArrayDeque",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.ArrayList",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.Arrays",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Base64",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Base64$Decoder",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Base64$Encoder",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Calendar",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Collection",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.Collections",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Comparator",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.Date",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.Deque",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.Dictionary",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Enumeration"
+},
+{
+  "name":"java.util.EventListener",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.HashMap",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.HashSet",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.Hashtable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Iterator",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.LinkedHashMap",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.LinkedHashSet",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.LinkedList",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.List",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"copyOf","parameterTypes":["java.util.Collection"] }]
+},
+{
+  "name":"java.util.Locale",
+  "allDeclaredFields":true
+},
+{
+  "name":"java.util.Map",
+  "allDeclaredClasses":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.Map$Entry",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.Map.Entry"
+},
+{
+  "name":"java.util.NoSuchElementException",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.Objects",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Optional",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"isEmpty","parameterTypes":[] }]
+},
+{
+  "name":"java.util.Properties",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.Queue",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.Random",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.RandomAccess",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.Scanner",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.SequencedCollection",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.Set",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.TimeZone",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Timer",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.TimerTask",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.TreeMap",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.TreeSet",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.UUID",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.concurrent.AbstractExecutorService",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.concurrent.ArrayBlockingQueue",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.concurrent.BlockingQueue",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.concurrent.Callable",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.concurrent.CompletableFuture",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.concurrent.CompletionStage",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.concurrent.ConcurrentHashMap",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.concurrent.CountDownLatch",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.concurrent.ExecutionException"
+},
+{
+  "name":"java.util.concurrent.Executor",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.concurrent.ExecutorService",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.concurrent.Executors",
+  "queryAllDeclaredMethods":true
 },
 {
   "name":"java.util.concurrent.ForkJoinTask",
   "fields":[{"name":"aux"}, {"name":"status"}]
 },
 {
+  "name":"java.util.concurrent.Future",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.concurrent.LinkedBlockingQueue",
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.concurrent.ThreadFactory"
+},
+{
+  "name":"java.util.concurrent.ThreadPoolExecutor",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.concurrent.TimeUnit",
+  "allPublicFields":true,
+  "queryAllPublicMethods":true
+},
+{
   "name":"java.util.concurrent.atomic.AtomicBoolean",
   "fields":[{"name":"value"}]
+},
+{
+  "name":"java.util.concurrent.atomic.AtomicInteger",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
 },
 {
   "name":"java.util.concurrent.atomic.AtomicReference",
   "fields":[{"name":"value"}]
 },
 {
+  "name":"java.util.concurrent.locks.Lock",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.concurrent.locks.ReadWriteLock",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.function.BiConsumer",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.function.BiFunction",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.function.BinaryOperator",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.function.Consumer",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.function.Function",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.function.IntUnaryOperator",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.function.Predicate",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.function.Supplier",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.function.ToIntFunction",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.function.ToLongFunction",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.function.UnaryOperator",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.random.RandomGenerator",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.regex.MatchResult",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.regex.Matcher",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.regex.Pattern",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.stream.BaseStream",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.stream.Collectors",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.stream.IntStream",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.stream.Stream",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true
+},
+{
+  "name":"java.util.zip.DeflaterInputStream"
+},
+{
+  "name":"java.util.zip.GZIPInputStream",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.zip.InflaterInputStream",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.zip.ZipEntry"
+},
+{
+  "name":"java.util.zip.ZipInputStream",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"javax.crypto.SecretKey"
+},
+{
+  "name":"javax.naming.AuthenticationException",
+  "allDeclaredFields":true
+},
+{
+  "name":"javax.naming.Context"
+},
+{
+  "name":"javax.naming.NamingEnumeration"
+},
+{
+  "name":"javax.naming.NamingException",
+  "allDeclaredFields":true
+},
+{
+  "name":"javax.naming.NamingSecurityException",
+  "allDeclaredFields":true
+},
+{
+  "name":"javax.naming.directory.DirContext"
+},
+{
+  "name":"javax.net.ssl.HostnameVerifier",
+  "allDeclaredFields":true
+},
+{
+  "name":"javax.net.ssl.SSLContext"
+},
+{
+  "name":"javax.net.ssl.SSLSocketFactory"
+},
+{
   "name":"javax.security.auth.x500.X500Principal",
   "fields":[{"name":"thisX500Name"}],
   "methods":[{"name":"<init>","parameterTypes":["sun.security.x509.X500Name"] }]
+},
+{
+  "name":"javax.xml"
+},
+{
+  "name":"javax.xml.bind"
 },
 {
   "name":"jdk.internal.misc.Unsafe"
@@ -321,6 +5203,14 @@
 {
   "name":"sun.misc.Unsafe",
   "fields":[{"name":"theUnsafe"}]
+},
+{
+  "name":"sun.security.provider.NativePRNG",
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+},
+{
+  "name":"sun.security.provider.SHA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"sun.security.provider.SHA2$SHA256",
