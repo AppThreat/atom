@@ -36,15 +36,10 @@ npm install -g @cyclonedx/cdxgen --omit=optional
 
 ## atom native-image
 
-atom v2 is available as a Java native image built using graalvm community edition. The following languages are tested and known to be working.
-
-- C/C++/H
-- PHP
-- JavaScript/TypeScript
-- Python
+atom v2 is available as a native image built using graalvm community edition.
 
 ```shell
-curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.4/atom-amd64
+curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.5/atom-amd64
 chmod +x atom-amd64
 ./atom-amd64 --help
 ```
@@ -52,7 +47,7 @@ chmod +x atom-amd64
 On Windows
 
 ```pwsh
-curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.4/atom.exe
+curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.5/atom.exe
 .\atom.exe --help
 ```
 
