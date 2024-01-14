@@ -34,18 +34,31 @@ Install cdxgen to generate a Software Bill-of-Materials which is required for re
 npm install -g @cyclonedx/cdxgen --omit=optional
 ```
 
-### Java 21 version
+## atom native-image
 
-When working with large Java or C/C++ codebases (> 1 million lines of code), use the Java 21 version which uses the new language features to improve performance. You can download this via GitHub [releases](https://github.com/AppThreat/atom/releases).
+atom v2 is available as a Java native image built using graalvm community edition. The following languages are tested and known to be working.
+
+- C/C++/H
+- PHP
+- JavaScript/TypeScript
+- Python
 
 ```shell
-mkdir -p atom
-cd atom
-wget https://github.com/AppThreat/atom/releases/latest/download/atom-java21.zip
-unzip atom-java21.zip
-cd bin
-./atom --help
+curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.3/atom-amd64
+chmod +x atom-amd64
+./atom-amd64 --help
 ```
+
+On Windows
+
+```pwsh
+curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.3/atom.exe
+.\atom.exe --help
+```
+
+Windows native images are currently built and uploaded to releases manually. This is due to the extra steps involved with the use of x64 Native Tools Command Prompt.
+
+NOTE: cdxgen is not bundled into the native image so needs to be installed separately.
 
 ## CLI Usage
 
@@ -227,24 +240,6 @@ bash build.sh && sudo npm install -g .
 ```shell
 chennai> importAtom("/home/almalinux/work/sandbox/apollo/app.atom")
 ```
-
-## Generating Java 21 native-image
-
-[native-image](https://www.graalvm.org/latest/reference-manual/native-image/) generation for atom is possible. We have tested the generation with both graalce and graal versions for the following languages.
-
-- C/C++/h
-
-```shell
-sdk use java 21.0.1-graalce
-git clone https://github.com/AppThreat/atom
-cd atom
-git checkout release/2.x
-bash ci/native-image.sh
-./target/graalvm-native-image/atom --help
-./target/graalvm-native-image/atom -l c -o app.atom .
-```
-
-We will add support for more languages over time.
 
 ## Enterprise support
 
