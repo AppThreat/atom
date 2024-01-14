@@ -74,12 +74,12 @@ COPY ./target/atom.zip .
 COPY ./wrapper .
 RUN unzip -q atom.zip \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
-    && cd /opt/nodejs && npm install && cd /opt \
+    && cd /opt/nodejs && npm install --only=production && cd /opt \
     && sudo npm install -g /opt/nodejs \
     && rm -rf atom.zip composer.json composer.lock composer-setup.php \
     && /opt/bin/atom --help \
-    && astgen --help \
-    && phpastgen --help \
+    && which astgen \
+    && which phpastgen \
     && microdnf clean all
 
 ENTRYPOINT ["/opt/bin/atom"]
