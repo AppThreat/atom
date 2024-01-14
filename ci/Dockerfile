@@ -4,7 +4,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.authors="Team AppThreat <cloud@appthreat.com>" \
       org.opencontainers.image.source="https://github.com/appthreat/chen" \
       org.opencontainers.image.url="https://github.com/appthreat/atom" \
-      org.opencontainers.image.version="1.8.x" \
+      org.opencontainers.image.version="2.0.x" \
       org.opencontainers.image.vendor="appthreat" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.title="atom" \
@@ -75,7 +75,10 @@ COPY ./wrapper .
 RUN unzip -q atom.zip \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
     && sudo npm install -g /opt/nodejs \
-    && rm -rf atom.zip nodejs composer.json composer.lock composer-setup.php \
+    && rm -rf atom.zip composer.json composer.lock composer-setup.php \
+    && atom --help \
+    && astgen --help \
+    && phpastgen --help \
     && microdnf clean all
 
 ENTRYPOINT ["/opt/bin/atom"]
