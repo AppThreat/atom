@@ -29,10 +29,15 @@ jobs:
           native-image-job-reports: 'true'
           cache: 'sbt'
       - run: |
+          wget https://github.com/upx/upx/releases/download/v4.2.2/upx-4.2.2-amd64_linux.tar.xz
+          tar -xvf upx-4.2.2-amd64_linux.tar.xz
+          chmod +x upx-4.2.2-amd64_linux/upx
+          sudo cp upx-4.2.2-amd64_linux/upx /usr/local/bin/
           sbt stage astGenDlTask assembly createDistribution
           sha512sum target/atom.zip > target/atom.zip.sha512
           bash ci/native-image.sh
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-amd64
+          /usr/local/bin/upx -9 --lzma target/graalvm-native-image/atom-amd64
           sha512sum target/graalvm-native-image/atom-amd64 > target/graalvm-native-image/atom-amd64.sha512
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
