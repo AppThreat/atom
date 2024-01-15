@@ -34,17 +34,14 @@ Install cdxgen to generate a Software Bill-of-Materials which is required for re
 npm install -g @cyclonedx/cdxgen --omit=optional
 ```
 
-### Java 21 version
+### atom native-image
 
 atom v2 is available as a native image built using GraalVM community edition.
 
 ```shell
-mkdir -p atom
-cd atom
-wget https://github.com/AppThreat/atom/releases/latest/download/atom-java21.zip
-unzip atom-java21.zip
-cd bin
-./atom --help
+curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.5/atom-amd64
+chmod +x atom-amd64
+./atom-amd64 --help
 ```
 
 On Windows
