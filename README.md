@@ -34,9 +34,9 @@ Install cdxgen to generate a Software Bill-of-Materials which is required for re
 npm install -g @cyclonedx/cdxgen --omit=optional
 ```
 
-### atom native-image
+## atom native-image
 
-atom v2 is available as a native image built using GraalVM community edition.
+atom v2 is available as a native image built using graalvm community edition.
 
 ```shell
 curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.5/atom-amd64

@@ -4,7 +4,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.authors="Team AppThreat <cloud@appthreat.com>" \
       org.opencontainers.image.source="https://github.com/appthreat/chen" \
       org.opencontainers.image.url="https://github.com/appthreat/atom" \
-      org.opencontainers.image.version="1.8.x" \
+      org.opencontainers.image.version="2.0.x" \
       org.opencontainers.image.vendor="appthreat" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.title="atom" \
@@ -24,7 +24,7 @@ ENV JAVA_VERSION=$JAVA_VERSION \
     PHP_PARSER_BIN=/opt/vendor/bin/php-parse \
     COMPOSER_ALLOW_SUPERUSER=1
 
-ENV PATH=${PATH}:/opt/bin:/opt/vendor/bin:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:
+ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:
 
 WORKDIR /opt
 
@@ -74,8 +74,12 @@ COPY ./target/atom.zip .
 COPY ./wrapper .
 RUN unzip -q atom.zip \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
+    && cd /opt/nodejs && npm install --only=production && cd /opt \
     && sudo npm install -g /opt/nodejs \
-    && rm -rf atom.zip nodejs composer.json composer.lock composer-setup.php \
+    && rm -rf atom.zip composer.json composer.lock composer-setup.php /usr/local/bin/atom \
+    && /opt/bin/atom --help \
+    && which astgen \
+    && which phpastgen \
     && microdnf clean all
 
 ENTRYPOINT ["/opt/bin/atom"]

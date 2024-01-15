@@ -7,8 +7,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        java-version: ['17', '19', '20', '21']
-        node-version: ['20.x']
+        java-version: ['21']
+        node-version: ['21.x']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
       - run: |
           sbt stage assembly createDistribution
@@ -61,8 +61,8 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        java-version: ['17', '19', '20', '21']
-        node-version: ['20.x']
+        java-version: ['21']
+        node-version: ['21.x']
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
@@ -93,7 +93,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
       - name: build
         shell: pwsh

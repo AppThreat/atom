@@ -35,10 +35,13 @@ jobs:
           path: 'repotests/django-DefectDojo'
       - uses: coursier/cache-action@v6
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: graalvm/setup-graalvm@v1
         with:
-          distribution: 'zulu'
+          distribution: 'graalvm-community'
           java-version: '21'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+          cache: 'sbt'
       - run: |
           sbt stage astGenDlTask
           ./atom.sh --remove-atom -o /tmp/java.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
@@ -70,3 +73,8 @@ jobs:
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
         if: runner.os != 'Windows'
+      - run: |
+          bash ci/native-image.sh
+        env:
+          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+        shell: bash

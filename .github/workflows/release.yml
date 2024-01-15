@@ -61,13 +61,25 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: graalvm/setup-graalvm@v1
         with:
-          distribution: 'zulu'
+          distribution: 'graalvm-community'
           java-version: '21'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+          cache: 'sbt'
       - run: |
+          wget https://github.com/upx/upx/releases/download/v4.2.2/upx-4.2.2-amd64_linux.tar.xz
+          tar -xvf upx-4.2.2-amd64_linux.tar.xz
+          chmod +x upx-4.2.2-amd64_linux/upx
+          sudo cp upx-4.2.2-amd64_linux/upx /usr/local/bin/
           sbt stage astGenDlTask assembly createDistribution
           sha512sum target/atom.zip > target/atom.zip.sha512
+          bash ci/native-image.sh
+          cp target/graalvm-native-image/atom target/graalvm-native-image/atom-amd64
+          /usr/local/bin/upx -9 --lzma target/graalvm-native-image/atom-amd64
+          target/graalvm-native-image/atom-amd64 --help
+          sha512sum target/graalvm-native-image/atom-amd64 > target/graalvm-native-image/atom-amd64.sha512
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: sbt publish
@@ -78,10 +90,15 @@ jobs:
         run: |
           cd target
           echo $GITHUB_TOKEN | oras login ghcr.io -u $GITHUB_USERNAME --password-stdin
-          oras push ghcr.io/$IMAGE_NAME:v1 \
-            --annotation-file ../ci/annotations.json \
+          oras push ghcr.io/$IMAGE_NAME:v2 \
+            --artifact-type application/vnd.oras.config.v1+json \
             ./atom.zip:application/vnd.appthreat.atom.layer.v1+tar \
             ./atom.zip.sha512:application/vnd.appthreat.atom.layer.v1+tar
+          cd graalvm-native-image
+          oras push ghcr.io/appthreat/atom-amd64:v2 \
+            --artifact-type application/vnd.oras.config.v1+json \
+            ./atom-amd64:application/vnd.appthreat.atom.layer.v1+tar \
+            ./atom-amd64.sha512:application/vnd.appthreat.atom.layer.v1+tar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_USERNAME: ${{ github.actor }}
@@ -92,3 +109,5 @@ jobs:
           files: |
             target/atom.zip
             target/atom.zip.sha512
+            target/graalvm-native-image/atom-amd64
+            target/graalvm-native-image/atom-amd64.sha512
