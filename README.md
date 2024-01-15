@@ -51,8 +51,6 @@ curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.5/atom.exe
 .\atom.exe --help
 ```
 
-Windows native images are currently built and uploaded to releases manually. This is due to the extra steps involved with the use of x64 Native Tools Command Prompt.
-
 NOTE: cdxgen is not bundled into the native image so needs to be installed separately.
 
 ## CLI Usage
