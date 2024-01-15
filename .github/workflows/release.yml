@@ -36,7 +36,6 @@ jobs:
           sbt stage createDistribution
           sbt "GraalVMNativeImage / packageBin"
           .\target\graalvm-native-image\atom.exe --help
-          upx-4.2.2-win64\upx.exe --best target\graalvm-native-image\atom.exe
           cd target\graalvm-native-image
           (Get-FileHash -Algorithm SHA512 .\atom.exe).hash | Out-File -FilePath .\atom.exe.sha512
         env:
