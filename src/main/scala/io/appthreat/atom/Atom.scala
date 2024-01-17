@@ -4,7 +4,7 @@ import better.files.File
 import io.appthreat.atom.dataflows.{DataFlowGraph, OssDataFlow, OssDataFlowOptions}
 import io.appthreat.atom.frontends.clike.C2Atom
 import io.appthreat.atom.parsedeps.parseDependencies
-import io.appthreat.atom.passes.{SafeJSTypeRecoveryPass, TypeHintPass}
+import io.appthreat.atom.passes.TypeHintPass
 import io.appthreat.atom.slicing.*
 import io.appthreat.c2cpg.{C2Cpg, Config as CConfig}
 import io.appthreat.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
@@ -12,7 +12,8 @@ import io.appthreat.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
 import io.appthreat.jssrc2cpg.passes.{
     ConstClosurePass,
     ImportResolverPass,
-    JavaScriptInheritanceNamePass
+    JavaScriptInheritanceNamePass,
+    JavaScriptTypeRecoveryPass
 }
 import io.appthreat.jssrc2cpg.{JsSrc2Cpg, Config as JSConfig}
 import io.appthreat.php2atom.passes.PhpSetKnownTypesPass
@@ -487,7 +488,7 @@ object Atom:
                               new JavaScriptInheritanceNamePass(ag).createAndApply()
                               new ConstClosurePass(ag).createAndApply()
                               new ImportResolverPass(ag).createAndApply()
-                              new SafeJSTypeRecoveryPass(ag).createAndApply()
+                              new JavaScriptTypeRecoveryPass(ag).createAndApply()
                               new TypeHintPass(ag).createAndApply()
                               ag
                           }

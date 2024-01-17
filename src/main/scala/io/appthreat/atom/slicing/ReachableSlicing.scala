@@ -68,6 +68,9 @@ object ReachableSlicing:
                 .reachableByFlows(sourceI, dynFrameworkIdentifier)
                 .map(toSlice)
                 .toList
+            flowsList ++= atom.tag.name("pkg.*").identifier.reachableByFlows(
+              atom.tag.name(CLI_SOURCE_TAG).call
+            ).map(toSlice).toList
         end if
         if language == Languages.PHP
         then
