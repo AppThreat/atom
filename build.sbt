@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.0.5"
+ThisBuild / version      := "2.0.6"
 ThisBuild / scalaVersion := "3.3.1"
 
-val chenVersion      = "2.0.3"
+val chenVersion      = "2.0.5"
 
 lazy val atom = Projects.atom
 
@@ -181,5 +181,4 @@ credentials +=
     "appthreat",
     sys.env.getOrElse("GITHUB_TOKEN", "N/A")
   )
-//graalVMNativeImageGraalVersion := Some("22")
 graalVMNativeImageOptions := Seq("-H:+UnlockExperimentalVMOptions", "--no-fallback")
