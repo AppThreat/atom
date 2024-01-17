@@ -45,8 +45,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            target\graalvm-native-image\atom.exe
-            target\graalvm-native-image\atom.exe.sha512
+            target/graalvm-native-image/atom.exe
+            target/graalvm-native-image/atom.exe.sha512
 
   release:
     if: github.repository_owner == 'appthreat'
