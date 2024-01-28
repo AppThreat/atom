@@ -200,6 +200,29 @@ object ReachableSlicing:
                       columnNumber = ret.columnNumber
                     )
                     tableRows += sliceNode
+                case literal: Literal =>
+                    val methodName = literal.method.name
+                    if tags.isEmpty && literal.inCall.nonEmpty && literal.inCall.head.tag.nonEmpty
+                    then
+                        tags = tagAsString(literal.inCall.head.tag)
+                        purls ++= purlsFromTag(literal.inCall.head.tag)
+                    if !addedPaths.contains(
+                          s"${fileName}#${lineNumber}"
+                        )
+                    then
+                        sliceNode = sliceNode.copy(
+                          name = literal.code.replaceAll("""(['"])""", ""),
+                          code = literal.code.replaceAll("""(['"])""", ""),
+                          typeFullName = literal.typeFullName,
+                          parentMethodName = methodName,
+                          parentMethodSignature = literal.method.signature,
+                          parentPackageName = literal.method.location.packageName,
+                          parentClassName = literal.method.location.className,
+                          lineNumber = literal.lineNumber,
+                          columnNumber = literal.columnNumber,
+                          tags = tags
+                        )
+                        tableRows += sliceNode
                 case identifier: Identifier =>
                     val methodName = identifier.method.name
                     if tags.isEmpty && identifier.inCall.nonEmpty && identifier.inCall.head.tag.nonEmpty
