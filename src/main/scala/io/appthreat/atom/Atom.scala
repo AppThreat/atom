@@ -250,6 +250,13 @@ object Atom:
                       c match
                           case c: AtomReachablesConfig => c.copy(sliceDepth = x)
                           case _                       => c
+                  ),
+              opt[Unit]("include-crypto")
+                  .text(s"includes crypto library flows - defaults to false.")
+                  .action((_, c) =>
+                      c match
+                          case c: AtomReachablesConfig => c.copy(includeCryptoFlows = true)
+                          case _                       => c
                   )
             )
         help("help").text("display this help message")
@@ -388,7 +395,12 @@ object Atom:
                   !config.includeMethodSource
                 )
             case config: AtomReachablesConfig =>
-                ReachablesConfig(config.sourceTag, config.sinkTag, config.sliceDepth)
+                ReachablesConfig(
+                  config.sourceTag,
+                  config.sinkTag,
+                  config.sliceDepth,
+                  config.includeCryptoFlows
+                )
             case _ => x
         ).withInputPath(x.inputPath)
             .withOutputSliceFile(x.outputSliceFile)
