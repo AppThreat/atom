@@ -573,7 +573,10 @@ object Atom:
                 Left(exception.getMessage)
             case Success(ag) =>
                 config match
-                    case x: AtomConfig if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] =>
+                    case x: AtomConfig
+                        if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] || x.isInstanceOf[
+                          AtomReachablesConfig
+                        ] =>
                         println("Generating data-flow dependencies from atom. Please wait ...")
                         // Enhance with simple and easy tags
                         new EasyTagsPass(ag).createAndApply()

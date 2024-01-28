@@ -44,11 +44,11 @@ object ReachableSlicing:
             atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter).map(
               toSlice
             ).toList
-        if language == Languages.JAVA || language == Languages.JAVASRC then
-            flowsList ++= atom.tag.name(CRYPTO_GENERATE_TAG).call.df(
+        if config.includeCryptoFlows && (language == Languages.JAVA || language == Languages.JAVASRC)
+        then
+            flowsList ++= atom.tag.name(CRYPTO_GENERATE_TAG).call.reachableByFlows(
               atom.tag.name(CRYPTO_ALGORITHM_TAG).literal
-            ).map(toSlice)
-                .toList
+            ).map(toSlice).toList
         // For JavaScript and Python, we need flows between arguments of call nodes to track callbacks and middlewares
         if
             language == Languages.JSSRC || language == Languages.JAVASCRIPT || language == Languages.PYTHON || language == Languages.PYTHONSRC
