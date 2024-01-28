@@ -22,6 +22,10 @@ jobs:
           path: 'repotests/shiftleft-java-example'
       - uses: actions/checkout@v4
         with:
+          repository: 'rodbate/bouncycastle-examples'
+          path: 'repotests/bouncycastle-examples'
+      - uses: actions/checkout@v4
+        with:
           repository: 'juice-shop/juice-shop'
           path: 'repotests/juice-shop'
       - uses: actions/checkout@v4
@@ -91,12 +95,14 @@ jobs:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
           npm install -g @cyclonedx/cdxgen --omit=optional
+          cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/bouncycastle-examples/bom.json $GITHUB_WORKSPACE/repotests/bouncycastle-examples
+          ./atom.sh reachables --include-crypto --remove-atom -o /tmp/bouncycastle-examples.atom -l java $GITHUB_WORKSPACE/repotests/bouncycastle-examples -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/bouncycastle-examples.reachables.json
           cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/java-sec-code/bom.json $GITHUB_WORKSPACE/repotests/java-sec-code
-          ./atom.sh reachables --remove-atom -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java-sec-code.reachables.json
+          ./atom.sh reachables --include-crypto --remove-atom -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java-sec-code.reachables.json
           cdxgen -t c --deep -o $GITHUB_WORKSPACE/repotests/aws-doc-sdk-examples/cpp/bom.json $GITHUB_WORKSPACE/repotests/aws-doc-sdk-examples/cpp
           ./atom.sh reachables --remove-atom -o /tmp/aws-doc-sdk-examples.atom -l c $GITHUB_WORKSPACE/repotests/aws-doc-sdk-examples/cpp -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/aws-doc-sdk-examples.reachables.json
-          cdxgen -t python --deep -o $GITHUB_WORKSPACE/repotests/django-DefectDojo/bom.json $GITHUB_WORKSPACE/repotests/django-DefectDojo
-          ./atom.sh reachables --remove-atom -o /tmp/django-DefectDojo.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/django-DefectDojo.reachables.json
+          cdxgen -t python --deep -o $GITHUB_WORKSPACE/repotests/DjanGoat/bom.json $GITHUB_WORKSPACE/repotests/DjanGoat
+          ./atom.sh reachables --remove-atom -o /tmp/DjanGoat.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/DjanGoat.reachables.json
         if: runner.os != 'Windows'
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
