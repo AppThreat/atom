@@ -12,7 +12,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom"
 
 ARG MAVEN_VERSION=3.9.6
-ARG JAVA_VERSION=21.0.1-graalce
+ARG JAVA_VERSION=21.0.2-graalce
 
 ENV JAVA_VERSION=$JAVA_VERSION \
     MAVEN_VERSION=$MAVEN_VERSION \
