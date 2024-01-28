@@ -63,7 +63,7 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '21.x'
       - run: |
