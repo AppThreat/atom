@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 # bash ci/native-image.sh
 
-echo "Applying Java 21 patch"
-git apply --ignore-space-change --ignore-whitespace contrib/java21.patch
-if [ $? != 0 ]; then
-    echo "Unable to patch the codebase correctly. Please file a bug report for atom."
-fi
+# sdk use java 21.0.1-graalce
+
 echo "About to build the native image. This would take a few minutes ..."
-sbt clean stage scalafmt "GraalVMNativeImage / packageBin"
+sbt "GraalVMNativeImage / packageBin"
 
 if [ -f "target/graalvm-native-image/atom" ]; then
     chmod +x target/graalvm-native-image/atom

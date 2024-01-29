@@ -4,7 +4,7 @@ import better.files.File
 import io.appthreat.atom.dataflows.{DataFlowGraph, OssDataFlow, OssDataFlowOptions}
 import io.appthreat.atom.frontends.clike.C2Atom
 import io.appthreat.atom.parsedeps.parseDependencies
-import io.appthreat.atom.passes.{SafeJSTypeRecoveryPass, TypeHintPass}
+import io.appthreat.atom.passes.TypeHintPass
 import io.appthreat.atom.slicing.*
 import io.appthreat.c2cpg.{C2Cpg, Config as CConfig}
 import io.appthreat.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
@@ -12,7 +12,8 @@ import io.appthreat.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
 import io.appthreat.jssrc2cpg.passes.{
     ConstClosurePass,
     ImportResolverPass,
-    JavaScriptInheritanceNamePass
+    JavaScriptInheritanceNamePass,
+    JavaScriptTypeRecoveryPass
 }
 import io.appthreat.jssrc2cpg.{JsSrc2Cpg, Config as JSConfig}
 import io.appthreat.php2atom.passes.PhpSetKnownTypesPass
@@ -249,6 +250,13 @@ object Atom:
                       c match
                           case c: AtomReachablesConfig => c.copy(sliceDepth = x)
                           case _                       => c
+                  ),
+              opt[Unit]("include-crypto")
+                  .text(s"includes crypto library flows - defaults to false.")
+                  .action((_, c) =>
+                      c match
+                          case c: AtomReachablesConfig => c.copy(includeCryptoFlows = true)
+                          case _                       => c
                   )
             )
         help("help").text("display this help message")
@@ -257,7 +265,9 @@ object Atom:
         run(args) match
             case Right(msg) =>
             case Left(errMsg) =>
-                if errMsg.nonEmpty && errMsg.contains(
+                if errMsg == null then
+                    println("Unexpected error")
+                else if errMsg.nonEmpty && errMsg.contains(
                       "storage metadata does not contain version number"
                     )
                 then
@@ -385,7 +395,12 @@ object Atom:
                   !config.includeMethodSource
                 )
             case config: AtomReachablesConfig =>
-                ReachablesConfig(config.sourceTag, config.sinkTag, config.sliceDepth)
+                ReachablesConfig(
+                  config.sourceTag,
+                  config.sinkTag,
+                  config.sliceDepth,
+                  config.includeCryptoFlows
+                )
             case _ => x
         ).withInputPath(x.inputPath)
             .withOutputSliceFile(x.outputSliceFile)
@@ -485,7 +500,7 @@ object Atom:
                               new JavaScriptInheritanceNamePass(ag).createAndApply()
                               new ConstClosurePass(ag).createAndApply()
                               new ImportResolverPass(ag).createAndApply()
-                              new SafeJSTypeRecoveryPass(ag).createAndApply()
+                              new JavaScriptTypeRecoveryPass(ag).createAndApply()
                               new TypeHintPass(ag).createAndApply()
                               ag
                           }
@@ -558,7 +573,10 @@ object Atom:
                 Left(exception.getMessage)
             case Success(ag) =>
                 config match
-                    case x: AtomConfig if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] =>
+                    case x: AtomConfig
+                        if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] || x.isInstanceOf[
+                          AtomReachablesConfig
+                        ] =>
                         println("Generating data-flow dependencies from atom. Please wait ...")
                         // Enhance with simple and easy tags
                         new EasyTagsPass(ag).createAndApply()

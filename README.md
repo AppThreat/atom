@@ -34,18 +34,24 @@ Install cdxgen to generate a Software Bill-of-Materials which is required for re
 npm install -g @cyclonedx/cdxgen --omit=optional
 ```
 
-### Java 21 version
+## atom native-image
 
-When working with large Java or C/C++ codebases (> 1 million lines of code), use the Java 21 version which uses the new language features to improve performance. You can download this via GitHub [releases](https://github.com/AppThreat/atom/releases).
+atom v2 is available as a native image built using graalvm community edition.
 
 ```shell
-mkdir -p atom
-cd atom
-wget https://github.com/AppThreat/atom/releases/latest/download/atom-java21.zip
-unzip atom-java21.zip
-cd bin
-./atom --help
+curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.5/atom-amd64
+chmod +x atom-amd64
+./atom-amd64 --help
 ```
+
+On Windows
+
+```pwsh
+curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.5/atom.exe
+.\atom.exe --help
+```
+
+NOTE: cdxgen is not bundled into the native image so needs to be installed separately.
 
 ## CLI Usage
 
@@ -83,6 +89,7 @@ Command: reachables [options]
 Extract reachable data-flow slices based on automated framework tags
   --source-tag <value>     source tag - defaults to framework-input.
   --sink-tag <value>       sink tag - defaults to framework-output.
+  --include-crypto         includes crypto library flows - defaults to false.
   --help                   display this help message
 ```
 

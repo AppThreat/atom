@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "1.8.4"
+ThisBuild / version      := "2.0.7"
 ThisBuild / scalaVersion := "3.3.1"
 
-val chenVersion      = "1.1.6"
+val chenVersion      = "2.0.6"
 
 lazy val atom = Projects.atom
 
@@ -12,10 +12,10 @@ val astGenVersion = "3.5.0"
 libraryDependencies ++= Seq(
   "com.github.pathikrit"    %% "better-files"      % "3.9.2",
   "com.github.scopt"        %% "scopt"             % "4.1.0",
-  "org.apache.logging.log4j" % "log4j-core"        % "2.22.0" % Optional,
-  "org.apache.logging.log4j" % "log4j-slf4j2-impl" % "2.22.0" % Optional,
+  "org.slf4j"                % "slf4j-nop"         % "2.0.11" % Optional,
   "io.appthreat"                %% "c2cpg"             % Versions.chen excludeAll (
     ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
+    ExclusionRule(organization = "org.jline", name = "jline"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface.text")
   ),
@@ -36,17 +36,16 @@ Compile / doc / scalacOptions ++= Seq("-doc-title", "atom apidocs", "-doc-versio
 ThisBuild / scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
   "--release",
-  "17",
+  "21",
 )
 
 ThisBuild / compile / javacOptions ++= Seq(
-  "-g", // debug symbols
   "-Xlint",
-  "--release=17"
+  "--release=21"
 ) ++ {
   // fail early if users with JDK11 try to run this
   val javaVersion = sys.props("java.specification.version").toFloat
-  assert(javaVersion.toInt >= 17, s"this build requires JDK17+ - you're using $javaVersion")
+  assert(javaVersion.toInt >= 21, s"this build requires JDK21+ - you're using $javaVersion")
   Nil
 }
 
@@ -181,5 +180,4 @@ credentials +=
     "appthreat",
     sys.env.getOrElse("GITHUB_TOKEN", "N/A")
   )
-graalVMNativeImageGraalVersion := Some("22")
 graalVMNativeImageOptions := Seq("-H:+UnlockExperimentalVMOptions", "--no-fallback")

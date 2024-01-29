@@ -72,7 +72,8 @@ package object atom:
     case class AtomReachablesConfig(
       sourceTag: String = FRAMEWORK_INPUT_TAG,
       sinkTag: String = FRAMEWORK_OUTPUT_TAG,
-      sliceDepth: Int = DEFAULT_SLICE_DEPTH
+      sliceDepth: Int = DEFAULT_SLICE_DEPTH,
+      includeCryptoFlows: Boolean = false
     ) extends AtomConfig
 
     import io.appthreat.atom.slicing.*

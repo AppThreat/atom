@@ -14,7 +14,7 @@ class DataFlowSlicing:
 
     implicit val resolver: ICallResolver = NoResolve
     protected val exec: ExecutorService =
-        Executors.newWorkStealingPool(Runtime.getRuntime.availableProcessors() / 2)
+        Executors.newVirtualThreadPerTaskExecutor()
     private val excludeOperatorCalls     = new AtomicBoolean(true)
     private val nodeCache                = new TrieMap[Long, SliceNode]()
     private var language: Option[String] = _
