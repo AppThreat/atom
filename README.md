@@ -89,6 +89,7 @@ Command: reachables [options]
 Extract reachable data-flow slices based on automated framework tags
   --source-tag <value>     source tag - defaults to framework-input.
   --sink-tag <value>       sink tag - defaults to framework-output.
+  --include-crypto         includes crypto library flows - defaults to false.
   --help                   display this help message
 ```
 

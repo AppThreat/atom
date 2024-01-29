@@ -78,8 +78,12 @@ package object slicing:
       excludeMethodSource: Boolean = true
     ) extends BaseConfig
 
-    case class ReachablesConfig(sourceTag: String, sinkTag: String, sliceDepth: Int)
-        extends BaseConfig
+    case class ReachablesConfig(
+      sourceTag: String,
+      sinkTag: String,
+      sliceDepth: Int,
+      includeCryptoFlows: Boolean
+    ) extends BaseConfig
 
     /** Adds extensions to modify a method traversal based on config options
       */

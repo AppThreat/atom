@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.0.6"
+ThisBuild / version      := "2.0.7"
 ThisBuild / scalaVersion := "3.3.1"
 
-val chenVersion      = "2.0.5"
+val chenVersion      = "2.0.6"
 
 lazy val atom = Projects.atom
 
@@ -40,7 +40,6 @@ ThisBuild / scalacOptions ++= Seq(
 )
 
 ThisBuild / compile / javacOptions ++= Seq(
-  "-g", // debug symbols
   "-Xlint",
   "--release=21"
 ) ++ {

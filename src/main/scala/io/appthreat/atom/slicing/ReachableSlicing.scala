@@ -21,10 +21,13 @@ object ReachableSlicing:
     private def API_TAG                              = "api"
     private def FRAMEWORK_TAG                        = "framework"
 
-    private def LIBRARY_CALL_TAG  = "library-call"
-    private def CLI_SOURCE_TAG    = "cli-source"
-    private def DRIVER_SOURCE_TAG = "driver-source"
-    private def HTTP_TAG          = "http"
+    private def LIBRARY_CALL_TAG     = "library-call"
+    private def CLI_SOURCE_TAG       = "cli-source"
+    private def DRIVER_SOURCE_TAG    = "driver-source"
+    private def HTTP_TAG             = "http"
+    private def CRYPTO_GENERATE_TAG  = "crypto-generate"
+    private def CRYPTO_TAG           = "crypto"
+    private def CRYPTO_ALGORITHM_TAG = "crypto-algorithm"
 
     def calculateReachableSlice(atom: Cpg, config: ReachablesConfig): ReachableSlice =
         val language  = atom.metaData.language.head
@@ -41,6 +44,11 @@ object ReachableSlicing:
             atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter).map(
               toSlice
             ).toList
+        if config.includeCryptoFlows && (language == Languages.JAVA || language == Languages.JAVASRC)
+        then
+            flowsList ++= atom.tag.name(CRYPTO_GENERATE_TAG).call.reachableByFlows(
+              atom.tag.name(CRYPTO_ALGORITHM_TAG).literal
+            ).map(toSlice).toList
         // For JavaScript and Python, we need flows between arguments of call nodes to track callbacks and middlewares
         if
             language == Languages.JSSRC || language == Languages.JAVASCRIPT || language == Languages.PYTHON || language == Languages.PYTHONSRC
@@ -192,6 +200,29 @@ object ReachableSlicing:
                       columnNumber = ret.columnNumber
                     )
                     tableRows += sliceNode
+                case literal: Literal =>
+                    val methodName = literal.method.name
+                    if tags.isEmpty && literal.inCall.nonEmpty && literal.inCall.head.tag.nonEmpty
+                    then
+                        tags = tagAsString(literal.inCall.head.tag)
+                        purls ++= purlsFromTag(literal.inCall.head.tag)
+                    if !addedPaths.contains(
+                          s"${fileName}#${lineNumber}"
+                        )
+                    then
+                        sliceNode = sliceNode.copy(
+                          name = literal.code.replaceAll("""(['"])""", ""),
+                          code = literal.code.replaceAll("""(['"])""", ""),
+                          typeFullName = literal.typeFullName,
+                          parentMethodName = methodName,
+                          parentMethodSignature = literal.method.signature,
+                          parentPackageName = literal.method.location.packageName,
+                          parentClassName = literal.method.location.className,
+                          lineNumber = literal.lineNumber,
+                          columnNumber = literal.columnNumber,
+                          tags = tags
+                        )
+                        tableRows += sliceNode
                 case identifier: Identifier =>
                     val methodName = identifier.method.name
                     if tags.isEmpty && identifier.inCall.nonEmpty && identifier.inCall.head.tag.nonEmpty

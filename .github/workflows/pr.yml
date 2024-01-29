@@ -67,9 +67,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: |
           npm install -g @cyclonedx/cdxgen --omit=optional
-          cdxgen -t python --deep -o $GITHUB_WORKSPACE/repotests/django-DefectDojo/bom.json $GITHUB_WORKSPACE/repotests/django-DefectDojo
-          ./atom.sh reachables -o /tmp/django-DefectDojo.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/django-DefectDojo.reachables.json
-          ./atom.sh usages -o /tmp/django-DefectDojo.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/django-DefectDojo.usages.json
+          cdxgen -t python --deep -o $GITHUB_WORKSPACE/repotests/DjanGoat/bom.json $GITHUB_WORKSPACE/repotests/DjanGoat
+          ./atom.sh reachables -o /tmp/DjanGoat.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/DjanGoat.reachables.json
+          ./atom.sh usages -o /tmp/DjanGoat.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/DjanGoat.usages.json
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
         if: runner.os != 'Windows'

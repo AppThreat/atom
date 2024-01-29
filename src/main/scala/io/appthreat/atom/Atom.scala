@@ -250,6 +250,13 @@ object Atom:
                       c match
                           case c: AtomReachablesConfig => c.copy(sliceDepth = x)
                           case _                       => c
+                  ),
+              opt[Unit]("include-crypto")
+                  .text(s"includes crypto library flows - defaults to false.")
+                  .action((_, c) =>
+                      c match
+                          case c: AtomReachablesConfig => c.copy(includeCryptoFlows = true)
+                          case _                       => c
                   )
             )
         help("help").text("display this help message")
@@ -388,7 +395,12 @@ object Atom:
                   !config.includeMethodSource
                 )
             case config: AtomReachablesConfig =>
-                ReachablesConfig(config.sourceTag, config.sinkTag, config.sliceDepth)
+                ReachablesConfig(
+                  config.sourceTag,
+                  config.sinkTag,
+                  config.sliceDepth,
+                  config.includeCryptoFlows
+                )
             case _ => x
         ).withInputPath(x.inputPath)
             .withOutputSliceFile(x.outputSliceFile)
@@ -561,7 +573,10 @@ object Atom:
                 Left(exception.getMessage)
             case Success(ag) =>
                 config match
-                    case x: AtomConfig if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] =>
+                    case x: AtomConfig
+                        if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] || x.isInstanceOf[
+                          AtomReachablesConfig
+                        ] =>
                         println("Generating data-flow dependencies from atom. Please wait ...")
                         // Enhance with simple and easy tags
                         new EasyTagsPass(ag).createAndApply()
