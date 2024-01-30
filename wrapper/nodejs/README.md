@@ -1,6 +1,8 @@
 # Atom npm wrapper
 
-This package wraps the atom distributable and makes it available via the npm package registry. Atom is an upcoming intermediate representation for application and packages that is optimized for threat analysis and supply-chain security use cases.
+Atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation (a network with nodes and links) is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md).
+
+This package wraps the atom distributable and makes it available via the npm package registry.
 
 ## Usage
 
@@ -8,4 +10,4 @@ This package wraps the atom distributable and makes it available via the npm pac
 npm install @appthreat/atom
 ```
 
-Ensure Java 17/19 is available in the PATH.
+Ensure Java 21 is available in the PATH.

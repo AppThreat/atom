@@ -36,10 +36,10 @@ npm install -g @cyclonedx/cdxgen --omit=optional
 
 ## atom native-image
 
-atom v2 is available as a native image built using graalvm community edition.
+atom is available as a native image built using graalvm community edition.
 
 ```shell
-curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.5/atom-amd64
+curl -LO https://github.com/AppThreat/atom/releases/latest/download/atom-amd64
 chmod +x atom-amd64
 ./atom-amd64 --help
 ```
@@ -47,7 +47,7 @@ chmod +x atom-amd64
 On Windows
 
 ```pwsh
-curl -LO https://github.com/AppThreat/atom/releases/download/v2.0.5/atom.exe
+curl -LO https://github.com/AppThreat/atom/releases/latest/download/atom.exe
 .\atom.exe --help
 ```
 
@@ -234,6 +234,10 @@ bash build.sh && sudo npm install -g .
 ```shell
 chennai> importAtom("/home/almalinux/work/sandbox/apollo/app.atom")
 ```
+
+## Atom tools
+
+Checkout [atom-tools](https://github.com/AppThreat/atom-tools) for some project ideas involving atom slices.
 
 ## Enterprise support
 
