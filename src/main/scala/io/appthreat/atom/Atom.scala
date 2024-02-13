@@ -354,7 +354,7 @@ object Atom:
                 case _: UsagesConfig =>
                     saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
                 case _: ReachablesConfig =>
-                    saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJsonPretty))
+                    saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
                 case x: AtomParseDepsConfig =>
                     parseDependencies(ag).map(_.toJson) match
                         case Left(err)    => return Left(err)
