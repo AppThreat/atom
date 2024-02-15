@@ -46,7 +46,7 @@ package object parsedeps:
         )
 
     case class DependencySlice(modules: Seq[ModuleWithVersion]) extends AtomSlice:
-        override def toJson: String = this.asJson.spaces2
+        override def toJson: String = this.asJson.noSpaces
 
     case class ModuleWithVersion(
       name: String,

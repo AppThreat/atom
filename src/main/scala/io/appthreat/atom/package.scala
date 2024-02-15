@@ -87,5 +87,5 @@ package object atom:
 
     case class AtomDataFlowSlice(graph: DataFlowSlice, paths: Set[List[Long]] = Set.empty):
 
-        def toJson: String = this.asJson.toString()
+        def toJson: String = this.asJson.noSpaces
 end atom
