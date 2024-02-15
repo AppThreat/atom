@@ -121,12 +121,12 @@ package object slicing:
       *   a map linking nodes with their edges.
       */
     case class DataFlowSlice(nodes: Set[SliceNode], edges: Set[SliceEdge]) extends ProgramSlice:
-        def toJson: String = this.asJson.toString()
+        def toJson: String = this.asJson.noSpaces
 
         def toJsonPretty: String = this.asJson.spaces2
 
     case class ReachableSlice(reachables: List[ReachableFlows]) extends ProgramSlice:
-        def toJson: String = this.asJson.toString()
+        def toJson: String = this.asJson.noSpaces
 
         def toJsonPretty: String = this.asJson.spaces2
 
@@ -739,7 +739,7 @@ package object slicing:
       userDefinedTypes: List[UserDefinedType]
     ) extends ProgramSlice:
 
-        def toJson: String = this.asJson.toString()
+        def toJson: String = this.asJson.noSpaces
 
         def toJsonPretty: String = this.asJson.spaces2
 
