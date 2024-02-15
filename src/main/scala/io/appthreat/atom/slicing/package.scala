@@ -483,7 +483,7 @@ package object slicing:
                 case x: Local      => LocalDef(x.name, typeFullName, lineNumber, columnNumber)
                 case x: Literal    => LiteralDef(x.code, typeFullName, lineNumber, columnNumber)
                 case x: Member     => LocalDef(x.name, typeFullName, lineNumber, columnNumber)
-                case x: Method if (x.callIn.nonEmpty) =>
+                case x: Method if x.callIn.nonEmpty =>
                     val lastCall = x.callIn.last
                     CallDef(
                       lastCall.name,
@@ -493,7 +493,7 @@ package object slicing:
                       lastCall.lineNumber.map(_.intValue()),
                       lastCall.columnNumber.map(_.intValue())
                     )
-                case x: Method if (x.annotation.nonEmpty) =>
+                case x: Method if x.annotation.nonEmpty =>
                     val annotation = x.annotation.last
                     CallDef(
                       annotation.name,
@@ -520,7 +520,7 @@ package object slicing:
                         .replaceAll("\\t\\t", " ")
                         .replaceAll("\\s+", " ")
                     unknownMethodDeclCache.getOrElseUpdate(
-                      s"${methodDecl}|${lineNumber}|${columnNumber}",
+                      s"$methodDecl|$lineNumber|$columnNumber",
                       UnknownDef(methodDecl, typeFullName, lineNumber, columnNumber)
                     )
             end match

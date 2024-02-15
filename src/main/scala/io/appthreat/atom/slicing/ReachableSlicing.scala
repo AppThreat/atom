@@ -14,19 +14,17 @@ import scala.collection.mutable.ArrayBuffer
 
 object ReachableSlicing:
 
-    implicit val semantics: Semantics                = DefaultSemantics()
-    val engineConfig                                 = EngineConfig()
-    implicit val context: EngineContext              = EngineContext(semantics, engineConfig)
-    private implicit val finder: NodeExtensionFinder = DefaultNodeExtensionFinder
-    private def API_TAG                              = "api"
-    private def FRAMEWORK_TAG                        = "framework"
+    implicit val semantics: Semantics      = DefaultSemantics()
+    private val engineConfig: EngineConfig = EngineConfig()
+    implicit val context: EngineContext    = EngineContext(semantics, engineConfig)
+    private def API_TAG                    = "api"
+    private def FRAMEWORK_TAG              = "framework"
 
     private def LIBRARY_CALL_TAG     = "library-call"
     private def CLI_SOURCE_TAG       = "cli-source"
     private def DRIVER_SOURCE_TAG    = "driver-source"
     private def HTTP_TAG             = "http"
     private def CRYPTO_GENERATE_TAG  = "crypto-generate"
-    private def CRYPTO_TAG           = "crypto"
     private def CRYPTO_ALGORITHM_TAG = "crypto-algorithm"
 
     def calculateReachableSlice(atom: Cpg, config: ReachablesConfig): ReachableSlice =
@@ -149,7 +147,7 @@ object ReachableSlicing:
         path.elements.foreach { astNode =>
             val lineNumber   = astNode.lineNumber.map(_.intValue())
             val fileName     = astNode.file.name.headOption.getOrElse("").replace("<unknown>", "")
-            var fileLocation = s"${fileName}#${lineNumber}"
+            var fileLocation = s"$fileName#$lineNumber"
             var tags: String = tagAsString(astNode.tag)
             purls ++= purlsFromTag(astNode.tag)
             if fileLocation == "#" then fileLocation = "N/A"
@@ -207,7 +205,7 @@ object ReachableSlicing:
                         tags = tagAsString(literal.inCall.head.tag)
                         purls ++= purlsFromTag(literal.inCall.head.tag)
                     if !addedPaths.contains(
-                          s"${fileName}#${lineNumber}"
+                          s"$fileName#$lineNumber"
                         )
                     then
                         sliceNode = sliceNode.copy(
@@ -230,7 +228,7 @@ object ReachableSlicing:
                         tags = tagAsString(identifier.inCall.head.tag)
                         purls ++= purlsFromTag(identifier.inCall.head.tag)
                     if !addedPaths.contains(
-                          s"${fileName}#${lineNumber}"
+                          s"$fileName#$lineNumber"
                         ) && identifier.inCall.nonEmpty
                     then
                         sliceNode = sliceNode.copy(
@@ -321,7 +319,7 @@ object ReachableSlicing:
                         sliceNode.copy(parentMethodName = methodName, code = statement, tags = tags)
                     tableRows += sliceNode
             end match
-            addedPaths += s"${fileName}#${lineNumber}"
+            addedPaths += s"$fileName#$lineNumber"
         }
         ReachableFlows(flows = tableRows.toList, purls = purls.toSet)
     end toSlice
