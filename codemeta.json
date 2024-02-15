@@ -32,7 +32,7 @@
   ],
   "softwareRequirements": [
     "Java >= 21",
-    "Node.js >= 16"
+    "Node.js >= 20"
   ],
   "author": [
     {

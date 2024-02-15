@@ -12,13 +12,12 @@ LABEL maintainer="appthreat" \
       org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom"
 
 ARG MAVEN_VERSION=3.9.6
-ARG JAVA_VERSION=21.0.2-graalce
+ARG JAVA_VERSION=21.0.2-tem
 
 ENV JAVA_VERSION=$JAVA_VERSION \
     MAVEN_VERSION=$MAVEN_VERSION \
     JAVA_HOME="/opt/java/${JAVA_VERSION}" \
     MAVEN_HOME="/opt/maven/${MAVEN_VERSION}" \
-    JAVA_OPTS="-XX:+UseG1GC -XX:+ExplicitGCInvokesConcurrent -XX:+ParallelRefProcEnabled -XX:+UseStringDeduplication -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:+UnlockDiagnosticVMOptions -XX:G1SummarizeRSetStatsPeriod=1" \
     ANDROID_HOME=/opt/android-sdk-linux \
     JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8" \
     PHP_PARSER_BIN=/opt/vendor/bin/php-parse \
