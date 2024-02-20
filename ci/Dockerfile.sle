@@ -33,7 +33,7 @@ RUN set -e; \
             ;; \
         *) echo >&2 "error: unsupported architecture: '$ARCH_NAME'"; exit 1 ;; \
     esac; \
-    zypper refresh && zypper update && zypper --non-interactive install -l --no-recommends gcc gcc-c++ git-core php8 php8-cli php8-curl php8-zip php8-bcmath php8-pear php8-mbstring php8-devel make \
+    zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl php8-zip php8-bcmath php8-pear php8-mbstring php8-devel \
     && mkdir -p ${ANDROID_HOME}/cmdline-tools \
     && curl -L https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -o ${ANDROID_HOME}/cmdline-tools/android_tools.zip \
     && unzip ${ANDROID_HOME}/cmdline-tools/android_tools.zip -d ${ANDROID_HOME}/cmdline-tools/ \
@@ -49,9 +49,6 @@ RUN set -e; \
     && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.lock \
     && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.json
 
-ENV LC_ALL=en_US.UTF-8 \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8
 COPY ./target/atom.zip .
 COPY ./wrapper .
 RUN unzip -q atom.zip \
