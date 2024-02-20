@@ -43,7 +43,7 @@ RUN set -e; \
     && /opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager 'platform-tools' --sdk_root=/opt/android-sdk-linux \
     && /opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager 'platforms;android-34' --sdk_root=/opt/android-sdk-linux \
     && /opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager 'build-tools;34.0.0' --sdk_root=/opt/android-sdk-linux \
-    && sudo npm install -g @cyclonedx/cdxgen --omit=optional \
+    && npm install -g @cyclonedx/cdxgen --omit=optional \
     && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && php composer-setup.php \
     && mv composer.phar /usr/local/bin/composer \
     && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.lock \
@@ -57,7 +57,7 @@ COPY ./wrapper .
 RUN unzip -q atom.zip \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
     && cd /opt/nodejs && npm install --only=production && cd /opt \
-    && sudo npm install -g /opt/nodejs \
+    && npm install -g /opt/nodejs \
     && rm -rf atom.zip composer.json composer.lock composer-setup.php /usr/local/bin/atom \
     && /opt/bin/atom --help \
     && which astgen \
