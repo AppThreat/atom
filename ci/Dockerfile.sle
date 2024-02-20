@@ -49,6 +49,9 @@ RUN set -e; \
     && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.lock \
     && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.json
 
+ENV LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8
 COPY ./target/atom.zip .
 COPY ./wrapper .
 RUN unzip -q atom.zip \
