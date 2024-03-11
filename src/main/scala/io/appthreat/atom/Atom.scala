@@ -365,7 +365,7 @@ object Atom:
                     saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
                     if u.extractEndpoints then
                         val result = ExternalCommand.run(
-                          s"atom-tools1 convert -u ${config.outputSliceFile} -t ${config.language} -f openapi3.0.1 -o openapi.json",
+                          s"atom-tools convert -u ${config.outputSliceFile} -t ${config.language} -f openapi3.0.1 -o openapi.json",
                           "."
                         )
                         result match
