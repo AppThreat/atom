@@ -552,7 +552,10 @@ object UsageSlicing:
                       "route"
                     ) || baseCallCode.startsWith("app"))
                 then
-                    baseCallCode = baseCall.code.replaceAll("\n", "").replaceAll(" ", "")
+                    baseCallCode = baseCall.code.replaceAll("\n", "\\n").replaceAll(
+                      " {4}",
+                      " {2}"
+                    ).replaceAll(" {2}", "\\t")
                 resolvedMethod = Option(baseCallCode)
             Option(
               ObservedCall(
