@@ -75,7 +75,8 @@ package object slicing:
     case class UsagesConfig(
       minNumCalls: Int = 1,
       excludeOperatorCalls: Boolean = true,
-      excludeMethodSource: Boolean = true
+      excludeMethodSource: Boolean = true,
+      extractEndpoints: Boolean = false
     ) extends BaseConfig
 
     case class ReachablesConfig(

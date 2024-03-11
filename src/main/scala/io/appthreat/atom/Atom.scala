@@ -31,6 +31,7 @@ import io.appthreat.pysrc2cpg.{
 import io.appthreat.x2cpg.passes.base.AstLinkerPass
 import io.appthreat.x2cpg.passes.frontend.XTypeRecoveryConfig
 import io.appthreat.x2cpg.passes.taggers.{CdxPass, ChennaiTagsPass, EasyTagsPass}
+import io.appthreat.x2cpg.utils.ExternalCommand
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
 import io.shiftleft.codepropertygraph.generated.{Cpg, Languages}
 import io.shiftleft.semanticcpg.language.*
@@ -222,6 +223,15 @@ object Atom:
                       c match
                           case c: AtomUsagesConfig => c.copy(includeMethodSource = true)
                           case _                   => c
+                  ),
+              opt[Unit]("extract-endpoints")
+                  .text(
+                    s"extract http endpoints and convert to openapi format using atom-tools - defaults to false."
+                  )
+                  .action((_, c) =>
+                      c match
+                          case c: AtomUsagesConfig => c.copy(extractEndpoints = true)
+                          case _                   => c
                   )
             )
         cmd("reachables")
@@ -351,8 +361,20 @@ object Atom:
                             AtomDataFlowSlice(x, DataFlowGraph.buildFromSlice(x).paths).toJson
                         )
                     saveSlice(config.outputSliceFile, atomDataFlowSliceJson)
-                case _: UsagesConfig =>
+                case u: UsagesConfig =>
                     saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
+                    if u.extractEndpoints then
+                        val result = ExternalCommand.run(
+                          s"atom-tools1 convert -u ${config.outputSliceFile} -t ${config.language} -f openapi3.0.1 -o openapi.json",
+                          "."
+                        )
+                        result match
+                            case Success(msg) =>
+                                println("openapi.json created successfully.")
+                            case Failure(exception) =>
+                                println(
+                                  s"Failed to run atom-tools. Ensure it is installed using pip and available in the PATH. Exception: ${exception.getMessage}"
+                                )
                 case _: ReachablesConfig =>
                     saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
                 case x: AtomParseDepsConfig =>
@@ -392,7 +414,8 @@ object Atom:
                 UsagesConfig(
                   config.minNumCalls,
                   config.excludeOperatorCalls,
-                  !config.includeMethodSource
+                  !config.includeMethodSource,
+                  config.extractEndpoints
                 )
             case config: AtomReachablesConfig =>
                 ReachablesConfig(
