@@ -365,12 +365,12 @@ object Atom:
                     saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
                     if u.extractEndpoints then
                         val result = ExternalCommand.run(
-                          s"atom-tools convert -u ${config.outputSliceFile} -t ${config.language} -f openapi3.0.1 -o ${config.inputPath.pathAsString}${java.io.File.separator}openapi.generated.json",
+                          s"atom-tools convert -u ${config.outputSliceFile} -t ${config.language} -f openapi3.1.0 -o ${config.inputPath.pathAsString}${java.io.File.separator}openapi.generated.json",
                           "."
                         )
                         result match
                             case Success(_) =>
-                                println("openapi.json created successfully.")
+                                println("openapi.generated.json created successfully.")
                             case Failure(exception) =>
                                 println(
                                   s"Failed to run atom-tools. Use the atom container image or perform 'pip install atom-tools' and re-run this command. Exception: ${exception.getMessage}"

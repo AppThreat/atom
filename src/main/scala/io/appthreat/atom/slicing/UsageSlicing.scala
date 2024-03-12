@@ -76,11 +76,11 @@ object UsageSlicing:
             .groupBy { case (scope, _) => scope }
             .view
             .filterNot((m, _) =>
-                (m.fullName.startsWith("<operator") || m.fullName.startsWith(
+                m.fullName.startsWith("<operator") || m.fullName.startsWith(
                   "__builtin"
                 ) || m.name.startsWith(
                   "<global>"
-                ) || m.name.startsWith("<clinit>"))
+                ) || m.name.startsWith("<clinit>")
             )
             .sortBy(_._1.fullName)
             .map { case (method, slices) =>
@@ -246,7 +246,17 @@ object UsageSlicing:
                         m.columnNumber.map(_.intValue())
                       )
                   )
-                  .l,
+                  .l ++ call.argument.inCall.map(c =>
+                  ObservedCall(
+                    c.code.takeWhile(_ != '('),
+                    Option(c.code),
+                    c.argument.map(_.code.replaceAll("\"", "")).toList,
+                    "",
+                    Option(true),
+                    c.lineNumber.map(_.intValue()),
+                    c.columnNumber.map(_.intValue())
+                  )
+              ).l,
               call.location.filename,
               call.lineNumber.map(_.intValue()),
               call.columnNumber.map(_.intValue())
@@ -548,15 +558,27 @@ object UsageSlicing:
                 if baseCallCode.contains(" ") then
                     baseCallCode = baseCallCode.split(" ").last
                 // Retain the full code for route detection purposes
-                if language.get == Languages.JSSRC && (baseCallCode.startsWith(
-                      "route"
-                    ) || baseCallCode.startsWith("app"))
-                then
-                    baseCallCode = baseCall.code.replaceAll("\n", "\\n").replaceAll(
-                      " {4}",
-                      " {2}"
-                    ).replaceAll(" {2}", "\\t")
+                if language.get == Languages.JSSRC then
+                    if baseCallCode.startsWith(
+                          "app.use"
+                        )
+                    then
+                        if baseCall.argument.nonEmpty && baseCall.argument.isLiteral.nonEmpty
+                        then
+                            baseCallCode =
+                                baseCall.argument.isLiteral.filterNot(_.code == "*").head.code
+                    else if baseCallCode.startsWith(
+                          "route"
+                        ) || baseCallCode.startsWith("app")
+                    then
+                        baseCallCode = baseCall.code
+                            .replaceAll("\n", "\\n").replaceAll(
+                              " {4}",
+                              " {2}"
+                            ).replaceAll(" {2}", "\\t")
+                    end if
                 resolvedMethod = Option(baseCallCode)
+            end if
             Option(
               ObservedCall(
                 callName.get,
