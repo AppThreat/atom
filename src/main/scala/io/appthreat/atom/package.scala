@@ -66,7 +66,8 @@ package object atom:
     case class AtomUsagesConfig(
       minNumCalls: Int = 1,
       excludeOperatorCalls: Boolean = true,
-      includeMethodSource: Boolean = false
+      includeMethodSource: Boolean = false,
+      extractEndpoints: Boolean = false
     ) extends AtomConfig
 
     case class AtomReachablesConfig(

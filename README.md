@@ -85,6 +85,7 @@ Command: usages [options]
 Extract local variable and parameter usages
   --min-num-calls <value>  the minimum number of calls required for a usage slice - defaults to 1.
   --include-source         includes method source code in the slices - defaults to false.
+  --extract-endpoints      extract http endpoints and convert to openapi format using atom-tools - defaults to false.
 Command: reachables [options]
 Extract reachable data-flow slices based on automated framework tags
   --source-tag <value>     source tag - defaults to framework-input.
@@ -133,6 +134,17 @@ atom usages -o app.atom --slice-outfile usages.json -l java .
 
 Learn more about [slices](./specification/docs/slices.md) or view some [samples](https://github.com/AppThreat/atom-samples)
 
+### Extract HTTP endpoints in openapi format using atom-tools
+
+Atom can automatically invoke [atom-tools](https://github.com/AppThreat/atom-tools) `convert` command to extract http endpoints from the usages slices. Pass the argument `--extract-endpoints` to enable this feature.
+
+```shell
+pip install atom-tools
+atom usages --extract-endpoints -o app.atom --slice-outfile usages.json -l java .
+```
+
+A file called `openapi.generated.json` would be created with the endpoints information.
+
 ### Export atom to graphml or dot format
 
 It is possible to export each method along with data dependencies in an atom to graphml or dot format. Simply pass `--export` to enable this feature.
@@ -158,15 +170,15 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 ## container usage
 
 ```shell
-docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom --help
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom --help
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom --help
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom --help
 ```
 
 Example for java project.
 
 ```shell
-docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom -l java -o /app/app.atom /app
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom -l java -o /app/app.atom /app
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
 ```
 
 ## Languages supported

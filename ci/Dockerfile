@@ -9,7 +9,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.title="atom" \
       org.opencontainers.image.description="Container image for AppThreat atom" \
-      org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom -o /app/app.atom -l java /app"
+      org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -o /app/app.atom -l java /app"
 
 ARG MAVEN_VERSION=3.9.6
 
@@ -18,6 +18,8 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     ANDROID_HOME=/opt/android-sdk-linux \
     JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8" \
     PHP_PARSER_BIN=/opt/vendor/bin/php-parse \
+    PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING="utf-8" \
     COMPOSER_ALLOW_SUPERUSER=1
 
 ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${MAVEN_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:
@@ -38,8 +40,13 @@ RUN set -e; \
     esac; \
     echo -e "[nodejs]\nname=nodejs\nstream=20\nprofiles=\nstate=enabled\n" > /etc/dnf/modules.d/nodejs.module \
     && microdnf install -y gcc git-core php php-cli php-curl php-zip php-bcmath php-json php-pear php-mbstring php-devel make \
+        python3.11 python3.11-devel python3.11-pip \
         wget bash glibc-common glibc-all-langpacks java-21-openjdk-headless \
         pcre2 findutils which tar gzip zip unzip sudo nodejs \
+    && alternatives --install /usr/bin/python3 python /usr/bin/python3.11 1 \
+    && python3 --version \
+    && node --version \
+    && python3 -m pip install --upgrade pip poetry atom-tools \
     && curl -s "https://get.sdkman.io" | bash \
     && source "$HOME/.sdkman/bin/sdkman-init.sh" \
     && echo -e "sdkman_auto_answer=true\nsdkman_selfupdate_feature=false\nsdkman_auto_env=true\nsdkman_curl_connect_timeout=20\nsdkman_curl_max_time=0" >> $HOME/.sdkman/etc/config \
@@ -77,4 +84,4 @@ RUN unzip -q atom.zip \
     && which phpastgen \
     && microdnf clean all
 
-ENTRYPOINT ["/opt/bin/atom"]
+CMD ["/opt/bin/atom"]
