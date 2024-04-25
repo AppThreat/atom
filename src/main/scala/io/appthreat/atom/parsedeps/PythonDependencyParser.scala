@@ -63,7 +63,7 @@ object PythonDependencyParser extends XDependencyParser:
                     ModuleWithVersion(
                       name,
                       exactVersion.stripPrefix("=="),
-                      (versions diff Seq(exactVersion)).mkString(",")
+                      (versions.diff(Seq(exactVersion))).mkString(",")
                     )
                 case requirementsPattern(name, versionSpecifiers, _) =>
                     ModuleWithVersion(name, versionSpecifiers = versionSpecifiers)

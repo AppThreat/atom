@@ -24,7 +24,7 @@ private class DataFlowGraph(nodes: Set[Option[DFNode]]):
     private def isSubList[A](short: List[A], long: List[A]): Boolean =
         val sLong  = long.to(LazyList)
         val sShort = short.to(LazyList)
-        sLong.tails exists (_.startsWith(sShort))
+        sLong.tails.exists(_.startsWith(sShort))
 
     private def isSubList[A](lst: List[A])(implicit finalSet: mutable.Set[Path]): Boolean =
         finalSet.filterNot(_.size < lst.size).exists(xs => isSubList(lst, xs))
