@@ -43,7 +43,7 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
       - name: Install sbt
-        run: brew install sbt
+        run: brew install sbt php
         if: runner.os == 'macOS'
       - run: |
           sbt stage assembly createDistribution
