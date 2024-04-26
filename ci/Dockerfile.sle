@@ -17,7 +17,8 @@ ENV ANDROID_HOME=/opt/android-sdk-linux \
     PHP_PARSER_BIN=/opt/vendor/bin/php-parse \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING="utf-8" \
-    COMPOSER_ALLOW_SUPERUSER=1
+    COMPOSER_ALLOW_SUPERUSER=1 \
+    NVM_DIR="/root/.nvm"
 
 ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:
 
@@ -37,6 +38,7 @@ RUN set -e; \
     esac; \
     zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl php8-zip php8-bcmath php8-pear php8-mbstring php8-devel \
     && python3 --version \
+    && source /root/.nvm/nvm.sh \
     && node --version \
     && python3 -m pip install --upgrade pip poetry atom-tools \
     && mkdir -p ${ANDROID_HOME}/cmdline-tools \
@@ -60,6 +62,7 @@ ENV LC_ALL=en_US.UTF-8 \
 COPY ./target/atom.zip .
 COPY ./wrapper .
 RUN unzip -q atom.zip \
+    && source /root/.nvm/nvm.sh \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
     && cd /opt/nodejs && npm install --only=production && cd /opt \
     && npm install -g /opt/nodejs \

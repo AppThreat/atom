@@ -42,6 +42,19 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.3"
+          tools: composer:v2
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install sbt
+        run: brew install sbt
+        if: runner.os == 'macOS'
       - run: |
           sbt stage assembly createDistribution
           cd wrapper/nodejs
