@@ -62,6 +62,7 @@ ENV LC_ALL=en_US.UTF-8 \
 COPY ./target/atom.zip .
 COPY ./wrapper .
 RUN unzip -q atom.zip \
+    && source /root/.nvm/nvm.sh \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
     && cd /opt/nodejs && npm install --only=production && cd /opt \
     && npm install -g /opt/nodejs \
