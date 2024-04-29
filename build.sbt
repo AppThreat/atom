@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.0.9"
-ThisBuild / scalaVersion := "3.3.1"
+ThisBuild / version      := "2.0.10"
+ThisBuild / scalaVersion := "3.4.1"
 
-val chenVersion      = "2.0.8"
+val chenVersion      = "2.0.9"
 
 lazy val atom = Projects.atom
 
@@ -12,7 +12,7 @@ val astGenVersion = "3.5.0"
 libraryDependencies ++= Seq(
   "com.github.pathikrit"    %% "better-files"      % "3.9.2",
   "com.github.scopt"        %% "scopt"             % "4.1.0",
-  "org.slf4j"                % "slf4j-nop"         % "2.0.12" % Optional,
+  "org.slf4j"                % "slf4j-nop"         % "2.0.13" % Optional,
   "io.appthreat"                %% "c2cpg"             % Versions.chen excludeAll (
     ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
     ExclusionRule(organization = "org.jline", name = "jline"),
@@ -24,11 +24,11 @@ libraryDependencies ++= Seq(
   "io.appthreat"      %% "javasrc2cpg"       % Versions.chen,
   "io.appthreat"      %% "jssrc2cpg"         % Versions.chen,
   "io.appthreat"      %% "jimple2cpg"        % Versions.chen,
-  "io.appthreat"      %% "php2atom"        % Versions.chen,
+  "io.appthreat"      %% "php2atom"          % Versions.chen,
   "io.appthreat"      %% "semanticcpg"       % Versions.chen % Test classifier "tests",
   "io.appthreat"      %% "x2cpg"             % Versions.chen % Test classifier "tests",
   "io.appthreat"      %% "pysrc2cpg"         % Versions.chen % Test classifier "tests",
-  "org.scalatest" %% "scalatest"         % "3.2.17"       % Test
+  "org.scalatest"     %% "scalatest"         % "3.2.18"       % Test
 )
 
 Compile / doc / scalacOptions ++= Seq("-doc-title", "atom apidocs", "-doc-version", version.value)
@@ -36,7 +36,7 @@ Compile / doc / scalacOptions ++= Seq("-doc-title", "atom apidocs", "-doc-versio
 ThisBuild / scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
   "--release",
-  "21",
+  "21"
 )
 
 ThisBuild / compile / javacOptions ++= Seq(

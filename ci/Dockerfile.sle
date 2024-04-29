@@ -37,6 +37,7 @@ RUN set -e; \
         *) echo >&2 "error: unsupported architecture: '$ARCH_NAME'"; exit 1 ;; \
     esac; \
     zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl php8-zip php8-bcmath php8-pear php8-mbstring php8-devel \
+    && source /root/.nvm/nvm.sh \
     && python3 --version \
     && source /root/.nvm/nvm.sh \
     && node --version \

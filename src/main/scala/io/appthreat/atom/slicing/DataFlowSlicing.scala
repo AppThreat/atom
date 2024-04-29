@@ -17,7 +17,7 @@ class DataFlowSlicing:
         Executors.newVirtualThreadPerTaskExecutor()
     private val excludeOperatorCalls     = new AtomicBoolean(true)
     private val nodeCache                = new TrieMap[Long, SliceNode]()
-    private var language: Option[String] = _
+    private var language: Option[String] = scala.compiletime.uninitialized
 
     def calculateDataFlowSlice(atom: Cpg, config: DataFlowConfig): Option[DataFlowSlice] =
         language = atom.metaData.language.headOption

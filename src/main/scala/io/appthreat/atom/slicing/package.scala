@@ -225,7 +225,6 @@ package object slicing:
                 s"inv: [${invokedCalls.mkString(",")}], " +
                 s"argsTo: [${argToCalls.mkString(",")}]" +
                 s"}"
-    end ObjectUsageSlice
 
     implicit val decodeObjectUsageSlice: Decoder[ObjectUsageSlice] =
         (c: HCursor) =>
@@ -402,7 +401,7 @@ package object slicing:
           Decoder[CallDef].widen,
           Decoder[ParamDef].widen,
           Decoder[UnknownDef].widen
-        ).reduceLeft(_ or _)
+        ).reduceLeft(_.or(_))
 
     object DefComponent:
 
@@ -550,7 +549,6 @@ package object slicing:
     ):
         override def toString: String =
             s"$callName(${paramTypes.mkString(",")}):$returnType"
-    end UsedCall
 
     /** Details related to an observed call.
       */
@@ -686,7 +684,7 @@ package object slicing:
         List[Decoder[UsedCall]](
           Decoder[ObservedCall].widen,
           Decoder[ObservedCallWithArgPos].widen
-        ).reduceLeft(_ or _)
+        ).reduceLeft(_.or(_))
 
     /** Describes types defined within the application.
       *

@@ -65,7 +65,7 @@ package object parsedeps:
                     ModuleWithVersion(
                       name,
                       exactVersion.stripPrefix("=="),
-                      (vs diff Set(exactVersion)).mkString(","),
+                      (vs.diff(Set(exactVersion))).mkString(","),
                       importedSymbols = is
                     )
                 case None => ModuleWithVersion(
