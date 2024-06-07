@@ -20,6 +20,7 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     PHP_PARSER_BIN=/opt/vendor/bin/php-parse \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING="utf-8" \
+    CDXGEN_NO_BANNER=true \
     COMPOSER_ALLOW_SUPERUSER=1
 
 ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${MAVEN_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:
