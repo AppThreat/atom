@@ -184,7 +184,7 @@ object Atom:
             )
         cmd("parsedeps")
             .text("Extract dependencies from the build file and imports")
-            .action((_, *) => AtomParseDepsConfig().withRemoveAtom(false))
+            .action((_, *) => AtomParseDepsConfig().withRemoveAtom(true))
         cmd("data-flow")
             .text("Extract backward data-flow slices")
             .action((_, _) => AtomDataFlowConfig().withDataDependencies(true))
