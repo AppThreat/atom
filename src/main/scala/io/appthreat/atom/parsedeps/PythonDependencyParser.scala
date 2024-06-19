@@ -25,12 +25,16 @@ object PythonDependencyParser extends XDependencyParser:
 
     private def parseSetupPy(cpg: Cpg): Set[ModuleWithVersion] =
         val dataFlowEnabled     = cpg.metaData.overlays.contains(OssDataFlow.overlayName)
-        val requirementsPattern = """([\[\]/.\w_-]+)\s?((=>|<=|==|>=|=<|<|>|!=).*)""".r
+        val requirementsPattern = """([\[\]/.\w_-]+)\s?((=>|<=|==|>=|=<|<|>|!=|~=).*)""".r
 
         def dataSourcesToRequires = (cpg.literal ++ cpg.identifier)
             .where(_.file.name(".*setup.py"))
             .where(_.argumentName("install_requires"))
             .collectAll[CfgNode]
+
+        def installRequires = cpg.call.where(_.file.name(".*setup.py")).where(_.argumentName(
+          "install_requires"
+        )).argument.collectAll[Literal]
 
         def setupCall = cpg.call("setup").where(_.file.name(".*setup.py"))
 
@@ -52,10 +56,11 @@ object PythonDependencyParser extends XDependencyParser:
                 .to(Iterable)
 
         val initialTraversal = if dataFlowEnabled then setupCall.reachableBy(dataSourcesToRequires)
-        else dataSourcesToRequires
+        else (dataSourcesToRequires ++ installRequires)
         findOriginalDeclaration(initialTraversal)
             .map(x => X2Cpg.stripQuotes(x.code))
             .map {
+
                 case requirementsPattern(name, versionSpecifiers, _)
                     if versionSpecifiers.contains("==") =>
                     val versions     = versionSpecifiers.split(',').toSeq

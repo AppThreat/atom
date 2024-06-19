@@ -67,7 +67,8 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = fa
         |    "google-api-core[grpc] >= 1.34.0, <3.0.0dev,!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,!=2.8.*,!=2.9.*,!=2.10.*",
         |    "proto-plus >= 1.22.0, <2.0.0dev",
         |    "proto-plus >= 1.22.2, <2.0.0dev; python_version>='3.11'",
-        |    "protobuf>=3.19.5,<5.0.0dev,!=3.20.0,!=3.20.1,!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5"
+        |    "protobuf>=3.19.5,<5.0.0dev,!=3.20.0,!=3.20.1,!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5",
+        |    "dbt-core~=1.7,<1.8"
         |]
         |test_requirements = [
         |    "pytest-httpbin==2.0.0",
@@ -205,6 +206,7 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = fa
         ModuleWithVersion("PickyThing", "2.4c1", "<1.6,>1.9,!=1.9.6,<2.0a0", ""),
         ModuleWithVersion("certifi", "", ">=2017.4.17", ""),
         ModuleWithVersion("charset_normalizer", "", ">=2,<4", ""),
+        ModuleWithVersion("dbt-core", "", "~=1.7,<1.8", ""),
         ModuleWithVersion("google-api-core[grpc]", "", ">= 1.34.0, <3.0.0dev,!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,!=2.8.*,!=2.9.*,!=2.10.*", ""),
         ModuleWithVersion("idna", "", ">=2.5,<4", ""),
         ModuleWithVersion("os", "", "", "os.path"),
@@ -220,5 +222,67 @@ class PythonDependencyScannerTests extends PySrc2CpgFixture(withOssDataflow = fa
       )
     }
   }
+
+    "dependencies from the `impacket` library" should {
+        lazy val cpg = code(
+            """
+              |#!/usr/bin/env python
+              |# $Id$
+              |
+              |import glob
+              |import os
+              |import platform
+              |
+              |from setuptools import setup
+              |
+              |PACKAGE_NAME = "impacket2"
+              |
+              |if platform.system() != 'Darwin':
+              |    data_files = [(os.path.join('share', 'doc', PACKAGE_NAME), ['README.md', 'LICENSE']+glob.glob('doc/*'))]
+              |else:
+              |    data_files = []
+              |
+              |def read(fname):
+              |    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+              |
+              |setup(name = PACKAGE_NAME,
+              |      version = "0.9.21-dev",
+              |      package_dir={'': 'src'},
+              |      platforms = ["Unix"],
+              |      packages=['impacket2', 'impacket2.dcerpc', 'impacket2.examples', 'impacket2.dcerpc.v5', 'impacket2.dcerpc.v5.dcom',
+              |                'impacket2.krb5', 'impacket2.ldap', 'impacket2.examples.ntlmrelayx',
+              |                'impacket2.examples.ntlmrelayx.clients', 'impacket2.examples.ntlmrelayx.servers',
+              |                'impacket2.examples.ntlmrelayx.servers.socksplugins', 'impacket2.examples.ntlmrelayx.utils',
+              |                'impacket2.examples.ntlmrelayx.attacks'],
+              |      data_files = data_files,
+              |      install_requires=['pyasn1>=0.2.3', 'pycryptodomex', 'pyOpenSSL>=0.13.1', 'six', 'ldap3==2.5.1', 'ldapdomaindump>=0.9.0', 'flask>=1.0'],
+              |      extras_require={
+              |                      'pyreadline:sys_platform=="win32"': [],
+              |                      'python_version<"2.7"': [ 'argparse' ],
+              |                    },
+              |      classifiers = [
+              |          "Programming Language :: Python :: 3.6",
+              |          "Programming Language :: Python :: 2.7",
+              |          "Programming Language :: Python :: 2.6",
+              |      ]
+              |)
+              |
+              |""".stripMargin,
+            "setup.py"
+        )
+
+        "have the modules scanned successfully" in {
+            val scanResult = PythonDependencyParser.parse(cpg)
+            scanResult.modules shouldBe List(
+                ModuleWithVersion("flask", "", ">=1.0", ""),
+                ModuleWithVersion("ldap3", "2.5.1", "", ""),
+                ModuleWithVersion("ldapdomaindump", "", ">=0.9.0", ""),
+                ModuleWithVersion("pyOpenSSL", "", ">=0.13.1", ""),
+                ModuleWithVersion("pyasn1", "", ">=0.2.3", ""),
+                ModuleWithVersion("pycryptodomex", "", "", ""),
+                ModuleWithVersion("six", "", "", "")
+            )
+        }
+    }
 
 }
