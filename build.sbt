@@ -1,6 +1,6 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.0.13"
+ThisBuild / version      := "2.0.14"
 ThisBuild / scalaVersion := "3.4.1"
 
 val chenVersion      = "2.0.11"
@@ -28,7 +28,7 @@ libraryDependencies ++= Seq(
   "io.appthreat"      %% "semanticcpg"       % Versions.chen % Test classifier "tests",
   "io.appthreat"      %% "x2cpg"             % Versions.chen % Test classifier "tests",
   "io.appthreat"      %% "pysrc2cpg"         % Versions.chen % Test classifier "tests",
-  "org.scalatest"     %% "scalatest"         % "3.2.18"       % Test
+  "org.scalatest"     %% "scalatest"         % "3.2.19"       % Test
 )
 
 Compile / doc / scalacOptions ++= Seq("-doc-title", "atom apidocs", "-doc-version", version.value)
