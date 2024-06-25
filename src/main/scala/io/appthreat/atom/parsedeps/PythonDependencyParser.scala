@@ -81,6 +81,8 @@ object PythonDependencyParser extends XDependencyParser:
     private def parseImports(cpg: Cpg): Set[ModuleWithVersion] =
         val root = ScalaFile(cpg.metaData.root.headOption.getOrElse(JFile.separator)).pathAsString
         // Get a set of local modules to exclude from imports
+        // Identify the local modules names based on the presence of __init__.py files
+        // Lastly, exclude import names that also match a local filename
         val localModuleNames = cpg.file.name
             .filterNot(_ == "N/A")
             .map(x => ScalaFile(x))
@@ -89,6 +91,19 @@ object PythonDependencyParser extends XDependencyParser:
               JFile.separatorChar
             ).head.replaceFirst("\\.py", ""))
             .toSet
+            ++ cpg.file.name(".*__init__.py").name.map(_.stripPrefix(
+              s"$root${JFile.separatorChar}"
+            ).stripSuffix(s"${JFile.separatorChar}__init__.py").split(
+              JFile.separatorChar
+            ).last).toSet
+            ++ cpg.file.nameNot(".*__init__.py").name
+                .filterNot(_ == "N/A")
+                .map(x => ScalaFile(x))
+                .map(_.pathAsString)
+                .map(_.stripPrefix(s"$root${JFile.separatorChar}").split(
+                  JFile.separatorChar
+                ).last.replaceFirst("\\.py", ""))
+                .toSet
         cpg.imports
             .whereNot(_.call.file.name(".*setup.py"))
             .filterNot {
