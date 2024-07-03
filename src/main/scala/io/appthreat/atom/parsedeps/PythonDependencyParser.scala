@@ -14,6 +14,8 @@ import java.io.File as JFile
 object PythonDependencyParser extends XDependencyParser:
 
     implicit val engineContext: EngineContext = EngineContext()
+    private val SETUP_PY_FILE                 = ".*setup.py"
+    private val SETUP_REQUIRES_PATTERN        = "(install_requires|extras_require|tests_require)"
 
     override def parse(cpg: Cpg): DependencySlice = DependencySlice(
       (parseSetupPy(cpg) ++ parseImports(cpg))
@@ -28,15 +30,18 @@ object PythonDependencyParser extends XDependencyParser:
         val requirementsPattern = """([\[\]/.\w_-]+)\s?((=>|<=|==|>=|=<|<|>|!=|~=).*)""".r
 
         def dataSourcesToRequires = (cpg.literal ++ cpg.identifier)
-            .where(_.file.name(".*setup.py"))
-            .where(_.argumentName("install_requires"))
-            .collectAll[CfgNode]
+            .where(_.file.name(SETUP_PY_FILE))
+            .where(_.argumentName(SETUP_REQUIRES_PATTERN))
+            .collectAll[CfgNode] ++ cpg.assignment.where(_.file.name(SETUP_PY_FILE)).where(
+          _.source.isCall.name("<operator>.listLiteral")
+        ).target.isIdentifier.code(".*(libs|requirements)").collectAll[CfgNode]
 
-        def installRequires = cpg.call.where(_.file.name(".*setup.py")).where(_.argumentName(
-          "install_requires"
-        )).argument.collectAll[Literal]
+        def installOrExtraRequires =
+            cpg.call.where(_.file.name(SETUP_PY_FILE)).where(_.argumentName(
+              SETUP_REQUIRES_PATTERN
+            )).argument.collectAll[Literal]
 
-        def setupCall = cpg.call("setup").where(_.file.name(".*setup.py"))
+        def setupCall = cpg.call("setup").where(_.file.name(SETUP_PY_FILE))
 
         def findOriginalDeclaration(xs: Traversal[CfgNode]): Iterable[Literal] =
             xs.flatMap {
@@ -45,7 +50,7 @@ object PythonDependencyParser extends XDependencyParser:
                 case i: Identifier =>
                     findOriginalDeclaration(
                       cpg.assignment.where(_.and(
-                        _.file.name(".*setup.py"),
+                        _.file.name(SETUP_PY_FILE),
                         _.target.isIdentifier.nameExact(i.name)
                       )).source
                     )
@@ -56,7 +61,7 @@ object PythonDependencyParser extends XDependencyParser:
                 .to(Iterable)
 
         val initialTraversal = if dataFlowEnabled then setupCall.reachableBy(dataSourcesToRequires)
-        else (dataSourcesToRequires ++ installRequires)
+        else (dataSourcesToRequires ++ installOrExtraRequires)
         findOriginalDeclaration(initialTraversal)
             .map(x => X2Cpg.stripQuotes(x.code))
             .map {
@@ -105,7 +110,7 @@ object PythonDependencyParser extends XDependencyParser:
                 ).last.replaceFirst("\\.py", ""))
                 .toSet
         cpg.imports
-            .whereNot(_.call.file.name(".*setup.py"))
+            .whereNot(_.call.file.name(SETUP_PY_FILE))
             .filterNot {
                 _.importedEntity match
                     case Some(x) if x.startsWith(".") => true
