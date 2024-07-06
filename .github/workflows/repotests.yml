@@ -82,6 +82,10 @@ jobs:
       - run: |
           sbt stage astGenDlTask
           python -m pip install atom-tools
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+      - run: |
           ./atom.sh --remove-atom -o /tmp/java.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/juice.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/ts.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml
@@ -105,10 +109,17 @@ jobs:
           ./atom.sh usages --remove-atom -o /tmp/c3.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/c.usages.json
 
           ./atom.sh --remove-atom -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml -x --export-dir gml_exports
+        if: runner.os != 'Windows'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
-        shell: bash
+      - run: |
+          .\atom.bat usages --extract-endpoints --remove-atom -o $GITHUB_WORKSPACE\\repotests\\DjanGoat\\py3.atom -l python $GITHUB_WORKSPACE\\repotests\\DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile $GITHUB_WORKSPACE\\repotests\\DjanGoat\\py.usages.json
+          python -m json.tool $GITHUB_WORKSPACE\\repotests\\DjanGoat\\openapi.generated.json
+        if: runner.os == 'Windows'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
           npm install -g @cyclonedx/cdxgen --omit=optional
           cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/bouncycastle-examples/bom.json $GITHUB_WORKSPACE/repotests/bouncycastle-examples
