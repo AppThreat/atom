@@ -114,8 +114,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
-          .\atom.bat usages --extract-endpoints --remove-atom -o $GITHUB_WORKSPACE\\repotests\\DjanGoat\\py3.atom -l python $GITHUB_WORKSPACE\\repotests\\DjanGoat --slice-outfile $GITHUB_WORKSPACE\\repotests\\DjanGoat\\py.usages.json
-          python -m json.tool $GITHUB_WORKSPACE\\repotests\\DjanGoat\\openapi.generated.json
+          .\atom.bat usages --extract-endpoints --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\py3.atom -l python $env:GITHUB_WORKSPACE\\repotests\\DjanGoat --slice-outfile $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\py.usages.json
+          python -m json.tool $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\openapi.generated.json
         if: runner.os == 'Windows'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
