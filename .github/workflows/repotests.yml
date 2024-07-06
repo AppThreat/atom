@@ -65,7 +65,7 @@ jobs:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: '21.x'
+          node-version: '22.x'
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
         with:
@@ -114,7 +114,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
-          .\atom.bat usages --extract-endpoints --remove-atom -o $GITHUB_WORKSPACE\\repotests\\DjanGoat\\py3.atom -l python $GITHUB_WORKSPACE\\repotests\\DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile $GITHUB_WORKSPACE\\repotests\\DjanGoat\\py.usages.json
+          .\atom.bat usages --extract-endpoints --remove-atom -o $GITHUB_WORKSPACE\\repotests\\DjanGoat\\py3.atom -l python $GITHUB_WORKSPACE\\repotests\\DjanGoat --slice-outfile $GITHUB_WORKSPACE\\repotests\\DjanGoat\\py.usages.json
           python -m json.tool $GITHUB_WORKSPACE\\repotests\\DjanGoat\\openapi.generated.json
         if: runner.os == 'Windows'
         env:
