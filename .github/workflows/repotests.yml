@@ -108,6 +108,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+        shell: bash
       - run: |
           npm install -g @cyclonedx/cdxgen --omit=optional
           cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/bouncycastle-examples/bom.json $GITHUB_WORKSPACE/repotests/bouncycastle-examples
