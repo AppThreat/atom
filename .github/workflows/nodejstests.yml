@@ -55,6 +55,10 @@ jobs:
       - name: Install sbt
         run: brew install sbt
         if: runner.os == 'macOS'
+      - name: Install ubuntu packages
+        run: |
+          apt install zlibc php-zip
+        if: runner.os == 'Linux'
       - run: |
           sbt stage assembly createDistribution
           cd wrapper/nodejs
