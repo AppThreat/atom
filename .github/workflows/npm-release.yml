@@ -27,7 +27,8 @@ jobs:
         java-version: '21'
     - name: Release
       run: |
-        sudo apt install zlib1g php-zip
+        sudo apt update -y
+        sudo apt install -y zlib1g php-zip
         sbt scalafmtCheck stage assembly createDistribution
         sha512sum target/atom.zip > target/atom.zip.sha512
         npm config set //npm.pkg.github.com/:_authToken=$GITHUB_TOKEN

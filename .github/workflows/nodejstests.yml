@@ -57,7 +57,8 @@ jobs:
         if: runner.os == 'macOS'
       - name: Install ubuntu packages
         run: |
-          sudo apt install zlib1g php-zip
+          sudo apt update -y
+          sudo apt install -y zlib1g php-zip
         if: runner.os == 'Linux'
       - run: |
           sbt stage assembly createDistribution
