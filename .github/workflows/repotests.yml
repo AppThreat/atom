@@ -65,7 +65,7 @@ jobs:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: '21.x'
+          node-version: '22.x'
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
         with:
@@ -75,12 +75,17 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       - name: Install sbt
         run: brew install sbt
         if: runner.os == 'macOS'
       - run: |
           sbt stage astGenDlTask
+          python -m pip install atom-tools
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+      - run: |
           ./atom.sh --remove-atom -o /tmp/java.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/juice.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/ts.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml
@@ -98,11 +103,20 @@ jobs:
           ./atom.sh usages --remove-atom -o /tmp/java3.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java.usages.json
           # ./atom.sh usages --remove-atom -o /tmp/juice3.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/juice.usages.json
           ./atom.sh usages --remove-atom -o /tmp/ts3.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/ts.usages.json
-          ./atom.sh usages --remove-atom -o /tmp/py3.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py.usages.json
+          ./atom.sh usages --extract-endpoints --remove-atom -o /tmp/py3.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py.usages.json
+          python -m json.tool $GITHUB_WORKSPACE/repotests/DjanGoat/openapi.generated.json
           ./atom.sh usages --remove-atom -o /tmp/py4.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py4.usages.json
           ./atom.sh usages --remove-atom -o /tmp/c3.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/c.usages.json
 
           ./atom.sh --remove-atom -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml -x --export-dir gml_exports
+        if: runner.os != 'Windows'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+      - run: |
+          .\atom.bat usages --extract-endpoints --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\py3.atom -l python $env:GITHUB_WORKSPACE\\repotests\\DjanGoat --slice-outfile $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\py.usages.json
+          python -m json.tool $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\openapi.generated.json
+        if: runner.os == 'Windows'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"

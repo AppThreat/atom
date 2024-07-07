@@ -41,10 +41,11 @@ RUN set -e; \
     esac; \
     echo -e "[nodejs]\nname=nodejs\nstream=20\nprofiles=\nstate=enabled\n" > /etc/dnf/modules.d/nodejs.module \
     && microdnf install -y gcc git-core php php-cli php-curl php-zip php-bcmath php-json php-pear php-mbstring php-devel make \
-        python3.11 python3.11-devel python3.11-pip \
+        python3.12 python3.12-devel python3.12-pip \
         wget bash glibc-common glibc-all-langpacks java-21-openjdk-headless \
         pcre2 findutils which tar gzip zip unzip sudo nodejs \
-    && alternatives --install /usr/bin/python3 python /usr/bin/python3.11 1 \
+    && alternatives --install /usr/bin/python3 python /usr/bin/python3.12 10 \
+    && alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 10 \
     && python3 --version \
     && node --version \
     && python3 -m pip install --upgrade pip poetry atom-tools \

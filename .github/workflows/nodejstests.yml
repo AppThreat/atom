@@ -8,7 +8,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         java-version: ['21', '22']
-        node-version: ['21.x']
+        node-version: ['20.x', '22.x']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -51,10 +51,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       - name: Install sbt
         run: brew install sbt
         if: runner.os == 'macOS'
+      - name: Install ubuntu packages
+        run: |
+          sudo apt update -y
+          sudo apt install -y zlib1g php-zip
+        if: runner.os == 'Linux'
       - run: |
           sbt stage assembly createDistribution
           cd wrapper/nodejs
@@ -75,7 +80,7 @@ jobs:
     strategy:
       matrix:
         java-version: ['21', '22']
-        node-version: ['21.x']
+        node-version: ['22.x']
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
