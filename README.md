@@ -184,10 +184,10 @@ docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthr
 ## Languages supported
 
 - C/C++
-- H (C/C++ Header files alone)
+- H (C/C++ Header and pre-processed .i files alone)
 - Java (Requires compilation)
 - Jar
-- Android APK (Requires Android SDK. Set the environment variable `ANDROID_HOME`)
+- Android APK (Requires Android SDK. Set the environment variable `ANDROID_HOME` or use the container image.)
 - JavaScript
 - TypeScript
 - Python
