@@ -25,6 +25,7 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '21'
+    - uses: sbt/setup-sbt@v1
     - name: Release
       run: |
         sudo apt update -y

@@ -42,6 +42,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
+      - uses: sbt/setup-sbt@v1
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
         with:
@@ -113,6 +114,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
+      - uses: sbt/setup-sbt@v1
       - name: build
         shell: pwsh
         run: |
