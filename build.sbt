@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.0.17"
-ThisBuild / scalaVersion := "3.4.2"
+ThisBuild / version      := "2.0.18"
+ThisBuild / scalaVersion := "3.5.0"
 
-val chenVersion      = "2.1.4"
+val chenVersion      = "2.1.5"
 
 lazy val atom = Projects.atom
 
@@ -12,7 +12,7 @@ val astGenVersion = "3.5.0"
 libraryDependencies ++= Seq(
   "com.github.pathikrit"    %% "better-files"      % "3.9.2",
   "com.github.scopt"        %% "scopt"             % "4.1.0",
-  "org.slf4j"                % "slf4j-nop"         % "2.0.13" % Optional,
+  "org.slf4j"                % "slf4j-nop"         % "2.0.16" % Optional,
   "io.appthreat"                %% "c2cpg"             % Versions.chen excludeAll (
     ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
     ExclusionRule(organization = "org.jline", name = "jline"),
