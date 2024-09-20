@@ -62,7 +62,13 @@ const babelSafeParserOptions = {
  */
 const getAllSrcJSAndTSFiles = (src) =>
   Promise.all([
-    getAllFiles(src, undefined, undefined, undefined, new RegExp("\\.(js|jsx|cjs|mjs|ts|tsx|vue|svelte)$"))
+    getAllFiles(
+      src,
+      undefined,
+      undefined,
+      undefined,
+      new RegExp("\\.(js|jsx|cjs|mjs|ts|tsx|vue|svelte)$")
+    )
   ]);
 
 /**
@@ -156,7 +162,7 @@ function createTsc(srcFiles) {
 
     const safeTypeToString = (node) => {
       try {
-        return typeChecker.typeToString(node, null, TSC_FLAGS);
+        return typeChecker.typeToString(node, TSC_FLAGS);
       } catch (err) {
         return "any";
       }
