@@ -17,9 +17,9 @@
     "eslint": "8.57.0"
   },
   "bin": {
-    "atom": "./index.js",
-    "astgen": "./astgen.js",
-    "phpastgen": "./phpastgen.js"
+    "atom": "index.js",
+    "astgen": "astgen.js",
+    "phpastgen": "phpastgen.js"
   },
   "engines": {
     "node": ">=16.0.0"
