@@ -78,3 +78,9 @@ jobs:
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
         shell: bash
+      - name: Generate SBOM with cdxgen
+        run: |
+          npm install -g @cyclonedx/cdxgen
+          cdxgen -t sbt -o bom.json . -p --no-recurse
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

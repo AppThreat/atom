@@ -62,14 +62,13 @@ const babelSafeParserOptions = {
  */
 const getAllSrcJSAndTSFiles = (src) =>
   Promise.all([
-    getAllFiles(src, ".js"),
-    getAllFiles(src, ".jsx"),
-    getAllFiles(src, ".cjs"),
-    getAllFiles(src, ".mjs"),
-    getAllFiles(src, ".ts"),
-    getAllFiles(src, ".tsx"),
-    getAllFiles(src, ".vue"),
-    getAllFiles(src, ".svelte")
+    getAllFiles(
+      src,
+      undefined,
+      undefined,
+      undefined,
+      new RegExp("\\.(js|jsx|cjs|mjs|ts|tsx|vue|svelte)$")
+    )
   ]);
 
 /**
@@ -99,6 +98,15 @@ const vueCommentRegex = /<!--[\s\S]*?-->/gi;
 const vueBindRegex = /(:\[)([\s\S]*?)(\])/gi;
 const vuePropRegex = /\s([.:@])([a-zA-Z]*?=)/gi;
 const vueOpenImgTag = /(<img)((?!>)[\s\S]+?)( [^/]>)/gi;
+
+const TSC_FLAGS =
+  tsc.TypeFormatFlags.NoTruncation |
+  tsc.TypeFormatFlags.InTypeAlias |
+  tsc.TypeFormatFlags.WriteArrayAsGenericType |
+  tsc.TypeFormatFlags.GenerateNamesForShadowedTypeParams |
+  tsc.TypeFormatFlags.WriteTypeArgumentsOfSignature |
+  tsc.TypeFormatFlags.UseFullyQualifiedType |
+  tsc.TypeFormatFlags.NoTypeReduction;
 
 /**
  * Convert a single vue file to AST
@@ -132,6 +140,10 @@ function createTsc(srcFiles) {
     const program = tsc.createProgram(srcFiles, {
       target: tsc.ScriptTarget.ES2020,
       module: tsc.ModuleKind.CommonJS,
+      allowImportingTsExtensions: false,
+      allowArbitraryExtensions: false,
+      allowSyntheticDefaultImports: true,
+      allowUmdGlobalAccess: true,
       allowJs: true,
       allowUnreachableCode: true,
       allowUnusedLabels: true,
@@ -150,10 +162,7 @@ function createTsc(srcFiles) {
 
     const safeTypeToString = (node) => {
       try {
-        return typeChecker.typeToString(
-          node,
-          tsc.TypeFormatFlags.NoTruncation | tsc.TypeFormatFlags.InTypeAlias
-        );
+        return typeChecker.typeToString(node, TSC_FLAGS);
       } catch (err) {
         return "any";
       }
@@ -161,11 +170,7 @@ function createTsc(srcFiles) {
 
     const safeTypeWithContextToString = (node, context) => {
       try {
-        return typeChecker.typeToString(
-          node,
-          context,
-          tsc.TypeFormatFlags.NoTruncation | tsc.TypeFormatFlags.InTypeAlias
-        );
+        return typeChecker.typeToString(node, context, TSC_FLAGS);
       } catch (err) {
         return "any";
       }
@@ -176,10 +181,18 @@ function createTsc(srcFiles) {
       if (
         tsc.isSetAccessor(node) ||
         tsc.isGetAccessor(node) ||
+        tsc.isGetAccessorDeclaration(node) ||
+        tsc.isCallSignatureDeclaration(node) ||
+        tsc.isIndexSignatureDeclaration(node) ||
+        tsc.isClassStaticBlockDeclaration(node) ||
         tsc.isConstructSignatureDeclaration(node) ||
         tsc.isMethodDeclaration(node) ||
         tsc.isFunctionDeclaration(node) ||
-        tsc.isConstructorDeclaration(node)
+        tsc.isConstructorDeclaration(node) ||
+        tsc.isTypeAliasDeclaration(node) ||
+        tsc.isEnumDeclaration(node) ||
+        tsc.isNamespaceExportDeclaration(node) ||
+        tsc.isImportEqualsDeclaration(node)
       ) {
         const signature = typeChecker.getSignatureFromDeclaration(node);
         const returnType = typeChecker.getReturnTypeOfSignature(signature);
@@ -204,8 +217,9 @@ function createTsc(srcFiles) {
           node
         );
       }
-      if (!["any", "unknown", "any[]", "unknown[]"].includes(typeStr))
+      if (!["any", "unknown", "any[]", "unknown[]"].includes(typeStr)) {
         seenTypes.set(node.getStart(), typeStr);
+      }
       tsc.forEachChild(node, addType);
     };
 
@@ -232,7 +246,6 @@ const createJSAst = async (options) => {
     if (options.tsTypes) {
       ts = createTsc(srcFiles);
     }
-
     for (const file of srcFiles) {
       try {
         const ast = fileToJsAst(file);
