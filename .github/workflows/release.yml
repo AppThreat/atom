@@ -101,11 +101,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_USERNAME: ${{ github.actor }}
+      - name: Generate SBOM with cdxgen
+        run: |
+          npm install -g @cyclonedx/cdxgen
+          cdxgen -t sbt -o bom.json . -p --no-recurse
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: |
+            bom.json
             target/atom.zip
             target/atom.zip.sha512
             target/graalvm-native-image/atom-amd64
