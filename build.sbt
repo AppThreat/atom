@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.0.19"
+ThisBuild / version      := "2.0.20"
 ThisBuild / scalaVersion := "3.5.0"
 
-val chenVersion = "2.1.6"
+val chenVersion = "2.1.8"
 
 lazy val atom = Projects.atom
 
@@ -33,7 +33,6 @@ libraryDependencies ++= Seq(
 
 excludeDependencies ++= Seq(
   ExclusionRule("dev.scalapy", "scalapy-core"),
-  ExclusionRule("org.gradle", "gradle-tooling-api"),
   ExclusionRule("org.scala-lang", "scala3-compiler")
 )
 

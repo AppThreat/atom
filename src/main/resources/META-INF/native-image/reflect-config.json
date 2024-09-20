@@ -15,6 +15,9 @@
   "name":"[Lio.appthreat.x2cpg.Ast;"
 },
 {
+  "name":"[Lio.circe.Json$JNumber;"
+},
+{
   "name":"[Lio.shiftleft.codepropertygraph.generated.nodes.AstNode;"
 },
 {
@@ -108,6 +111,12 @@
   "name":"[Lorg.eclipse.cdt.core.dom.ast.IBinding;"
 },
 {
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.c.ICASTCompositeTypeSpecifier;"
+},
+{
+  "name":"[Lorg.eclipse.cdt.core.dom.ast.c.ICASTDesignator;"
+},
+{
   "name":"[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPASTNameSpecifier;"
 },
 {
@@ -152,6 +161,10 @@
 {
   "name":"better.files.package$",
   "fields":[{"name":"0bitmap$1"}]
+},
+{
+  "name":"cats.Later",
+  "fields":[{"name":"value$lzy1"}]
 },
 {
   "name":"com.fasterxml.jackson.databind.ext.Java7SupportImpl",
@@ -263,6 +276,10 @@
 },
 {
   "name":"com.github.javaparser.ast.expr.SwitchExpr",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.github.javaparser.ast.expr.TypePatternExpr",
   "allDeclaredFields":true
 },
 {
@@ -794,6 +811,10 @@
   "fields":[{"name":"identifiersAssignedCount$lzy1"}]
 },
 {
+  "name":"io.appthreat.jssrc2cpg.passes.RecoverForJavaScriptFile",
+  "fields":[{"name":"exportedIdentifiers$lzy1"}]
+},
+{
   "name":"io.appthreat.jssrc2cpg.utils.AstGenRunner$",
   "fields":[{"name":"astGenCommand$lzy1"}, {"name":"executableDir$lzy1"}, {"name":"executableName$lzy1"}]
 },
@@ -827,15 +848,27 @@
 },
 {
   "name":"io.circe.Decoder$",
-  "fields":[{"name":"0bitmap$1"}]
+  "fields":[{"name":"0bitmap$1"}, {"name":"currencyDecoder$lzy1"}, {"name":"decodeDuration$lzy1"}, {"name":"decodeInstant$lzy1"}, {"name":"decodeJavaBigDecimal$lzy1"}, {"name":"decodeJavaBigInteger$lzy1"}, {"name":"decodeJavaBoolean$lzy1"}, {"name":"decodeJavaByte$lzy1"}, {"name":"decodeJavaCharacter$lzy1"}, {"name":"decodeJavaDouble$lzy1"}, {"name":"decodeJavaFloat$lzy1"}, {"name":"decodeJavaInteger$lzy1"}, {"name":"decodeJavaLong$lzy1"}, {"name":"decodeJavaShort$lzy1"}, {"name":"decodeLocalDate$lzy1"}, {"name":"decodeLocalDateTime$lzy1"}, {"name":"decodeLocalTime$lzy1"}, {"name":"decodeMonthDay$lzy1"}, {"name":"decodeOffsetDateTime$lzy1"}, {"name":"decodeOffsetTime$lzy1"}, {"name":"decodePeriod$lzy1"}, {"name":"decodeURI$lzy1"}, {"name":"decodeUUID$lzy1"}, {"name":"decodeYear$lzy1"}, {"name":"decodeYearMonth$lzy1"}, {"name":"decodeZoneId$lzy1"}, {"name":"decodeZoneOffset$lzy1"}, {"name":"decodeZonedDateTime$lzy1"}]
 },
 {
   "name":"io.circe.Encoder$",
-  "fields":[{"name":"0bitmap$1"}]
+  "fields":[{"name":"0bitmap$1"}, {"name":"currencyEncoder$lzy1"}, {"name":"encodeDuration$lzy1"}, {"name":"encodeInstant$lzy1"}, {"name":"encodeJavaBigDecimal$lzy1"}, {"name":"encodeJavaBigInteger$lzy1"}, {"name":"encodeJavaBoolean$lzy1"}, {"name":"encodeJavaByte$lzy1"}, {"name":"encodeJavaCharacter$lzy1"}, {"name":"encodeJavaDouble$lzy1"}, {"name":"encodeJavaFloat$lzy1"}, {"name":"encodeJavaInteger$lzy1"}, {"name":"encodeJavaLong$lzy1"}, {"name":"encodeJavaShort$lzy1"}, {"name":"encodeLocalDate$lzy1"}, {"name":"encodeLocalDateTime$lzy1"}, {"name":"encodeLocalTime$lzy1"}, {"name":"encodeMonthDay$lzy1"}, {"name":"encodeOffsetDateTime$lzy1"}, {"name":"encodeOffsetTime$lzy1"}, {"name":"encodePeriod$lzy1"}, {"name":"encodeURI$lzy1"}, {"name":"encodeUUID$lzy1"}, {"name":"encodeYear$lzy1"}, {"name":"encodeYearMonth$lzy1"}, {"name":"encodeZoneId$lzy1"}, {"name":"encodeZoneOffset$lzy1"}, {"name":"encodeZonedDateTime$lzy1"}]
 },
 {
   "name":"io.circe.JsonDecimal",
-  "fields":[{"name":"0bitmap$1"}]
+  "fields":[{"name":"0bitmap$1"}, {"name":"toBiggerDecimal$lzy1"}]
+},
+{
+  "name":"io.circe.derivation.ConfiguredDecoder$$anon$3",
+  "fields":[{"name":"constructorNames$lzy3"}, {"name":"elemDecoders$lzy3"}, {"name":"elemDefaults$lzy3"}, {"name":"elemLabels$lzy3"}, {"name":"fp$lzy1"}, {"name":"io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy3"}]
+},
+{
+  "name":"io.circe.derivation.ConfiguredEncoder$$anon$3",
+  "fields":[{"name":"elemEncoders$lzy3"}, {"name":"elemLabels$lzy3"}]
+},
+{
+  "name":"io.circe.derivation.Default$$anon$1",
+  "fields":[{"name":"defaults$lzy1"}]
 },
 {
   "name":"io.shiftleft.codepropertygraph.generated.edges.Factories$",
@@ -994,7 +1027,8 @@
 },
 {
   "name":"java.lang.Class",
-  "queryAllDeclaredMethods":true
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"isRecord","parameterTypes":[] }]
 },
 {
   "name":"java.lang.ClassCastException"
@@ -1440,6 +1474,10 @@
   "queryAllPublicMethods":true
 },
 {
+  "name":"java.time.format.DateTimeFormatter",
+  "allDeclaredFields":true
+},
+{
   "name":"java.time.format.DateTimeParseException"
 },
 {
@@ -1640,6 +1678,7 @@
 },
 {
   "name":"java.util.Set",
+  "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true
 },
 {
