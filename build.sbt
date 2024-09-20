@@ -32,7 +32,6 @@ libraryDependencies ++= Seq(
 )
 
 excludeDependencies ++= Seq(
-  ExclusionRule("org.typelevel", "cats-effect"),
   ExclusionRule("dev.scalapy", "scalapy-core"),
   ExclusionRule("org.gradle", "gradle-tooling-api"),
   ExclusionRule("org.scala-lang", "scala3-compiler")
@@ -61,7 +60,11 @@ Universal / topLevelDirectory := None
 Universal / mappings := (Universal / mappings).value.filter {
     case (_, path) => !path.contains("org.scala-lang.scala3-compiler") && !path.contains(
           "io.get-coursier"
-        ) && !path.contains("com.michaelpollmeier.scala-repl-pp")
+        ) && !path.contains("com.michaelpollmeier.scala-repl-pp") && !path.contains(
+          "dev.scalapy.scalapy-core"
+        ) && !path.contains(
+          "dev.scalapy.scalapy-macros"
+        )
 }
 
 enablePlugins(JavaAppPackaging, ClasspathJarPlugin, GraalVMNativeImagePlugin)
