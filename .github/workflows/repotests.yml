@@ -120,7 +120,9 @@ jobs:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
           cd wrapper/nodejs
-          .\build.ps1
+          copy ..\..\target\atom.zip plugins\
+          Expand-Archive -Path ..\..\target\atom.zip -DestinationPath plugins\ -Force
+          Remove-Item -Force plugins\atom.zip
           npm install -g .
           cd ../..
           .\atom.bat usages --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\juice-shop\\jshop.atom -l js $env:GITHUB_WORKSPACE\\repotests\\juice-shop --slice-outfile $env:GITHUB_WORKSPACE\\repotests\\juice-shop\\jshop.usages.json
