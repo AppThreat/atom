@@ -38,12 +38,16 @@ jobs:
         uses: graalvm/setup-graalvm@v1
         with:
           distribution: 'graalvm-community'
-          java-version: '22'
+          java-version: '23'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
           cache: 'sbt'
       - run: |
-          sbt stage astGenDlTask
+          sbt stage createDistribution
+          cd wrapper/nodejs
+          bash build.sh
+          npm install -g .
+          cd ../..
           ./atom.sh --remove-atom -o /tmp/java.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/juice.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/ts.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml
@@ -72,11 +76,13 @@ jobs:
           ./atom.sh usages -o /tmp/DjanGoat.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/DjanGoat.usages.json
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
-        if: runner.os != 'Windows'
       - run: |
           bash ci/native-image.sh
+          ./target/graalvm-native-image/atom --remove-atom -o /tmp/java.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
+          ./target/graalvm-native-image/atom --remove-atom -o /tmp/juice.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
       - name: Generate SBOM with cdxgen
         run: |

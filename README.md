@@ -1,6 +1,6 @@
 # Atom (⚛)
 
-Atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation (a network with nodes and links) is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and [vectoring](./specification/docs/vectors.md).
+Atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation (a network with nodes and links) is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and vectoring.
 
 Our vision is to make atom useful for many use cases such as:
 
@@ -15,7 +15,6 @@ and more.
 
 [![release](https://github.com/appthreat/atom/actions/workflows/npm-release.yml/badge.svg)](https://github.com/appthreat/atom/actions/workflows/npm-release.yml)
 ![npm](https://img.shields.io/npm/dw/@appthreat/atom)
-[![Discord](https://img.shields.io/badge/-Discord-lime?style=for-the-badge&logo=discord&logoColor=white&color=black)](https://discord.gg/tmmtjCEHNV)
 
 ![Atom logo](./specification/docs/Atom-logo.png)
 
@@ -34,7 +33,21 @@ Install cdxgen to generate a Software Bill-of-Materials which is required for re
 npm install -g @cyclonedx/cdxgen --omit=optional
 ```
 
-## atom native-image
+## container usage
+
+```shell
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom --help
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom --help
+```
+
+Example for java project.
+
+```shell
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
+```
+
+## atom native-image (Advanced users only)
 
 atom is available as a native image built using graalvm community edition.
 
@@ -51,7 +64,7 @@ curl -LO https://github.com/AppThreat/atom/releases/latest/download/atom.exe
 .\atom.exe --help
 ```
 
-NOTE: cdxgen is not bundled into the native image so needs to be installed separately.
+NOTE: Commands such as cdxgen, astgen, and phpastgen are not bundled into this native image. Therefore, the binary is quite limited in functionality.
 
 ## CLI Usage
 
@@ -167,20 +180,6 @@ To also compute and include data-dependency graph (DDG) information in the expor
 atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-deps <path to application>
 ```
 
-## container usage
-
-```shell
-docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom --help
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom --help
-```
-
-Example for java project.
-
-```shell
-docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
-```
-
 ## Languages supported
 
 - C/C++
@@ -253,7 +252,7 @@ Checkout [atom-tools](https://github.com/AppThreat/atom-tools) for some project 
 
 ## Enterprise support
 
-Enterprise support including custom language development and integration services is available via AppThreat Ltd. Free community support is also available via [discord](https://discord.gg/tmmtjCEHNV).
+Enterprise support including custom language development and integration services is available via AppThreat Ltd.
 
 ## Sponsors
 
