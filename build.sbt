@@ -93,11 +93,6 @@ ThisBuild / resolvers ++= Seq(
   "Gradle Releases".at("https://repo.gradle.org/gradle/libs-releases/")
 )
 
-ThisBuild / assemblyMergeStrategy := {
-    case "application.conf" => MergeStrategy.concat
-    case x                  => MergeStrategy.preferProject
-}
-
 ThisBuild / versionScheme := Some("semver-spec")
 
 ThisBuild / Test / fork                := true

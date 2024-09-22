@@ -62,7 +62,7 @@ jobs:
           sudo apt install -y zlib1g php-zip
         if: runner.os == 'Linux'
       - run: |
-          sbt stage assembly createDistribution
+          sbt stage createDistribution
           cd wrapper/nodejs
           bash build.sh
           sudo npm install -g .

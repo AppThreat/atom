@@ -72,7 +72,7 @@ jobs:
           tar -xvf upx-4.2.2-amd64_linux.tar.xz
           chmod +x upx-4.2.2-amd64_linux/upx
           sudo cp upx-4.2.2-amd64_linux/upx /usr/local/bin/
-          sbt stage assembly createDistribution
+          sbt stage createDistribution
           sha512sum target/atom.zip > target/atom.zip.sha512
           bash ci/native-image.sh
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-amd64
