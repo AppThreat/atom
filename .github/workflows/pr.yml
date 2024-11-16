@@ -2,6 +2,10 @@ name: pull_request
 on:
   pull_request:
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   testing:
     runs-on: ubuntu-22.04

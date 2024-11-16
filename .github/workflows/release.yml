@@ -4,6 +4,7 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:    # allow to manually trigger this workflow
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: appthreat/atom
