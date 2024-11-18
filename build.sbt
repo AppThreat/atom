@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.0.24"
+ThisBuild / version      := "2.0.25"
 ThisBuild / scalaVersion := "3.5.2"
 
-val chenVersion = "2.2.2"
+val chenVersion = "2.2.3"
 
 lazy val atom = Projects.atom
 
@@ -32,7 +32,6 @@ libraryDependencies ++= Seq(
 excludeDependencies ++= Seq(
   ExclusionRule("dev.scalapy", "scalapy-core"),
   ExclusionRule("org.scala-lang", "scala3-compiler"),
-  ExclusionRule("commons-io", "commons-io"),
   ExclusionRule("com.google.protobuf", "protobuf-java-util"),
   ExclusionRule("com.github.tototoshi", "scala-csv_3"),
   ExclusionRule("au.com.bytecode", "opencsv")
