@@ -32,7 +32,6 @@ libraryDependencies ++= Seq(
 excludeDependencies ++= Seq(
   ExclusionRule("dev.scalapy", "scalapy-core"),
   ExclusionRule("org.scala-lang", "scala3-compiler"),
-  ExclusionRule("commons-io", "commons-io"),
   ExclusionRule("com.google.protobuf", "protobuf-java-util"),
   ExclusionRule("com.github.tototoshi", "scala-csv_3"),
   ExclusionRule("au.com.bytecode", "opencsv")
