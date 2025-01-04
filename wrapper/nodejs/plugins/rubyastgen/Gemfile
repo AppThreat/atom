@@ -1,0 +1,9 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+group :frontend do
+    gem "ruby_ast_gen", github: 'joernio/ruby_ast_gen', ref: 'v0.34.0'
+    gem "parser"
+    gem "ostruct"
+end

@@ -22,6 +22,10 @@ jobs:
       with:
         node-version: '23.x'
         registry-url: https://registry.npmjs.org/
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4.0'
+        bundler-cache: false
     - uses: coursier/cache-action@v6
     - name: Set up JDK
       uses: actions/setup-java@v4

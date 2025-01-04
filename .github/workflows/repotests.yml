@@ -81,6 +81,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.0'
+          bundler-cache: false
       - name: Install sbt
         run: brew install sbt
         if: runner.os == 'macOS'

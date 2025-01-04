@@ -38,6 +38,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.x'
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.0'
+          bundler-cache: false
       - name: Delete `.rustup` directory
         run: rm -rf /home/runner/.rustup # to save disk space
         if: runner.os == 'Linux'

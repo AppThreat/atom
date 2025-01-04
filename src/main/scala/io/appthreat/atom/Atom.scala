@@ -18,6 +18,7 @@ import io.appthreat.jssrc2cpg.passes.{
 import io.appthreat.jssrc2cpg.{JsSrc2Cpg, Config as JSConfig}
 import io.appthreat.php2atom.passes.PhpSetKnownTypesPass
 import io.appthreat.php2atom.{Php2Atom, Config as PhpConfig}
+import io.appthreat.ruby2atom.{Ruby2Atom, Config as RubyConfig}
 import io.appthreat.pysrc2cpg.{
     DynamicTypeHintFullNamePass,
     Py2CpgOnFileSystem,
@@ -565,6 +566,15 @@ object Atom:
               ).map { ag =>
                 new PhpSetKnownTypesPass(ag).createAndApply()
                 ag
+              }
+          case Languages.RUBYSRC | "RUBY" | "RB" | "JRUBY" =>
+              new Ruby2Atom().createCpgWithOverlays(
+                RubyConfig()
+                    .withInputPath(config.inputPath.pathAsString)
+                    .withOutputPath(outputAtomFile)
+                    .withIgnoredFilesRegex(".*(samples|examples|docs|tests).*")
+              ).map { ag =>
+                  ag
               }
           case _ => Failure(
                 new RuntimeException(

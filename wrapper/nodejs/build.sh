@@ -13,6 +13,12 @@ php -r "unlink('composer-setup.php');"
 export COMPOSER_VENDOR_DIR=plugins
 php composer.phar require nikic/php-parser:4.18.0 --ignore-platform-reqs --optimize-autoloader
 
-npm install
+cd plugins/rubyastgen
+bash setup.sh
+cd ../..
+
+rm plugins/bin/racc plugins/bin/ruby-parse plugins/bin/ruby-rewrite
+
+npm ci
 
 rm composer.phar composer.json composer.lock

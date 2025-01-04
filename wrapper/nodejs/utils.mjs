@@ -88,7 +88,17 @@ export const detectJava = () => {
 };
 
 export const detectPhp = () => {
-  let result = spawnSync(process.env.JAVA_CMD || "php", ["--version"], {
+  let result = spawnSync(process.env.PHP_CMD || "php", ["--version"], {
+    encoding: "utf-8"
+  });
+  if (result.status !== 0 || result.error) {
+    return false;
+  }
+  return true;
+};
+
+export const detectRuby = () => {
+  let result = spawnSync(process.env.RUBY_CMD || "ruby", ["--version"], {
     encoding: "utf-8"
   });
   if (result.status !== 0 || result.error) {
