@@ -209,7 +209,7 @@ object Atom:
         )
     cmd("usages")
         .text("Extract local variable and parameter usages")
-        .action((_, *) => AtomUsagesConfig().withRemoveAtom(true))
+        .action((_, *) => AtomUsagesConfig())
         .children(
           opt[Int]("min-num-calls")
               .text(s"the minimum number of calls required for a usage slice - defaults to 1.")
