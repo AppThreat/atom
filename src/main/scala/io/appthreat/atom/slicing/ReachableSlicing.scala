@@ -88,7 +88,7 @@ object ReachableSlicing:
           atom.tag.name(CLI_SOURCE_TAG).call
         ).map(toSlice).toList
     end if
-    if language == Languages.PHP
+    if language == Languages.PHP || language == Languages.RUBYSRC
     then
       flowsList ++= atom.ret.where(_.tag.name(config.sinkTag)).reachableByFlows(
         atom.tag.name(config.sourceTag).parameter
