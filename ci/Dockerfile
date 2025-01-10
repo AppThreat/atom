@@ -12,7 +12,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -o /app/app.atom -l java /app"
 
 ARG MAVEN_VERSION=3.9.9
-ARG RUBY_VERSION=3.4.0
+ARG RUBY_VERSION=3.4.1
 
 ENV MAVEN_VERSION=$MAVEN_VERSION \
     MAVEN_HOME="/opt/maven/${MAVEN_VERSION}" \
