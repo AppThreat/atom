@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4.0'
+          ruby-version: '3.4.1'
           bundler-cache: false
       - name: Set up JDK
         uses: graalvm/setup-graalvm@v1

@@ -83,7 +83,7 @@ jobs:
           python-version: '3.12'
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4.0'
+          ruby-version: '3.4.1'
           bundler-cache: false
       - name: Install sbt
         run: brew install sbt

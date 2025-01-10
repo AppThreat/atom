@@ -22,7 +22,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4.0'
+          ruby-version: '3.4.1'
           bundler-cache: false
       - uses: actions/checkout@v4
         with:
