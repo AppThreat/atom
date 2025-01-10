@@ -1,0 +1,33 @@
+GIT
+  remote: https://github.com/joernio/ruby_ast_gen.git
+  revision: 1c6e88faec50a986d319e7fbcfe297ec01c48e5a
+  ref: v0.34.0
+  specs:
+    ruby_ast_gen (0.34.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ast (2.4.2)
+    ostruct (0.6.1)
+    parser (3.3.6.0)
+      ast (~> 2.4.1)
+      racc
+    racc (1.8.1)
+    racc (1.8.1-java)
+
+PLATFORMS
+  java
+  mswin64
+  ruby
+  unknown
+  unknown
+  x86_64-darwin-23
+
+DEPENDENCIES
+  ostruct
+  parser
+  ruby_ast_gen!
+
+BUNDLED WITH
+   2.6.2

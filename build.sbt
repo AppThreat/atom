@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.0.25"
-ThisBuild / scalaVersion := "3.5.2"
+ThisBuild / version      := "2.1.0"
+ThisBuild / scalaVersion := "3.6.2"
 
-val chenVersion = "2.2.3"
+val chenVersion = "2.3.0"
 
 lazy val atom = Projects.atom
 
@@ -23,6 +23,7 @@ libraryDependencies ++= Seq(
   "io.appthreat"  %% "jssrc2cpg"         % Versions.chen,
   "io.appthreat"  %% "jimple2cpg"        % Versions.chen,
   "io.appthreat"  %% "php2atom"          % Versions.chen,
+  "io.appthreat"  %% "ruby2atom"         % Versions.chen,
   ("io.appthreat" %% "semanticcpg"       % Versions.chen % Test).classifier("tests"),
   ("io.appthreat" %% "x2cpg"             % Versions.chen % Test).classifier("tests"),
   ("io.appthreat" %% "pysrc2cpg"         % Versions.chen % Test).classifier("tests"),
@@ -106,7 +107,6 @@ Compile / packageDoc / publishArtifact := false
 wartremoverWarnings ++= Seq(
   Wart.NoNeedImport,
   Wart.ArrayEquals,
-  Wart.Any,
   Wart.FinalCaseClass,
   Wart.FinalVal,
   Wart.ToString,

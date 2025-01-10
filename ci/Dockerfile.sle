@@ -4,7 +4,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.authors="Team AppThreat <cloud@appthreat.com>" \
       org.opencontainers.image.source="https://github.com/appthreat/atom" \
       org.opencontainers.image.url="https://github.com/appthreat/atom" \
-      org.opencontainers.image.version="2.0.x" \
+      org.opencontainers.image.version="2.1.x" \
       org.opencontainers.image.vendor="appthreat" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.title="atom" \
@@ -37,7 +37,7 @@ RUN set -e; \
             ;; \
         *) echo >&2 "error: unsupported architecture: '$ARCH_NAME'"; exit 1 ;; \
     esac; \
-    zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl php8-zip php8-bcmath php8-pear php8-mbstring php8-devel \
+    zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl php8-zip php8-bcmath php8-pear php8-mbstring php8-devel ruby ruby-devel \
     && source /root/.nvm/nvm.sh \
     && python3 --version \
     && source /root/.nvm/nvm.sh \
@@ -72,6 +72,7 @@ RUN unzip -q atom.zip \
     && /opt/bin/atom --help \
     && which astgen \
     && which phpastgen \
+    && which rbastgen \
     && zypper clean -a
 
 CMD ["/opt/bin/atom"]
