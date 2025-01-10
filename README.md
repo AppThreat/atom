@@ -133,16 +133,30 @@ cdxgen -t java --deep -o bom.json .
 atom reachables -o app.atom -s reachables.json -l java .
 ```
 
-### Create data-flow slice for a java project.
+Example with container-based invocation.
 
 ```shell
-atom data-flow -o app.atom --slice-outfile df.json -l java .
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom reachables -l java -o /app/app.atom -s /app/reachables.slices.json /app
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom reachables -l java -o /app/app.atom -s /app/reachables.slices.json /app
 ```
 
 ### Create usages slice for a java project.
 
 ```shell
 atom usages -o app.atom --slice-outfile usages.json -l java .
+```
+
+Example for a Ruby project with container-based invocation.
+
+```shell
+docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+# podman run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+```
+
+### Create data-flow slice for a java project.
+
+```shell
+atom data-flow -o app.atom --slice-outfile df.json -l java .
 ```
 
 Learn more about [slices](./specification/docs/slices.md) or view some [samples](https://github.com/AppThreat/atom-samples)
