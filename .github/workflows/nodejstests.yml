@@ -10,7 +10,7 @@ jobs:
   nodejs-testing:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-24.04, macos-latest]
         java-version: ['21', '22']
         node-version: ['20.x', '22.x']
     runs-on: ${{ matrix.os }}

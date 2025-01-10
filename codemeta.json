@@ -32,7 +32,9 @@
   ],
   "softwareRequirements": [
     "Java >= 21",
-    "Node.js >= 20"
+    "Node.js >= 20",
+    "Ruby >= 3.4.0",
+    "PHP >= 8.3"
   ],
   "author": [
     {

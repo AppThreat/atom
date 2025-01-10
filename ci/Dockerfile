@@ -106,6 +106,7 @@ RUN unzip -q atom.zip \
     && which astgen \
     && which phpastgen \
     && which rbastgen \
+    && rbastgen --help \
     && microdnf clean all
 
 CMD ["/opt/bin/atom"]
