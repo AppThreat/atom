@@ -37,11 +37,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.4.1'
-          bundler-cache: false
+          node-version: '23.x'
       - name: Delete `.rustup` directory
         run: rm -rf /home/runner/.rustup # to save disk space
         if: runner.os == 'Linux'

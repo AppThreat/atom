@@ -80,7 +80,7 @@ jobs:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: '23.x'
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
         with:
