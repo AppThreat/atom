@@ -14,20 +14,18 @@ GEM
       ast (~> 2.4.1)
       racc
     racc (1.8.1)
-    racc (1.8.1-java)
 
 PLATFORMS
-  java
-  mswin64
   ruby
-  unknown
-  unknown
   x86_64-darwin-23
 
 DEPENDENCIES
   ostruct
   parser
   ruby_ast_gen!
+
+RUBY VERSION
+   ruby 3.4.1p0
 
 BUNDLED WITH
    2.6.2

@@ -60,6 +60,16 @@ jobs:
         with:
           repository: 'awsdocs/aws-doc-sdk-examples'
           path: 'repotests/aws-doc-sdk-examples'
+      - uses: actions/checkout@v4
+        with:
+          repository: 'bionomia/bionomia'
+          path: 'repotests/bionomia'
+          ref: '5ada8b5f4a5f68561a7195e2badc2f744dc4676e'
+      - uses: actions/checkout@v4
+        with:
+          repository: 'OWASP/railsgoat'
+          path: 'repotests/railsgoat'
+          ref: 'c1e8ff1e3b24a1c48fcfc9fbee0f65dc296b49d9'
       - uses: coursier/cache-action@v6
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -106,6 +116,8 @@ jobs:
           ./atom.sh parsedeps --remove-atom -o /tmp/py.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/py2.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/c.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml
+          ./atom.sh --remove-atom -o /tmp/railsgoat.atom -l ruby $GITHUB_WORKSPACE/repotests/railsgoat -Dlog4j.configurationFile=log4j2.xml
+          ./atom.sh --remove-atom -o /tmp/bionomia.atom -l ruby $GITHUB_WORKSPACE/repotests/bionomia -Dlog4j.configurationFile=log4j2.xml
 
           ./atom.sh data-flow --remove-atom -o /tmp/java2.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java.slices.json
           # ./atom.sh data-flow --remove-atom -o /tmp/juice2.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/juice.slices.json
@@ -120,6 +132,8 @@ jobs:
           python -m json.tool $GITHUB_WORKSPACE/repotests/DjanGoat/openapi.generated.json
           ./atom.sh usages --remove-atom -o /tmp/py4.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py4.usages.json
           ./atom.sh usages --remove-atom -o /tmp/c3.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/c.usages.json
+          ./atom.sh usages --remove-atom -o /tmp/railsgoat2.atom -l ruby $GITHUB_WORKSPACE/repotests/railsgoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/railsgoat2.usages.json
+          ./atom.sh usages --remove-atom -o /tmp/bionomia2.atom -l ruby $GITHUB_WORKSPACE/repotests/bionomia -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/bionomia2.usages.json
 
           ./atom.sh --remove-atom -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml -x --export-dir gml_exports
         if: runner.os != 'Windows'
