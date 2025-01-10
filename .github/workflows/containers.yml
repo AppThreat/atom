@@ -20,7 +20,7 @@ env:
 jobs:
   deploy:
     if: github.repository_owner == 'appthreat'
-    runs-on: [self-hosted, ubuntu]
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       packages: write
