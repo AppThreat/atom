@@ -60,6 +60,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
           cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
       - run: |
           sbt stage createDistribution
           cd wrapper/nodejs
