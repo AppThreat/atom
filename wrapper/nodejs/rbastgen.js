@@ -16,10 +16,6 @@ const RUBY_ASTGEN_BIN =
   process.env.RUBY_ASTGEN_BIN || join(PLUGINS_HOME, "bin", "ruby_ast_gen");
 
 function main(argvs) {
-  if (!detectRuby()) {
-    console.warn("Ruby is not installed!");
-    return false;
-  }
   const cwd = process.env.ATOM_CWD || process.cwd();
   argvs.splice(
     0,
@@ -29,16 +25,24 @@ function main(argvs) {
   const env = {
     ...process.env
   };
+  let rubyCmd = process.env.RUBY_CMD || "ruby";
   if (
     process.env.ATOM_RUBY_HOME &&
     existsSync(join(process.env.ATOM_RUBY_HOME, "bin"))
   ) {
     const rubyBinDir = join(process.env.ATOM_RUBY_HOME, "bin");
+    if (rubyCmd === "ruby") {
+      rubyCmd = join(rubyBinDir, "ruby");
+    }
     if (!env.PATH.includes(rubyBinDir)) {
       env.PATH = `${rubyBinDir}${delimiter}${env.PATH}`;
     }
   }
-  spawnSync(process.env.RUBY_CMD || "ruby", argvs, {
+  if (!detectRuby()) {
+    console.warn("Ruby is not installed!");
+    return false;
+  }
+  spawnSync(rubyCmd, argvs, {
     encoding: "utf-8",
     cwd,
     stdio: "inherit",
