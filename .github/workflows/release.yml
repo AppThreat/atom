@@ -73,6 +73,7 @@ jobs:
           native-image-job-reports: 'true'
           cache: 'sbt'
       - uses: sbt/setup-sbt@v1
+      - uses: oras-project/setup-oras@v1
       - run: |
           wget https://github.com/upx/upx/releases/download/v4.2.2/upx-4.2.2-amd64_linux.tar.xz
           tar -xvf upx-4.2.2-amd64_linux.tar.xz
