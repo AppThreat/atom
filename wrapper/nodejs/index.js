@@ -43,15 +43,13 @@ export const executeAtom = (atomArgs) => {
   if (!detectJava()) {
     // If we couldn't detect java but there is a JAVA_HOME defined then
     // try fixing the PATH manually. Usually required for windows users
-    if (process.env.JAVA_HOME) {
+    const atomJavaHome = process.env.ATOM_JAVA_HOME || process.env.JAVA_HOME;
+    if (atomJavaHome) {
       process.env.PATH =
-        process.env.PATH +
-        delimiter +
-        join(process.env.JAVA_HOME, "bin") +
-        delimiter;
+        join(atomJavaHome, "bin") + delimiter + process.env.PATH + delimiter;
     } else {
       console.warn(
-        "A Java JDK is not installed or can't be found. Please install JDK version 17 or higher before running atom."
+        "A Java JDK is not installed or can't be found. Please install JDK version 21 or higher before running atom."
       );
       return false;
     }
