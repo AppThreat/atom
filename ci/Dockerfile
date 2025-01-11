@@ -30,7 +30,7 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     RUBY_BUILD_BUILD_PATH="/tmp/rbenv" \
     RUBY_BUILD_HTTP_CLIENT=curl
 
-ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${MAVEN_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/${RUBY_VERSION}/bin:
+ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${MAVEN_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.1/bin:
 
 WORKDIR /opt
 
@@ -56,8 +56,8 @@ RUN set -e; \
     && microdnf install --enablerepo=crb -y libyaml-devel jemalloc-devel \
     && git clone https://github.com/rbenv/rbenv.git --depth=1 ~/.rbenv \
     && echo 'export PATH="/root/.rbenv/bin:$PATH"' >> ~/.bashrc \
-    && echo 'eval "$(~/.rbenv/bin/rbenv init - bash)"' >> ~/.bashrc \
-    && source ~/.bashrc \
+    && echo 'eval "$(/root/.rbenv/bin/rbenv init - bash)"' >> ~/.bashrc \
+    && source /root/.bashrc \
     && mkdir -p "$(rbenv root)/plugins" \
     && git clone https://github.com/rbenv/ruby-build.git --depth=1 "$(rbenv root)/plugins/ruby-build" \
     && rbenv install ${RUBY_VERSION} \
