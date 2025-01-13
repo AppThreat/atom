@@ -3,7 +3,7 @@ ThisBuild / organization := "io.appthreat"
 ThisBuild / version      := "2.1.3"
 ThisBuild / scalaVersion := "3.6.2"
 
-val chenVersion = "2.3.0"
+val chenVersion = "2.3.1"
 
 lazy val atom = Projects.atom
 
