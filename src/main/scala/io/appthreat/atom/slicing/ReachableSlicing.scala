@@ -8,7 +8,8 @@ import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
-
+import java.io.File
+import java.util.regex.Pattern
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -54,7 +55,7 @@ object ReachableSlicing:
     // For JavaScript and Python, we need flows between arguments of call nodes to track callbacks and middlewares
     if
       language == Languages.JSSRC || language == Languages.JAVASCRIPT || language == Languages
-          .PYTHON || language == Languages.PYTHONSRC
+          .PYTHON || language == Languages.PYTHONSRC || language == Languages.RUBYSRC
     then
       def dynCallSource          = atom.tag.name(config.sourceTag).call.argument.isIdentifier
       def dynFrameworkIdentifier = atom.tag.name(FRAMEWORK_TAG).identifier
@@ -96,6 +97,22 @@ object ReachableSlicing:
       flowsList ++= atom.tag.name(FRAMEWORK_TAG).parameter.reachableByFlows(
         atom.tag.name(config.sourceTag).parameter
       ).map(toSlice).toList
+    if language == Languages.RUBYSRC
+    then
+      // Fallback to reverse reachability if we don't get any hits
+      if flowsList.isEmpty then
+        println(
+          s"Falling back to using reverse reachability to determine flows. Max DDG depth used: ${config.sliceDepth}"
+        )
+        flowsList ++= atom.tag.name("pkg.*").call.argument.reachableByFlows(
+          atom.tag.name(
+            "pkg.*"
+          ).call.method.repeat(_.filename(
+            s"((app|config)${Pattern.quote(File.separator)})?(routes|controller(s)?|model(s)?|application).*\\.rb.*"
+          ))(
+            _.maxDepth(config.sliceDepth)
+          ).parameter
+        ).map(toSlice).toList
     if language == Languages.NEWC || language == Languages.C
     then
       flowsList ++= atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(atom.tag.name(
