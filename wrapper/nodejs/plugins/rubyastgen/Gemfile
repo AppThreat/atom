@@ -5,7 +5,7 @@ ruby ">=3.4.1"
 source "https://rubygems.org"
 
 group :frontend do
-    gem "ruby_ast_gen", github: 'joernio/ruby_ast_gen', ref: 'v0.34.0'
+    gem "ruby_ast_gen", github: 'appthreat/ruby_ast_gen', ref: 'v0.34.1'
     gem "parser"
     gem "ostruct"
 end

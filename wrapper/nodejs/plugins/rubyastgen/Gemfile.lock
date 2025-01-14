@@ -1,7 +1,7 @@
 GIT
-  remote: https://github.com/joernio/ruby_ast_gen.git
-  revision: 1c6e88faec50a986d319e7fbcfe297ec01c48e5a
-  ref: v0.34.0
+  remote: https://github.com/appthreat/ruby_ast_gen.git
+  revision: df21eaeb39f962c41946ec4391ff20080e4d8218
+  ref: v0.34.1
   specs:
     ruby_ast_gen (0.34.0)
 
@@ -17,6 +17,7 @@ GEM
 
 PLATFORMS
   ruby
+  x64-mingw-ucrt
   x86_64-darwin-23
 
 DEPENDENCIES
