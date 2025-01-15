@@ -177,7 +177,11 @@ pip install atom-tools
 atom usages --extract-endpoints -o app.atom --slice-outfile usages.json -l java .
 ```
 
-A file called `openapi.generated.json` would be created with the endpoints information.
+A file called `openapi.generated.json` would be created with the endpoints information. Use the environment variable `ATOM_TOOLS_OPENAPI_FILENAME` to customize the filename.
+
+```shell
+ATOM_TOOLS_OPENAPI_FILENAME=openapi.json atom usages --extract-endpoints -o app.atom --slice-outfile usages.json -l ruby .
+```
 
 ### Export atom to graphml or dot format
 
