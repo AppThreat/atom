@@ -44,18 +44,23 @@ object ReachableSlicing:
           toSlice
         ).toList
     if config.includeCryptoFlows then
-      if language == Languages.JAVA || language == Languages.JAVASRC then
+      if Array(Languages.JAVA, Languages.JAVASRC).contains(language) then
         flowsList ++= atom.tag.name(CRYPTO_GENERATE_TAG).call.reachableByFlows(
           atom.tag.name(CRYPTO_ALGORITHM_TAG).literal
         ).map(toSlice).toList
-      else if language == Languages.PYTHON || language == Languages.PYTHONSRC then
+      else if Array(Languages.PYTHON, Languages.PYTHONSRC).contains(language) then
         flowsList ++= atom.tag.name(CRYPTO_GENERATE_TAG).call.reachableByFlows(
           atom.tag.name(CRYPTO_ALGORITHM_TAG).call
         ).map(toSlice).toList
     // For JavaScript and Python, we need flows between arguments of call nodes to track callbacks and middlewares
     if
-      language == Languages.JSSRC || language == Languages.JAVASCRIPT || language == Languages
-          .PYTHON || language == Languages.PYTHONSRC || language == Languages.RUBYSRC
+      Array(
+        Languages.JSSRC,
+        Languages.JAVASCRIPT,
+        Languages.PYTHON,
+        Languages.PYTHONSRC,
+        Languages.RUBYSRC
+      ).contains(language)
     then
       def dynCallSource          = atom.tag.name(config.sourceTag).call.argument.isIdentifier
       def dynFrameworkIdentifier = atom.tag.name(FRAMEWORK_TAG).identifier
@@ -80,7 +85,7 @@ object ReachableSlicing:
           .reachableByFlows(sourceI, dynFrameworkIdentifier)
           .map(toSlice)
           .toList
-      if language == Languages.PYTHON || language == Languages.PYTHONSRC then
+      if Array(Languages.PYTHON, Languages.PYTHONSRC).contains(language) then
         flowsList ++= atom.tag.name("pkg.*").identifier.reachableByFlows(
           atom.tag.name(CLI_SOURCE_TAG).identifier
         ).map(toSlice).toList
@@ -89,7 +94,7 @@ object ReachableSlicing:
           atom.tag.name(CLI_SOURCE_TAG).call
         ).map(toSlice).toList
     end if
-    if language == Languages.PHP || language == Languages.RUBYSRC
+    if Array(Languages.PHP, Languages.RUBYSRC).contains(language)
     then
       flowsList ++= atom.ret.where(_.tag.name(config.sinkTag)).reachableByFlows(
         atom.tag.name(config.sourceTag).parameter
@@ -113,7 +118,7 @@ object ReachableSlicing:
             _.maxDepth(config.sliceDepth)
           ).parameter
         ).map(toSlice).toList
-    if language == Languages.NEWC || language == Languages.C
+    if Array(Languages.NEWC, Languages.C).contains(language)
     then
       flowsList ++= atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(atom.tag.name(
         CLI_SOURCE_TAG
