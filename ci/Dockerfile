@@ -54,6 +54,7 @@ RUN set -e; \
         pcre2 findutils which tar gzip zip unzip sudo nodejs rust \
     && microdnf install -y epel-release \
     && microdnf install --enablerepo=crb -y libyaml-devel jemalloc-devel \
+    && java --version \
     && git clone https://github.com/rbenv/rbenv.git --depth=1 ~/.rbenv \
     && echo 'export PATH="/root/.rbenv/bin:$PATH"' >> ~/.bashrc \
     && echo 'eval "$(/root/.rbenv/bin/rbenv init - bash)"' >> ~/.bashrc \

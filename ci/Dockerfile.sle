@@ -88,6 +88,7 @@ RUN unzip -q atom.zip \
     && cd /opt/nodejs && npm install --only=production && cd /opt \
     && npm install -g /opt/nodejs \
     && rm -rf atom.zip composer.json composer.lock composer-setup.php /usr/local/bin/atom \
+    && java --version \
     && /opt/bin/atom --help \
     && which astgen \
     && which phpastgen \

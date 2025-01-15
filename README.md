@@ -153,6 +153,13 @@ docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom u
 # podman run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
 ```
 
+Pass the argument `--platform=linux/amd64` when you face issues with Java or Ruby builds on arm64 architecture.
+
+```shell
+docker run --rm --platform=linux/amd64 -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+# podman run --rm --platform=linux/amd64 -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+```
+
 ### Create data-flow slice for a java project.
 
 ```shell

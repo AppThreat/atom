@@ -46,15 +46,13 @@ import scala.util.{Failure, Properties, Success, Try}
 
 object Atom:
 
-  val DEFAULT_ATOM_OUT_FILE: String =
-      if Properties.isWin || Charset.defaultCharset() != Charset.forName("UTF-8") then "app.atom"
-      else "app.⚛"
-  val DEFAULT_SLICE_OUT_FILE       = "slices.json"
-  val DEFAULT_SLICE_DEPTH          = 7
-  val DEFAULT_MAX_DEFS: Int        = 2000
-  val FRAMEWORK_INPUT_TAG: String  = "framework-input"
-  val FRAMEWORK_OUTPUT_TAG: String = "framework-output"
-  val DEFAULT_EXPORT_DIR: String   = "atom-exports"
+  val DEFAULT_ATOM_OUT_FILE: String = "app.atom"
+  val DEFAULT_SLICE_OUT_FILE        = "slices.json"
+  val DEFAULT_SLICE_DEPTH           = 7
+  val DEFAULT_MAX_DEFS: Int         = 2000
+  val FRAMEWORK_INPUT_TAG: String   = "framework-input"
+  val FRAMEWORK_OUTPUT_TAG: String  = "framework-output"
+  val DEFAULT_EXPORT_DIR: String    = "atom-exports"
   // Possible values: graphml, dot
   val DEFAULT_EXPORT_FORMAT: String = "graphml"
   // Possible values: no-delombok, default, types-only, run-delombok
