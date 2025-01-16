@@ -589,7 +589,6 @@ object Atom:
               if (x.isInstanceOf[
                 AtomUsagesConfig
               ] || config.exportAtom) && config.outputAtomFile.exists() =>
-              config.withRemoveAtom(false)
               try
                 loadFromOdb(outputAtomFile)
               catch
