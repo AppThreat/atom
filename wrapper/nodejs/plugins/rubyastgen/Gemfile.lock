@@ -24,6 +24,7 @@ PLATFORMS
 DEPENDENCIES
   ostruct (~> 0.6.1)
   parser (~> 3.3.7.0)
+  racc (~> 1.8.1)
   ruby_ast_gen!
 
 RUBY VERSION

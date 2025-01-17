@@ -8,4 +8,5 @@ group :frontend do
     gem "ruby_ast_gen", github: 'appthreat/ruby_ast_gen', ref: 'v1.0.0'
     gem "parser", "~> 3.3.7.0"
     gem "ostruct", "~> 0.6.1"
+    gem "racc", "~> 1.8.1"
 end
