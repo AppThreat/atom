@@ -43,7 +43,7 @@ jobs:
       with:
         ruby-version: '3.4.1'
         bundler-cache: false
-    - name: Prepare versions 1
+    - name: Prepare 3.4.0 version
       run: |
         cd wrapper/nodejs
         bash build.sh
@@ -51,7 +51,7 @@ jobs:
       with:
         ruby-version: '3.3.7'
         bundler-cache: false
-    - name: Prepare versions 1
+    - name: Prepare 3.3.0 version
       run: |
         cd wrapper/nodejs
         bash build.sh
@@ -59,13 +59,13 @@ jobs:
       with:
         ruby-version: '3.2.6'
         bundler-cache: false
-    - name: Prepare versions 1
+    - name: Prepare 3.2.0 version
       run: |
         cd wrapper/nodejs
         bash build.sh
     - name: Release tests
       run: |
-        tree wrapper/nodes/plugins
+        tree wrapper/nodejs/plugins
         echo "appthreat:registry=https://registry.npmjs.org" > ~/.npmrc
         npm publish --dry-run --@appthreat:registry='https://registry.npmjs.org'
       env:
