@@ -85,6 +85,7 @@ jobs:
           cd wrapper/nodejs
           bash build.sh
           sudo npm install -g .
+          atom --help
           astgen --version
           rbastgen --help
           atom -l java -o ${GITHUB_WORKSPACE}/repotests/shiftleft-java-example/app.atom ${GITHUB_WORKSPACE}/repotests/shiftleft-java-example
