@@ -36,15 +36,15 @@ npm install -g @cyclonedx/cdxgen --omit=optional
 ## container usage
 
 ```shell
-docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom --help
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom --help
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom --help
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom --help
 ```
 
 Example for java project.
 
 ```shell
-docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
 ```
 
 ## atom native-image (Advanced users only)
@@ -136,8 +136,8 @@ atom reachables -o app.atom -s reachables.json -l java .
 Example with container-based invocation.
 
 ```shell
-docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom reachables -l java -o /app/app.atom -s /app/reachables.slices.json /app
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom reachables -l java -o /app/app.atom -s /app/reachables.slices.json /app
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom reachables -l java -o /app/app.atom -s /app/reachables.slices.json /app
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom reachables -l java -o /app/app.atom -s /app/reachables.slices.json /app
 ```
 
 ### Create usages slice for a java project.
@@ -149,15 +149,15 @@ atom usages -o app.atom --slice-outfile usages.json -l java .
 Example for a Ruby project with container-based invocation.
 
 ```shell
-docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
-# podman run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+# podman run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
 ```
 
 Pass the argument `--platform=linux/amd64`, if you face issues with Java or Ruby builds on arm64 architecture.
 
 ```shell
-docker run --rm --platform=linux/amd64 -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
-# podman run --rm --platform=linux/amd64 -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+docker run --rm --platform=linux/amd64 -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+# podman run --rm --platform=linux/amd64 -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
 ```
 
 ### Create data-flow slice for a java project.
