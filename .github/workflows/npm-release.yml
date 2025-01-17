@@ -49,30 +49,6 @@ jobs:
         bash build.sh
     - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: '3.3.7'
-        bundler-cache: false
-    - name: Prepare 3.3.0 version
-      run: |
-        cd wrapper/nodejs
-        bash build.sh
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.2.6'
-        bundler-cache: false
-    - name: Prepare 3.2.0 version
-      run: |
-        cd wrapper/nodejs
-        bash build.sh
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.1.6'
-        bundler-cache: false
-    - name: Prepare 3.1.0 version
-      run: |
-        cd wrapper/nodejs
-        bash build.sh
-    - uses: ruby/setup-ruby@v1
-      with:
         ruby-version: 'jruby-9.4'
         bundler-cache: false
     - name: Prepare jruby-9.4 version
@@ -126,23 +102,6 @@ jobs:
         with:
           ruby-version: '3.4.1'
           bundler-cache: false
-      - name: Check rbastgen 3.4.1
-        run: |
-          rbastgen --help
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.3.7'
-          bundler-cache: false
-      - name: Check rbastgen 3.3.7
-        run: |
-          rbastgen --help
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1.6'
-          bundler-cache: false
-      - name: Check rbastgen 3.1.6
-        run: |
-          rbastgen --help
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 'jruby-9.4'
