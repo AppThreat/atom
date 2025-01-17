@@ -573,7 +573,7 @@ object Atom:
                 RubyConfig()
                     .withInputPath(config.inputPath.pathAsString)
                     .withOutputPath(outputAtomFile)
-                    .withIgnoredFilesRegex(".*(samples|examples|docs|tests).*")
+                    .withIgnoredFilesRegex(".*(samples|examples|docs|tests|vendor|spec).*")
               ).map { ag =>
                   ag
               }
