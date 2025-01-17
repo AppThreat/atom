@@ -33,7 +33,7 @@ jobs:
           repository: 'OWASP/railsgoat'
           path: 'repotests/railsgoat'
           ref: 'c1e8ff1e3b24a1c48fcfc9fbee0f65dc296b49d9'
-      - name: generate reachables sbom - bionomia
+      - name: generate usages sbom - bionomia
         run: |
           mkdir -p $GITHUB_WORKSPACE/rubyresults/bionomia
           cd repotests/bionomia
@@ -42,14 +42,14 @@ jobs:
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
           ls -lh
           cp *.slices.json $GITHUB_WORKSPACE/rubyresults/bionomia
-      - name: generate reachables sbom - railsgoat
+      - name: generate usages sbom - railsgoat
         run: |
           mkdir -p $GITHUB_WORKSPACE/rubyresults/railsgoat
           cd repotests/railsgoat
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
           ls -lh
           cp *.slices.json $GITHUB_WORKSPACE/rubyresults/railsgoat
-      - name: generate reachables sbom - campsite
+      - name: generate usages sbom - campsite
         run: |
           mkdir -p $GITHUB_WORKSPACE/rubyresults/campsite
           cd repotests/campsite/api
@@ -60,3 +60,51 @@ jobs:
         with:
           name: rubyresults
           path: rubyresults
+
+  npm-latest-tests:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23.x'
+          registry-url: https://registry.npmjs.org/
+      - uses: coursier/cache-action@v6
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Install atom latest
+        run: |
+          npm install -g @appthreat/atom
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.1'
+          bundler-cache: false
+      - name: Check rbastgen 3.4.1
+        run: |
+          rbastgen --help
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3.7'
+          bundler-cache: false
+      - name: Check rbastgen 3.3.7
+        run: |
+          rbastgen --help
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1.6'
+          bundler-cache: false
+      - name: Check rbastgen 3.1.6
+        run: |
+          rbastgen --help
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 'jruby-9.4'
+          bundler-cache: false
+      - name: Check rbastgen jruby-9.4
+        run: |
+          rbastgen --help

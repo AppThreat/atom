@@ -100,3 +100,53 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         NPMJS_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       if: startsWith(github.ref, 'refs/tags/')
+
+  npm-release-tests:
+    runs-on: ubuntu-24.04
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: pkg
+    permissions:
+      contents: read
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23.x'
+          registry-url: https://registry.npmjs.org/
+      - uses: coursier/cache-action@v6
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Install atom latest
+        run: |
+          npm install -g @appthreat/atom
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.1'
+          bundler-cache: false
+      - name: Check rbastgen 3.4.1
+        run: |
+          rbastgen --help
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3.7'
+          bundler-cache: false
+      - name: Check rbastgen 3.3.7
+        run: |
+          rbastgen --help
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1.6'
+          bundler-cache: false
+      - name: Check rbastgen 3.1.6
+        run: |
+          rbastgen --help
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 'jruby-9.4'
+          bundler-cache: false
+      - name: Check rbastgen jruby-9.4
+        run: |
+          rbastgen --help
