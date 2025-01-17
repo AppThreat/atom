@@ -1,4 +1,4 @@
-name: Reachables tests
+name: Container slices tests
 
 on:
   workflow_dispatch:
