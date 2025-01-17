@@ -14,7 +14,7 @@ LABEL maintainer="appthreat" \
 ARG RUBY_VERSION=3.4.1
 
 ENV ANDROID_HOME=/opt/android-sdk-linux \
-    JAVA_TOOL_OPTIONS="-XX:UseSVE=0 -Dfile.encoding=UTF-8" \
+    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8" \
     PHP_PARSER_BIN=/opt/vendor/bin/php-parse \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING="utf-8" \

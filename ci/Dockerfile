@@ -17,7 +17,7 @@ ARG RUBY_VERSION=3.4.1
 ENV MAVEN_VERSION=$MAVEN_VERSION \
     MAVEN_HOME="/opt/maven/${MAVEN_VERSION}" \
     ANDROID_HOME=/opt/android-sdk-linux \
-    JAVA_TOOL_OPTIONS="-XX:UseSVE=0 -Dfile.encoding=UTF-8" \
+    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8" \
     PHP_PARSER_BIN=/opt/vendor/bin/php-parse \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING="utf-8" \
