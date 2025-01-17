@@ -13,7 +13,7 @@ cd plugins\rubyastgen
 .\setup.ps1
 cd ..\..
 
-Remove-Item -Force plugins\bin\racc* plugins\bin\ruby-parse* plugins\bin\ruby-rewrite*
+Remove-Item -Force plugins\bin\racc.cmd plugins\bin\ruby-parse.cmd plugins\bin\ruby-rewrite.cmd
 
 npm ci
 
