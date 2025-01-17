@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/appthreat/ruby_ast_gen.git
-  revision: df21eaeb39f962c41946ec4391ff20080e4d8218
-  ref: v0.34.1
+  revision: ba9df703cca54d40c469ca83a99bd05e260c63a5
+  ref: v0.34.2
   specs:
-    ruby_ast_gen (0.34.0)
+    ruby_ast_gen (0.34.2)
 
 GEM
   remote: https://rubygems.org/
