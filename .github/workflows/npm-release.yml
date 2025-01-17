@@ -102,6 +102,9 @@ jobs:
         with:
           ruby-version: '3.4.1'
           bundler-cache: false
+      - name: Check rbastgen 3.4.1
+        run: |
+          rbastgen --help
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 'jruby-9.4'
