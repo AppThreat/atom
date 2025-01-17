@@ -1,0 +1,57 @@
+name: Reachables tests
+
+on:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+jobs:
+  ruby-samples:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-24.04"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: setup paths
+        run: |
+          mkdir -p repotests
+          mkdir -p rubyresults
+      - uses: actions/checkout@v4
+        with:
+          repository: 'campsite/campsite'
+          path: 'repotests/campsite'
+          ref: '10197238bbbefd9c9ac7c77467b647fd93993ba0'
+      - uses: actions/checkout@v4
+        with:
+          repository: 'bionomia/bionomia'
+          path: 'repotests/bionomia'
+          ref: '5ada8b5f4a5f68561a7195e2badc2f744dc4676e'
+      - uses: actions/checkout@v4
+        with:
+          repository: 'OWASP/railsgoat'
+          path: 'repotests/railsgoat'
+          ref: 'c1e8ff1e3b24a1c48fcfc9fbee0f65dc296b49d9'
+      - name: generate reachables sbom - bionomia
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/rubyresults/bionomia
+          cd repotests/bionomia
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app 
+          cp *.slices.json $GITHUB_WORKSPACE/rubyresults/bionomia
+      - name: generate reachables sbom - railsgoat
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/rubyresults/railsgoat
+          cd repotests/railsgoat
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+          cp *.slices.json $GITHUB_WORKSPACE/rubyresults/railsgoat
+      - name: generate reachables sbom - campsite
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/rubyresults/campsite
+          cd repotests/campsite/api
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+          cp *.slices.json $GITHUB_WORKSPACE/rubyresults/campsite
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rubyresults
+          path: rubyresults
