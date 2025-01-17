@@ -63,9 +63,25 @@ jobs:
       run: |
         cd wrapper/nodejs
         bash build.sh
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.1.6'
+        bundler-cache: false
+    - name: Prepare 3.1.0 version
+      run: |
+        cd wrapper/nodejs
+        bash build.sh
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 'jruby-9.4'
+        bundler-cache: false
+    - name: Prepare jruby-9.4 version
+      run: |
+        cd wrapper/nodejs
+        bash build.sh
     - name: Release tests
       run: |
-        tree wrapper/nodejs/plugins
+        cd wrapper/nodejs
         echo "appthreat:registry=https://registry.npmjs.org" > ~/.npmrc
         npm publish --dry-run --@appthreat:registry='https://registry.npmjs.org'
       env:
