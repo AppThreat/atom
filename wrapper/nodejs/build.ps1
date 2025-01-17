@@ -9,7 +9,13 @@ php -r "unlink('composer-setup.php');"
 $env:COMPOSER_VENDOR_DIR="plugins"
 php --php-ini php.ini composer.phar require nikic/php-parser:4.18.0 --ignore-platform-reqs --optimize-autoloader
 
-npm install
+cd plugins\rubyastgen
+.\setup.ps1
+cd ..\..
+
+Remove-Item -Force plugins\bin\racc* plugins\bin\ruby-parse* plugins\bin\ruby-rewrite*
+
+npm ci
 
 Remove-Item -Force composer.phar
 Remove-Item -Force composer.json

@@ -4,6 +4,8 @@ on:
   push:
     tags:
     - 'v*'
+  workflow_dispatch:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
@@ -22,10 +24,6 @@ jobs:
       with:
         node-version: '23.x'
         registry-url: https://registry.npmjs.org/
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.4.1'
-        bundler-cache: false
     - uses: coursier/cache-action@v6
     - name: Set up JDK
       uses: actions/setup-java@v4
@@ -33,16 +31,50 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
     - uses: sbt/setup-sbt@v1
-    - name: Release
+    - name: Build
       run: |
         sudo apt update -y
-        sudo apt install -y zlib1g php-zip
+        sudo apt install -y zlib1g php-zip tree
         sbt scalafmtCheck stage createDistribution
         sha512sum target/atom.zip > target/atom.zip.sha512
-        npm config set //npm.pkg.github.com/:_authToken=$GITHUB_TOKEN
-        npm config set //registry.npmjs.org/:_authToken=$NPMJS_AUTH_TOKEN
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4.1'
+        bundler-cache: false
+    - name: Prepare versions 1
+      run: |
         cd wrapper/nodejs
         bash build.sh
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.3.7'
+        bundler-cache: false
+    - name: Prepare versions 1
+      run: |
+        cd wrapper/nodejs
+        bash build.sh
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2.6'
+        bundler-cache: false
+    - name: Prepare versions 1
+      run: |
+        cd wrapper/nodejs
+        bash build.sh
+    - name: Release tests
+      run: |
+        tree wrapper/nodes/plugins
+        echo "appthreat:registry=https://registry.npmjs.org" > ~/.npmrc
+        npm publish --dry-run --@appthreat:registry='https://registry.npmjs.org'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NPMJS_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    - name: Publish
+      run: |
+        npm config set //npm.pkg.github.com/:_authToken=$GITHUB_TOKEN
+        npm config set //registry.npmjs.org/:_authToken=$NPMJS_AUTH_TOKEN
         echo "appthreat:registry=https://npm.pkg.github.com" > ~/.npmrc
         npm publish --access=public --@appthreat:registry='https://npm.pkg.github.com'
         echo "appthreat:registry=https://registry.npmjs.org" > ~/.npmrc
@@ -50,3 +82,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         NPMJS_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      if: startsWith(github.ref, 'refs/tags/')
