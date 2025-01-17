@@ -10,7 +10,7 @@ GEM
   specs:
     ast (2.4.2)
     ostruct (0.6.1)
-    parser (3.3.6.0)
+    parser (3.3.7.0)
       ast (~> 2.4.1)
       racc
     racc (1.8.1)
@@ -21,8 +21,8 @@ PLATFORMS
   x86_64-darwin-23
 
 DEPENDENCIES
-  ostruct
-  parser
+  ostruct (~> 0.6.1)
+  parser (~> 3.3.7.0)
   ruby_ast_gen!
 
 RUBY VERSION
