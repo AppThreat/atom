@@ -14,7 +14,8 @@ const dirName = import.meta ? dirname(fileURLToPath(url)) : __dirname;
 export const PLUGINS_HOME = join(dirName, "plugins");
 const RUBY_ASTGEN_BIN =
   process.env.RUBY_ASTGEN_BIN || join(PLUGINS_HOME, "bin", "ruby_ast_gen");
-
+// Ruby version needed
+const RUBY_VERSION_NEEDED = "3.4.1";
 function main(argvs) {
   const cwd = process.env.ATOM_CWD || process.cwd();
   argvs.splice(
@@ -38,7 +39,7 @@ function main(argvs) {
       env.PATH = `${rubyBinDir}${delimiter}${env.PATH}`;
     }
   }
-  if (!detectRuby()) {
+  if (!detectRuby(RUBY_VERSION_NEEDED)) {
     console.warn("Ruby is not installed!");
     return false;
   }

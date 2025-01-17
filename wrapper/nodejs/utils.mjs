@@ -97,12 +97,18 @@ export const detectPhp = () => {
   return true;
 };
 
-export const detectRuby = () => {
+export const detectRuby = (versionNeeded) => {
   let result = spawnSync(process.env.RUBY_CMD || "ruby", ["--version"], {
     encoding: "utf-8"
   });
   if (result.status !== 0 || result.error) {
     return false;
+  }
+  const stdout = result.stdout;
+  if (versionNeeded && stdout) {
+    const cmdOutput = Buffer.from(stdout).toString();
+    const versionStr = cmdOutput.trim().replaceAll("\r", "");
+    return versionStr.startsWith(`ruby ${versionNeeded} `);
   }
   return true;
 };
