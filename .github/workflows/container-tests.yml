@@ -37,6 +37,8 @@ jobs:
         run: |
           mkdir -p $GITHUB_WORKSPACE/rubyresults/bionomia
           cd repotests/bionomia
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main atom --help
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main rbastgen --help
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
           ls -lh
           cp *.slices.json $GITHUB_WORKSPACE/rubyresults/bionomia
