@@ -40,7 +40,9 @@ function main(argvs) {
     }
   }
   if (!detectRuby(RUBY_VERSION_NEEDED)) {
-    console.warn("Ruby is not installed!");
+    console.warn(
+      `Ruby ${RUBY_VERSION_NEEDED} is not installed! Set the environment variable "ATOM_RUBY_HOME" to the Ruby ${RUBY_VERSION_NEEDED} install directory.`
+    );
     return false;
   }
   spawnSync(rubyCmd, argvs, {
