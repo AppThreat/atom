@@ -47,17 +47,6 @@ jobs:
       run: |
         cd wrapper/nodejs
         bash build.sh
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 'jruby-9.4'
-        bundler-cache: false
-    - name: Prepare jruby-9.4 version
-      run: |
-        cd wrapper/nodejs
-        bash build.sh
-    - name: Release tests
-      run: |
-        cd wrapper/nodejs
         echo "appthreat:registry=https://registry.npmjs.org" > ~/.npmrc
         npm publish --dry-run --@appthreat:registry='https://registry.npmjs.org'
       env:
@@ -103,12 +92,5 @@ jobs:
           ruby-version: '3.4.1'
           bundler-cache: false
       - name: Check rbastgen 3.4.1
-        run: |
-          rbastgen --help
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 'jruby-9.4'
-          bundler-cache: false
-      - name: Check rbastgen jruby-9.4
         run: |
           rbastgen --help
