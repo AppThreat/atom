@@ -87,14 +87,14 @@ jobs:
           sudo npm install -g .
           astgen --version
           rbastgen --help
-          atom -l java -o $GITHUB_WORKSPACE/repotests/shiftleft-java-example/app.atom $GITHUB_WORKSPACE/repotests/shiftleft-java-example
-          atom -l js -o $GITHUB_WORKSPACE/repotests/juice-shop/app.atom $GITHUB_WORKSPACE/repotests/juice-shop
-          atom -l js -o $GITHUB_WORKSPACE/repotests/shiftleft-ts-example/app.atom $GITHUB_WORKSPACE/repotests/shiftleft-ts-example
-          atom -l python -o $GITHUB_WORKSPACE/repotests/DjanGoat/app.atom $GITHUB_WORKSPACE/repotests/DjanGoat
-          atom parsedeps -l python -o $GITHUB_WORKSPACE/repotests/DjanGoat/app.atom $GITHUB_WORKSPACE/repotests/DjanGoat
-          atom -l c -o $GITHUB_WORKSPACE/repotests/libexpat/app.atom $GITHUB_WORKSPACE/repotests/libexpat
-          atom -o $GITHUB_WORKSPACE/repotests/railsgoat/app.atom -l ruby $GITHUB_WORKSPACE/repotests/railsgoat
-          atom -o $GITHUB_WORKSPACE/repotests/bionomia/app.atom -l ruby $GITHUB_WORKSPACE/repotests/bionomia
+          atom -l java -o ${GITHUB_WORKSPACE}/repotests/shiftleft-java-example/app.atom ${GITHUB_WORKSPACE}/repotests/shiftleft-java-example
+          atom -l js -o ${GITHUB_WORKSPACE}/repotests/juice-shop/app.atom ${GITHUB_WORKSPACE}/repotests/juice-shop
+          atom -l js -o ${GITHUB_WORKSPACE}/repotests/shiftleft-ts-example/app.atom ${GITHUB_WORKSPACE}/repotests/shiftleft-ts-example
+          atom -l python -o ${GITHUB_WORKSPACE}/repotests/DjanGoat/app.atom ${GITHUB_WORKSPACE}/repotests/DjanGoat
+          atom parsedeps -l python -o ${GITHUB_WORKSPACE}/repotests/DjanGoat/app.atom ${GITHUB_WORKSPACE}/repotests/DjanGoat
+          atom -l c -o ${GITHUB_WORKSPACE}/repotests/libexpat/app.atom ${GITHUB_WORKSPACE}/repotests/libexpat
+          atom -o ${GITHUB_WORKSPACE}/repotests/railsgoat/app.atom -l ruby ${GITHUB_WORKSPACE}/repotests/railsgoat
+          atom -o ${GITHUB_WORKSPACE}/repotests/bionomia/app.atom -l ruby ${GITHUB_WORKSPACE}/repotests/bionomia
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   nodejs-testing-windows:
