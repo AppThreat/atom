@@ -89,6 +89,7 @@ jobs:
         NPMJS_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Publish
       run: |
+        cd wrapper/nodejs
         npm config set //npm.pkg.github.com/:_authToken=$GITHUB_TOKEN
         npm config set //registry.npmjs.org/:_authToken=$NPMJS_AUTH_TOKEN
         echo "appthreat:registry=https://npm.pkg.github.com" > ~/.npmrc
