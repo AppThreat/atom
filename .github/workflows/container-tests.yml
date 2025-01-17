@@ -37,19 +37,19 @@ jobs:
         run: |
           mkdir -p $GITHUB_WORKSPACE/rubyresults/bionomia
           cd repotests/bionomia
-          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app 
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app 
           cp *.slices.json $GITHUB_WORKSPACE/rubyresults/bionomia
       - name: generate reachables sbom - railsgoat
         run: |
           mkdir -p $GITHUB_WORKSPACE/rubyresults/railsgoat
           cd repotests/railsgoat
-          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
           cp *.slices.json $GITHUB_WORKSPACE/rubyresults/railsgoat
       - name: generate reachables sbom - campsite
         run: |
           mkdir -p $GITHUB_WORKSPACE/rubyresults/campsite
           cd repotests/campsite/api
-          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
           cp *.slices.json $GITHUB_WORKSPACE/rubyresults/campsite
       - uses: actions/upload-artifact@v4
         with:
