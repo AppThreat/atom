@@ -39,7 +39,7 @@ function main(argvs) {
       env.PATH = `${rubyBinDir}${delimiter}${env.PATH}`;
     }
   }
-  if (!detectRuby(RUBY_VERSION_NEEDED)) {
+  if (rubyCmd === "ruby" && !detectRuby(RUBY_VERSION_NEEDED)) {
     console.warn(
       `Ruby ${RUBY_VERSION_NEEDED} is not installed! Set the environment variable "ATOM_RUBY_HOME" to the Ruby ${RUBY_VERSION_NEEDED} install directory.`
     );
