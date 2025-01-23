@@ -180,8 +180,8 @@ jobs:
           index-annotations: ${{ steps.metadata.outputs.labels }}
           tags: ${{ steps.metadata.outputs.tags }}
           sources: |
-            ghcr.io/${{ github.repository }}@${{ needs.al9-deploy.outputs.digest }}
-            ghcr.io/${{ github.repository }}@${{ needs.al9-deploy-arm.outputs.digest }}
+            ghcr.io/${{ github.repository }}@${{ needs.al9-deploy.outputs.image-uri }}
+            ghcr.io/${{ github.repository }}@${{ needs.al9-deploy-arm.outputs.image-uri }}
 
   sle-deploy:
     if: github.repository_owner == 'appthreat'
@@ -349,5 +349,5 @@ jobs:
           index-annotations: ${{ steps.metadata.outputs.labels }}
           tags: ${{ steps.metadata.outputs.tags }}
           sources: |
-            ghcr.io/appthreat/atom-sle@${{ needs.sle-deploy.outputs.digest }}
-            ghcr.io/appthreat/atom-sle@${{ needs.sle-deploy-arm.outputs.digest }}
+            ghcr.io/appthreat/atom-sle@${{ needs.sle-deploy.outputs.image-uri }}
+            ghcr.io/appthreat/atom-sle@${{ needs.sle-deploy-arm.outputs.image-uri }}
