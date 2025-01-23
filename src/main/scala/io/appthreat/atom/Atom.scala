@@ -366,10 +366,14 @@ object Atom:
               val openapiFileName =
                   sys.env.getOrElse("ATOM_TOOLS_OPENAPI_FILENAME", "openapi.generated.json")
               val openapiFormat = sys.env.getOrElse("ATOM_TOOLS_OPENAPI_FORMAT", "openapi3.1.0")
+              val atomToolsWorkDir =
+                  sys.env.getOrElse("ATOM_TOOLS_WORK_DIR", config.inputPath.parent.pathAsString)
+              println(s"atom-tools convert -i ${config.outputSliceFile} -t ${config.language} -f ${openapiFormat} -o ${config
+                      .inputPath.pathAsString}${java.io.File.separator}${openapiFileName}")
               val result = ExternalCommand.run(
-                s"atom-tools convert -i ${config.outputSliceFile} -t ${config.language} -f ${openapiFormat} -q -o ${config
+                s"atom-tools convert -i ${config.outputSliceFile} -t ${config.language} -f ${openapiFormat} -o ${config
                         .inputPath.pathAsString}${java.io.File.separator}${openapiFileName}",
-                "."
+                atomToolsWorkDir
               )
               result match
                 case Success(_) =>
@@ -378,6 +382,7 @@ object Atom:
                     println(
                       s"Failed to run atom-tools. Use the atom container image or perform 'pip install atom-tools' and re-run this command. Exception: ${exception.getMessage}"
                     )
+            end if
         case _: ReachablesConfig =>
             saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
         case x: AtomParseDepsConfig =>

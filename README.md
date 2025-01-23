@@ -183,6 +183,14 @@ A file called `openapi.generated.json` would be created with the endpoints infor
 ATOM_TOOLS_OPENAPI_FILENAME=openapi.json atom usages --extract-endpoints -o app.atom --slice-outfile usages.json -l ruby .
 ```
 
+Container-based invocation:
+
+```shell
+docker run --rm -v /tmp:/tmp -e ATOM_TOOLS_OPENAPI_FILENAME=openapi.json -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+# podman run --rm -v /tmp:/tmp -e ATOM_TOOLS_OPENAPI_FILENAME=openapi.json -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+```
+
+
 ### Export atom to graphml or dot format
 
 It is possible to export each method along with data dependencies in an atom to graphml or dot format. Simply pass `--export` to enable this feature.
