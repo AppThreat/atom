@@ -70,7 +70,8 @@ RUN set -e; \
     && alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 10 \
     && python3 --version \
     && node --version \
-    && python3 -m pip install --upgrade pip poetry atom-tools \
+    && python3 -m pip install --upgrade pip poetry atom-tools>=0.7.0 \
+    && atom-tools --version && atom-tools --help \
     && curl -s "https://get.sdkman.io" | bash \
     && source "/root/.sdkman/bin/sdkman-init.sh" \
     && echo -e "sdkman_auto_answer=true\nsdkman_selfupdate_feature=false\nsdkman_auto_env=true\nsdkman_curl_connect_timeout=20\nsdkman_curl_max_time=0" >> /root/.sdkman/etc/config \
