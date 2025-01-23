@@ -52,7 +52,8 @@ jobs:
           sbt stage createDistribution
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to the Container registry
@@ -115,7 +116,8 @@ jobs:
           sbt stage createDistribution
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to the Container registry
@@ -178,7 +180,8 @@ jobs:
           sbt stage createDistribution
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to the Container registry
@@ -242,7 +245,8 @@ jobs:
           sbt stage createDistribution
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to the Container registry
