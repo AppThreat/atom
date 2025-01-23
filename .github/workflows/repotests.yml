@@ -132,10 +132,10 @@ jobs:
           python -m json.tool $GITHUB_WORKSPACE/repotests/DjanGoat/openapi.generated.json
           ./atom.sh usages --remove-atom -o /tmp/py4.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py4.usages.json
           ./atom.sh usages --remove-atom -o /tmp/c3.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/c.usages.json
-          ./atom.sh usages --remove-atom -o /tmp/railsgoat2.atom -l ruby $GITHUB_WORKSPACE/repotests/railsgoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/railsgoat2.usages.json
+          ./atom.sh usages --extract-endpoints --remove-atom -o /tmp/railsgoat2.atom -l ruby $GITHUB_WORKSPACE/repotests/railsgoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/railsgoat2.usages.json
           ./atom.sh usages --remove-atom -o /tmp/bionomia2.atom -l ruby $GITHUB_WORKSPACE/repotests/bionomia -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/bionomia2.usages.json
-
           ./atom.sh --remove-atom -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml -x --export-dir gml_exports
+          ls -lh .
         if: runner.os != 'Windows'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
