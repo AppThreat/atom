@@ -60,6 +60,7 @@ jobs:
         with:
           name: rubyresults
           path: rubyresults
+        if: matrix.os == 'ubuntu-24.04'
 
   npm-latest-tests:
     runs-on: ubuntu-24.04
