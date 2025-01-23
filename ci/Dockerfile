@@ -101,7 +101,7 @@ COPY ./target/atom.zip .
 COPY ./wrapper .
 RUN unzip -q atom.zip \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
-    && cd /opt/nodejs && npm install --only=production && bash build.sh && npm install -g . && cd /opt \
+    && cd /opt/nodejs && npm install --omit=dev && bash build.sh && npm install -g . && cd /opt \
     && rm -rf atom.zip composer.json composer.lock composer-setup.php /usr/local/bin/atom \
     && /opt/bin/atom --help \
     && which astgen \
