@@ -13,7 +13,7 @@ jobs:
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-latest]
         java-version: ['21', '23']
         node-version: ['20.x', '22.x', '23.x']
-        ruby: ["3.4.1"]
+        ruby: ["3.4.2"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
