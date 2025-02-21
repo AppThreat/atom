@@ -152,16 +152,11 @@ jobs:
           chmod +x upx-5.0.0-arm64_linux/upx
           sudo cp upx-5.0.0-arm64_linux/upx /usr/local/bin/
           sbt stage createDistribution
-          sha512sum target/atom.zip > target/atom.zip.sha512
           bash ci/native-image.sh
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-arm64
           /usr/local/bin/upx -9 --lzma target/graalvm-native-image/atom-arm64
           target/graalvm-native-image/atom-arm64 --help
           sha512sum target/graalvm-native-image/atom-arm64 > target/graalvm-native-image/atom-arm64.sha512
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: sbt publish
-        if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload atom to ghcr
@@ -183,3 +178,52 @@ jobs:
           files: |
             target/graalvm-native-image/atom-arm64
             target/graalvm-native-image/atom-arm64.sha512
+
+  release-mac:
+    if: github.repository_owner == 'appthreat'
+    concurrency: release-mac
+    runs-on: macos-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up JDK
+        uses: graalvm/setup-graalvm@v1
+        with:
+          distribution: 'graalvm-community'
+          java-version: '21'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
+      - uses: oras-project/setup-oras@v1
+      - run: |
+          brew install coreutils
+          sbt stage createDistribution
+          bash ci/native-image.sh
+          cp target/graalvm-native-image/atom target/graalvm-native-image/atom-darwin-arm64
+          sha512sum target/graalvm-native-image/atom-darwin-arm64 > target/graalvm-native-image/atom-darwin-arm64.sha512
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload atom to ghcr
+        run: |
+          cd target
+          echo $GITHUB_TOKEN | oras login ghcr.io -u $GITHUB_USERNAME --password-stdin
+          cd graalvm-native-image
+          oras push ghcr.io/appthreat/atom-darwin-arm64:v2 \
+            --artifact-type application/vnd.oras.config.v1+json \
+            ./atom-darwin-arm64:application/vnd.appthreat.atom.layer.v1+tar \
+            ./atom-darwin-arm64.sha512:application/vnd.appthreat.atom.layer.v1+tar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            target/graalvm-native-image/atom-darwin-arm64
+            target/graalvm-native-image/atom-darwin-arm64.sha512
