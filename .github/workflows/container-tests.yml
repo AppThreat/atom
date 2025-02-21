@@ -63,7 +63,11 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
 
   npm-latest-tests:
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-24.04", "ubuntu-24.04-arm", "macos-latest"]
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: read
     steps:
