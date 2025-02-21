@@ -205,7 +205,6 @@ jobs:
           sbt stage createDistribution
           bash ci/native-image.sh
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-darwin-arm64
-          target/graalvm-native-image/atom-darwin-arm64 --help
           sha512sum target/graalvm-native-image/atom-darwin-arm64 > target/graalvm-native-image/atom-darwin-arm64.sha512
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
