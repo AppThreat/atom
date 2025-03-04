@@ -508,12 +508,8 @@ object Atom:
                       delombokMode = Some(DEFAULT_DELOMBOK_MODE)
                     )
                         .withInputPath(config.inputPath.pathAsString)
-                        .withDefaultIgnoredFilesRegex(
-                          List(
-                            "\\..*".r,
-                            ".*build/(generated|intermediates|outputs|tmp).*" r,
-                            ".*src/test.*" r
-                          )
+                        .withIgnoredFilesRegex(
+                          ".*(target|build)/(generated|intermediates|outputs|tmp).*"
                         )
                         .withOutputPath(outputAtomFile)
                   )
