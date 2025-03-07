@@ -33,6 +33,7 @@ import io.appthreat.x2cpg.passes.base.AstLinkerPass
 import io.appthreat.x2cpg.passes.frontend.XTypeRecoveryConfig
 import io.appthreat.x2cpg.passes.taggers.{CdxPass, ChennaiTagsPass, EasyTagsPass}
 import io.appthreat.x2cpg.utils.ExternalCommand
+import io.appthreat.x2cpg.SourceFiles
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
 import io.shiftleft.codepropertygraph.generated.{Cpg, Languages}
 import io.shiftleft.semanticcpg.language.*
@@ -497,6 +498,7 @@ object Atom:
                         .withInputPath(config.inputPath.pathAsString)
                         .withOutputPath(outputAtomFile)
                         .withFullResolver(true)
+                        .withRecurse(true)
                   )
           case Languages.JAVA | Languages.JAVASRC =>
               new JavaSrc2Cpg()
@@ -513,6 +515,35 @@ object Atom:
                         )
                         .withOutputPath(outputAtomFile)
                   )
+          case "SCALA" | "TASTY" | "SBT" =>
+              var buildTool = "sbt"
+              // Find the build tool
+              val buildMillFiles =
+                  SourceFiles.determine(config.inputPath.pathAsString, Set("build.mill"))
+              if buildMillFiles.nonEmpty then
+                buildTool = "mill"
+              val compileCommand = sys.env.getOrElse("ATOM_SCALA_COMPILE_COMMAND", "compile")
+              // Invoke the compile command.
+              println(
+                s"About to invoke '${buildTool} ${compileCommand}' in ${config.inputPath.pathAsString}'. This might take a while ..."
+              )
+              val result = ExternalCommand.run(
+                s"${buildTool} ${compileCommand}",
+                config.inputPath.pathAsString
+              )
+              result match
+                case Success(_) =>
+                    val tastyFiles =
+                        SourceFiles.determine(config.inputPath.pathAsString, Set(".tasty"))
+                    if tastyFiles.isEmpty then
+                      println("The project compiled successfully but without any IR files.")
+                    else
+                      println(s"The project compiled successfully with ${tastyFiles
+                              .size} IR file${if tastyFiles.size == 1 then "" else "s"}!")
+                case Failure(exception) =>
+                    println(
+                      s"Failed to compile the project using ${buildTool}. Use the atom container image or install ${buildTool} and re-run this command. Exception: ${exception.getMessage}"
+                    )
           case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
               new JsSrc2Cpg()
                   .createCpgWithOverlays(
@@ -629,6 +660,7 @@ object Atom:
                 Left(err.getStackTrace.take(7).mkString("\n"))
             case err: Throwable => Left(err.getMessage)
           Right("Atom generation successful")
+      case _ => Right("")
     end match
   end generateForLanguage
 

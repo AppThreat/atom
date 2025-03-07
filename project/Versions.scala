@@ -1,5 +1,6 @@
 object Versions {
   val chen      = parseVersion("chenVersion")
+  val scala3Version = "3.6.4"
   private def parseVersion(key: String): String = {
     val versionRegexp = s""".*val $key += ?"(.*?)"""".r
     val versions: List[String] = scala.io.Source

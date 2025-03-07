@@ -225,6 +225,7 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 - Python
 - PHP (Requires PHP >= 7.0. Supports PHP 5.2 to 8.3)
 - Ruby (Requires Ruby 3.4.2. Supports Ruby 1.8 - 3.3 syntax)
+- Scala (WIP)
 
 ## Atom Specification
 
