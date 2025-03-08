@@ -154,11 +154,13 @@ function parseTasty(tastyAstFile) {
         .replaceAll("List(", "")
         .replaceAll(")", "")
         .split(",");
-      for (const sig of signatureTypes) {
+      for (let sig of signatureTypes) {
+        sig = sig.trim();
         if (
-          sig.length > 1 &&
+          sig.length > 3 &&
           !sig.startsWith("scala.") &&
-          !sig.startsWith("java.")
+          !sig.startsWith("java.") &&
+          !sig.startsWith("javax.inject.")
         ) {
           usedTypes.add(sig);
         }
