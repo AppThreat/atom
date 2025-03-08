@@ -118,7 +118,7 @@ function parseTasty(tastyAstFile) {
   const astData = readFileSync(tastyAstFile, "utf-8");
   let namesMode = false;
   let treesMode = false;
-  const literals = [];
+  const literals = new Set();
   const usedTypes = new Set();
   for (let line of astData.split("\n")) {
     line = line.replace("\r", "");
@@ -141,7 +141,7 @@ function parseTasty(tastyAstFile) {
       if (line.includes(": ")) {
         const literal = line.split(": ").pop().trim();
         if (literal.length > 1) {
-          literals.push(literal);
+          literals.add(literal);
         }
       }
     }
@@ -171,7 +171,7 @@ function parseTasty(tastyAstFile) {
     }
   }
   return {
-    literals,
     usedTypes: Array.from(usedTypes),
+    literals: Array.from(literals),
   };
 }
