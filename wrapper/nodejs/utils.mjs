@@ -112,3 +112,23 @@ export const detectRuby = (versionNeeded) => {
   }
   return true;
 };
+
+export const detectScala = () => {
+  let result = spawnSync(process.env.SCALA_CMD || "scala", ["--version"], {
+    encoding: "utf-8"
+  });
+  if (result.status !== 0 || result.error) {
+    return false;
+  }
+  return true;
+};
+
+export const detectScalac = () => {
+  let result = spawnSync(process.env.SCALAC_CMD || "scalac", ["--version"], {
+    encoding: "utf-8"
+  });
+  if (result.status !== 0 || result.error) {
+    return false;
+  }
+  return true;
+};
