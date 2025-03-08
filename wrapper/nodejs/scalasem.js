@@ -83,6 +83,10 @@ function dumpTastyFiles(tastyFiles, outDir, slicesFile) {
     }
     if (result.stdout) {
       let fileOutDir = join(outDir, relative(cwd, dirname(af)));
+      const scalaDir = relative(cwd, dirname(af)).replace(
+        new RegExp("target/scala-(.)*/classes"),
+        "",
+      );
       if (fileOutDir.includes("classes")) {
         fileOutDir = fileOutDir.replace(
           new RegExp("target/scala-(.)*/classes"),
@@ -90,10 +94,13 @@ function dumpTastyFiles(tastyFiles, outDir, slicesFile) {
         );
       }
       mkdirSync(fileOutDir, { recursive: true });
-      const scalaFile = basename(af).replace(".tasty", ".scala");
       const astFile = join(
         fileOutDir,
         basename(af).replace(".tasty", ".scala.ast"),
+      );
+      const scalaFile = join(
+        scalaDir,
+        basename(af).replace(".tasty", ".scala"),
       );
       writeFileSync(astFile, Buffer.from(result.stdout).toString());
       const usages = parseTasty(astFile);
@@ -120,6 +127,7 @@ function parseTasty(tastyAstFile) {
   let treesMode = false;
   const literals = new Set();
   const usedTypes = new Set();
+  const tags = [];
   for (let line of astData.split("\n")) {
     line = line.replace("\r", "");
     if (!line.length || line.startsWith("---")) {
@@ -163,6 +171,37 @@ function parseTasty(tastyAstFile) {
           !sig.startsWith("javax.inject.")
         ) {
           usedTypes.add(sig);
+          if (sig.startsWith("play.api.")) {
+            tags.push("framework");
+          }
+          if (
+            sig.startsWith("play.api.data.Form") ||
+            sig.startsWith("play.api.mvc.Request") ||
+            sig.startsWith("play.twirl.api")
+          ) {
+            tags.push("framework-input");
+          }
+          if (
+            sig.startsWith("play.twirl.api.Html") ||
+            sig.startsWith("play.api.mvc.Result") ||
+            sig.startsWith("play.api.mvc.Action")
+          ) {
+            tags.push("framework-output");
+          }
+          if (
+            sig.startsWith("play.api.routing.") ||
+            sig.startsWith("play.core.routing") ||
+            sig.startsWith("router.RoutesPrefix")
+          ) {
+            tags.push("framework-route");
+          }
+          if (
+            sig.startsWith("slick.sql.") ||
+            sig.startsWith("play.db.") ||
+            sig.startsWith("slick.jdbc.")
+          ) {
+            tags.push("database");
+          }
         }
       }
     }
@@ -171,6 +210,7 @@ function parseTasty(tastyAstFile) {
     }
   }
   return {
+    tags,
     usedTypes: Array.from(usedTypes),
     literals: Array.from(literals),
   };
