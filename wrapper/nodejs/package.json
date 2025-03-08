@@ -1,6 +1,6 @@
 {
   "name": "@appthreat/atom",
-  "version": "2.1.13",
+  "version": "2.1.14",
   "description": "Create atom (⚛) representation for your application, packages and libraries",
   "exports": "./index.js",
   "type": "module",
@@ -20,7 +20,8 @@
     "atom": "index.js",
     "astgen": "astgen.js",
     "phpastgen": "phpastgen.js",
-    "rbastgen": "rbastgen.js"
+    "rbastgen": "rbastgen.js",
+    "scalasem": "scalasem.js"
   },
   "engines": {
     "node": ">=16.0.0"

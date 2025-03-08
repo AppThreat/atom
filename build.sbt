@@ -1,16 +1,16 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.1.13"
+ThisBuild / version      := "2.1.14"
 ThisBuild / scalaVersion := "3.6.2"
 
-val chenVersion = "2.3.3"
+val chenVersion = "2.3.4"
 
 lazy val atom = Projects.atom
 
 libraryDependencies ++= Seq(
   "com.github.pathikrit" %% "better-files" % "3.9.2",
   "com.github.scopt"     %% "scopt"        % "4.1.0",
-  "org.slf4j"             % "slf4j-nop"    % "2.0.16" % Optional,
+  "org.slf4j"             % "slf4j-nop"    % "2.0.17" % Optional,
   ("io.appthreat"        %% "c2cpg"        % Versions.chen).excludeAll(
     ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
     ExclusionRule(organization = "org.jline", name = "jline"),
