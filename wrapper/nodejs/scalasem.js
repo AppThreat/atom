@@ -127,7 +127,7 @@ function parseTasty(tastyAstFile) {
   let treesMode = false;
   const literals = new Set();
   const usedTypes = new Set();
-  const tags = [];
+  const tags = new Set();
   for (let line of astData.split("\n")) {
     line = line.replace("\r", "");
     if (!line.length || line.startsWith("---")) {
@@ -172,35 +172,35 @@ function parseTasty(tastyAstFile) {
         ) {
           usedTypes.add(sig);
           if (sig.startsWith("play.api.")) {
-            tags.push("framework");
+            tags.add("framework");
           }
           if (
             sig.startsWith("play.api.data.Form") ||
             sig.startsWith("play.api.mvc.Request") ||
             sig.startsWith("play.twirl.api")
           ) {
-            tags.push("framework-input");
+            tags.add("framework-input");
           }
           if (
             sig.startsWith("play.twirl.api.Html") ||
             sig.startsWith("play.api.mvc.Result") ||
             sig.startsWith("play.api.mvc.Action")
           ) {
-            tags.push("framework-output");
+            tags.add("framework-output");
           }
           if (
             sig.startsWith("play.api.routing.") ||
             sig.startsWith("play.core.routing") ||
             sig.startsWith("router.RoutesPrefix")
           ) {
-            tags.push("framework-route");
+            tags.add("framework-route");
           }
           if (
             sig.startsWith("slick.sql.") ||
             sig.startsWith("play.db.") ||
             sig.startsWith("slick.jdbc.")
           ) {
-            tags.push("database");
+            tags.add("database");
           }
         }
       }
@@ -210,8 +210,8 @@ function parseTasty(tastyAstFile) {
     }
   }
   return {
-    tags,
-    usedTypes: Array.from(usedTypes),
+    tags: Array.from(tags).sort(),
+    usedTypes: Array.from(usedTypes).sort(),
     literals: Array.from(literals),
   };
 }
