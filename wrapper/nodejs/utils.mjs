@@ -69,7 +69,12 @@ export const getAllFiles = (dir, extn, files, result, regex) => {
         // ignore
       }
     } else {
-      if (regex.test(fileWithDir) || (extn && fileWithDir.toLowerCase().endsWith(extn.toLowerCase()))) {
+      if (
+        regex.test(fileWithDir) ||
+        (extn &&
+          !extn.includes(".") &&
+          fileWithDir.toLowerCase().endsWith(extn.toLowerCase()))
+      ) {
         result.push(fileWithDir);
       }
     }

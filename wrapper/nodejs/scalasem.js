@@ -10,7 +10,7 @@ import {
   mkdirSync,
   readFileSync,
   rmSync,
-  writeFileSync,
+  writeFileSync
 } from "node:fs";
 
 function main(argvs) {
@@ -41,7 +41,7 @@ function main(argvs) {
       stdio: "ignore",
       stderr: "inherit",
       env: process.env,
-      timeout: process.env.ATOM_TIMEOUT || process.env.ASTGEN_TIMEOUT,
+      timeout: process.env.ATOM_TIMEOUT || process.env.ASTGEN_TIMEOUT
     });
     if (result.error || result.status !== 0) {
       if (result.stderr) {
@@ -74,8 +74,8 @@ function createSemanticSlices(tastyFiles, configFiles, slicesFile) {
         cwd,
         env: process.env,
         maxBuffer: MAX_BUFFER,
-        timeout: process.env.ATOM_TIMEOUT || process.env.ASTGEN_TIMEOUT,
-      },
+        timeout: process.env.ATOM_TIMEOUT || process.env.ASTGEN_TIMEOUT
+      }
     );
     if (result.error || result.status !== 0) {
       if (result.stderr) {
@@ -86,22 +86,22 @@ function createSemanticSlices(tastyFiles, configFiles, slicesFile) {
       let fileOutDir = join(outDir, relative(cwd, dirname(af)));
       const scalaDir = relative(cwd, dirname(af)).replace(
         new RegExp("target/scala-(.)*/classes"),
-        "",
+        ""
       );
       if (fileOutDir.includes("classes")) {
         fileOutDir = fileOutDir.replace(
           new RegExp("target/scala-(.)*/classes"),
-          "",
+          ""
         );
       }
       mkdirSync(fileOutDir, { recursive: true });
       const astFile = join(
         fileOutDir,
-        basename(af).replace(".tasty", ".scala.ast"),
+        basename(af).replace(".tasty", ".scala.ast")
       );
       const scalaFile = join(
         scalaDir,
-        basename(af).replace(".tasty", ".scala"),
+        basename(af).replace(".tasty", ".scala")
       );
       writeFileSync(astFile, Buffer.from(result.stdout).toString());
       const usages = parseTasty(astFile);
@@ -117,7 +117,7 @@ function createSemanticSlices(tastyFiles, configFiles, slicesFile) {
     console.log(
       `Slices file ${slicesFile} created successfully with ${
         Object.keys(slices).length
-      } entries.`,
+      } entries.`
     );
   }
   if (outDir?.startsWith(tmpdir())) {
@@ -229,7 +229,7 @@ function parseTasty(tastyAstFile) {
     sourceFile,
     tags: Array.from(tags).sort(),
     usedTypes: Array.from(usedTypes).sort(),
-    literals: Array.from(literals),
+    literals: Array.from(literals)
   };
 }
 
@@ -293,7 +293,7 @@ function parseRoutes(routesFile) {
         "HEAD",
         "DELETE",
         "PUT",
-        "->",
+        "->"
       ].includes(tmpA[0].toUpperCase())
     ) {
       let controllerMethod = tmpA.length > 2 ? tmpA[2] : undefined;
@@ -312,14 +312,14 @@ function parseRoutes(routesFile) {
           routes.push({
             method: m,
             pattern: tmpA[1],
-            controllerMethod,
+            controllerMethod
           });
         }
       } else {
         routes.push({
           method: tmpA[0],
           pattern: tmpA[1],
-          controllerMethod,
+          controllerMethod
         });
       }
     }
