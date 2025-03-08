@@ -273,27 +273,55 @@ function parseRoutes(routesFile) {
   const routesData = readFileSync(routesFile, "utf-8");
   for (let aline of routesData.split("\n")) {
     aline = aline.replace("\r", "").trim();
-    if (aline.startsWith("#")) {
+    if (aline.startsWith("#") || aline.startsWith("+")) {
       continue;
     }
     const tmpA = aline.split(/\s+/);
     if (tmpA.length < 2) {
       continue;
     }
+    // Ignore static assets
+    if (["/webjars"].includes(tmpA[1])) {
+      continue;
+    }
     if (
-      ["GET", "POST", "OPTIONS", "HEAD", "DELETE", "PUT"].includes(
-        tmpA[0].toUpperCase(),
-      )
+      [
+        "GET",
+        "PATCH",
+        "POST",
+        "OPTIONS",
+        "HEAD",
+        "DELETE",
+        "PUT",
+        "->",
+      ].includes(tmpA[0].toUpperCase())
     ) {
       let controllerMethod = tmpA.length > 2 ? tmpA[2] : undefined;
       if (controllerMethod.includes("(")) {
         controllerMethod = controllerMethod.split("(")[0];
       }
-      routes.push({
-        method: tmpA[0],
-        pattern: tmpA[1],
-        controllerMethod,
-      });
+      // Exclude webjars
+      if (controllerMethod.startsWith("webjars.")) {
+        continue;
+      }
+      // Handle wildcards
+      if (tmpA[0] === "->") {
+        // We now need to parse a method called "routes" in the controllerMethod to identify the list of http methods
+        // Let's keep things simple for now
+        for (const m of ["GET", "PATCH", "POST", "DELETE", "PUT"]) {
+          routes.push({
+            method: m,
+            pattern: tmpA[1],
+            controllerMethod,
+          });
+        }
+      } else {
+        routes.push({
+          method: tmpA[0],
+          pattern: tmpA[1],
+          controllerMethod,
+        });
+      }
     }
   }
   return routes;
