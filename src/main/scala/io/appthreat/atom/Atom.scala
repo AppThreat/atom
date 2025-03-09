@@ -524,7 +524,7 @@ object Atom:
                   )
           case "SCALA" | "TASTY" | "SBT" =>
               val workDir =
-                  sys.env.getOrElse("ATOM_SCALASEM_WORK_DIR", config.inputPath.parent.pathAsString)
+                  sys.env.getOrElse("ATOM_SCALASEM_WORK_DIR", config.inputPath.pathAsString)
               val result = ExternalCommand.run(
                 s"scalasem ${workDir} ${config.outputSliceFile.pathAsString}",
                 workDir
