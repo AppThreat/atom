@@ -334,78 +334,79 @@ object Atom:
               ))
           case _ =>
               None
-    config.language match
-      case "SCALA" | "TASTY" | "SBT" => Right("")
-      case _ =>
-          try
-            migrateAtomConfigToSliceConfig(config) match
-              case x: AtomConfig if config.exportAtom =>
-                  println(s"Exporting the atom to the directory ${x.exportDir}")
-                  config.exportFormat match
-                    case "graphml" =>
-                        ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
-                          _.name.startsWith("lambda")
-                        ).gml(x.exportDir)
-                    case _ =>
-                        // Export all representations
-                        ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
-                          _.name.startsWith("lambda")
-                        ).dot(x.exportDir)
-                        // Export individual representations
-                        ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
-                          _.name.startsWith("lambda")
-                        ).exportAllRepr(x.exportDir)
-              case _: DataFlowConfig =>
-                  val dataFlowSlice = sliceCpg(ag).collect { case x: DataFlowSlice => x }
-                  val atomDataFlowSliceJson =
-                      dataFlowSlice.map(x =>
-                          AtomDataFlowSlice(x, DataFlowGraph.buildFromSlice(x).paths).toJson
-                      )
-                  saveSlice(config.outputSliceFile, atomDataFlowSliceJson)
-              case u: UsagesConfig =>
-                  saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
-                  if u.extractEndpoints then
-                    val openapiFileName =
-                        sys.env.getOrElse("ATOM_TOOLS_OPENAPI_FILENAME", "openapi.generated.json")
-                    val openapiFormat =
-                        sys.env.getOrElse("ATOM_TOOLS_OPENAPI_FORMAT", "openapi3.1.0")
-                    val atomToolsWorkDir =
-                        sys.env.getOrElse(
-                          "ATOM_TOOLS_WORK_DIR",
-                          config.inputPath.parent.pathAsString
-                        )
-                    println(
-                      s"atom-tools convert -i ${config.outputSliceFile} -t ${config.language} -f ${openapiFormat} -o ${config
-                              .inputPath.pathAsString}${java.io.File.separator}${openapiFileName}"
-                    )
-                    val result = ExternalCommand.run(
-                      s"atom-tools convert -i ${config.outputSliceFile} -t ${config.language} -f ${openapiFormat} -o ${config
-                              .inputPath.pathAsString}${java.io.File.separator}${openapiFileName}",
-                      atomToolsWorkDir
-                    )
-                    result match
-                      case Success(_) =>
-                          println(s"${openapiFileName} created successfully.")
-                      case Failure(exception) =>
-                          println(
-                            s"Failed to run atom-tools. Use the atom container image or perform 'pip install atom-tools' and re-run this command. Exception: ${exception.getMessage}"
-                          )
-                  end if
-              case _: ReachablesConfig =>
-                  saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
-              case x: AtomParseDepsConfig =>
-                  parseDependencies(ag).map(_.toJson) match
-                    case Left(err)    => return Left(err)
-                    case Right(slice) => saveSlice(x.outputSliceFile, Option(slice))
+
+    try
+      migrateAtomConfigToSliceConfig(config) match
+        case x: AtomConfig if config.exportAtom =>
+            println(s"Exporting the atom to the directory ${x.exportDir}")
+            config.exportFormat match
+              case "graphml" =>
+                  ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
+                    _.name.startsWith("lambda")
+                  ).gml(x.exportDir)
               case _ =>
-            end match
-            Right("Atom sliced successfully")
-          catch
-            case err: Throwable if err.getMessage == null =>
-                Left(err.getStackTrace.take(7).mkString("\n"))
-            case err: Throwable => Left(err.getMessage)
-          end try
-    end match
+                  // Export all representations
+                  ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
+                    _.name.startsWith("lambda")
+                  ).dot(x.exportDir)
+                  // Export individual representations
+                  ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
+                    _.name.startsWith("lambda")
+                  ).exportAllRepr(x.exportDir)
+        case _: DataFlowConfig =>
+            val dataFlowSlice = sliceCpg(ag).collect { case x: DataFlowSlice => x }
+            val atomDataFlowSliceJson =
+                dataFlowSlice.map(x =>
+                    AtomDataFlowSlice(x, DataFlowGraph.buildFromSlice(x).paths).toJson
+                )
+            saveSlice(config.outputSliceFile, atomDataFlowSliceJson)
+        case u: UsagesConfig =>
+            saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
+            if u.extractEndpoints then
+              val openapiFileName =
+                  sys.env.getOrElse("ATOM_TOOLS_OPENAPI_FILENAME", "openapi.json")
+              val openapiFormat = sys.env.getOrElse("ATOM_TOOLS_OPENAPI_FORMAT", "openapi3.1.0")
+              val atomToolsWorkDir =
+                  sys.env.getOrElse("ATOM_TOOLS_WORK_DIR", config.inputPath.pathAsString)
+              val semanticsSlices = File(atomToolsWorkDir).glob(
+                "*semantics.slices.json",
+                includePath = true,
+                maxDepth = 1
+              )
+              val extraArgs = if semanticsSlices.nonEmpty then
+                s" -e ${semanticsSlices.head.pathAsString}"
+              else ""
+              println(
+                s"atom-tools convert -i ${config.outputSliceFile}${extraArgs} -t ${config.language} -f ${openapiFormat} -o ${config
+                        .inputPath.pathAsString}${java.io.File.separator}${openapiFileName}"
+              )
+              val result = ExternalCommand.run(
+                s"atom-tools convert -i ${config.outputSliceFile}${extraArgs} -t ${config.language} -f ${openapiFormat} -o ${config
+                        .inputPath.pathAsString}${java.io.File.separator}${openapiFileName}",
+                atomToolsWorkDir
+              )
+              result match
+                case Success(_) =>
+                    println(s"${openapiFileName} created successfully.")
+                case Failure(exception) =>
+                    println(
+                      s"Failed to run atom-tools. Use the atom container image or perform 'pip install atom-tools' and re-run this command. Exception: ${exception.getMessage}"
+                    )
+            end if
+        case _: ReachablesConfig =>
+            saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
+        case x: AtomParseDepsConfig =>
+            parseDependencies(ag).map(_.toJson) match
+              case Left(err)    => return Left(err)
+              case Right(slice) => saveSlice(x.outputSliceFile, Option(slice))
+        case _ =>
+      end match
+      Right("Atom sliced successfully")
+    catch
+      case err: Throwable if err.getMessage == null =>
+          Left(err.getStackTrace.take(7).mkString("\n"))
+      case err: Throwable => Left(err.getMessage)
+    end try
   end generateSlice
 
   private def saveSlice(outFile: File, programSlice: Option[String]): Unit =
@@ -525,14 +526,22 @@ object Atom:
           case "SCALA" | "TASTY" | "SBT" =>
               val workDir =
                   sys.env.getOrElse("ATOM_SCALASEM_WORK_DIR", config.inputPath.pathAsString)
+              val defaultSemanticSliesFiles = config.inputPath / "semantics.slices.json"
+              var semanticSlicesFile =
+                  sys.env.getOrElse(
+                    "ATOM_SCALASEM_SLICES_FILE",
+                    defaultSemanticSliesFiles.pathAsString
+                  )
+              if !semanticSlicesFile.endsWith("semantics.slices.json") then
+                semanticSlicesFile = defaultSemanticSliesFiles.pathAsString
               val result = ExternalCommand.run(
-                s"scalasem ${workDir} ${config.outputSliceFile.pathAsString}",
+                s"scalasem ${workDir} ${semanticSlicesFile}",
                 workDir
               )
               result match
                 case Success(_) =>
                     println(
-                      s"Semantic slices file '${config.outputSliceFile.pathAsString}' created successfully."
+                      s"Semantic slices file '${semanticSlicesFile}' created successfully."
                     )
                 case Failure(exception) =>
                     println(
@@ -640,38 +649,30 @@ object Atom:
       case Failure(exception) =>
           Left(exception.getMessage)
       case Success(ag) =>
-          language match
-            case "SCALA" | "TASTY" | "SBT" =>
-                try
-                  ag.close()
-                catch
-                  case err: Throwable => Left(err.getMessage)
-                Right("Semantic slices generated successfully.")
+          config match
+            case x: AtomConfig
+                if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] || x.isInstanceOf[
+                  AtomReachablesConfig
+                ] =>
+                println("Generating data-flow dependencies from atom. Please wait ...")
+                // Enhance with simple and easy tags
+                new EasyTagsPass(ag).createAndApply()
+                // Enhance with the BOM from cdxgen
+                new CdxPass(ag).createAndApply()
+                new ChennaiTagsPass(ag).createAndApply()
+                new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions =
+                    x.maxNumDef
+                ))
+                    .run(new LayerCreatorContext(ag))
             case _ =>
-                config match
-                  case x: AtomConfig
-                      if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] || x.isInstanceOf[
-                        AtomReachablesConfig
-                      ] =>
-                      println("Generating data-flow dependencies from atom. Please wait ...")
-                      // Enhance with simple and easy tags
-                      new EasyTagsPass(ag).createAndApply()
-                      // Enhance with the BOM from cdxgen
-                      new CdxPass(ag).createAndApply()
-                      new ChennaiTagsPass(ag).createAndApply()
-                      new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions =
-                          x.maxNumDef
-                      ))
-                          .run(new LayerCreatorContext(ag))
-                  case _ =>
-                generateSlice(config, ag)
-                try
-                  ag.close()
-                catch
-                  case err: Throwable if err.getMessage == null =>
-                      Left(err.getStackTrace.take(7).mkString("\n"))
-                  case err: Throwable => Left(err.getMessage)
-                Right("Atom generation successful")
+          generateSlice(config, ag)
+          try
+            ag.close()
+          catch
+            case err: Throwable if err.getMessage == null =>
+                Left(err.getStackTrace.take(7).mkString("\n"))
+            case err: Throwable => Left(err.getMessage)
+          Right("Atom generation successful")
     end match
   end generateForLanguage
 
