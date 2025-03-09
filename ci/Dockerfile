@@ -114,4 +114,6 @@ RUN unzip -q atom.zip \
     && rbastgen --help \
     && microdnf clean all
 
+WORKDIR /app
+
 CMD ["/opt/bin/atom"]

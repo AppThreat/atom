@@ -61,6 +61,9 @@ jobs:
           native-image-job-reports: 'true'
           cache: 'sbt'
       - uses: sbt/setup-sbt@v1
+      - uses: coursier/setup-action@v1
+        with:
+          apps: scala3 scalac
       - run: |
           sbt stage createDistribution
           cd wrapper/nodejs

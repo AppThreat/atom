@@ -31,6 +31,9 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
     - uses: sbt/setup-sbt@v1
+    - uses: coursier/setup-action@v1
+      with:
+        apps: scala3 scalac
     - name: Build
       run: |
         sudo apt update -y

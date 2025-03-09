@@ -15,12 +15,8 @@ import {
 } from "node:fs";
 
 function main(argvs) {
-  if (!detectScala()) {
+  if (!detectScala() && !detectScalac()) {
     console.warn("Scala is not installed!");
-    return false;
-  }
-  if (!detectScalac()) {
-    console.warn("Scalac is not installed!");
     return false;
   }
   let configFiles = getAllFiles(argvs[0], "routes");

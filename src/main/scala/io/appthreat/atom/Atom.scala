@@ -540,9 +540,16 @@ object Atom:
               )
               result match
                 case Success(_) =>
-                    println(
-                      s"Semantic slices file '${semanticSlicesFile}' created successfully."
-                    )
+                    if File(semanticSlicesFile).exists then
+                      println(
+                        s"Semantic slices file '${semanticSlicesFile}' created successfully."
+                      )
+                    else{
+                      println(s"scalasem ${workDir} ${semanticSlicesFile}")
+                      println(
+                        s"scalasem command did not produce the semantic slices file."
+                      )
+}
                 case Failure(exception) =>
                     println(
                       s"Failed to run scalasem. Use the atom container image and re-run this command. Exception: ${exception.getMessage}"
