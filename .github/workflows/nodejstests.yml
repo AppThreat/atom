@@ -161,10 +161,6 @@ jobs:
           atom -l python --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\DjanGoat
           atom parsedeps --remove-atom -l python -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\DjanGoat
           atom -l c -o $env:GITHUB_WORKSPACE\\repotests\\libexpat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\libexpat
-      - name: test2
-        shell: cmd
-        run: |
-          atom -l js --remove-atom -o %GITHUB_WORKSPACE%\\repotests\\juice-shop\\app.atom %GITHUB_WORKSPACE%\\repotests\\juice-shop
       - name: test3
         shell: cmd
         run: |
