@@ -66,6 +66,7 @@ jobs:
           cd repotests/play-samples/play-scala-rest-api-example
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -w /app -t ghcr.io/appthreat/atom:main scala --version
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -w /app -t ghcr.io/appthreat/atom:main scalac --version
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -w /app -t ghcr.io/appthreat/atom:main sbt --version
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -w /app -t ghcr.io/appthreat/atom:main scalasem /app /app/semantics.slices.json
           ls -lh
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -w /app -t ghcr.io/appthreat/atom:main atom usages --extract-endpoints -l scala -o /app/app.atom -s /app/usages.slices.json /app

@@ -14,12 +14,15 @@ LABEL maintainer="appthreat" \
 ARG JAVA_VERSION=23.0.2-tem
 ARG MAVEN_VERSION=3.9.9
 ARG SCALA_VERSION=3.6.4
+ARG SBT_VERSION=1.10.10
 ARG RUBY_VERSION=3.4.2
 
 ENV MAVEN_VERSION=$MAVEN_VERSION \
     MAVEN_HOME="/opt/maven/${MAVEN_VERSION}" \
     SCALA_VERSION=$SCALA_VERSION \
+    SBT_VERSION=$SBT_VERSION \
     SCALA_HOME="/opt/scala/${SCALA_VERSION}" \
+    SBT_HOME="/opt/sbt/${SBT_VERSION}" \
     ANDROID_HOME=/opt/android-sdk-linux \
     JAVA_VERSION=$JAVA_VERSION \
     JAVA_HOME="/opt/java/${JAVA_VERSION}" \
@@ -36,7 +39,7 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     RUBY_BUILD_BUILD_PATH="/tmp/rbenv" \
     RUBY_BUILD_HTTP_CLIENT=curl
 
-ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.2/bin:
+ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:${SBT_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.2/bin:
 
 WORKDIR /opt
 
@@ -66,9 +69,13 @@ RUN set -e; \
     && sdk install java $JAVA_VERSION \
     && sdk install maven $MAVEN_VERSION \
     && sdk install scala $SCALA_VERSION \
+    && sdk install sbt $SBT_VERSION \
     && sdk offline enable \
     && mv /root/.sdkman/candidates/* /opt/ \
     && rm -rf /root/.sdkman \
+    && java --version \
+    && scalac --version \
+    && sbt --version \
     && git clone https://github.com/rbenv/rbenv.git --depth=1 ~/.rbenv \
     && echo 'export PATH="/root/.rbenv/bin:$PATH"' >> ~/.bashrc \
     && echo 'eval "$(/root/.rbenv/bin/rbenv init - bash)"' >> ~/.bashrc \
