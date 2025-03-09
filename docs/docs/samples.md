@@ -52,7 +52,7 @@ pip install atom-tools
 atom usages --extract-endpoints -o app.atom --slice-outfile usages.json -l java .
 ```
 
-A file called `openapi.generated.json` would be created with the endpoints information.
+A file called `openapi.json` would be created with the endpoints information.
 
 ### Export atom to graphml or dot format
 

@@ -129,7 +129,7 @@ jobs:
           # ./atom.sh usages --remove-atom -o /tmp/juice3.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/juice.usages.json
           ./atom.sh usages --remove-atom -o /tmp/ts3.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/ts.usages.json
           ./atom.sh usages --extract-endpoints --remove-atom -o /tmp/py3.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py.usages.json
-          python -m json.tool $GITHUB_WORKSPACE/repotests/DjanGoat/openapi.generated.json
+          python -m json.tool $GITHUB_WORKSPACE/repotests/DjanGoat/openapi.json
           ./atom.sh usages --remove-atom -o /tmp/py4.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/py4.usages.json
           ./atom.sh usages --remove-atom -o /tmp/c3.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/c.usages.json
           ./atom.sh usages --extract-endpoints --remove-atom -o /tmp/railsgoat2.atom -l ruby $GITHUB_WORKSPACE/repotests/railsgoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/railsgoat2.usages.json
@@ -149,7 +149,7 @@ jobs:
           cd ../..
           .\atom.bat usages --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\juice-shop\\jshop.atom -l js $env:GITHUB_WORKSPACE\\repotests\\juice-shop --slice-outfile $env:GITHUB_WORKSPACE\\repotests\\juice-shop\\jshop.usages.json
           .\atom.bat usages --extract-endpoints --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\py3.atom -l python $env:GITHUB_WORKSPACE\\repotests\\DjanGoat --slice-outfile $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\py.usages.json
-          python -m json.tool $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\openapi.generated.json
+          python -m json.tool $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\openapi.json
         if: runner.os == 'Windows'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
