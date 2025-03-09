@@ -11,6 +11,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.description="Container image for AppThreat atom" \
       org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -o /app/app.atom -l java /app"
 
+ARG JAVA_VERSION=23.0.2-tem
 ARG MAVEN_VERSION=3.9.9
 ARG SCALA_VERSION=3.6.4
 ARG RUBY_VERSION=3.4.2
@@ -20,6 +21,8 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     SCALA_VERSION=$SCALA_VERSION \
     SCALA_HOME="/opt/scala/${SCALA_VERSION}" \
     ANDROID_HOME=/opt/android-sdk-linux \
+    JAVA_VERSION=$JAVA_VERSION \
+    JAVA_HOME="/opt/java/${JAVA_VERSION}" \
     JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8" \
     PHP_PARSER_BIN=/opt/vendor/bin/php-parse \
     PYTHONUNBUFFERED=1 \
@@ -33,7 +36,7 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     RUBY_BUILD_BUILD_PATH="/tmp/rbenv" \
     RUBY_BUILD_HTTP_CLIENT=curl
 
-ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.2/bin:
+ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.2/bin:
 
 WORKDIR /opt
 
@@ -52,12 +55,20 @@ RUN set -e; \
     echo -e "[nodejs]\nname=nodejs\nstream=20\nprofiles=\nstate=enabled\n" > /etc/dnf/modules.d/nodejs.module \
     && microdnf install -y gcc git-core php php-cli php-curl php-zip php-bcmath php-json php-pear php-mbstring php-devel make \
         python3.12 python3.12-devel python3.12-pip \
-        wget bash glibc-common glibc-all-langpacks java-21-openjdk-headless \
+        wget bash glibc-common glibc-all-langpacks \
         openssl-devel libffi-devel readline-devel libyaml zlib-devel ncurses ncurses-devel \
         pcre2 findutils which tar gzip zip unzip sudo nodejs rust \
     && microdnf install -y epel-release \
     && microdnf install --enablerepo=crb -y libyaml-devel jemalloc-devel \
-    && java --version \
+    && curl -s "https://get.sdkman.io" | bash \
+    && source "/root/.sdkman/bin/sdkman-init.sh" \
+    && echo -e "sdkman_auto_answer=true\nsdkman_selfupdate_feature=false\nsdkman_auto_env=true\nsdkman_curl_connect_timeout=20\nsdkman_curl_max_time=0" >> /root/.sdkman/etc/config \
+    && sdk install java $JAVA_VERSION \
+    && sdk install maven $MAVEN_VERSION \
+    && sdk install scala $SCALA_VERSION \
+    && sdk offline enable \
+    && mv /root/.sdkman/candidates/* /opt/ \
+    && rm -rf /root/.sdkman \
     && git clone https://github.com/rbenv/rbenv.git --depth=1 ~/.rbenv \
     && echo 'export PATH="/root/.rbenv/bin:$PATH"' >> ~/.bashrc \
     && echo 'eval "$(/root/.rbenv/bin/rbenv init - bash)"' >> ~/.bashrc \
@@ -75,14 +86,6 @@ RUN set -e; \
     && node --version \
     && python3 -m pip install --upgrade pip poetry atom-tools>=0.7.5 \
     && atom-tools --version && atom-tools --help \
-    && curl -s "https://get.sdkman.io" | bash \
-    && source "/root/.sdkman/bin/sdkman-init.sh" \
-    && echo -e "sdkman_auto_answer=true\nsdkman_selfupdate_feature=false\nsdkman_auto_env=true\nsdkman_curl_connect_timeout=20\nsdkman_curl_max_time=0" >> /root/.sdkman/etc/config \
-    && sdk install maven $MAVEN_VERSION \
-    && sdk install scala $SCALA_VERSION \
-    && sdk offline enable \
-    && mv /root/.sdkman/candidates/* /opt/ \
-    && rm -rf /root/.sdkman \
     && mkdir -p ${ANDROID_HOME}/cmdline-tools \
     && curl -L https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -o ${ANDROID_HOME}/cmdline-tools/android_tools.zip \
     && unzip ${ANDROID_HOME}/cmdline-tools/android_tools.zip -d ${ANDROID_HOME}/cmdline-tools/ \
