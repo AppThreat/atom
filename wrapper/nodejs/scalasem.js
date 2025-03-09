@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { detectScala, detectScalac, getAllFiles } from "./utils.mjs";
 import process from "node:process";
 import {
+  existsSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
@@ -32,8 +33,17 @@ function main(argvs) {
       buildTool = "mill";
     }
     const cwd = process.env.ATOM_CWD || process.cwd();
-    const compileCommand =
+    let compileCommand =
       process?.env[`${buildTool.toUpperCase()}_COMPILE_COMMAND`] || "compile";
+    if (process.env.SCALA_VERSION && buildTool === "sbt") {
+      compileCommand = `++${process.env.SCALA_VERSION} ${compileCommand}`;
+    } else {
+      // Detect crossScalaVersions
+      const scalaVersion = findScalaVersion(cwd);
+      if (scalaVersion) {
+        compileCommand = `++${scalaVersion} ${compileCommand}`;
+      }
+    }
     console.log(`Executing '${buildTool} ${compileCommand}' in ${argvs[0]}`);
     const result = spawnSync(buildTool, compileCommand.split(" "), {
       encoding: "utf-8",
@@ -57,6 +67,32 @@ function main(argvs) {
   createSemanticSlices(tastyFiles, configFiles, slicesFile);
 }
 main(process.argv.slice(2));
+
+function findScalaVersion(cwd) {
+  let scalaVersion;
+  const buildSbtFile = join(cwd, "build.sbt");
+  if (existsSync(buildSbtFile)) {
+    const buildData = readFileSync(buildSbtFile, "utf-8");
+    for (let line of buildData.split("\n")) {
+      if (line.trim().includes("val ") && line.includes("scala")) {
+        const match = line.match(/"(3\.[^"]+)"/);
+        if (match) {
+          return match[1];
+        }
+      }
+      if (line.trim().includes("crossScalaVersions")) {
+        const crossVersions = line.split("crossScalaVersions").pop().trim();
+        if (crossVersions.includes("3.")) {
+          const match = crossVersions.match(/"(3\.[^"]+)"/);
+          if (match) {
+            return match[1];
+          }
+        }
+      }
+    }
+  }
+  return scalaVersion;
+}
 
 function createSemanticSlices(tastyFiles, configFiles, slicesFile) {
   const outDir = mkdtempSync(join(tmpdir(), "scalasem-"));
