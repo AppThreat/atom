@@ -171,18 +171,18 @@ function parseTasty(tastyAstFile) {
   const tags = new Set();
   let sourceFile;
   for (let line of astData.split("\n")) {
-    line = line.replace("\r", "");
+    line = line.replace("\r", "").trim();
     if (!line.length || line.startsWith("---")) {
       continue;
     }
-    if (line.startsWith("Names ")) {
+    if (line.startsWith("Names ") || line.startsWith("Names:")) {
       namesMode = true;
     }
-    if (line.startsWith("Trees ")) {
+    if (line.startsWith("Trees ") || line.startsWith("Trees:")) {
       namesMode = false;
       treesMode = true;
     }
-    if (line.startsWith("Positions ")) {
+    if (line.startsWith("Positions ") || line.startsWith("positions:")) {
       namesMode = false;
       treesMode = false;
     }
@@ -250,9 +250,14 @@ function parseTasty(tastyAstFile) {
     if (line.includes("source paths:")) {
       sourcePathsMode = true;
     }
-    if (sourcePathsMode && line.includes(" [") && line.endsWith("]")) {
-      sourceFile = line.split(" [").pop().replace(/]/g, "");
-      sourcePathsMode = false;
+    if (sourcePathsMode) {
+      if (line.includes(" [") && line.endsWith("]")) {
+        sourceFile = line.split(" [").pop().replace(/]/g, "");
+        sourcePathsMode = false;
+      } else if (line.includes(".scala") && line.includes(": ")) {
+        sourceFile = line.split(": ").pop().trim();
+        sourcePathsMode = false;
+      }
     }
     if (!namesMode && !treesMode && !sourcePathsMode) {
       continue;
