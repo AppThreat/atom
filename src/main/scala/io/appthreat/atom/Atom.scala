@@ -526,14 +526,14 @@ object Atom:
           case "SCALA" | "TASTY" | "SBT" =>
               val workDir =
                   sys.env.getOrElse("ATOM_SCALASEM_WORK_DIR", config.inputPath.pathAsString)
-              val defaultSemanticSliesFiles = config.inputPath / "semantics.slices.json"
+              val defaultSemanticSlicesFiles = config.inputPath / "semantics.slices.json"
               var semanticSlicesFile =
                   sys.env.getOrElse(
                     "ATOM_SCALASEM_SLICES_FILE",
-                    defaultSemanticSliesFiles.pathAsString
+                    defaultSemanticSlicesFiles.pathAsString
                   )
               if !semanticSlicesFile.endsWith("semantics.slices.json") then
-                semanticSlicesFile = defaultSemanticSliesFiles.pathAsString
+                semanticSlicesFile = defaultSemanticSlicesFiles.pathAsString
               val result = ExternalCommand.run(
                 s"scalasem ${workDir} ${semanticSlicesFile}",
                 workDir
