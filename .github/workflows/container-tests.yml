@@ -64,6 +64,9 @@ jobs:
         run: |
           mkdir -p $GITHUB_WORKSPACE/scalaresults/play-samples
           cd repotests/play-samples/play-scala-rest-api-example
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -w /app -t ghcr.io/appthreat/atom:main scala --version
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -w /app -t ghcr.io/appthreat/atom:main scalac --version
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -w /app -t ghcr.io/appthreat/atom:main scalasem /app /app/semantics.slices.json
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -w /app -t ghcr.io/appthreat/atom:main atom usages --extract-endpoints -l scala -o /app/app.atom -s /app/usages.slices.json /app
           ls -lh
           cp *.slices.json $GITHUB_WORKSPACE/scalaresults/play-samples
