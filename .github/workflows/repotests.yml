@@ -2,7 +2,6 @@ name: repotests
 on:
   push:
     branches:
-      - main
       - feature/*
   workflow_dispatch:
 concurrency:
@@ -70,6 +69,11 @@ jobs:
           repository: 'OWASP/railsgoat'
           path: 'repotests/railsgoat'
           ref: 'c1e8ff1e3b24a1c48fcfc9fbee0f65dc296b49d9'
+      - uses: actions/checkout@v4
+        with:
+          repository: 'playframework/play-samples'
+          path: 'repotests/play-samples'
+          ref: '0dccba17856e89dbb5e457ab760efb14cc691395'
       - uses: coursier/cache-action@v6
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -77,6 +81,9 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
       - uses: sbt/setup-sbt@v1
+      - uses: coursier/setup-action@v1
+        with:
+          apps: scala3 scalac
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -135,6 +142,14 @@ jobs:
           ./atom.sh usages --extract-endpoints --remove-atom -o /tmp/railsgoat2.atom -l ruby $GITHUB_WORKSPACE/repotests/railsgoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/railsgoat2.usages.json
           ./atom.sh usages --remove-atom -o /tmp/bionomia2.atom -l ruby $GITHUB_WORKSPACE/repotests/bionomia -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/bionomia2.usages.json
           ./atom.sh --remove-atom -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml -x --export-dir gml_exports
+
+          ./atom.sh --remove-atom -o /tmp/play-scala-slick-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-slick-example
+          ls -lh $GITHUB_WORKSPACE/repotests/play-samples/play-scala-slick-example
+          ./atom.sh --remove-atom -o /tmp/play-scala-rest-api-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example
+          ./atom.sh usages --extract-endpoints --remove-atom -o /tmp/play-scala-rest-api-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example --slice-outfile /tmp/scala-rest.usages.json
+          ls -lh $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example
+          ./atom.sh --remove-atom -o /tmp/play-scala-grpc-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-grpc-example
+          ls -lh $GITHUB_WORKSPACE/repotests/play-samples/play-scala-grpc-example
           ls -lh .
         if: runner.os != 'Windows'
         env:

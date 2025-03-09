@@ -96,4 +96,6 @@ RUN unzip -q atom.zip \
     && rbastgen --help \
     && zypper clean -a
 
+WORKDIR /app
+
 CMD ["/opt/bin/atom"]

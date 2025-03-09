@@ -55,6 +55,11 @@ jobs:
           repository: 'OWASP/railsgoat'
           path: 'repotests/railsgoat'
           ref: 'c1e8ff1e3b24a1c48fcfc9fbee0f65dc296b49d9'
+      - uses: actions/checkout@v4
+        with:
+          repository: 'playframework/play-samples'
+          path: 'repotests/play-samples'
+          ref: '0dccba17856e89dbb5e457ab760efb14cc691395'
       - uses: coursier/cache-action@v6
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -62,6 +67,9 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
       - uses: sbt/setup-sbt@v1
+      - uses: coursier/setup-action@v1
+        with:
+          apps: scala3 scalac
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
         with:
@@ -82,6 +90,7 @@ jobs:
         if: runner.os == 'Linux'
       - run: |
           sbt stage createDistribution
+          python -m pip install atom-tools
           cd wrapper/nodejs
           bash build.sh
           sudo npm install -g .
@@ -96,6 +105,7 @@ jobs:
           atom -l c -o ${GITHUB_WORKSPACE}/repotests/libexpat/app.atom ${GITHUB_WORKSPACE}/repotests/libexpat
           atom -o ${GITHUB_WORKSPACE}/repotests/railsgoat/app.atom -l ruby ${GITHUB_WORKSPACE}/repotests/railsgoat
           atom -o ${GITHUB_WORKSPACE}/repotests/bionomia/app.atom -l ruby ${GITHUB_WORKSPACE}/repotests/bionomia
+          atom -o ${GITHUB_WORKSPACE}/repotests/play-samples/play-scala-rest-api-example/app.atom -l scala ${GITHUB_WORKSPACE}/repotests/play-samples/play-scala-rest-api-example
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   nodejs-testing-windows:
@@ -110,6 +120,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@v4
         with:
           repository: 'ShiftLeftSecurity/shiftleft-java-example'
@@ -130,6 +144,11 @@ jobs:
         with:
           repository: 'HooliCorp/DjanGoat'
           path: 'repotests/DjanGoat'
+      - uses: actions/checkout@v4
+        with:
+          repository: 'playframework/play-samples'
+          path: 'repotests/play-samples'
+          ref: '0dccba17856e89dbb5e457ab760efb14cc691395'
       - uses: coursier/cache-action@v6
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -137,10 +156,14 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
       - uses: sbt/setup-sbt@v1
+      - uses: coursier/setup-action@v1
+        with:
+          apps: scala3 scalac
       - name: build
         shell: pwsh
         run: |
           sbt stage createDistribution
+          python -m pip install atom-tools
           cd wrapper\\nodejs
           copy ..\..\target\atom.zip plugins\
           Expand-Archive -Path ..\..\target\atom.zip -DestinationPath plugins\ -Force
@@ -161,6 +184,7 @@ jobs:
           atom -l python --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\DjanGoat
           atom parsedeps --remove-atom -l python -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\DjanGoat
           atom -l c -o $env:GITHUB_WORKSPACE\\repotests\\libexpat\\app.atom $env:GITHUB_WORKSPACE\\repotests\\libexpat
+          atom -l scala -o $env:GITHUB_WORKSPACE\\repotests\\play-samples\\play-scala-rest-api-example\\app.atom $env:GITHUB_WORKSPACE\\repotests\\play-samples\\play-scala-rest-api-example
       - name: test3
         shell: cmd
         run: |
