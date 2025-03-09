@@ -28,7 +28,7 @@ const IGNORE_DIRS = process.env.ASTGEN_IGNORE_DIRS
 
 const IGNORE_FILE_PATTERN = new RegExp(
   process.env.ASTGEN_IGNORE_FILE_PATTERN ||
-    "(conf|config|test|spec|min|three|\\.d)\\.(js|ts|jsx|tsx)$",
+    "(test|spec|min|three|\\.d)\\.(js|ts|jsx|tsx)$",
   "i"
 );
 
@@ -69,7 +69,12 @@ export const getAllFiles = (dir, extn, files, result, regex) => {
         // ignore
       }
     } else {
-      if (regex.test(fileWithDir)) {
+      if (
+        regex.test(fileWithDir) ||
+        (extn &&
+          !extn.includes(".") &&
+          fileWithDir.toLowerCase().endsWith(extn.toLowerCase()))
+      ) {
         result.push(fileWithDir);
       }
     }
@@ -109,6 +114,26 @@ export const detectRuby = (versionNeeded) => {
     const cmdOutput = Buffer.from(stdout).toString();
     const versionStr = cmdOutput.trim().replaceAll("\r", "");
     return versionStr.startsWith(`ruby ${versionNeeded} `);
+  }
+  return true;
+};
+
+export const detectScala = () => {
+  let result = spawnSync(process.env.SCALA_CMD || "scala", ["--version"], {
+    encoding: "utf-8"
+  });
+  if (result.status !== 0 || result.error) {
+    return false;
+  }
+  return true;
+};
+
+export const detectScalac = () => {
+  let result = spawnSync(process.env.SCALAC_CMD || "scalac", ["--version"], {
+    encoding: "utf-8"
+  });
+  if (result.status !== 0 || result.error) {
+    return false;
   }
   return true;
 };
