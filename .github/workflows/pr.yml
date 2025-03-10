@@ -65,7 +65,7 @@ jobs:
         with:
           apps: scala3 scalac
       - run: |
-          sbt stage createDistribution
+          sbt scalafmtCheck stage createDistribution
           cd wrapper/nodejs
           bash build.sh
           npm install -g .

@@ -544,12 +544,11 @@ object Atom:
                       println(
                         s"Semantic slices file '${semanticSlicesFile}' created successfully."
                       )
-                    else{
+                    else
                       println(s"scalasem ${workDir} ${semanticSlicesFile}")
                       println(
                         s"scalasem command did not produce the semantic slices file."
                       )
-}
                 case Failure(exception) =>
                     println(
                       s"Failed to run scalasem. Use the atom container image and re-run this command. Exception: ${exception.getMessage}"

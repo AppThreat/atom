@@ -38,7 +38,7 @@ jobs:
       run: |
         sudo apt update -y
         sudo apt install -y zlib1g php-zip tree
-        sbt scalafmtCheck stage createDistribution
+        sbt stage createDistribution
         sha512sum target/atom.zip > target/atom.zip.sha512
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
