@@ -11,7 +11,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.description="Container image for AppThreat atom" \
       org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -o /app/app.atom -l java /app"
 
-ARG JAVA_VERSION=23.0.2-tem
+ARG JAVA_VERSION=24-tem
 ARG MAVEN_VERSION=3.9.9
 ARG SCALA_VERSION=3.6.4
 ARG SBT_VERSION=1.10.10
