@@ -51,12 +51,12 @@ object Atom:
   val DEFAULT_SLICE_DEPTH           = 7
   val DEFAULT_MAX_DEFS: Int         = 2000
   val FRAMEWORK_INPUT_TAG: String   = "framework-input"
+  val FRAMEWORK_OUTPUT_TAG: String  = "framework-output"
   val DEFAULT_SOURCE_TAGS =
       Seq(FRAMEWORK_INPUT_TAG, "framework-route", "cli-source", "driver-source")
   val DEFAULT_SINK_TAGS =
       Seq(FRAMEWORK_OUTPUT_TAG, "library-call", "cloud", "rpc", "http", "cron", "mail")
-  val FRAMEWORK_OUTPUT_TAG: String = "framework-output"
-  val DEFAULT_EXPORT_DIR: String   = "atom-exports"
+  val DEFAULT_EXPORT_DIR: String = "atom-exports"
   // Possible values: graphml, dot
   val DEFAULT_EXPORT_FORMAT: String = "graphml"
   // Possible values: no-delombok, default, types-only, run-delombok
