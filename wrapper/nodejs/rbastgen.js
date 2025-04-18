@@ -18,11 +18,7 @@ const RUBY_ASTGEN_BIN =
 const RUBY_VERSION_NEEDED = "3.4.3";
 function main(argvs) {
   const cwd = process.env.ATOM_CWD || process.cwd();
-  argvs.splice(
-    0,
-    0,
-    process.env.RUBY_ASTGEN_BIN || join(PLUGINS_HOME, "bin", "ruby_ast_gen")
-  );
+  argvs.splice(0, 0, RUBY_ASTGEN_BIN);
   const env = {
     ...process.env
   };
