@@ -52,7 +52,11 @@ object Atom:
   val DEFAULT_MAX_DEFS: Int         = 2000
   val FRAMEWORK_INPUT_TAG: String   = "framework-input"
   val FRAMEWORK_OUTPUT_TAG: String  = "framework-output"
-  val DEFAULT_EXPORT_DIR: String    = "atom-exports"
+  val DEFAULT_SOURCE_TAGS =
+      Seq(FRAMEWORK_INPUT_TAG, "framework-route", "cli-source", "driver-source")
+  val DEFAULT_SINK_TAGS =
+      Seq(FRAMEWORK_OUTPUT_TAG, "library-call", "cloud", "rpc", "http", "cron", "mail")
+  val DEFAULT_EXPORT_DIR: String = "atom-exports"
   // Possible values: graphml, dot
   val DEFAULT_EXPORT_FORMAT: String = "graphml"
   // Possible values: no-delombok, default, types-only, run-delombok
@@ -71,7 +75,7 @@ object Atom:
           else None
       }
 
-  private val COMMON_IGNORE_REGEX = ".*(test|docs|example|samples|mocks|Documentation|demos).*"
+  private val COMMON_IGNORE_REGEX = ".*(docs|example|samples|mocks|Documentation|demos).*"
 
   private val CHEN_INCLUDE_PATH = sys.env.getOrElse("CHEN_INCLUDE_PATH", "")
   // Custom include paths for c/c++
@@ -238,18 +242,22 @@ object Atom:
         .action((_, *) => AtomReachablesConfig().withDataDependencies(true))
         .children(
           opt[String]("source-tag")
-              .text(s"source tag - defaults to framework-input.")
+              .text(s"source tag - defaults to framework-input. Comma-separated values allowed.")
               .action((x, c) =>
                   c match
-                    case c: AtomReachablesConfig => c.copy(sourceTag = x)
-                    case _                       => c
+                    case c: AtomReachablesConfig => c.copy(sourceTag =
+                            x.split("[,|]").map(_.trim).filter(_.nonEmpty).toIndexedSeq
+                        )
+                    case _ => c
               ),
           opt[String]("sink-tag")
-              .text(s"sink tag - defaults to framework-output.")
+              .text(s"sink tag - defaults to framework-output. Comma-separated values allowed.")
               .action((x, c) =>
                   c match
-                    case c: AtomReachablesConfig => c.copy(sinkTag = x)
-                    case _                       => c
+                    case c: AtomReachablesConfig => c.copy(sinkTag =
+                            x.split("[,|]").map(_.trim).filter(_.nonEmpty).toIndexedSeq
+                        )
+                    case _ => c
               ),
           opt[Int]("slice-depth")
               .text(
@@ -590,7 +598,7 @@ object Atom:
                         .withOutputPath(outputAtomFile)
                         .withDefaultIgnoredFilesRegex(List("\\..*".r))
                         .withIgnoredFilesRegex(
-                          ".*(samples|test|tests|unittests|docs|virtualenvs|venv|benchmarks|tutorials|noxfile).*"
+                          ".*(samples|docs|virtualenvs|venv|benchmarks|tutorials|noxfile).*"
                         )
                   )
                   .map { ag =>
@@ -614,7 +622,7 @@ object Atom:
                     .withInputPath(config.inputPath.pathAsString)
                     .withOutputPath(outputAtomFile)
                     .withDefaultIgnoredFilesRegex(List("\\..*".r))
-                    .withIgnoredFilesRegex(".*(samples|examples|docs|tests).*")
+                    .withIgnoredFilesRegex(".*(samples|examples|docs).*")
               ).map { ag =>
                 new PhpSetKnownTypesPass(ag).createAndApply()
                 ag
@@ -624,7 +632,7 @@ object Atom:
                 RubyConfig()
                     .withInputPath(config.inputPath.pathAsString)
                     .withOutputPath(outputAtomFile)
-                    .withIgnoredFilesRegex(".*(docs|tests|vendor|spec).*")
+                    .withIgnoredFilesRegex(".*(docs|vendor|spec).*")
               ).map { ag =>
                   ag
               }

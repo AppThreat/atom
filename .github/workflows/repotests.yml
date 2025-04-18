@@ -174,7 +174,7 @@ jobs:
           cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/bouncycastle-examples/bom.json $GITHUB_WORKSPACE/repotests/bouncycastle-examples
           ./atom.sh reachables --include-crypto --remove-atom -o /tmp/bouncycastle-examples.atom -l java $GITHUB_WORKSPACE/repotests/bouncycastle-examples -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/bouncycastle-examples.reachables.json
           cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/java-sec-code/bom.json $GITHUB_WORKSPACE/repotests/java-sec-code
-          ./atom.sh reachables --include-crypto --remove-atom -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java-sec-code.reachables.json
+          ./atom.sh reachables --sink-tag framework-output --include-crypto --remove-atom -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/java-sec-code.reachables.json
           cdxgen -t c --deep -o $GITHUB_WORKSPACE/repotests/aws-doc-sdk-examples/cpp/bom.json $GITHUB_WORKSPACE/repotests/aws-doc-sdk-examples/cpp
           ./atom.sh reachables --remove-atom -o /tmp/aws-doc-sdk-examples.atom -l c $GITHUB_WORKSPACE/repotests/aws-doc-sdk-examples/cpp -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/aws-doc-sdk-examples.reachables.json
           cdxgen -t python --deep -o $GITHUB_WORKSPACE/repotests/DjanGoat/bom.json $GITHUB_WORKSPACE/repotests/DjanGoat

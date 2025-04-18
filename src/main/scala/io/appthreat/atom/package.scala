@@ -71,8 +71,8 @@ package object atom:
   ) extends AtomConfig
 
   case class AtomReachablesConfig(
-    sourceTag: String = FRAMEWORK_INPUT_TAG,
-    sinkTag: String = FRAMEWORK_OUTPUT_TAG,
+    sourceTag: Seq[String] = DEFAULT_SOURCE_TAGS,
+    sinkTag: Seq[String] = DEFAULT_SINK_TAGS,
     sliceDepth: Int = DEFAULT_SLICE_DEPTH,
     includeCryptoFlows: Boolean = false
   ) extends AtomConfig
