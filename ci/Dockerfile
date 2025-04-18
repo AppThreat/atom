@@ -11,7 +11,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.description="Container image for AppThreat atom" \
       org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -o /app/app.atom -l java /app"
 
-ARG JAVA_VERSION=24-tem
+ARG JAVA_VERSION=23.0.2-tem
 ARG MAVEN_VERSION=3.9.9
 ARG SCALA_VERSION=3.6.4
 ARG SBT_VERSION=1.10.11
@@ -26,7 +26,7 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     ANDROID_HOME=/opt/android-sdk-linux \
     JAVA_VERSION=$JAVA_VERSION \
     JAVA_HOME="/opt/java/${JAVA_VERSION}" \
-    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 --enable-native-access=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+UseCompactObjectHeaders" \
+    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8" \
     PHP_PARSER_BIN=/opt/vendor/bin/php-parse \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING="utf-8" \
