@@ -101,8 +101,8 @@ Extract local variable and parameter usages
   --extract-endpoints      extract http endpoints and convert to openapi format using atom-tools - defaults to false.
 Command: reachables [options]
 Extract reachable data-flow slices based on automated framework tags
-  --source-tag <value>     source tag - defaults to framework-input.
-  --sink-tag <value>       sink tag - defaults to framework-output.
+  --source-tag <value>     source tag - defaults to framework-input. Comma-separated values allowed.
+  --sink-tag <value>       sink tag - defaults to framework-output. Comma-separated values allowed.
   --include-crypto         includes crypto library flows - defaults to false.
   --help                   display this help message
 ```
@@ -189,7 +189,6 @@ Container-based invocation:
 docker run --rm -v /tmp:/tmp -e ATOM_TOOLS_OPENAPI_FILENAME=openapi.json -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
 # podman run --rm -v /tmp:/tmp -e ATOM_TOOLS_OPENAPI_FILENAME=openapi.json -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
 ```
-
 
 ### Export atom to graphml or dot format
 

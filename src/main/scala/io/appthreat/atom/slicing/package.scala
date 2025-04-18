@@ -80,8 +80,8 @@ package object slicing:
   ) extends BaseConfig
 
   case class ReachablesConfig(
-    sourceTag: String,
-    sinkTag: String,
+    sourceTag: Seq[String],
+    sinkTag: Seq[String],
     sliceDepth: Int,
     includeCryptoFlows: Boolean
   ) extends BaseConfig

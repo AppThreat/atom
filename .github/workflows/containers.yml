@@ -84,8 +84,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=atom
-          cache-to: type=gha,mode=max,scope=atom
 
   al9-deploy-arm:
     if: github.repository_owner == 'appthreat'
@@ -155,8 +153,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=atom-arm
-          cache-to: type=gha,mode=max,scope=atom-arm
 
   al9-deploy-manifest:
     if: github.repository_owner == 'appthreat'
@@ -258,8 +254,6 @@ jobs:
           push: true
           tags: ${{ steps.meta2.outputs.tags }}
           labels: ${{ steps.meta2.outputs.labels }}
-          cache-from: type=gha,scope=atom-sle
-          cache-to: type=gha,mode=max,scope=atom-sle
 
   sle-deploy-arm:
     if: github.repository_owner == 'appthreat'
@@ -330,8 +324,6 @@ jobs:
           push: true
           tags: ${{ steps.meta2.outputs.tags }}
           labels: ${{ steps.meta2.outputs.labels }}
-          cache-from: type=gha,scope=atom-sle-arm
-          cache-to: type=gha,mode=max,scope=atom-sle-arm
 
   sle-deploy-manifest:
     if: github.repository_owner == 'appthreat'

@@ -1,5 +1,6 @@
 package io.appthreat.atom.slicing
 
+import io.appthreat.atom.Atom.{DEFAULT_SOURCE_TAGS, DEFAULT_SINK_TAGS}
 import io.appthreat.dataflowengineoss.DefaultSemantics
 import io.appthreat.dataflowengineoss.language.*
 import io.appthreat.dataflowengineoss.queryengine.{EngineConfig, EngineContext}
@@ -11,7 +12,7 @@ import io.shiftleft.semanticcpg.language.*
 import java.io.File
 import java.util.regex.Pattern
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 object ReachableSlicing:
 
@@ -29,30 +30,42 @@ object ReachableSlicing:
   private def CRYPTO_ALGORITHM_TAG = "crypto-algorithm"
 
   def calculateReachableSlice(atom: Cpg, config: ReachablesConfig): ReachableSlice =
-    val language  = atom.metaData.language.head
-    def sourceP   = atom.tag.name(config.sourceTag).parameter
-    def sourceI   = atom.tag.name(config.sourceTag).identifier
-    def sink      = atom.ret.where(_.tag.name(config.sinkTag))
-    var flowsList = sink.reachableByFlows(sourceP, sourceI).map(toSlice).toList
-    if flowsList.isEmpty then
-      flowsList = atom.ret.where(_.method.tag.name(config.sourceTag)).reachableByFlows(
+    val language = atom.metaData.language.head
+    val defaultTagsMode =
+        config.sourceTag == DEFAULT_SOURCE_TAGS && config.sinkTag == DEFAULT_SINK_TAGS
+    val sourceTagRegex = s"""(${config.sourceTag.mkString("|")})"""
+    val sinkTagRegex   = s"""(${config.sinkTag.mkString("|")})"""
+    def sourceP        = atom.tag.name(sourceTagRegex).parameter
+    def sourceI        = atom.tag.name(sourceTagRegex).identifier
+    def sink           = atom.ret.where(_.tag.name(sinkTagRegex))
+    val flowSlices     = ListBuffer.empty[Iterator[io.appthreat.dataflowengineoss.language.Path]]
+    flowSlices += sink.reachableByFlows(sourceP, sourceI)
+    if flowSlices.isEmpty then
+      flowSlices += atom.ret.where(_.method.tag.name(sourceTagRegex)).reachableByFlows(
         sourceP,
         sourceI
-      ).map(toSlice).toList
-    flowsList ++=
-        atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter).map(
-          toSlice
-        ).toList
+      )
+    flowSlices +=
+        atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter)
+    // For Java and Python, we support crypto flows
     if config.includeCryptoFlows then
-      if Array(Languages.JAVA, Languages.JAVASRC).contains(language) then
-        flowsList ++= atom.tag.name(CRYPTO_GENERATE_TAG).call.reachableByFlows(
-          atom.tag.name(CRYPTO_ALGORITHM_TAG).literal
-        ).map(toSlice).toList
-      else if Array(Languages.PYTHON, Languages.PYTHONSRC).contains(language) then
-        flowsList ++= atom.tag.name(CRYPTO_GENERATE_TAG).call.reachableByFlows(
-          atom.tag.name(CRYPTO_ALGORITHM_TAG).call
-        ).map(toSlice).toList
-    // For JavaScript and Python, we need flows between arguments of call nodes to track callbacks and middlewares
+      language match
+        case l if Seq(Languages.JAVA, Languages.JAVASRC).contains(l) =>
+            flowSlices += atom
+                .tag
+                .name(CRYPTO_GENERATE_TAG)
+                .call
+                .reachableByFlows(atom.tag.name(CRYPTO_ALGORITHM_TAG).literal)
+
+        case l if Seq(Languages.PYTHON, Languages.PYTHONSRC).contains(l) =>
+            flowSlices += atom
+                .tag
+                .name(CRYPTO_GENERATE_TAG)
+                .call
+                .reachableByFlows(atom.tag.name(CRYPTO_ALGORITHM_TAG).call)
+
+        case _ =>
+    // For JavaScript, Python, and Ruby, we need flows between arguments of call nodes to track callbacks and middlewares
     if
       Array(
         Languages.JSSRC,
@@ -62,54 +75,48 @@ object ReachableSlicing:
         Languages.RUBYSRC
       ).contains(language)
     then
-      def dynCallSource          = atom.tag.name(config.sourceTag).call.argument.isIdentifier
+      def dynCallSource          = atom.tag.name(sourceTagRegex).call.argument.isIdentifier
       def dynFrameworkIdentifier = atom.tag.name(FRAMEWORK_TAG).identifier
       def dynFrameworkParameter  = atom.tag.name(FRAMEWORK_TAG).parameter
-      def dynSink                = atom.tag.name(config.sinkTag).call.argument.isIdentifier
-      flowsList ++= dynSink
+      def dynSink                = atom.tag.name(sinkTagRegex).call.argument.isIdentifier
+      flowSlices += dynSink
           .reachableByFlows(dynCallSource, dynFrameworkIdentifier, dynFrameworkParameter)
-          .map(toSlice)
-          .toList
-      flowsList ++= atom.tag
+
+      flowSlices += atom.tag
           .name(FRAMEWORK_TAG)
           .call
           .argument
           .reachableByFlows(dynFrameworkParameter, sourceP)
-          .map(toSlice)
-          .toList
-      flowsList ++= atom.tag
+
+      flowSlices += atom.tag
           .name(FRAMEWORK_TAG)
           .call
           .argument
           .isIdentifier
           .reachableByFlows(sourceI, dynFrameworkIdentifier)
-          .map(toSlice)
-          .toList
+
       if Array(Languages.PYTHON, Languages.PYTHONSRC).contains(language) then
-        flowsList ++= atom.tag.name("pkg.*").identifier.reachableByFlows(
+        flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
           atom.tag.name(CLI_SOURCE_TAG).identifier
-        ).map(toSlice).toList
+        )
       else
-        flowsList ++= atom.tag.name("pkg.*").identifier.reachableByFlows(
+        flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
           atom.tag.name(CLI_SOURCE_TAG).call
-        ).map(toSlice).toList
+        )
     end if
     if Array(Languages.PHP, Languages.RUBYSRC).contains(language)
     then
-      flowsList ++= atom.ret.where(_.tag.name(config.sinkTag)).reachableByFlows(
-        atom.tag.name(config.sourceTag).parameter
-      ).map(toSlice).toList
-      flowsList ++= atom.tag.name(FRAMEWORK_TAG).parameter.reachableByFlows(
-        atom.tag.name(config.sourceTag).parameter
-      ).map(toSlice).toList
+      flowSlices += atom.tag.name(FRAMEWORK_TAG).parameter.reachableByFlows(
+        sourceP
+      )
     if language == Languages.RUBYSRC
     then
       // Fallback to reverse reachability if we don't get any hits
-      if flowsList.isEmpty then
+      if flowSlices.isEmpty then
         println(
           s"Falling back to using reverse reachability to determine flows. Max DDG depth used: ${config.sliceDepth}"
         )
-        flowsList ++= atom.tag.name("pkg.*").call.argument.reachableByFlows(
+        flowSlices += atom.tag.name("pkg.*").call.argument.reachableByFlows(
           atom.tag.name(
             "pkg.*"
           ).call.method.repeat(_.filename(
@@ -117,52 +124,52 @@ object ReachableSlicing:
           ))(
             _.maxDepth(config.sliceDepth)
           ).parameter
-        ).map(toSlice).toList
+        )
     if Array(Languages.NEWC, Languages.C).contains(language)
     then
-      flowsList ++= atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(atom.tag.name(
+      flowSlices += atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(atom.tag.name(
         CLI_SOURCE_TAG
-      ).parameter).map(toSlice).toList
-      flowsList ++= atom.tag.name(HTTP_TAG).parameter.reachableByFlows(atom.tag.name(
+      ).parameter)
+      flowSlices += atom.tag.name(HTTP_TAG).parameter.reachableByFlows(atom.tag.name(
         CLI_SOURCE_TAG
-      ).parameter).map(toSlice).toList
-      flowsList ++= atom.tag.name(HTTP_TAG).parameter.reachableByFlows(atom.tag.name(
+      ).parameter)
+      flowSlices += atom.tag.name(HTTP_TAG).parameter.reachableByFlows(atom.tag.name(
         HTTP_TAG
-      ).parameter).map(toSlice).toList
-      flowsList ++= atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(atom.tag.name(
+      ).parameter)
+      flowSlices += atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(atom.tag.name(
         DRIVER_SOURCE_TAG
-      ).parameter).map(toSlice).toList
+      ).parameter)
       // Fallback to reverse reachability if we don't get any hits
-      if flowsList.isEmpty then
+      if flowSlices.isEmpty then
         println(
           s"Falling back to using reverse reachability to determine flows. Max DDG depth used: ${config.sliceDepth}"
         )
-        flowsList ++= atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(
+        flowSlices += atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(
           atom.tag.name(
             LIBRARY_CALL_TAG
           ).call.method.repeat(_.caller(NoResolve))(
             _.maxDepth(config.sliceDepth)
           ).parameter
-        ).map(toSlice).toList
+        )
       // We still have nothing. Is there any http flows going on?
-      if flowsList.isEmpty then
-        flowsList ++= atom.tag.name(HTTP_TAG).parameter.reachableByFlows(
+      if flowSlices.isEmpty && !defaultTagsMode then
+        flowSlices += atom.tag.name(HTTP_TAG).parameter.reachableByFlows(
           atom.tag.name(
             HTTP_TAG
           ).parameter.method.repeat(_.caller(NoResolve))(
             _.until(_.method.parameter.tag.name(CLI_SOURCE_TAG))
           ).parameter
-        ).map(toSlice).toList
-      if flowsList.isEmpty then
-        flowsList ++= atom.tag.name(LIBRARY_CALL_TAG).parameter.reachableByFlows(
+        )
+      if flowSlices.isEmpty && !defaultTagsMode then
+        flowSlices += atom.tag.name(LIBRARY_CALL_TAG).parameter.reachableByFlows(
           atom.tag.name(
             LIBRARY_CALL_TAG
           ).parameter.method.repeat(_.caller(NoResolve))(
-            _.until(_.method.parameter.tag.name(config.sourceTag))
+            _.until(_.method.parameter.tag.name(sourceTagRegex))
           ).parameter
-        ).map(toSlice).toList
+        )
     end if
-    ReachableSlice(flowsList)
+    ReachableSlice(flowSlices.flatten.map(toSlice).toList)
   end calculateReachableSlice
 
   private def tagAsString(tag: Iterator[Tag]): String =
