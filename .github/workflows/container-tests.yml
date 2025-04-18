@@ -107,8 +107,8 @@ jobs:
           npm install -g @appthreat/atom
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4.2'
+          ruby-version: '3.4.3'
           bundler-cache: false
-      - name: Check rbastgen 3.4.2
+      - name: Check rbastgen 3.4.3
         run: |
           rbastgen --help

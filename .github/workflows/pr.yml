@@ -15,7 +15,7 @@ jobs:
           fetch-depth: 0
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4.2'
+          ruby-version: '3.4.3'
           bundler-cache: false
       - uses: actions/checkout@v4
         with:
