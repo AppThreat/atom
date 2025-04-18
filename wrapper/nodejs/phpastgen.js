@@ -20,11 +20,7 @@ function main(argvs) {
     return false;
   }
   const cwd = process.env.ATOM_CWD || process.cwd();
-  argvs.splice(
-    0,
-    1,
-    process.env.PHP_PARSER_BIN || join(PLUGINS_HOME, "bin", "php-parse")
-  );
+  argvs.splice(0, 1, PHP_PARSER_BIN);
   spawnSync(process.env.PHP_CMD || "php", argvs, {
     encoding: "utf-8",
     cwd,
