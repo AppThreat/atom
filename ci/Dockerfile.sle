@@ -44,8 +44,8 @@ RUN set -e; \
             ;; \
         *) echo >&2 "error: unsupported architecture: '$ARCH_NAME'"; exit 1 ;; \
     esac; \
-    zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl php8-zip php8-bcmath php8-pear php8-mbstring php8-devel rust \
-        libopenssl-devel libffi-devel readline-devel libyaml-devel zlib-devel ncurses ncurses-devel jemalloc-devel \
+    zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl php8-zip php8-bcmath php8-pear php8-mbstring php8-devel rust1.85 \
+        libopenssl-devel libffi-devel readline-devel libyaml-devel zlib-devel libncurses6 ncurses-devel jemalloc-devel \
     && source /root/.nvm/nvm.sh \
     && python3 --version \
     && source /root/.nvm/nvm.sh \
