@@ -26,7 +26,7 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     ANDROID_HOME=/opt/android-sdk-linux \
     JAVA_VERSION=$JAVA_VERSION \
     JAVA_HOME="/opt/java/${JAVA_VERSION}" \
-    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8" \
+    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -XX:+UnlockExperimentalVMOptions -XX:+UseCompactObjectHeaders" \
     PHP_PARSER_BIN=/opt/vendor/bin/php-parse \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING="utf-8" \
