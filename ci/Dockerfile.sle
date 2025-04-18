@@ -11,7 +11,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.description="Container image for AppThreat atom" \
       org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom-sle atom -o /app/app.atom -l java /app"
 
-ARG RUBY_VERSION=3.4.2
+ARG RUBY_VERSION=3.4.3
 
 ENV ANDROID_HOME=/opt/android-sdk-linux \
     JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8" \
@@ -28,7 +28,7 @@ ENV ANDROID_HOME=/opt/android-sdk-linux \
     RUBY_BUILD_BUILD_PATH="/tmp/rbenv" \
     RUBY_BUILD_HTTP_CLIENT=curl
 
-ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.2/bin:
+ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.3/bin:
 
 WORKDIR /opt
 
@@ -56,7 +56,7 @@ RUN set -e; \
     && source /root/.bashrc \
     && mkdir -p "$(rbenv root)/plugins" \
     && git clone https://github.com/rbenv/ruby-build.git --depth=1 "$(rbenv root)/plugins/ruby-build" \
-    && rbenv install ${RUBY_VERSION} \
+    && rbenv install ${RUBY_VERSION} -- --disable-install-doc \
     && rbenv global ${RUBY_VERSION} \
     && ruby --version \
     && which ruby \

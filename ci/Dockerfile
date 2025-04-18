@@ -14,8 +14,8 @@ LABEL maintainer="appthreat" \
 ARG JAVA_VERSION=24-tem
 ARG MAVEN_VERSION=3.9.9
 ARG SCALA_VERSION=3.6.4
-ARG SBT_VERSION=1.10.10
-ARG RUBY_VERSION=3.4.2
+ARG SBT_VERSION=1.10.11
+ARG RUBY_VERSION=3.4.3
 
 ENV MAVEN_VERSION=$MAVEN_VERSION \
     MAVEN_HOME="/opt/maven/${MAVEN_VERSION}" \
@@ -39,7 +39,7 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     RUBY_BUILD_BUILD_PATH="/tmp/rbenv" \
     RUBY_BUILD_HTTP_CLIENT=curl
 
-ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:${SBT_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.2/bin:
+ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:${SBT_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.3/bin:
 
 WORKDIR /opt
 
@@ -82,7 +82,7 @@ RUN set -e; \
     && source /root/.bashrc \
     && mkdir -p "$(rbenv root)/plugins" \
     && git clone https://github.com/rbenv/ruby-build.git --depth=1 "$(rbenv root)/plugins/ruby-build" \
-    && rbenv install ${RUBY_VERSION} \
+    && rbenv install ${RUBY_VERSION} -- --disable-install-doc \
     && rbenv global ${RUBY_VERSION} \
     && ruby --version \
     && which ruby \
