@@ -13,7 +13,6 @@ Our vision is to make atom useful for many use cases such as:
 
 and more.
 
-[![release](https://github.com/appthreat/atom/actions/workflows/npm-release.yml/badge.svg)](https://github.com/appthreat/atom/actions/workflows/npm-release.yml)
 ![npm](https://img.shields.io/npm/dw/@appthreat/atom)
 
 ![Atom logo](./specification/docs/Atom-logo.png)
