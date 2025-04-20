@@ -372,7 +372,10 @@ object Atom:
             saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
             if u.extractEndpoints then
               val openapiFileName =
-                  sys.env.getOrElse("ATOM_TOOLS_OPENAPI_FILENAME", "openapi.json")
+                  sys.env.getOrElse(
+                    "ATOM_TOOLS_OPENAPI_FILENAME",
+                    s"${config.language}-openapi.json"
+                  )
               val openapiFormat = sys.env.getOrElse("ATOM_TOOLS_OPENAPI_FORMAT", "openapi3.1.0")
               val atomToolsWorkDir =
                   sys.env.getOrElse("ATOM_TOOLS_WORK_DIR", config.inputPath.pathAsString)
@@ -385,12 +388,13 @@ object Atom:
                 s" -e ${semanticsSlices.head.pathAsString}"
               else ""
               println(
-                s"atom-tools convert -i ${config.outputSliceFile}${extraArgs} -t ${config.language} -f ${openapiFormat} -o ${config
-                        .inputPath.pathAsString}${java.io.File.separator}${openapiFileName}"
+                s"atom-tools convert -i ${config.outputSliceFile}${extraArgs} -t ${config
+                        .language} -f ${openapiFormat} -o ${atomToolsWorkDir}${java.io.File.separator}${openapiFileName}"
               )
               val result = ExternalCommand.run(
-                s"atom-tools convert -i ${config.outputSliceFile}${extraArgs} -t ${config.language} -f ${openapiFormat} -o ${config
-                        .inputPath.pathAsString}${java.io.File.separator}${openapiFileName}",
+                s"atom-tools convert -i ${config.outputSliceFile}${extraArgs} -t ${config
+                        .language} -f ${openapiFormat} -o ${atomToolsWorkDir}${java.io.File
+                        .separator}${openapiFileName}",
                 atomToolsWorkDir
               )
               result match
