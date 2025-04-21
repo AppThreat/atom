@@ -91,7 +91,7 @@ RUN set -e; \
     && alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 10 \
     && python3 --version \
     && node --version \
-    && python3 -m pip install --upgrade pip poetry atom-tools>=0.7.5 \
+    && python3 -m pip install --upgrade pip poetry atom-tools>=0.7.6 \
     && atom-tools --version && atom-tools --help \
     && mkdir -p ${ANDROID_HOME}/cmdline-tools \
     && curl -L https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -o ${ANDROID_HOME}/cmdline-tools/android_tools.zip \
