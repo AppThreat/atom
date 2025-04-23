@@ -152,7 +152,7 @@ object ReachableSlicing:
           ).parameter
         )
       // We still have nothing. Is there any http flows going on?
-      if flowSlices.isEmpty && !defaultTagsMode then
+      if flowSlices.isEmpty && defaultTagsMode then
         flowSlices += atom.tag.name(HTTP_TAG).parameter.reachableByFlows(
           atom.tag.name(
             HTTP_TAG
@@ -160,7 +160,7 @@ object ReachableSlicing:
             _.until(_.method.parameter.tag.name(CLI_SOURCE_TAG))
           ).parameter
         )
-      if flowSlices.isEmpty && !defaultTagsMode then
+      if flowSlices.isEmpty && defaultTagsMode then
         flowSlices += atom.tag.name(LIBRARY_CALL_TAG).parameter.reachableByFlows(
           atom.tag.name(
             LIBRARY_CALL_TAG
