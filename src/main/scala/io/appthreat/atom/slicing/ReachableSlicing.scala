@@ -99,6 +99,9 @@ object ReachableSlicing:
         flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
           atom.tag.name(CLI_SOURCE_TAG).identifier
         )
+        flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
+          atom.tag.name(FRAMEWORK_TAG).identifier
+        )
       else
         flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
           atom.tag.name(CLI_SOURCE_TAG).call
