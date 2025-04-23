@@ -16,11 +16,25 @@ env:
   IMAGE_NAME: appthreat/atom
 
 jobs:
-  al9-deploy:
+  deploy:
     if: github.repository_owner == 'appthreat'
-    runs-on: ubuntu-24.04
-    outputs:
-      image-uri: ghcr.io/appthreat/atom@${{ steps.build.outputs.digest }}
+    strategy:
+      fail-fast: true
+      matrix:
+        image:
+          - id: amd64
+            arch: amd64
+          - id: arm64
+            arch: arm64
+            runner-suffix: -arm
+          - id: amd64-sle
+            arch: amd64
+            image-suffix: -sle
+          - id: arm64-sle
+            arch: arm64
+            image-suffix: -sle
+            runner-suffix: -arm
+    runs-on: ubuntu-24.04${{ matrix.image.runner-suffix }}
     permissions:
       contents: write
       packages: write
@@ -72,94 +86,39 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/appthreat/atom
-          flavor: latest=false,suffix=-amd64
+            ghcr.io/appthreat/atom${{ matrix.image.image-suffix }}
+          flavor: latest=false,suffix=-${{ matrix.image.arch }}
       - name: Build and push Docker images
         uses: docker/build-push-action@v5
         id: build
         with:
-          file: ci/Dockerfile
+          file: ci/Dockerfile${{ matrix.image.image-suffix }}
           context: .
-          platforms: linux/amd64
+          platforms: linux/${{ matrix.image.arch }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      - uses: cloudposse/github-action-matrix-outputs-write@v1
+        id: out
+        with:
+          matrix-step-name: deploy
+          matrix-key: ${{ matrix.image.id }}
+          outputs: |-
+            image-uri: ghcr.io/appthreat/atom${{ matrix.image.image-suffix }}@${{ steps.build.outputs.digest }}
 
-  al9-deploy-arm:
+  deploy-manifest:
     if: github.repository_owner == 'appthreat'
-    runs-on: ubuntu-24.04-arm
-    outputs:
-      image-uri: ghcr.io/appthreat/atom@${{ steps.build.outputs.digest }}
-    permissions:
-      contents: write
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '22'
-      - uses: sbt/setup-sbt@v1
-      - uses: coursier/setup-action@v1
-        with:
-          apps: scala3 scalac
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '23.x'
-      - name: Delete `.rustup` directory
-        run: rm -rf /home/runner/.rustup # to save disk space
-        if: runner.os == 'Linux'
-      - name: Delete `.cargo` directory # to save disk space
-        run: rm -rf /home/runner/.cargo
-        if: runner.os == 'Linux'
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.sbt
-            ~/.coursier
-          key: ${{ runner.os }}-sbt-${{ hashfiles('**/build.sbt') }}
-      - run: |
-          sbt stage createDistribution
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/appthreat/atom
-          flavor: latest=false,suffix=-arm64
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v5
-        id: build
-        with:
-          file: ci/Dockerfile
-          context: .
-          platforms: linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-  al9-deploy-manifest:
-    if: github.repository_owner == 'appthreat'
+    strategy:
+      fail-fast: true
+      matrix:
+        image:
+          - id: default
+          - id: sle
+            image-suffix: -sle
     runs-on: ubuntu-24.04
-    needs: [al9-deploy, al9-deploy-arm]
+    needs: [deploy]
     outputs:
-      image-uri: ghcr.io/appthreat/atom@${{ steps.build.outputs.digest }}
+      image-uri: ghcr.io/appthreat/atom${{ matrix.image.image-suffix }}@${{ steps.build.outputs.digest }}
     permissions:
       contents: write
       packages: write
@@ -175,183 +134,16 @@ jobs:
       - uses: docker/metadata-action@v5
         id: metadata
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/appthreat/atom${{ matrix.image.image-suffix }}
+      - uses: cloudposse/github-action-matrix-outputs-read@v1
+        id: read
+        with:
+          matrix-step-name: deploy
       - uses: int128/docker-manifest-create-action@v2
         id: build
         with:
           index-annotations: ${{ steps.metadata.outputs.labels }}
           tags: ${{ steps.metadata.outputs.tags }}
           sources: |
-            ${{ needs.al9-deploy.outputs.image-uri }}
-            ${{ needs.al9-deploy-arm.outputs.image-uri }}
-
-  sle-deploy:
-    if: github.repository_owner == 'appthreat'
-    runs-on: ubuntu-24.04
-    outputs:
-      image-uri: ghcr.io/appthreat/atom-sle@${{ steps.build.outputs.digest }}
-    permissions:
-      contents: write
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '22'
-      - uses: sbt/setup-sbt@v1
-      - uses: coursier/setup-action@v1
-        with:
-          apps: scala3 scalac
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '23.x'
-      - name: Delete `.rustup` directory
-        run: rm -rf /home/runner/.rustup # to save disk space
-        if: runner.os == 'Linux'
-      - name: Delete `.cargo` directory # to save disk space
-        run: rm -rf /home/runner/.cargo
-        if: runner.os == 'Linux'
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.sbt
-            ~/.coursier
-          key: ${{ runner.os }}-sbt-${{ hashfiles('**/build.sbt') }}
-      - run: |
-          sbt stage createDistribution
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta2
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/appthreat/atom-sle
-          flavor: latest=false,suffix=-amd64
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v5
-        id: build
-        with:
-          file: ci/Dockerfile.sle
-          context: .
-          platforms: linux/amd64
-          push: true
-          tags: ${{ steps.meta2.outputs.tags }}
-          labels: ${{ steps.meta2.outputs.labels }}
-
-  sle-deploy-arm:
-    if: github.repository_owner == 'appthreat'
-    runs-on: ubuntu-24.04-arm
-    outputs:
-      image-uri: ghcr.io/appthreat/atom-sle@${{ steps.build.outputs.digest }}
-    permissions:
-      contents: write
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '22'
-      - uses: sbt/setup-sbt@v1
-      - uses: coursier/setup-action@v1
-        with:
-          apps: scala3 scalac
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '23.x'
-      - name: Delete `.rustup` directory
-        run: rm -rf /home/runner/.rustup # to save disk space
-        if: runner.os == 'Linux'
-      - name: Delete `.cargo` directory # to save disk space
-        run: rm -rf /home/runner/.cargo
-        if: runner.os == 'Linux'
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.sbt
-            ~/.coursier
-          key: ${{ runner.os }}-sbt-${{ hashfiles('**/build.sbt') }}
-      - run: |
-          sbt stage createDistribution
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta2
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/appthreat/atom-sle
-          flavor: latest=false,suffix=-arm64
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v5
-        id: build
-        with:
-          file: ci/Dockerfile.sle
-          context: .
-          platforms: linux/arm64
-          push: true
-          tags: ${{ steps.meta2.outputs.tags }}
-          labels: ${{ steps.meta2.outputs.labels }}
-
-  sle-deploy-manifest:
-    if: github.repository_owner == 'appthreat'
-    runs-on: ubuntu-24.04
-    needs: [sle-deploy, sle-deploy-arm]
-    outputs:
-      image-uri: ghcr.io/appthreat/atom-sle@${{ steps.build.outputs.digest }}
-    permissions:
-      contents: write
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/metadata-action@v5
-        id: metadata
-        with:
-          images: ghcr.io/appthreat/atom-sle
-      - uses: int128/docker-manifest-create-action@v2
-        id: build
-        with:
-          index-annotations: ${{ steps.metadata.outputs.labels }}
-          tags: ${{ steps.metadata.outputs.tags }}
-          sources: |
-            ${{ needs.sle-deploy.outputs.image-uri }}
-            ${{ needs.sle-deploy-arm.outputs.image-uri }}
+            ${{ fromJSON(steps.read.outputs.result).image-uri[format('amd64{0}', matrix.image.image-suffix)] }}
+            ${{ fromJSON(steps.read.outputs.result).image-uri[format('arm64{0}', matrix.image.image-suffix)] }}
