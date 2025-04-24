@@ -97,10 +97,10 @@ object ReachableSlicing:
 
       if Array(Languages.PYTHON, Languages.PYTHONSRC).contains(language) then
         flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
-          atom.tag.name(CLI_SOURCE_TAG).identifier
+          atom.tag.name(s"(${CLI_SOURCE_TAG}|${FRAMEWORK_TAG})").identifier
         )
         flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
-          atom.tag.name(FRAMEWORK_TAG).identifier
+          atom.tag.name(CLI_SOURCE_TAG).parameter
         )
       else
         flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
@@ -131,16 +131,10 @@ object ReachableSlicing:
     if Array(Languages.NEWC, Languages.C).contains(language)
     then
       flowSlices += atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(atom.tag.name(
-        CLI_SOURCE_TAG
+        s"(${CLI_SOURCE_TAG}|${DRIVER_SOURCE_TAG})"
       ).parameter)
       flowSlices += atom.tag.name(HTTP_TAG).parameter.reachableByFlows(atom.tag.name(
-        CLI_SOURCE_TAG
-      ).parameter)
-      flowSlices += atom.tag.name(HTTP_TAG).parameter.reachableByFlows(atom.tag.name(
-        HTTP_TAG
-      ).parameter)
-      flowSlices += atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(atom.tag.name(
-        DRIVER_SOURCE_TAG
+        s"(${CLI_SOURCE_TAG}|${HTTP_TAG})"
       ).parameter)
       // Fallback to reverse reachability if we don't get any hits
       if flowSlices.isEmpty then
@@ -156,19 +150,11 @@ object ReachableSlicing:
         )
       // We still have nothing. Is there any http flows going on?
       if flowSlices.isEmpty && defaultTagsMode then
-        flowSlices += atom.tag.name(HTTP_TAG).parameter.reachableByFlows(
+        flowSlices += atom.tag.name(s"(${LIBRARY_CALL_TAG}|${HTTP_TAG})").parameter.reachableByFlows(
           atom.tag.name(
-            HTTP_TAG
+            s"(${LIBRARY_CALL_TAG}|${HTTP_TAG})"
           ).parameter.method.repeat(_.caller(NoResolve))(
             _.until(_.method.parameter.tag.name(CLI_SOURCE_TAG))
-          ).parameter
-        )
-      if flowSlices.isEmpty && defaultTagsMode then
-        flowSlices += atom.tag.name(LIBRARY_CALL_TAG).parameter.reachableByFlows(
-          atom.tag.name(
-            LIBRARY_CALL_TAG
-          ).parameter.method.repeat(_.caller(NoResolve))(
-            _.until(_.method.parameter.tag.name(sourceTagRegex))
           ).parameter
         )
     end if

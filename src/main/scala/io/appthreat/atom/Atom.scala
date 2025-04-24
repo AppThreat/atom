@@ -42,6 +42,7 @@ import scopt.OptionParser
 import java.nio.charset.Charset
 import java.util.Locale
 import scala.language.postfixOps
+import scala.util.matching.Regex
 import scala.util.{Failure, Properties, Success, Try}
 
 object Atom:
@@ -56,6 +57,30 @@ object Atom:
       Seq(FRAMEWORK_INPUT_TAG, "framework-route", "cli-source", "driver-source")
   val DEFAULT_SINK_TAGS =
       Seq(FRAMEWORK_OUTPUT_TAG, "library-call", "cloud", "rpc", "http", "cron", "mail")
+  private val COMMON_IGNORE_REGEX = ".*(docs|example|samples|mocks|Documentation|demos).*"
+  // Identify directories to ignore for python
+  private val defaultPythonIgnoreDirs = Seq(
+    "samples",
+    "docs",
+    "virtualenvs",
+    "venv",
+    "benchmarks",
+    "tutorials",
+    "noxfile"
+  )
+  private val testIgnoreDirs = Seq("test", "tests", "mocks")
+  private val basePythonIgnoreDirs: Seq[String] = Option(System.getenv("CHEN_PYTHON_IGNORE_DIRS"))
+      .map(_.split(',').map(_.trim).filter(_.nonEmpty).toSeq)
+      .getOrElse(defaultPythonIgnoreDirs)
+  private val includeTestDirs: Boolean =
+      Option(System.getenv("CHEN_IGNORE_TEST_DIRS"))
+          .exists(_.trim.equalsIgnoreCase("true"))
+  private val pyIgnoreDirs: Seq[String] =
+      if includeTestDirs then basePythonIgnoreDirs ++ testIgnoreDirs
+      else basePythonIgnoreDirs
+  // This regex will be eventually passed to chen
+  private val pythonIgnoredFilesRegex: String = ".*(" + pyIgnoreDirs.mkString("|") + ").*"
+
   val DEFAULT_EXPORT_DIR: String = "atom-exports"
   // Possible values: graphml, dot
   val DEFAULT_EXPORT_FORMAT: String = "graphml"
@@ -68,15 +93,18 @@ object Atom:
   private val SBT_JAR_PATH: File    = File.home / ".ivy2" / "cache"
   private val JAR_INFERENCE_PATHS: Set[String] =
       Set(MAVEN_JAR_PATH.pathAsString, GRADLE_JAR_PATH.pathAsString, SBT_JAR_PATH.pathAsString)
+
+  private def findAndroidJar(dirs: Seq[File]): Option[String] =
+      dirs
+          .filter(_.isDirectory)
+          .flatMap(_.glob("**/android.jar"))
+          .map(_.pathAsString)
+          .headOption
+
   private val ANDROID_JAR_PATH: Option[String] =
-      Option(System.getenv("ANDROID_HOME")).flatMap { androidHome =>
-          if File(androidHome).isDirectory then
-            File(androidHome).glob("**/android.jar").map(_.pathAsString).toSeq.headOption
-          else None
-      }
-
-  private val COMMON_IGNORE_REGEX = ".*(docs|example|samples|mocks|Documentation|demos).*"
-
+    val envDir    = Option(System.getenv("ANDROID_HOME")).map(File(_))
+    val macSdkDir = File.home / "Library" / "Android" / "sdk"
+    findAndroidJar(Seq(envDir, Some(macSdkDir)).flatten)
   private val CHEN_INCLUDE_PATH = sys.env.getOrElse("CHEN_INCLUDE_PATH", "")
   // Custom include paths for c/c++
   private val C2ATOM_INCLUDE_PATH =
@@ -602,7 +630,7 @@ object Atom:
                         .withOutputPath(outputAtomFile)
                         .withDefaultIgnoredFilesRegex(List("\\..*".r))
                         .withIgnoredFilesRegex(
-                          ".*(samples|docs|virtualenvs|venv|benchmarks|tutorials|noxfile).*"
+                          pythonIgnoredFilesRegex
                         )
                   )
                   .map { ag =>

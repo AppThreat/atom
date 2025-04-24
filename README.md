@@ -256,6 +256,11 @@ with ZipFile("app.atom", "w") as zip_file:
     zip_file.writestr("cpg.proto", bytes(atom_struct))
 ```
 
+## Environment variables
+
+- CHEN_IGNORE_TEST_DIRS: Set to true to ignore `test` directories. Only supported for Python for now.
+- CHEN_PYTHON_IGNORE_DIRS: Comma-separated list of directories to ignore for Python.
+
 ## License
 
 Apache-2.0
