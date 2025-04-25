@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { freemem, totalmem, platform as _platform } from "node:os";
+import { totalmem, platform as _platform } from "node:os";
 import { dirname, join, delimiter } from "node:path";
 import { readFileSync } from "node:fs";
 
@@ -22,10 +22,7 @@ export const APP_LIB_DIR = join(ATOM_HOME, "lib");
 export const PHP_PARSER_BIN = join(ATOM_HOME, "bin", "php-parse");
 
 // We need more memory for atom to work well
-const maxMemoryGB = Math.max(
-  Math.floor((totalmem() * 0.8) / 1024 ** 3),
-  Math.floor(freemem() / 1024 ** 3)
-);
+const maxMemoryGB = Math.floor((totalmem() * 0.8) / 1024 ** 3);
 
 export const JVM_ARGS = "-XX:+UseG1GC -XX:+UseStringDeduplication";
 export const JAVA_OPTS =
