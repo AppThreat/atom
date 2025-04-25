@@ -43,3 +43,16 @@ Extract reachable data-flow slices based on automated framework tags
   --include-crypto         includes crypto library flows - defaults to false.
   --help                   display this help message
 ```
+
+## Environment variables
+
+| Variable                      | Description                                                                                   |
+| ----------------------------- | --------------------------------------------------------------------------------------------- |
+| **CHEN_IGNORE_TEST_DIRS**     | Set to true to ignore `test` directories. Only supported for Python for now.                  |
+| **CHEN_PYTHON_IGNORE_DIRS**   | Comma-separated list of directories to ignore for Python.                                     |
+| **CHEN_DELOMBOK_MODE**        | Delombok mode for the Java frontend (`no-delombok`, `default`, `types-only`, `run-delombok`). |
+| **CHEN_INCLUDE_PATH**         | Include directories for the C frontend. Separate paths with `:` or `;`.                       |
+| **ATOM_TOOLS_OPENAPI_FORMAT** | OpenAPI format for atom-tools. Default: `openapi3.1.0`; alternative: `openapi3.0.1`.          |
+| **ATOM_TOOLS_WORK_DIR**       | Working directory for atom-tools. Defaults to atom input path.                                |
+| **ATOM_SCALASEM_WORK_DIR**    | Working directory for scalasem. Defaults to atom input path.                                  |
+| **ATOM_SCALASEM_SLICES_FILE** | Slices file name. Defaults to `semantics.slices.json`.                                        |
