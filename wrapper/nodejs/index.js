@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { freemem, platform as _platform } from "node:os";
+import { totalmem, platform as _platform } from "node:os";
 import { dirname, join, delimiter } from "node:path";
 import { readFileSync } from "node:fs";
 
@@ -20,11 +20,15 @@ export const LOG4J_CONFIG = join(dirName, "plugins", "log4j2.xml");
 export const ATOM_HOME = join(dirName, "plugins");
 export const APP_LIB_DIR = join(ATOM_HOME, "lib");
 export const PHP_PARSER_BIN = join(ATOM_HOME, "bin", "php-parse");
-const freeMemoryGB = Math.max(Math.floor(freemem() / 1024 / 1024 / 1024), 4);
+
+// We need more memory for atom to work well
+const maxMemoryGB = Math.floor((totalmem() * 0.8) / 1024 ** 3);
+
 export const JVM_ARGS = "-XX:+UseG1GC -XX:+UseStringDeduplication";
-export const JAVA_OPTS = `${
-  process.env.JAVA_OPTS || ""
-} -Xmx${freeMemoryGB}G ${JVM_ARGS}`;
+export const JAVA_OPTS =
+  process.env?.ATOM_JVM_ARGS ||
+  `${process.env.JAVA_OPTS || ""} -Xms2G -Xmx${maxMemoryGB}G ${JVM_ARGS}`;
+
 export const APP_MAIN_CLASS = "io.appthreat.atom.Atom";
 export const ATOM_VERSION = _version;
 export const APP_CLASSPATH = join(

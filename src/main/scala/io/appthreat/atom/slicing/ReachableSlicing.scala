@@ -35,18 +35,20 @@ object ReachableSlicing:
         config.sourceTag == DEFAULT_SOURCE_TAGS && config.sinkTag == DEFAULT_SINK_TAGS
     val sourceTagRegex = s"""(${config.sourceTag.mkString("|")})"""
     val sinkTagRegex   = s"""(${config.sinkTag.mkString("|")})"""
-    def sourceP        = atom.tag.name(sourceTagRegex).parameter
-    def sourceI        = atom.tag.name(sourceTagRegex).identifier
-    def sink           = atom.ret.where(_.tag.name(sinkTagRegex))
-    val flowSlices     = ListBuffer.empty[Iterator[io.appthreat.dataflowengineoss.language.Path]]
+    if !defaultTagsMode then
+      println(s"Identifying flows between ${sourceTagRegex} and ${sinkTagRegex}")
+    def sourceP    = atom.tag.name(sourceTagRegex).parameter
+    def sourceI    = atom.tag.name(sourceTagRegex).identifier
+    def sink       = atom.ret.where(_.tag.name(sinkTagRegex))
+    val flowSlices = ListBuffer.empty[Iterator[io.appthreat.dataflowengineoss.language.Path]]
     flowSlices += sink.reachableByFlows(sourceP, sourceI)
-    if flowSlices.isEmpty then
+    if defaultTagsMode then
       flowSlices += atom.ret.where(_.method.tag.name(sourceTagRegex)).reachableByFlows(
         sourceP,
         sourceI
       )
-    flowSlices +=
-        atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter)
+      flowSlices +=
+          atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter)
     // For Java and Python, we support crypto flows
     if config.includeCryptoFlows then
       language match
@@ -95,7 +97,7 @@ object ReachableSlicing:
           .isIdentifier
           .reachableByFlows(sourceI, dynFrameworkIdentifier)
 
-      if Array(Languages.PYTHON, Languages.PYTHONSRC).contains(language) then
+      if Array(Languages.PYTHON, Languages.PYTHONSRC).contains(language) && defaultTagsMode then
         flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
           atom.tag.name(s"(${CLI_SOURCE_TAG}|${FRAMEWORK_TAG})").identifier
         )
@@ -112,22 +114,17 @@ object ReachableSlicing:
       flowSlices += atom.tag.name(FRAMEWORK_TAG).parameter.reachableByFlows(
         sourceP
       )
-    if language == Languages.RUBYSRC
+    if language == Languages.RUBYSRC && defaultTagsMode
     then
-      // Fallback to reverse reachability if we don't get any hits
-      if flowSlices.isEmpty then
-        println(
-          s"Falling back to using reverse reachability to determine flows. Max DDG depth used: ${config.sliceDepth}"
-        )
-        flowSlices += atom.tag.name("pkg.*").call.argument.reachableByFlows(
-          atom.tag.name(
-            "pkg.*"
-          ).call.method.repeat(_.filename(
-            s"((app|config)${Pattern.quote(File.separator)})?(routes|controller(s)?|model(s)?|application).*\\.rb.*"
-          ))(
-            _.maxDepth(config.sliceDepth)
-          ).parameter
-        )
+      flowSlices += atom.tag.name("pkg.*").call.argument.reachableByFlows(
+        atom.tag.name(
+          "pkg.*"
+        ).call.method.repeat(_.filename(
+          s"((app|config)${Pattern.quote(File.separator)})?(routes|controller(s)?|model(s)?|application).*\\.rb.*"
+        ))(
+          _.maxDepth(config.sliceDepth)
+        ).parameter
+      )
     if Array(Languages.NEWC, Languages.C).contains(language)
     then
       flowSlices += atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(atom.tag.name(
@@ -136,11 +133,8 @@ object ReachableSlicing:
       flowSlices += atom.tag.name(HTTP_TAG).parameter.reachableByFlows(atom.tag.name(
         s"(${CLI_SOURCE_TAG}|${HTTP_TAG})"
       ).parameter)
-      // Fallback to reverse reachability if we don't get any hits
-      if flowSlices.isEmpty then
-        println(
-          s"Falling back to using reverse reachability to determine flows. Max DDG depth used: ${config.sliceDepth}"
-        )
+      if defaultTagsMode then
+        println("Collecting additional slices with Reverse Reachability.")
         flowSlices += atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(
           atom.tag.name(
             LIBRARY_CALL_TAG
@@ -148,13 +142,11 @@ object ReachableSlicing:
             _.maxDepth(config.sliceDepth)
           ).parameter
         )
-      // We still have nothing. Is there any http flows going on?
-      if flowSlices.isEmpty && defaultTagsMode then
         flowSlices += atom.tag.name(s"(${LIBRARY_CALL_TAG}|${HTTP_TAG})").parameter.reachableByFlows(
           atom.tag.name(
             s"(${LIBRARY_CALL_TAG}|${HTTP_TAG})"
           ).parameter.method.repeat(_.caller(NoResolve))(
-            _.until(_.method.parameter.tag.name(CLI_SOURCE_TAG))
+            _.maxDepth(config.sliceDepth)
           ).parameter
         )
     end if
