@@ -35,12 +35,10 @@ object ReachableSlicing:
         config.sourceTag == DEFAULT_SOURCE_TAGS && config.sinkTag == DEFAULT_SINK_TAGS
     val sourceTagRegex = s"""(${config.sourceTag.mkString("|")})"""
     val sinkTagRegex   = s"""(${config.sinkTag.mkString("|")})"""
-    if !defaultTagsMode then
-      println(s"Identifying flows between ${sourceTagRegex} and ${sinkTagRegex}")
-    def sourceP    = atom.tag.name(sourceTagRegex).parameter
-    def sourceI    = atom.tag.name(sourceTagRegex).identifier
-    def sink       = atom.ret.where(_.tag.name(sinkTagRegex))
-    val flowSlices = ListBuffer.empty[Iterator[io.appthreat.dataflowengineoss.language.Path]]
+    def sourceP        = atom.tag.name(sourceTagRegex).parameter
+    def sourceI        = atom.tag.name(sourceTagRegex).identifier
+    def sink           = atom.ret.where(_.tag.name(sinkTagRegex))
+    val flowSlices     = ListBuffer.empty[Iterator[io.appthreat.dataflowengineoss.language.Path]]
     flowSlices += sink.reachableByFlows(sourceP, sourceI)
     if defaultTagsMode then
       flowSlices += atom.ret.where(_.method.tag.name(sourceTagRegex)).reachableByFlows(
@@ -82,21 +80,24 @@ object ReachableSlicing:
       def dynFrameworkParameter  = atom.tag.name(FRAMEWORK_TAG).parameter
       def dynSink                = atom.tag.name(sinkTagRegex).call.argument.isIdentifier
       flowSlices += dynSink
-          .reachableByFlows(dynCallSource, dynFrameworkIdentifier, dynFrameworkParameter)
-
-      flowSlices += atom.tag
-          .name(FRAMEWORK_TAG)
-          .call
-          .argument
-          .reachableByFlows(dynFrameworkParameter, sourceP)
-
-      flowSlices += atom.tag
-          .name(FRAMEWORK_TAG)
-          .call
-          .argument
-          .isIdentifier
-          .reachableByFlows(sourceI, dynFrameworkIdentifier)
-
+          .reachableByFlows(dynCallSource, dynFrameworkParameter)
+      if defaultTagsMode
+      then
+        flowSlices += atom.tag
+            .name(FRAMEWORK_TAG)
+            .call
+            .argument
+            .reachableByFlows(dynFrameworkParameter, sourceP)
+        if dynFrameworkParameter.isEmpty then
+          // Too slow
+          flowSlices += dynSink
+              .reachableByFlows(dynCallSource, dynFrameworkIdentifier)
+          flowSlices += atom.tag
+              .name(FRAMEWORK_TAG)
+              .call
+              .argument
+              .isIdentifier
+              .reachableByFlows(sourceI, dynFrameworkIdentifier)
       if Array(Languages.PYTHON, Languages.PYTHONSRC).contains(language) && defaultTagsMode then
         flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
           atom.tag.name(s"(${CLI_SOURCE_TAG}|${FRAMEWORK_TAG})").identifier
