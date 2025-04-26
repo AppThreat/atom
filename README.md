@@ -77,6 +77,7 @@ Usage: atom [parsedeps|data-flow|usages|reachables] [options] [input]
   -l, --language <value>   source language
   --with-data-deps         generate the atom with data-dependencies - defaults to `false`
   --remove-atom            do not persist the atom file - defaults to `false`
+  --reuse-atom             reuse existing atom file - defaults to `false`
   -x, --export-atom        export the atom file with data-dependencies to graphml - defaults to `false`
   --export-dir <value>     export directory. Default: atom-exports
   --file-filter <value>    the name of the source file to generate slices from. Uses regex.

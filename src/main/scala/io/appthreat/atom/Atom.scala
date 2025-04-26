@@ -18,7 +18,6 @@ import io.appthreat.jssrc2cpg.passes.{
 import io.appthreat.jssrc2cpg.{JsSrc2Cpg, Config as JSConfig}
 import io.appthreat.php2atom.passes.PhpSetKnownTypesPass
 import io.appthreat.php2atom.{Php2Atom, Config as PhpConfig}
-import io.appthreat.ruby2atom.{Ruby2Atom, Config as RubyConfig}
 import io.appthreat.pysrc2cpg.{
     DynamicTypeHintFullNamePass,
     Py2CpgOnFileSystem,
@@ -29,6 +28,7 @@ import io.appthreat.pysrc2cpg.{
     ImportsPass as PythonImportsPass,
     Py2CpgOnFileSystemConfig as PyConfig
 }
+import io.appthreat.ruby2atom.{Ruby2Atom, Config as RubyConfig}
 import io.appthreat.x2cpg.passes.base.AstLinkerPass
 import io.appthreat.x2cpg.passes.frontend.XTypeRecoveryConfig
 import io.appthreat.x2cpg.passes.taggers.{CdxPass, ChennaiTagsPass, EasyTagsPass}
@@ -39,11 +39,9 @@ import io.shiftleft.semanticcpg.language.*
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 import scopt.OptionParser
 
-import java.nio.charset.Charset
 import java.util.Locale
 import scala.language.postfixOps
-import scala.util.matching.Regex
-import scala.util.{Failure, Properties, Success, Try}
+import scala.util.{Failure, Success, Try}
 
 object Atom:
 
@@ -168,6 +166,14 @@ object Atom:
             c match
               case config: AtomConfig =>
                   config.withExportAtom(true)
+              case _ => c
+        )
+    opt[Unit]("reuse-atom")
+        .text("reuse existing atom file - defaults to `false`")
+        .action((_, c) =>
+            c match
+              case config: AtomConfig =>
+                  config.withReuseAtom(true)
               case _ => c
         )
     opt[String]("export-dir")
@@ -679,7 +685,7 @@ object Atom:
           case x: AtomConfig
               if (x.isInstanceOf[
                 AtomUsagesConfig
-              ] || config.exportAtom) && config.outputAtomFile.exists() =>
+              ] || config.exportAtom || config.reuseAtom) && config.outputAtomFile.exists() =>
               try
                 loadFromOdb(outputAtomFile)
               catch
@@ -697,9 +703,9 @@ object Atom:
       case Success(ag) =>
           config match
             case x: AtomConfig
-                if x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] || x.isInstanceOf[
+                if !x.reuseAtom && (x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] || x.isInstanceOf[
                   AtomReachablesConfig
-                ] =>
+                ]) =>
                 println("Generating data-flow dependencies from atom. Please wait ...")
                 // Enhance with simple and easy tags
                 new EasyTagsPass(ag).createAndApply()
