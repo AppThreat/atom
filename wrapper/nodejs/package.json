@@ -9,7 +9,7 @@
     "lint": "eslint *.mjs *.js"
   },
   "dependencies": {
-    "@babel/parser": "^7.27.0",
+    "@babel/parser": "^7.27.1",
     "typescript": "^5.8.3",
     "yargs": "^17.7.2"
   },
