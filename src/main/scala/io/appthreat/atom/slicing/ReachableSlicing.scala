@@ -150,6 +150,17 @@ object ReachableSlicing:
             _.maxDepth(config.sliceDepth)
           ).parameter
         )
+        // DEMO
+        flowSlices += atom.tag.name("(validation|sanitization|cloud|parse|library-call)").method
+            .parameter.reachableByFlows(atom.tag.name("framework-input").parameter)
+        flowSlices += atom.tag.name(
+          "(json|glibc|decode|wasm|execution)"
+        )
+            .identifier.inCall.argument.reachableByFlows(
+              atom.method.internal.parameter
+            )
+        // DEMO
+      end if
     end if
     ReachableSlice(flowSlices.flatten.map(toSlice).toList)
   end calculateReachableSlice
