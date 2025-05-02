@@ -1,6 +1,6 @@
 package io.appthreat.atom.slicing
 
-import io.appthreat.atom.Atom.{DEFAULT_SINK_TAGS, DEFAULT_SOURCE_TAGS}
+import io.appthreat.atom.Atom.{DEFAULT_SINK_TAGS, DEFAULT_SOURCE_TAGS, FRAMEWORK_INPUT_TAG}
 import io.appthreat.dataflowengineoss.DefaultSemantics
 import io.appthreat.dataflowengineoss.language.*
 import io.appthreat.dataflowengineoss.queryengine.{EngineConfig, EngineContext}
@@ -153,16 +153,11 @@ object ReachableSlicing:
             _.maxDepth(config.sliceDepth)
           ).parameter
         )
-        // DEMO
-        flowSlices += atom.tag.name("(validation|sanitization|cloud|parse|library-call)").method
-            .parameter.reachableByFlows(atom.tag.name("framework-input").parameter)
-        flowSlices += atom.tag.name(
-          "(json|glibc|decode|wasm|execution)"
+        flowSlices += atom.tag.name(LIBRARY_CALL_TAG).method
+            .parameter.reachableByFlows(atom.tag.name(FRAMEWORK_INPUT_TAG).parameter)
+        flowSlices += atom.tag.name(LIBRARY_CALL_TAG).identifier.inCall.argument.reachableByFlows(
+          atom.method.internal.parameter
         )
-            .identifier.inCall.argument.reachableByFlows(
-              atom.method.internal.parameter
-            )
-        // DEMO
       end if
     end if
     ReachableSlice(flowSlices.flatten.map(toSlice).toList)
