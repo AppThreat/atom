@@ -1,6 +1,6 @@
 package io.appthreat.atom.slicing
 
-import io.appthreat.atom.Atom.{DEFAULT_SOURCE_TAGS, DEFAULT_SINK_TAGS}
+import io.appthreat.atom.Atom.{DEFAULT_SINK_TAGS, DEFAULT_SOURCE_TAGS}
 import io.appthreat.dataflowengineoss.DefaultSemantics
 import io.appthreat.dataflowengineoss.language.*
 import io.appthreat.dataflowengineoss.queryengine.{EngineConfig, EngineContext}
@@ -9,6 +9,7 @@ import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
+
 import java.io.File
 import java.util.regex.Pattern
 import scala.collection.mutable
@@ -97,14 +98,16 @@ object ReachableSlicing:
               .call
               .argument
               .isIdentifier
-              .reachableByFlows(sourceI, dynFrameworkIdentifier)
+              .reachableByFlows(sourceI)
       if Array(Languages.PYTHON, Languages.PYTHONSRC).contains(language) && defaultTagsMode then
-        flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
-          atom.tag.name(s"(${CLI_SOURCE_TAG}|${FRAMEWORK_TAG})").identifier
-        )
-        flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
-          atom.tag.name(CLI_SOURCE_TAG).parameter
-        )
+        if atom.tag.name(CLI_SOURCE_TAG).identifier.nonEmpty then
+          flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
+            atom.tag.name(CLI_SOURCE_TAG).identifier
+          )
+        else
+          flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
+            atom.tag.name(FRAMEWORK_TAG).parameter
+          )
       else
         flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
           atom.tag.name(CLI_SOURCE_TAG).call
