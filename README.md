@@ -307,6 +307,24 @@ chennai> importAtom("/home/almalinux/work/sandbox/apollo/app.atom")
 
 Checkout [atom-tools](https://github.com/AppThreat/atom-tools) for some project ideas involving atom slices.
 
+## devenv setup
+
+Install devenv by following the official [instructions](https://devenv.sh/getting-started/).
+
+```shell
+devenv shell
+```
+
+Language-specific profile:
+
+```shell
+# Ruby environment
+devenv --option config.profile:string ruby shell
+
+# php environment
+devenv --option config.profile:string php shell
+```
+
 ## Enterprise support
 
 Enterprise support including custom language development and integration services is available via AppThreat Ltd.
