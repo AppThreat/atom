@@ -159,3 +159,15 @@ out.json
 requirements-dist.txt
 workspace/
 .theia/
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+local.properties
+

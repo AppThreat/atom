@@ -48,5 +48,6 @@
     "*.js",
     "*.mjs",
     "plugins/"
-  ]
+  ],
+  "packageManager": "npm"
 }
