@@ -9,6 +9,6 @@ else
     echo "Build the atom project using 'sbt createDistribution' before running this script"
 fi
 
-bash packages/atom-parsetools/build.sh
+cd packages/atom-parsetools && bash build.sh && cd ../../
 
 npm ci
