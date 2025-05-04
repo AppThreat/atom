@@ -4,6 +4,9 @@
       "type": "[B"
     },
     {
+      "type": "[J"
+    },
+    {
       "type": "[Lbetter.files.File;"
     },
     {

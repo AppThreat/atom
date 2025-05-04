@@ -123,4 +123,4 @@ credentials +=
       "appthreat",
       sys.env.getOrElse("GITHUB_TOKEN", "N/A")
     )
-graalVMNativeImageOptions := Seq("-H:+UnlockExperimentalVMOptions", "-H:+UseEpsilonGC", "--initialize-at-build-time=io.appthreat.*", "--no-fallback")
+graalVMNativeImageOptions := Seq("-H:+UnlockExperimentalVMOptions", "-R:MaximumHeapSizePercent=90", "-R:MaximumYoungGenerationSizePercent=15", "-H:+UseEpsilonGC", "--initialize-at-build-time=io.appthreat.*", "--no-fallback")
