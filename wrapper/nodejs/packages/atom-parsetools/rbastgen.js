@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { dirname, join, delimiter } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { detectRuby } from "./utils.mjs";
+import { detectRuby } from "@appthreat/atom-common";
 
 let url = import.meta.url;
 if (!url.startsWith("file://")) {

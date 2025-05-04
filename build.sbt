@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.1.19"
+ThisBuild / version      := "2.2.0"
 ThisBuild / scalaVersion := "3.6.2"
 
-val chenVersion = "2.3.10"
+val chenVersion = "2.3.11"
 
 lazy val atom = Projects.atom
 
@@ -70,14 +70,14 @@ Universal / mappings := (Universal / mappings).value.filter {
 
 enablePlugins(JavaAppPackaging, ClasspathJarPlugin, GraalVMNativeImagePlugin)
 
-ThisBuild / licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
+ThisBuild / licenses := List("MIT" -> url("https://opensource.org/license/MIT"))
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 maintainer     := "Team AppThreat <cloud@appthreat.com>"
 packageSummary := "Create atom (⚛) representation"
 packageDescription := """Create atom (⚛) representation for your application, packages and libraries."""
-debianPackageDependencies := Seq("java17-runtime-headless")
+debianPackageDependencies := Seq("java21-runtime-headless")
 rpmVendor                 := "AppThreat"
 
 lazy val createDistribution = taskKey[File]("Create a complete atom distribution")

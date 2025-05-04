@@ -1,27 +1,26 @@
 {
   "name": "@appthreat/atom",
-  "version": "2.1.19",
+  "version": "2.2.0",
   "description": "Create atom (⚛) representation for your application, packages and libraries",
   "exports": "./index.js",
   "type": "module",
   "scripts": {
-    "pretty": "prettier --write *.mjs *.js --trailing-comma=none",
+    "pretty": "prettier --write *.js packages/atom-parsetools/*.js packages/atom-common/*.js packages/atom-common/*.mjs --trailing-comma=none",
     "lint": "eslint *.mjs *.js"
   },
   "dependencies": {
-    "@babel/parser": "^7.27.1",
-    "typescript": "^5.8.3",
-    "yargs": "^17.7.2"
+    "@appthreat/atom-common": "workspace:packages/atom-common",
+    "@appthreat/atom-parsetools": "workspace:packages/atom-parsetools"
   },
   "devDependencies": {
     "eslint": "8.57.0"
   },
   "bin": {
     "atom": "index.js",
-    "astgen": "astgen.js",
-    "phpastgen": "phpastgen.js",
-    "rbastgen": "rbastgen.js",
-    "scalasem": "scalasem.js"
+    "astgen": "packages/atom-parsetools/astgen.js",
+    "phpastgen": "packages/atom-parsetools/phpastgen.js",
+    "rbastgen": "packages/atom-parsetools/rbastgen.js",
+    "scalasem": "packages/atom-parsetools/scalasem.js"
   },
   "engines": {
     "node": ">=16.0.0"
@@ -39,15 +38,19 @@
     "chain"
   ],
   "author": "Team AppThreat <cloud@appthreat.com>",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/AppThreat/atom/issues"
   },
   "homepage": "https://github.com/AppThreat/atom#readme",
   "files": [
     "*.js",
-    "*.mjs",
-    "plugins/"
+    "plugins/",
+    "LICENSE"
   ],
-  "packageManager": "npm"
+  "packageManager": "npm",
+  "workspaces": [
+    "packages/atom-parsetools",
+    "packages/atom-common"
+  ]
 }

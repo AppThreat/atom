@@ -2,7 +2,7 @@
     "$config": {
         "org.opencontainers.image.title": "atom",
         "org.opencontainers.image.vendor": "appthreat",
-        "org.opencontainers.image.licenses": "Apache-2.0",
+        "org.opencontainers.image.licenses": "MIT",
         "org.opencontainers.image.description": "Create atom (⚛) representation for your application, packages and libraries"
     }
 }

@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import { totalmem, platform as _platform } from "node:os";
+import { platform as _platform } from "node:os";
 import { dirname, join, delimiter } from "node:path";
 import { readFileSync } from "node:fs";
 
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { detectJava } from "./utils.mjs";
+import { detectJava } from "@appthreat/atom-common";
 
 const isWin = _platform() === "win32";
 let url = import.meta.url;
@@ -21,13 +21,9 @@ export const ATOM_HOME = join(dirName, "plugins");
 export const APP_LIB_DIR = join(ATOM_HOME, "lib");
 export const PHP_PARSER_BIN = join(ATOM_HOME, "bin", "php-parse");
 
-// We need more memory for atom to work well
-const maxMemoryGB = Math.floor((totalmem() * 0.8) / 1024 ** 3);
-
-export const JVM_ARGS = "-XX:+UseG1GC -XX:+UseStringDeduplication";
+export const JVM_ARGS = "-XX:MinRAMPercentage=30 -XX:MaxRAMPercentage=90";
 export const JAVA_OPTS =
-  process.env?.ATOM_JVM_ARGS ||
-  `${process.env.JAVA_OPTS || ""} -Xms2G -Xmx${maxMemoryGB}G ${JVM_ARGS}`;
+  process.env?.ATOM_JVM_ARGS || `${process.env?.JAVA_OPTS || ""} ${JVM_ARGS}`;
 
 export const APP_MAIN_CLASS = "io.appthreat.atom.Atom";
 export const ATOM_VERSION = _version;

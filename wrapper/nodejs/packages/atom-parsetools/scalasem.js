@@ -3,7 +3,7 @@
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
 import { spawnSync } from "node:child_process";
-import { detectScala, detectScalac, getAllFiles } from "./utils.mjs";
+import { detectScala, detectScalac, getAllFiles } from "@appthreat/atom-common";
 import process from "node:process";
 import {
   existsSync,
