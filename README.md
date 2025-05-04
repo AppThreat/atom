@@ -251,7 +251,7 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 
 ## Atom Specification
 
-The intermediate representation used by atom is available under the same open-source license (Apache-2.0). The specification is available in [protobuf](./specification/atom.proto), [markdown](./specification/docs/spec.md), and [html](./specification/docs/spec.html) formats.
+The intermediate representation used by atom is available under the same open-source license (MIT). The specification is available in [protobuf](./specification/atom.proto), [markdown](./specification/docs/spec.md), and [html](./specification/docs/spec.html) formats.
 
 The current specification version is 1.0.0
 
@@ -282,7 +282,7 @@ with ZipFile("app.atom", "w") as zip_file:
 
 ## License
 
-Apache-2.0
+MIT
 
 ## Developing / Contributing
 

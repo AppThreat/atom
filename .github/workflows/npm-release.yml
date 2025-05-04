@@ -52,17 +52,22 @@ jobs:
         bash build.sh
         echo "appthreat:registry=https://registry.npmjs.org" > ~/.npmrc
         npm publish --dry-run --@appthreat:registry='https://registry.npmjs.org'
+        cd packages/atom-common
+        npm publish --dry-run --@appthreat:registry='https://registry.npmjs.org'
+        cd ../../packages/atom-parsetools
+        npm publish --dry-run --@appthreat:registry='https://registry.npmjs.org'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         NPMJS_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Publish
       run: |
         cd wrapper/nodejs
-        npm config set //npm.pkg.github.com/:_authToken=$GITHUB_TOKEN
         npm config set //registry.npmjs.org/:_authToken=$NPMJS_AUTH_TOKEN
-        echo "appthreat:registry=https://npm.pkg.github.com" > ~/.npmrc
-        npm publish --access=public --@appthreat:registry='https://npm.pkg.github.com'
         echo "appthreat:registry=https://registry.npmjs.org" > ~/.npmrc
+        npm publish --provenance --access=public --@appthreat:registry='https://registry.npmjs.org'
+        cd packages/atom-common
+        npm publish --provenance --access=public --@appthreat:registry='https://registry.npmjs.org'
+        cd ../../packages/atom-parsetools
         npm publish --provenance --access=public --@appthreat:registry='https://registry.npmjs.org'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -86,7 +91,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '23'
       - name: Install atom latest
         run: |
           npm install -g @appthreat/atom

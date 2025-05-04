@@ -1,0 +1,15 @@
+{
+  "name": "@appthreat/atom-common",
+  "version": "1.0.0",
+  "description": "Common library for the @appthreat/atom project.",
+  "main": "index.js",
+  "type": "module",
+  "devDependencies": {},
+  "author": "",
+  "license": "MIT",
+  "files": [
+    "*.js",
+    "*.mjs",
+    "LICENSE"
+  ]
+}

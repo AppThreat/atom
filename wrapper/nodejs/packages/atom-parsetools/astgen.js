@@ -13,7 +13,7 @@ import {
   constants,
   existsSync
 } from "fs";
-import { getAllFiles } from "./utils.mjs";
+import { getAllFiles } from "@appthreat/atom-common";
 
 const ASTGEN_VERSION = "4.0.0";
 

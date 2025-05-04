@@ -3,7 +3,7 @@
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { detectPhp } from "./utils.mjs";
+import { detectPhp } from "@appthreat/atom-common";
 
 let url = import.meta.url;
 if (!url.startsWith("file://")) {
