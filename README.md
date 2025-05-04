@@ -1,10 +1,10 @@
-# Atom (⚛)
+# atom (⚛)
 
-Atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation (a network with nodes and links) is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and vectoring.
+atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation (a network with nodes and links) is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and vectoring.
 
 Our vision is to make atom useful for many use cases such as:
 
-- **Supply-chain analysis:** Generate evidence of external library usage including the flow of data from sources to sinks. Atom is used by [OWASP cdxgen](https://github.com/CycloneDX/cdxgen) to improve the precision and comprehensiveness of the generated CycloneDX document.
+- **Supply-chain analysis:** Generate evidence of external library usage including the flow of data from sources to sinks. atom is used by [OWASP cdxgen](https://github.com/CycloneDX/cdxgen) to improve the precision and comprehensiveness of the generated CycloneDX document.
 - **Vulnerability analysis:** Describe vulnerabilities with evidence of affected symbols, call paths, and data-flows. Enable variant and [reachability analysis](https://github.com/AppThreat/atom/blob/main/specification/docs/slices.md#reachables-slice) at scale.
 - **Exploit prediction:** Predict exploits using precise representations of vulnerabilities, libraries, and applications.
 - **Threat-model and attack vectors generation:** Generate precise threat models and attack vectors for applications at scale.
@@ -15,18 +15,16 @@ and more.
 
 ![npm](https://img.shields.io/npm/dw/@appthreat/atom)
 
-![Atom logo](./specification/docs/Atom-logo.png)
-
 ## Installation
 
-Atom comprises a core (standalone chen application developed in scala) with a nodejs wrapper module. It is currently distributed as an npm package.
+atom comprises a scala core with a Node.js wrapper module. It is currently distributed as a npm package.
 
 ```shell
-npm install @appthreat/atom
-# sudo npm install -g @appthreat/atom
+npm install -g @appthreat/atom
+atom --help
 ```
 
-Install cdxgen to generate a Software Bill-of-Materials which is required for reachables slicing.
+Install cdxgen npm package to generate a Software Bill-of-Materials (SBOM) which is required for reachables slicing.
 
 ```shell
 npm install -g @cyclonedx/cdxgen --omit=optional
@@ -63,7 +61,13 @@ curl -LO https://github.com/AppThreat/atom/releases/latest/download/atom.exe
 .\atom.exe --help
 ```
 
-NOTE: Commands such as cdxgen, astgen, and phpastgen are not bundled into this native image. Therefore, the binary is quite limited in functionality.
+NOTE: Commands such as astgen, rbastgen, phpastgen, etc. are not bundled into this native image. Install the npm package `@appthreat/atom-parsetools` to get these commands.
+
+```shell
+npm install -g @appthreat/atom-parsetools
+which astgen
+which phpastgen
+```
 
 ## CLI Usage
 
@@ -133,6 +137,12 @@ cdxgen -t java --deep -o bom.json .
 atom reachables -o app.atom -s reachables.json -l java .
 ```
 
+Pass the argument `--reuse-atom` to slice based on an existing atom file.
+
+```shell
+atom reachables --reuse-atom -o app.atom -s reachables.json -l java .
+```
+
 Example with container-based invocation.
 
 ```shell
@@ -170,7 +180,7 @@ Learn more about [slices](./specification/docs/slices.md) or view some [samples]
 
 ### Extract HTTP endpoints in openapi format using atom-tools
 
-Atom can automatically invoke [atom-tools](https://github.com/AppThreat/atom-tools) `convert` command to extract http endpoints from the usages slices. Pass the argument `--extract-endpoints` to enable this feature.
+atom can automatically invoke [atom-tools](https://github.com/AppThreat/atom-tools) `convert` command to extract http endpoints from the usages slices. Pass the argument `--extract-endpoints` to enable this feature.
 
 ```shell
 pip install atom-tools
@@ -249,7 +259,7 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 | **JAVA_CMD**                   | Overrides the java command.                                                                         |
 | **RUBY_CMD**                   | Overrides the Ruby command.                                                                         |
 
-## Atom Specification
+## atom Specification
 
 The intermediate representation used by atom is available under the same open-source license (MIT). The specification is available in [protobuf](./specification/atom.proto), [markdown](./specification/docs/spec.md), and [html](./specification/docs/spec.html) formats.
 
@@ -257,7 +267,7 @@ The current specification version is 1.0.0
 
 ## Generating atom files
 
-Atom files (app.⚛ or app.atom) are zip files with serialized protobuf data. Atom cli is the preferred approach to generate these files. It is possible to author a generator tool from scratch using the [proto specification](./specification/atom.proto). We offer samples in [Python](./specification/samples/python-atomgen/README.md) and [Deno](./specification/samples/deno-atomgen/README.md) for interested users. We also offer proto bindings in additional languages which can be found [here](./specification/bindings/).
+atom files (app.⚛ or app.atom) are zip files with serialized protobuf data. atom cli is the preferred approach to generate these files. It is possible to author a generator tool from scratch using the [proto specification](./specification/atom.proto). We offer samples in [Python](./specification/samples/python-atomgen/README.md) and [Deno](./specification/samples/deno-atomgen/README.md) for interested users. We also offer proto bindings in additional languages which can be found [here](./specification/bindings/).
 
 Example code snippet for generating an atom in python.
 
@@ -300,10 +310,10 @@ bash build.sh && sudo npm install -g .
 [chennai](https://github.com/AppThreat/chen) is the recommended query interface for working with atom.
 
 ```shell
-chennai> importAtom("/home/almalinux/work/sandbox/apollo/app.atom")
+chennai> importatom("/home/almalinux/work/sandbox/apollo/app.atom")
 ```
 
-## Atom tools
+## atom tools
 
 Checkout [atom-tools](https://github.com/AppThreat/atom-tools) for some project ideas involving atom slices.
 
