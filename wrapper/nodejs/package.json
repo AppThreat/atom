@@ -52,5 +52,8 @@
   "workspaces": [
     "packages/atom-parsetools",
     "packages/atom-common"
-  ]
+  ],
+  "overrides": {
+    "glob": "^11.0.2"
+  }
 }
