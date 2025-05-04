@@ -10,6 +10,7 @@
 # sdk use java 21.0.2-graalce
 
 # sbt clean stage
-./atom.sh -J-agentlib:native-image-agent=config-merge-dir=src/main/resources/META-INF/native-image reachables -l $1 -o /tmp/app.atom -s /tmp/reachables.slices.json $2
+./atom.sh -J-XX:MinRAMPercentage=30 -J-XX:MaxRAMPercentage=90 -J-agentlib:native-image-agent=config-merge-dir=src/main/resources/META-INF/native-image reachables -l $1 -o /tmp/app.atom -s /tmp/reachables.slices.json $2
+rm /tmp/app.atom /tmp/reachables.slices.json
 
 # bash ci/native-image.sh

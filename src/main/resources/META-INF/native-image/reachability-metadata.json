@@ -1,0 +1,3093 @@
+{
+  "reflection": [
+    {
+      "type": "[B"
+    },
+    {
+      "type": "[Lbetter.files.File;"
+    },
+    {
+      "type": "[Lcom.github.javaparser.ast.CompilationUnit;"
+    },
+    {
+      "type": "[Lio.appthreat.php2atom.passes.KnownFunction;"
+    },
+    {
+      "type": "[Lio.appthreat.ruby2atom.astcreation.AstCreator;"
+    },
+    {
+      "type": "[Lio.appthreat.x2cpg.Ast;"
+    },
+    {
+      "type": "[Lio.circe.Json$JNumber;"
+    },
+    {
+      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.AstNode;"
+    },
+    {
+      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.Call;"
+    },
+    {
+      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.CfgNode;"
+    },
+    {
+      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.ClosureBinding;"
+    },
+    {
+      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.Import;"
+    },
+    {
+      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.Method;"
+    },
+    {
+      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.NamespaceBlock;"
+    },
+    {
+      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.TypeDecl;"
+    },
+    {
+      "type": "[Lio.shiftleft.semanticcpg.accesspath.AccessElement;"
+    },
+    {
+      "type": "[Ljava.lang.Integer;"
+    },
+    {
+      "type": "[Ljava.lang.Object;"
+    },
+    {
+      "type": "[Ljava.lang.String;"
+    },
+    {
+      "type": "[Ljava.nio.file.FileVisitOption;"
+    },
+    {
+      "type": "[Ljava.nio.file.LinkOption;"
+    },
+    {
+      "type": "[Ljava.nio.file.OpenOption;"
+    },
+    {
+      "type": "[Ljava.nio.file.attribute.FileAttribute;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTArrayModifier;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTAttribute;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTAttributeSpecifier;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTDeclaration;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTDeclarator;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTExpression;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTInitializerClause;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTName;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTNode;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTNodeLocation;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTParameterDeclaration;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTPointerOperator;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTStatement;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTToken;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IBinding;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.IField;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.c.ICASTCompositeTypeSpecifier;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.c.ICASTDesignator;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPASTNameSpecifier;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPASTParameterDeclaration;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPASTTemplateParameter;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPClassTemplatePartialSpecialization;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPField;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPFunction;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPMethod;"
+    },
+    {
+      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPTemplateParameter;"
+    },
+    {
+      "type": "[Lscala.Function0;"
+    },
+    {
+      "type": "[Lscala.Tuple2;"
+    },
+    {
+      "type": "[Lsun.security.pkcs.SignerInfo;"
+    },
+    {
+      "type": "[[Ljava.lang.Object;"
+    },
+    {
+      "type": "[[Lorg.eclipse.cdt.core.dom.ast.IASTNode;"
+    },
+    {
+      "type": "[[[Ljava.lang.Object;"
+    },
+    {
+      "type": "[[[[Ljava.lang.Object;"
+    },
+    {
+      "type": "android.os.Build$VERSION"
+    },
+    {
+      "type": "better.files.package$",
+      "fields": [
+        {
+          "name": "0bitmap$1"
+        }
+      ]
+    },
+    {
+      "type": "cats.Later",
+      "fields": [
+        {
+          "name": "value$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "com.fasterxml.jackson.databind.ext.Java7SupportImpl",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.github.javaparser.ast.ArrayCreationLevel",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.CompilationUnit",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.PackageDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.AnnotationDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.AnnotationMemberDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.BodyDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.CallableDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.ClassOrInterfaceDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.ConstructorDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.EnumConstantDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.EnumDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.FieldDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.InitializerDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.MethodDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.Parameter",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.RecordDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.TypeDeclaration",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.ArrayCreationExpr",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.ArrayInitializerExpr",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.FieldAccessExpr",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.LambdaExpr",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.MethodCallExpr",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.MethodReferenceExpr",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.NormalAnnotationExpr",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.ObjectCreationExpr",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.PatternExpr",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.SwitchExpr",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.TypePatternExpr",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.VariableDeclarationExpr",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.BlockStmt",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.ForStmt",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.SwitchEntry",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.SwitchStmt",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.TryStmt",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.type.ArrayType",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.type.ClassOrInterfaceType",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.type.PrimitiveType",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.type.ReferenceType",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.type.Type",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.type.TypeParameter",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.type.UnionType",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.type.UnknownType",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.type.VarType",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.type.VoidType",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.type.WildcardType",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "io.appthreat.atom.passes.RecoverForJavaScriptFile",
+      "fields": [
+        {
+          "name": "exportedIdentifiers$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.slicing.package$$anon$1",
+      "fields": [
+        {
+          "name": "constructorNames$lzy1"
+        },
+        {
+          "name": "elemDecoders$lzy1"
+        },
+        {
+          "name": "elemDefaults$lzy1"
+        },
+        {
+          "name": "elemLabels$lzy5"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy1"
+        },
+        {
+          "name": "isSum$lzy5"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.slicing.package$$anon$10",
+      "fields": [
+        {
+          "name": "constructorNames$lzy4"
+        },
+        {
+          "name": "elemDecoders$lzy4"
+        },
+        {
+          "name": "elemDefaults$lzy4"
+        },
+        {
+          "name": "elemLabels$lzy11"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy4"
+        },
+        {
+          "name": "isSum$lzy11"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.slicing.package$$anon$12",
+      "fields": [
+        {
+          "name": "elemEncoders$lzy8"
+        },
+        {
+          "name": "elemLabels$lzy12"
+        },
+        {
+          "name": "isSum$lzy12"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.slicing.package$$anon$13",
+      "fields": [
+        {
+          "name": "constructorNames$lzy5"
+        },
+        {
+          "name": "elemDecoders$lzy5"
+        },
+        {
+          "name": "elemDefaults$lzy5"
+        },
+        {
+          "name": "elemLabels$lzy13"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy5"
+        },
+        {
+          "name": "isSum$lzy13"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.slicing.package$$anon$15",
+      "fields": [
+        {
+          "name": "elemEncoders$lzy9"
+        },
+        {
+          "name": "elemLabels$lzy14"
+        },
+        {
+          "name": "isSum$lzy14"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.slicing.package$$anon$19",
+      "fields": [
+        {
+          "name": "elemEncoders$lzy3"
+        },
+        {
+          "name": "elemLabels$lzy4"
+        },
+        {
+          "name": "isSum$lzy3"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.slicing.package$$anon$3",
+      "fields": [
+        {
+          "name": "elemEncoders$lzy5"
+        },
+        {
+          "name": "elemLabels$lzy6"
+        },
+        {
+          "name": "isSum$lzy6"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.slicing.package$$anon$4",
+      "fields": [
+        {
+          "name": "constructorNames$lzy2"
+        },
+        {
+          "name": "elemDecoders$lzy2"
+        },
+        {
+          "name": "elemDefaults$lzy2"
+        },
+        {
+          "name": "elemLabels$lzy7"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy2"
+        },
+        {
+          "name": "isSum$lzy7"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.slicing.package$$anon$6",
+      "fields": [
+        {
+          "name": "elemEncoders$lzy6"
+        },
+        {
+          "name": "elemLabels$lzy8"
+        },
+        {
+          "name": "isSum$lzy8"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.slicing.package$$anon$7",
+      "fields": [
+        {
+          "name": "constructorNames$lzy3"
+        },
+        {
+          "name": "elemDecoders$lzy3"
+        },
+        {
+          "name": "elemDefaults$lzy3"
+        },
+        {
+          "name": "elemLabels$lzy9"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy3"
+        },
+        {
+          "name": "isSum$lzy9"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.slicing.package$$anon$9",
+      "fields": [
+        {
+          "name": "elemEncoders$lzy7"
+        },
+        {
+          "name": "elemLabels$lzy10"
+        },
+        {
+          "name": "isSum$lzy10"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.slicing.package$ReachableSlice$$anon$18",
+      "fields": [
+        {
+          "name": "elemEncoders$lzy4"
+        },
+        {
+          "name": "elemLabels$lzy3"
+        },
+        {
+          "name": "isSum$lzy4"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.c2cpg.astcreation.AstCreator",
+      "fields": [
+        {
+          "name": "io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.dataflowengineoss.language.Path$",
+      "fields": [
+        {
+          "name": "maxTrackedWidth$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.dataflowengineoss.passes.reachingdef.OptimizedReachingDefTransferFunction",
+      "fields": [
+        {
+          "name": "loneIdentifiers$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.javasrc2cpg.passes.AstCreator",
+      "fields": [
+        {
+          "name": "io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.astcreation.AstCreator",
+      "fields": [
+        {
+          "name": "MethodAst$lzy1"
+        },
+        {
+          "name": "io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ArrayExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ArrayPattern$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ArrowFunctionExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$AssignmentExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$AssignmentPattern$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$AwaitExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$BinaryExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$BlockStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$BooleanLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$BreakStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$CallExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$CatchClause$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ClassDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ClassMethod$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ClassProperty$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ConditionalExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ContinueStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$Decorator$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$EmptyStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ExportDefaultDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ExportNamedDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ExpressionStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$File$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ForInStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ForOfStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ForStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$FunctionDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$FunctionExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$Identifier$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$IfStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$Import$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ImportDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ImportDefaultSpecifier$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ImportNamespaceSpecifier$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ImportSpecifier$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXAttribute$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXClosingElement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXElement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXExpressionContainer$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXOpeningElement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXText$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$LogicalExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$MemberExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$NewExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$NullLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$NumericLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ObjectExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ObjectMethod$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ObjectPattern$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ObjectProperty$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$OptionalCallExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$OptionalMemberExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$Program$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$RegExpLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$RestElement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ReturnStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$SpreadElement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$StringLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$Super$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$SwitchCase$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$SwitchStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSAnyKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSArrayType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSAsExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSBooleanKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSEnumDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSEnumMember$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSExportAssignment$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSExpressionWithTypeArguments$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSExternalModuleReference$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSFunctionType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSImportEqualsDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSInterfaceDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSMethodSignature$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSNumberKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSParameterProperty$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSPropertySignature$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSStringKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSThisType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeReference$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSUnionType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSUnknownKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSVoidKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TemplateElement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TemplateLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ThisExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ThrowStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TryStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$UnaryExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$UpdateExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$VariableDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$VariableDeclarator$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$WhileStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.passes.ConstClosurePass",
+      "fields": [
+        {
+          "name": "identifiersAssignedCount$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.passes.RecoverForJavaScriptFile",
+      "fields": [
+        {
+          "name": "exportedIdentifiers$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.utils.AstGenRunner$",
+      "fields": [
+        {
+          "name": "astGenCommand$lzy1"
+        },
+        {
+          "name": "executableDir$lzy1"
+        },
+        {
+          "name": "executableName$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.php2atom.astcreation.AstCreator",
+      "fields": [
+        {
+          "name": "io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.php2atom.astcreation.PhpBuiltins$",
+      "fields": [
+        {
+          "name": "FuncNames$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.php2atom.passes.LocalCreationPass",
+      "fields": [
+        {
+          "name": "io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.pysrc2cpg.ImportResolverPass",
+      "fields": [
+        {
+          "name": "root$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.pysrc2cpg.PythonAstVisitor$",
+      "fields": [
+        {
+          "name": "allBuiltinClasses$lzy1"
+        },
+        {
+          "name": "typingClassesV3$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.ruby2atom.astcreation.AstCreator",
+      "fields": [
+        {
+          "name": "io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.ruby2atom.parser.RubyJsonHelpers$MetaData$",
+      "fields": [
+        {
+          "name": "derived$ReadWriter$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.x2cpg.passes.frontend.XTypeRecovery$",
+      "fields": [
+        {
+          "name": "DummyTokens$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.x2cpg.passes.frontend.XTypeRecoveryState",
+      "fields": [
+        {
+          "name": "isFinalIteration$lzy1"
+        },
+        {
+          "name": "isFirstIteration$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.circe.Decoder$",
+      "fields": [
+        {
+          "name": "0bitmap$1"
+        },
+        {
+          "name": "currencyDecoder$lzy1"
+        },
+        {
+          "name": "decodeDuration$lzy1"
+        },
+        {
+          "name": "decodeInstant$lzy1"
+        },
+        {
+          "name": "decodeJavaBigDecimal$lzy1"
+        },
+        {
+          "name": "decodeJavaBigInteger$lzy1"
+        },
+        {
+          "name": "decodeJavaBoolean$lzy1"
+        },
+        {
+          "name": "decodeJavaByte$lzy1"
+        },
+        {
+          "name": "decodeJavaCharacter$lzy1"
+        },
+        {
+          "name": "decodeJavaDouble$lzy1"
+        },
+        {
+          "name": "decodeJavaFloat$lzy1"
+        },
+        {
+          "name": "decodeJavaInteger$lzy1"
+        },
+        {
+          "name": "decodeJavaLong$lzy1"
+        },
+        {
+          "name": "decodeJavaShort$lzy1"
+        },
+        {
+          "name": "decodeLocalDate$lzy1"
+        },
+        {
+          "name": "decodeLocalDateTime$lzy1"
+        },
+        {
+          "name": "decodeLocalTime$lzy1"
+        },
+        {
+          "name": "decodeMonthDay$lzy1"
+        },
+        {
+          "name": "decodeOffsetDateTime$lzy1"
+        },
+        {
+          "name": "decodeOffsetTime$lzy1"
+        },
+        {
+          "name": "decodePeriod$lzy1"
+        },
+        {
+          "name": "decodeURI$lzy1"
+        },
+        {
+          "name": "decodeUUID$lzy1"
+        },
+        {
+          "name": "decodeYear$lzy1"
+        },
+        {
+          "name": "decodeYearMonth$lzy1"
+        },
+        {
+          "name": "decodeZoneId$lzy1"
+        },
+        {
+          "name": "decodeZoneOffset$lzy1"
+        },
+        {
+          "name": "decodeZonedDateTime$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.circe.Encoder$",
+      "fields": [
+        {
+          "name": "0bitmap$1"
+        },
+        {
+          "name": "currencyEncoder$lzy1"
+        },
+        {
+          "name": "encodeDuration$lzy1"
+        },
+        {
+          "name": "encodeInstant$lzy1"
+        },
+        {
+          "name": "encodeJavaBigDecimal$lzy1"
+        },
+        {
+          "name": "encodeJavaBigInteger$lzy1"
+        },
+        {
+          "name": "encodeJavaBoolean$lzy1"
+        },
+        {
+          "name": "encodeJavaByte$lzy1"
+        },
+        {
+          "name": "encodeJavaCharacter$lzy1"
+        },
+        {
+          "name": "encodeJavaDouble$lzy1"
+        },
+        {
+          "name": "encodeJavaFloat$lzy1"
+        },
+        {
+          "name": "encodeJavaInteger$lzy1"
+        },
+        {
+          "name": "encodeJavaLong$lzy1"
+        },
+        {
+          "name": "encodeJavaShort$lzy1"
+        },
+        {
+          "name": "encodeLocalDate$lzy1"
+        },
+        {
+          "name": "encodeLocalDateTime$lzy1"
+        },
+        {
+          "name": "encodeLocalTime$lzy1"
+        },
+        {
+          "name": "encodeMonthDay$lzy1"
+        },
+        {
+          "name": "encodeOffsetDateTime$lzy1"
+        },
+        {
+          "name": "encodeOffsetTime$lzy1"
+        },
+        {
+          "name": "encodePeriod$lzy1"
+        },
+        {
+          "name": "encodeURI$lzy1"
+        },
+        {
+          "name": "encodeUUID$lzy1"
+        },
+        {
+          "name": "encodeYear$lzy1"
+        },
+        {
+          "name": "encodeYearMonth$lzy1"
+        },
+        {
+          "name": "encodeZoneId$lzy1"
+        },
+        {
+          "name": "encodeZoneOffset$lzy1"
+        },
+        {
+          "name": "encodeZonedDateTime$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.circe.JsonDecimal",
+      "fields": [
+        {
+          "name": "0bitmap$1"
+        },
+        {
+          "name": "toBiggerDecimal$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.circe.derivation.ConfiguredDecoder$$anon$3",
+      "fields": [
+        {
+          "name": "constructorNames$lzy3"
+        },
+        {
+          "name": "elemDecoders$lzy3"
+        },
+        {
+          "name": "elemDefaults$lzy3"
+        },
+        {
+          "name": "elemLabels$lzy3"
+        },
+        {
+          "name": "fp$lzy1"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy3"
+        }
+      ]
+    },
+    {
+      "type": "io.circe.derivation.ConfiguredEncoder$$anon$3",
+      "fields": [
+        {
+          "name": "elemEncoders$lzy3"
+        },
+        {
+          "name": "elemLabels$lzy3"
+        }
+      ]
+    },
+    {
+      "type": "io.circe.derivation.Default$$anon$1",
+      "fields": [
+        {
+          "name": "defaults$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.shiftleft.codepropertygraph.generated.edges.Factories$",
+      "fields": [
+        {
+          "name": "all$lzy1"
+        },
+        {
+          "name": "allAsJava$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.shiftleft.codepropertygraph.generated.nodes.Factories$",
+      "fields": [
+        {
+          "name": "all$lzy1"
+        },
+        {
+          "name": "allAsJava$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "java.io.BufferedReader"
+    },
+    {
+      "type": "java.io.ByteArrayInputStream"
+    },
+    {
+      "type": "java.io.ByteArrayOutputStream"
+    },
+    {
+      "type": "java.io.Closeable",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.io.DataInput"
+    },
+    {
+      "type": "java.io.File",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.io.FileInputStream"
+    },
+    {
+      "type": "java.io.FileNotFoundException"
+    },
+    {
+      "type": "java.io.FileReader"
+    },
+    {
+      "type": "java.io.FileWriter"
+    },
+    {
+      "type": "java.io.FilterInputStream"
+    },
+    {
+      "type": "java.io.FilterOutputStream"
+    },
+    {
+      "type": "java.io.Flushable"
+    },
+    {
+      "type": "java.io.IOException"
+    },
+    {
+      "type": "java.io.InputStream"
+    },
+    {
+      "type": "java.io.InputStreamReader"
+    },
+    {
+      "type": "java.io.ObjectOutputStream"
+    },
+    {
+      "type": "java.io.OutputStream"
+    },
+    {
+      "type": "java.io.OutputStreamWriter"
+    },
+    {
+      "type": "java.io.PrintStream"
+    },
+    {
+      "type": "java.io.Reader"
+    },
+    {
+      "type": "java.io.Serializable",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.io.StringReader"
+    },
+    {
+      "type": "java.io.StringWriter"
+    },
+    {
+      "type": "java.io.UnsupportedEncodingException"
+    },
+    {
+      "type": "java.io.Writer"
+    },
+    {
+      "type": "java.lang"
+    },
+    {
+      "type": "java.lang.AbstractStringBuilder"
+    },
+    {
+      "type": "java.lang.Appendable"
+    },
+    {
+      "type": "java.lang.ArrayIndexOutOfBoundsException",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.AuthCredentials"
+    },
+    {
+      "type": "java.lang.Author"
+    },
+    {
+      "type": "java.lang.AutoCloseable",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.Boolean",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.CharSequence"
+    },
+    {
+      "type": "java.lang.Class",
+      "methods": [
+        {
+          "name": "isRecord",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.ClassCastException"
+    },
+    {
+      "type": "java.lang.ClassLoader"
+    },
+    {
+      "type": "java.lang.ClassNotFoundException"
+    },
+    {
+      "type": "java.lang.ClassValue"
+    },
+    {
+      "type": "java.lang.Classification"
+    },
+    {
+      "type": "java.lang.Client"
+    },
+    {
+      "type": "java.lang.Cloneable"
+    },
+    {
+      "type": "java.lang.Comparable",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.Diff"
+    },
+    {
+      "type": "java.lang.Double"
+    },
+    {
+      "type": "java.lang.Enum",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.Exception",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.ExternalReference"
+    },
+    {
+      "type": "java.lang.ExternalText"
+    },
+    {
+      "type": "java.lang.IllegalAccessException"
+    },
+    {
+      "type": "java.lang.IllegalArgumentException"
+    },
+    {
+      "type": "java.lang.IllegalStateException"
+    },
+    {
+      "type": "java.lang.IndexType"
+    },
+    {
+      "type": "java.lang.InstantiationException"
+    },
+    {
+      "type": "java.lang.Integer",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.InterruptedException"
+    },
+    {
+      "type": "java.lang.Iterable",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.Long"
+    },
+    {
+      "type": "java.lang.Math"
+    },
+    {
+      "type": "java.lang.Module"
+    },
+    {
+      "type": "java.lang.NoSuchMethodException"
+    },
+    {
+      "type": "java.lang.NullPointerException"
+    },
+    {
+      "type": "java.lang.Number"
+    },
+    {
+      "type": "java.lang.NumberFormatException"
+    },
+    {
+      "type": "java.lang.Object",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.Runnable",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.Runtime"
+    },
+    {
+      "type": "java.lang.RuntimeException"
+    },
+    {
+      "type": "java.lang.String"
+    },
+    {
+      "type": "java.lang.StringBuilder"
+    },
+    {
+      "type": "java.lang.System",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.T"
+    },
+    {
+      "type": "java.lang.Thread"
+    },
+    {
+      "type": "java.lang.Thread.UncaughtExceptionHandler"
+    },
+    {
+      "type": "java.lang.Throwable",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.annotation.Annotation",
+      "methods": [
+        {
+          "name": "annotationType",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.constant.Constable",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.constant.ConstantDesc"
+    },
+    {
+      "type": "java.lang.invoke.TypeDescriptor"
+    },
+    {
+      "type": "java.lang.invoke.TypeDescriptor$OfField"
+    },
+    {
+      "type": "java.lang.invoke.VarHandle",
+      "methods": [
+        {
+          "name": "releaseFence",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.reflect.AccessibleObject"
+    },
+    {
+      "type": "java.lang.reflect.AnnotatedElement"
+    },
+    {
+      "type": "java.lang.reflect.Constructor"
+    },
+    {
+      "type": "java.lang.reflect.Executable"
+    },
+    {
+      "type": "java.lang.reflect.GenericDeclaration"
+    },
+    {
+      "type": "java.lang.reflect.InvocationTargetException"
+    },
+    {
+      "type": "java.lang.reflect.Member"
+    },
+    {
+      "type": "java.lang.reflect.Method"
+    },
+    {
+      "type": "java.lang.reflect.Type"
+    },
+    {
+      "type": "java.net.InetAddress"
+    },
+    {
+      "type": "java.net.MalformedURLException"
+    },
+    {
+      "type": "java.net.NoRouteToHostException"
+    },
+    {
+      "type": "java.net.SocketTimeoutException"
+    },
+    {
+      "type": "java.net.URI"
+    },
+    {
+      "type": "java.net.URISyntaxException"
+    },
+    {
+      "type": "java.net.URL"
+    },
+    {
+      "type": "java.net.URLConnection"
+    },
+    {
+      "type": "java.net.URLDecoder"
+    },
+    {
+      "type": "java.net.URLEncoder"
+    },
+    {
+      "type": "java.nio.CharBuffer"
+    },
+    {
+      "type": "java.nio.charset.Charset"
+    },
+    {
+      "type": "java.nio.charset.StandardCharsets",
+      "allDeclaredFields": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "java.nio.charset.StandardCharsets.UTF_8"
+    },
+    {
+      "type": "java.nio.file.Files"
+    },
+    {
+      "type": "java.nio.file.Path"
+    },
+    {
+      "type": "java.nio.file.Paths"
+    },
+    {
+      "type": "java.nio.file.StandardCopyOption",
+      "allPublicFields": true
+    },
+    {
+      "type": "java.nio.file.Watchable"
+    },
+    {
+      "type": "java.security.CodeSource"
+    },
+    {
+      "type": "java.security.KeyManagementException"
+    },
+    {
+      "type": "java.security.KeyStore"
+    },
+    {
+      "type": "java.security.KeyStoreException"
+    },
+    {
+      "type": "java.security.MessageDigestSpi"
+    },
+    {
+      "type": "java.security.NoSuchAlgorithmException"
+    },
+    {
+      "type": "java.security.Principal"
+    },
+    {
+      "type": "java.security.ProtectionDomain"
+    },
+    {
+      "type": "java.security.SecureRandom"
+    },
+    {
+      "type": "java.security.SecureRandomParameters"
+    },
+    {
+      "type": "java.security.cert.CertificateException"
+    },
+    {
+      "type": "java.security.interfaces.RSAPrivateKey"
+    },
+    {
+      "type": "java.security.interfaces.RSAPublicKey"
+    },
+    {
+      "type": "java.sql.Connection"
+    },
+    {
+      "type": "java.sql.Date"
+    },
+    {
+      "type": "java.sql.PreparedStatement"
+    },
+    {
+      "type": "java.sql.ResultSet"
+    },
+    {
+      "type": "java.sql.SQLException"
+    },
+    {
+      "type": "java.sql.Statement"
+    },
+    {
+      "type": "java.sql.Wrapper"
+    },
+    {
+      "type": "java.text.DateFormat"
+    },
+    {
+      "type": "java.text.Format"
+    },
+    {
+      "type": "java.text.ParseException"
+    },
+    {
+      "type": "java.text.SimpleDateFormat"
+    },
+    {
+      "type": "java.time.Duration"
+    },
+    {
+      "type": "java.time.Instant"
+    },
+    {
+      "type": "java.time.LocalDate"
+    },
+    {
+      "type": "java.time.LocalDateTime"
+    },
+    {
+      "type": "java.time.OffsetDateTime"
+    },
+    {
+      "type": "java.time.Period"
+    },
+    {
+      "type": "java.time.ZoneId"
+    },
+    {
+      "type": "java.time.ZoneOffset",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.time.ZonedDateTime"
+    },
+    {
+      "type": "java.time.chrono.ChronoLocalDate"
+    },
+    {
+      "type": "java.time.chrono.ChronoLocalDateTime"
+    },
+    {
+      "type": "java.time.chrono.ChronoPeriod"
+    },
+    {
+      "type": "java.time.chrono.ChronoZonedDateTime"
+    },
+    {
+      "type": "java.time.format.DateTimeFormatter",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.time.format.DateTimeParseException"
+    },
+    {
+      "type": "java.time.temporal.Temporal"
+    },
+    {
+      "type": "java.time.temporal.TemporalAccessor"
+    },
+    {
+      "type": "java.time.temporal.TemporalAdjuster"
+    },
+    {
+      "type": "java.time.temporal.TemporalAmount"
+    },
+    {
+      "type": "java.time.zone.ZoneRules"
+    },
+    {
+      "type": "java.util.AbstractCollection"
+    },
+    {
+      "type": "java.util.AbstractList"
+    },
+    {
+      "type": "java.util.AbstractMap"
+    },
+    {
+      "type": "java.util.AbstractSet"
+    },
+    {
+      "type": "java.util.ArrayDeque"
+    },
+    {
+      "type": "java.util.ArrayList"
+    },
+    {
+      "type": "java.util.Arrays"
+    },
+    {
+      "type": "java.util.Base64"
+    },
+    {
+      "type": "java.util.Base64$Decoder"
+    },
+    {
+      "type": "java.util.Base64$Encoder"
+    },
+    {
+      "type": "java.util.Calendar",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.util.Collection"
+    },
+    {
+      "type": "java.util.Collections"
+    },
+    {
+      "type": "java.util.Comparator"
+    },
+    {
+      "type": "java.util.Date"
+    },
+    {
+      "type": "java.util.Deque"
+    },
+    {
+      "type": "java.util.Dictionary"
+    },
+    {
+      "type": "java.util.Enumeration"
+    },
+    {
+      "type": "java.util.EventListener",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.util.HashMap"
+    },
+    {
+      "type": "java.util.HashSet"
+    },
+    {
+      "type": "java.util.Hashtable"
+    },
+    {
+      "type": "java.util.Iterator"
+    },
+    {
+      "type": "java.util.LinkedHashMap"
+    },
+    {
+      "type": "java.util.LinkedHashSet"
+    },
+    {
+      "type": "java.util.LinkedList"
+    },
+    {
+      "type": "java.util.List",
+      "methods": [
+        {
+          "name": "copyOf",
+          "parameterTypes": [
+            "java.util.Collection"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.util.Locale",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.util.Map"
+    },
+    {
+      "type": "java.util.Map$Entry"
+    },
+    {
+      "type": "java.util.Map.Entry"
+    },
+    {
+      "type": "java.util.NoSuchElementException"
+    },
+    {
+      "type": "java.util.Objects"
+    },
+    {
+      "type": "java.util.Optional",
+      "methods": [
+        {
+          "name": "isEmpty",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.util.Properties"
+    },
+    {
+      "type": "java.util.Queue"
+    },
+    {
+      "type": "java.util.Random"
+    },
+    {
+      "type": "java.util.RandomAccess"
+    },
+    {
+      "type": "java.util.Scanner"
+    },
+    {
+      "type": "java.util.SequencedCollection"
+    },
+    {
+      "type": "java.util.Set"
+    },
+    {
+      "type": "java.util.TimeZone"
+    },
+    {
+      "type": "java.util.Timer"
+    },
+    {
+      "type": "java.util.TimerTask"
+    },
+    {
+      "type": "java.util.TreeMap"
+    },
+    {
+      "type": "java.util.TreeSet"
+    },
+    {
+      "type": "java.util.UUID"
+    },
+    {
+      "type": "java.util.concurrent.AbstractExecutorService"
+    },
+    {
+      "type": "java.util.concurrent.ArrayBlockingQueue"
+    },
+    {
+      "type": "java.util.concurrent.BlockingQueue"
+    },
+    {
+      "type": "java.util.concurrent.Callable"
+    },
+    {
+      "type": "java.util.concurrent.CompletableFuture"
+    },
+    {
+      "type": "java.util.concurrent.CompletionStage"
+    },
+    {
+      "type": "java.util.concurrent.ConcurrentHashMap"
+    },
+    {
+      "type": "java.util.concurrent.CountDownLatch"
+    },
+    {
+      "type": "java.util.concurrent.ExecutionException"
+    },
+    {
+      "type": "java.util.concurrent.Executor"
+    },
+    {
+      "type": "java.util.concurrent.ExecutorService"
+    },
+    {
+      "type": "java.util.concurrent.Executors"
+    },
+    {
+      "type": "java.util.concurrent.ForkJoinTask",
+      "fields": [
+        {
+          "name": "aux"
+        },
+        {
+          "name": "status"
+        }
+      ]
+    },
+    {
+      "type": "java.util.concurrent.Future"
+    },
+    {
+      "type": "java.util.concurrent.LinkedBlockingQueue"
+    },
+    {
+      "type": "java.util.concurrent.ThreadFactory"
+    },
+    {
+      "type": "java.util.concurrent.ThreadPoolExecutor"
+    },
+    {
+      "type": "java.util.concurrent.TimeUnit",
+      "allPublicFields": true
+    },
+    {
+      "type": "java.util.concurrent.atomic.AtomicBoolean",
+      "fields": [
+        {
+          "name": "value"
+        }
+      ]
+    },
+    {
+      "type": "java.util.concurrent.atomic.AtomicInteger"
+    },
+    {
+      "type": "java.util.concurrent.atomic.AtomicReference",
+      "fields": [
+        {
+          "name": "value"
+        }
+      ]
+    },
+    {
+      "type": "java.util.concurrent.locks.Lock"
+    },
+    {
+      "type": "java.util.concurrent.locks.ReadWriteLock"
+    },
+    {
+      "type": "java.util.function.BiConsumer"
+    },
+    {
+      "type": "java.util.function.BiFunction"
+    },
+    {
+      "type": "java.util.function.BinaryOperator"
+    },
+    {
+      "type": "java.util.function.Consumer"
+    },
+    {
+      "type": "java.util.function.Function",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.util.function.IntUnaryOperator"
+    },
+    {
+      "type": "java.util.function.Predicate"
+    },
+    {
+      "type": "java.util.function.Supplier"
+    },
+    {
+      "type": "java.util.function.ToIntFunction"
+    },
+    {
+      "type": "java.util.function.ToLongFunction"
+    },
+    {
+      "type": "java.util.function.UnaryOperator"
+    },
+    {
+      "type": "java.util.random.RandomGenerator"
+    },
+    {
+      "type": "java.util.regex.MatchResult"
+    },
+    {
+      "type": "java.util.regex.Matcher"
+    },
+    {
+      "type": "java.util.regex.Pattern",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "java.util.stream.BaseStream"
+    },
+    {
+      "type": "java.util.stream.Collectors"
+    },
+    {
+      "type": "java.util.stream.IntStream"
+    },
+    {
+      "type": "java.util.stream.Stream"
+    },
+    {
+      "type": "java.util.zip.DeflaterInputStream"
+    },
+    {
+      "type": "java.util.zip.GZIPInputStream"
+    },
+    {
+      "type": "java.util.zip.InflaterInputStream"
+    },
+    {
+      "type": "java.util.zip.ZipEntry"
+    },
+    {
+      "type": "java.util.zip.ZipInputStream"
+    },
+    {
+      "type": "javax.crypto.SecretKey"
+    },
+    {
+      "type": "javax.naming.AuthenticationException",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "javax.naming.Context"
+    },
+    {
+      "type": "javax.naming.NamingEnumeration"
+    },
+    {
+      "type": "javax.naming.NamingException",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "javax.naming.NamingSecurityException",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "javax.naming.directory.DirContext"
+    },
+    {
+      "type": "javax.net.ssl.HostnameVerifier",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "javax.net.ssl.SSLContext"
+    },
+    {
+      "type": "javax.net.ssl.SSLSocketFactory"
+    },
+    {
+      "type": "javax.security.auth.x500.X500Principal",
+      "fields": [
+        {
+          "name": "thisX500Name"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "sun.security.x509.X500Name"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "javax.xml"
+    },
+    {
+      "type": "javax.xml.bind"
+    },
+    {
+      "type": "jdk.internal.misc.Unsafe"
+    },
+    {
+      "type": "org.eclipse.core.internal.runtime.Messages",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "org.eclipse.core.internal.utils.Messages",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "org.h2.mvstore.MVStore$TxCounter",
+      "fields": [
+        {
+          "name": "counter"
+        }
+      ]
+    },
+    {
+      "type": "org.h2.mvstore.Page",
+      "fields": [
+        {
+          "name": "pos"
+        }
+      ]
+    },
+    {
+      "type": "org.h2.store.fs.FilePathAsync"
+    },
+    {
+      "type": "org.h2.store.fs.FilePathDisk",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.h2.store.fs.FilePathMem"
+    },
+    {
+      "type": "org.h2.store.fs.FilePathMemLZF"
+    },
+    {
+      "type": "org.h2.store.fs.FilePathNio",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.h2.store.fs.FilePathNioMapped"
+    },
+    {
+      "type": "org.h2.store.fs.FilePathNioMem"
+    },
+    {
+      "type": "org.h2.store.fs.FilePathNioMemLZF"
+    },
+    {
+      "type": "org.h2.store.fs.FilePathRetryOnInterrupt"
+    },
+    {
+      "type": "org.h2.store.fs.FilePathSplit"
+    },
+    {
+      "type": "org.h2.store.fs.FilePathZip"
+    },
+    {
+      "type": "org.slf4j.nop.NOPServiceProvider"
+    },
+    {
+      "type": "scala.collection.concurrent.CNodeBase",
+      "fields": [
+        {
+          "name": "csize"
+        }
+      ]
+    },
+    {
+      "type": "scala.collection.concurrent.INodeBase",
+      "fields": [
+        {
+          "name": "mainnode"
+        }
+      ]
+    },
+    {
+      "type": "scala.collection.concurrent.MainNode",
+      "fields": [
+        {
+          "name": "prev"
+        }
+      ]
+    },
+    {
+      "type": "scala.collection.concurrent.TrieMap",
+      "fields": [
+        {
+          "name": "root"
+        }
+      ]
+    },
+    {
+      "type": "scala.collection.parallel.ForkJoinTasks$",
+      "fields": [
+        {
+          "name": "0bitmap$1"
+        },
+        {
+          "name": "defaultForkJoinPool$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.collection.parallel.immutable.ParVector",
+      "fields": [
+        {
+          "name": "0bitmap$1"
+        },
+        {
+          "name": "ScanLeaf$lzy1"
+        },
+        {
+          "name": "ScanNode$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scopt.OptionParser",
+      "fields": [
+        {
+          "name": "0bitmap$1"
+        }
+      ]
+    },
+    {
+      "type": "sun.misc.Unsafe",
+      "fields": [
+        {
+          "name": "theUnsafe"
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.NativePRNG",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.security.SecureRandomParameters"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA2$SHA256",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA5$SHA384",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.X509Factory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSAKeyFactory$Legacy",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSASignature$SHA256withRSA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSASignature$SHA384withRSA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.util.ObjectIdentifier"
+    },
+    {
+      "type": "sun.security.x509.AuthorityInfoAccessExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.AuthorityKeyIdentifierExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.BasicConstraintsExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.CRLDistributionPointsExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.CertificateExtensions"
+    },
+    {
+      "type": "sun.security.x509.CertificatePoliciesExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.ExtendedKeyUsageExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.KeyUsageExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.SubjectAlternativeNameExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.SubjectKeyIdentifierExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "upickle.default$",
+      "fields": [
+        {
+          "name": "ReadWriter$lzy1"
+        },
+        {
+          "name": "Reader$lzy1"
+        },
+        {
+          "name": "TaggedReadWriter$lzy1"
+        },
+        {
+          "name": "TaggedReader$lzy1"
+        },
+        {
+          "name": "TaggedWriter$lzy1"
+        },
+        {
+          "name": "Writer$lzy1"
+        },
+        {
+          "name": "transform$lzy1"
+        },
+        {
+          "name": "upickle$implicits$Readers$$JavaReader$lzy1"
+        },
+        {
+          "name": "upickle$implicits$Writers$$JavaWriter$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "upickle.implicits.ReadersVersionSpecific$CaseClassReader3V2",
+      "fields": [
+        {
+          "name": "$1$$lzy1"
+        },
+        {
+          "name": "hasFlattenOnMap$lzy1"
+        }
+      ]
+    }
+  ],
+  "jni": [
+    {
+      "type": "io.appthreat.atom.Atom",
+      "methods": [
+        {
+          "name": "main",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Boolean",
+      "methods": [
+        {
+          "name": "getBoolean",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.String",
+      "methods": [
+        {
+          "name": "lastIndexOf",
+          "parameterTypes": [
+            "int"
+          ]
+        },
+        {
+          "name": "substring",
+          "parameterTypes": [
+            "int"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.System",
+      "methods": [
+        {
+          "name": "getProperty",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setProperty",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.lang.String"
+          ]
+        }
+      ]
+    }
+  ]
+}
