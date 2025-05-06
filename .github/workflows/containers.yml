@@ -53,7 +53,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '22'
+          java-version: '23'
       - uses: sbt/setup-sbt@v1
       - uses: coursier/setup-action@v1
         with:
@@ -122,6 +122,8 @@ jobs:
           - id: default
           - id: sle
             image-suffix: -sle
+          - id: ruby
+            image-suffix: -ruby
     runs-on: ubuntu-24.04
     needs: [deploy]
     outputs:
