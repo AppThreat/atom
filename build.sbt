@@ -125,7 +125,6 @@ credentials +=
     )
 graalVMNativeImageOptions := Seq(
   "-H:+UnlockExperimentalVMOptions",
-  "-H:-UseCompressedReferences", // Change to "-H:+UseCompressedReferences" to keep the Max Heap to less than 32GB
   "-R:MaximumHeapSizePercent=90", // Reduce for more predictable and deterministic slicing
   "-H:+UseEpsilonGC",
   "--initialize-at-build-time=io.appthreat.*",
