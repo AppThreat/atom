@@ -34,8 +34,8 @@ object ReachableSlicing:
     val language = atom.metaData.language.head
     val defaultTagsMode =
         config.sourceTag == DEFAULT_SOURCE_TAGS && config.sinkTag == DEFAULT_SINK_TAGS
-    val sourceTagRegex = s"""(${config.sourceTag.mkString("|")})"""
-    val sinkTagRegex   = s"""(${config.sinkTag.mkString("|")})"""
+    val sourceTagRegex = raw"""(${config.sourceTag.mkString("|")})"""
+    val sinkTagRegex   = raw"""(${config.sinkTag.mkString("|")})"""
     def sourceP        = atom.tag.name(sourceTagRegex).parameter
     def sourceI        = atom.tag.name(sourceTagRegex).identifier
     def sink           = atom.ret.where(_.tag.name(sinkTagRegex))

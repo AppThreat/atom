@@ -497,8 +497,9 @@ object Atom:
           .withMethodAnnotationFilter(x.methodAnnotationFilter)
 
   private def loadFromOdb(filename: String): Try[Cpg] =
-    val odbConfig = overflowdb.Config.withDefaults().withStorageLocation(filename)
-    val config    = CpgLoaderConfig().withOverflowConfig(odbConfig).doNotCreateIndexesOnLoad
+    val odbConfig = overflowdb.Config.withoutOverflow().withStorageLocation(filename)
+        .withHeapPercentageThreshold(90)
+    val config = CpgLoaderConfig().withOverflowConfig(odbConfig).doNotCreateIndexesOnLoad
     try
       Success(io.shiftleft.codepropertygraph.cpgloading.CpgLoader.loadFromOverflowDb(config))
     catch

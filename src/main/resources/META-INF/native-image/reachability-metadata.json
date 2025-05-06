@@ -73,6 +73,13 @@
       "type": "[Ljava.nio.file.attribute.FileAttribute;"
     },
     {
+      "type": {
+        "proxy": [
+          "org.osgi.service.cm.SynchronousConfigurationListener"
+        ]
+      }
+    },
+    {
       "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTArrayModifier;"
     },
     {

@@ -88,7 +88,8 @@ jobs:
           sudo apt update -y
           sudo apt install -y zlib1g php-zip
         if: runner.os == 'Linux'
-      - run: |
+      - name: atom node tests
+        run: |
           sbt stage createDistribution
           python -m pip install atom-tools
           cd wrapper/nodejs
@@ -106,8 +107,16 @@ jobs:
           atom -o ${GITHUB_WORKSPACE}/repotests/railsgoat/app.atom -l ruby ${GITHUB_WORKSPACE}/repotests/railsgoat
           atom -o ${GITHUB_WORKSPACE}/repotests/bionomia/app.atom -l ruby ${GITHUB_WORKSPACE}/repotests/bionomia
           atom -o ${GITHUB_WORKSPACE}/repotests/play-samples/play-scala-rest-api-example/app.atom -l scala ${GITHUB_WORKSPACE}/repotests/play-samples/play-scala-rest-api-example
+          sudo npm uninstall -g @appthreat/atom
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: atom parse tools checks
+        run: |
+          cd wrapper/nodejs/packages/atom-parsetools
+          sudo npm install -g .
+          astgen --help
+          rbastgen --help
+          which scalasem
   nodejs-testing-windows:
     runs-on: windows-latest
     strategy:
