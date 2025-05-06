@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
 ThisBuild / version      := "2.2.0"
-ThisBuild / scalaVersion := "3.6.2"
+ThisBuild / scalaVersion := "3.6.4"
 
-val chenVersion = "2.3.11"
+val chenVersion = "2.4.0"
 
 lazy val atom = Projects.atom
 
@@ -123,4 +123,14 @@ credentials +=
       "appthreat",
       sys.env.getOrElse("GITHUB_TOKEN", "N/A")
     )
-graalVMNativeImageOptions := Seq("-H:+UnlockExperimentalVMOptions", "-R:MaximumHeapSizePercent=90", "-R:MaximumYoungGenerationSizePercent=15", "-H:+UseEpsilonGC", "--initialize-at-build-time=io.appthreat.*", "--no-fallback")
+graalVMNativeImageOptions := Seq(
+  "-H:+UnlockExperimentalVMOptions",
+  "-H:-UseCompressedReferences", // Change to "-H:+UseCompressedReferences" to keep the Max Heap to less than 32GB
+  "-R:MaximumHeapSizePercent=90", // Reduce for more predictable and deterministic slicing
+  "-H:+UseEpsilonGC",
+  "--initialize-at-build-time=io.appthreat.*",
+  "--no-fallback"
+)
+
+// Requires Oracle Enterprise License to use G1 and pgo
+// graalVMNativeImageOptions := Seq("-H:+UnlockExperimentalVMOptions", "-H:-UseCompressedReferences", "-march=native", "--enable-preview", "--gc=G1", "--initialize-at-build-time=io.appthreat.*", "--no-fallback")

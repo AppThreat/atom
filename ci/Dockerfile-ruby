@@ -1,0 +1,69 @@
+FROM ghcr.io/appthreat/base:main AS builder
+
+LABEL maintainer="appthreat" \
+      org.opencontainers.image.authors="Team AppThreat <cloud@appthreat.com>" \
+      org.opencontainers.image.source="https://github.com/appthreat/atom" \
+      org.opencontainers.image.url="https://github.com/appthreat/atom" \
+      org.opencontainers.image.version="2.2.x" \
+      org.opencontainers.image.vendor="appthreat" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.title="atom" \
+      org.opencontainers.image.description="Container image for AppThreat atom" \
+      org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages --extract-endpoints -o /app/app.atom -l ruby /app"
+
+ARG RUBY_VERSION=3.4.3
+
+ENV RUBY_VERSION=$RUBY_VERSION \
+    PATH=/opt/bin:/opt/vendor/bin:${PATH}:/usr/local/bin/:/root/.local/bin:/root/.rbenv/bin:/root/.rbenv/versions/3.4.3/bin:
+
+RUN microdnf install -y gcc git-core make  \
+        wget bash glibc-common glibc-all-langpacks \
+        openssl-devel libffi-devel readline-devel libyaml zlib-devel ncurses ncurses-devel \
+        pcre2 findutils which tar gzip zip unzip sudo rust \
+    && microdnf install -y epel-release \
+    && microdnf install --enablerepo=crb -y libyaml-devel \
+    && git clone https://github.com/rbenv/rbenv.git --depth=1 ~/.rbenv \
+    && echo 'export PATH="/root/.rbenv/bin:$PATH"' >> ~/.bashrc \
+    && echo 'eval "$(/root/.rbenv/bin/rbenv init - bash)"' >> ~/.bashrc \
+    && source /root/.bashrc \
+    && mkdir -p "$(rbenv root)/plugins" \
+    && git clone https://github.com/rbenv/ruby-build.git --depth=1 "$(rbenv root)/plugins/ruby-build" \
+    && rbenv install ${RUBY_VERSION} -- --disable-install-doc \
+    && rbenv global ${RUBY_VERSION} \
+    && ruby --version \
+    && rm -rf /root/.rbenv/cache $RUBY_BUILD_BUILD_PATH
+
+FROM ghcr.io/appthreat/base:main
+
+COPY --from=builder /root/.rbenv /root/.rbenv
+
+ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -XX:MinRAMPercentage=30 -XX:MaxRAMPercentage=90" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING="utf-8" \
+    PATH=/opt/bin:${PATH}:/usr/local/bin/:/root/.local/bin:/root/.rbenv/bin:/root/.rbenv/versions/3.4.3/bin:
+WORKDIR /opt
+COPY ./target/atom.zip .
+COPY ./wrapper .
+
+RUN echo -e "[nodejs]\nname=nodejs\nstream=20\nprofiles=\nstate=enabled\n" > /etc/dnf/modules.d/nodejs.module \
+    && microdnf install -y unzip nodejs python3.12 python3.12-devel python3.12-pip java-21-openjdk-headless gcc git-core make \
+    && unzip -q atom.zip \
+    && java --version \
+    && alternatives --install /usr/bin/python3 python /usr/bin/python3.12 10 \
+    && alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 10 \
+    && python3 --version \
+    && node --version \
+    && python3 -m pip install --upgrade pip atom-tools>=0.7.6 \
+    && atom-tools --version && atom-tools --help \
+    && cd /opt/nodejs && npm install --omit=dev && cd packages/atom-parsetools && bash build.sh && npm install -g . && cd /opt \
+    && rm -rf atom.zip \
+    && /opt/bin/atom --help \
+    && microdnf remove -y unzip gcc git-core make \
+    && ruby --version \
+    && rbastgen --help \
+    && rbastgen --help \
+    && microdnf clean all
+
+WORKDIR /app
+
+CMD ["/opt/bin/atom"]

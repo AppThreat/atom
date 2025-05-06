@@ -91,7 +91,7 @@ RUN set -e; \
     && alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 10 \
     && python3 --version \
     && node --version \
-    && python3 -m pip install --upgrade pip poetry atom-tools>=0.7.6 \
+    && python3 -m pip install --upgrade pip atom-tools>=0.7.6 \
     && atom-tools --version && atom-tools --help \
     && mkdir -p ${ANDROID_HOME}/cmdline-tools \
     && curl -L https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -o ${ANDROID_HOME}/cmdline-tools/android_tools.zip \
@@ -115,7 +115,7 @@ COPY ./target/atom.zip .
 COPY ./wrapper .
 RUN unzip -q atom.zip \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
-    && cd /opt/nodejs && npm install --omit=dev && bash build.sh && npm install -g . && cd /opt \
+    && cd /opt/nodejs && npm install --omit=dev && cd packages/atom-parsetools && bash build.sh && npm install -g . && cd /opt \
     && rm -rf atom.zip composer.json composer.lock composer-setup.php /usr/local/bin/atom \
     && /opt/bin/atom --help \
     && which astgen \
