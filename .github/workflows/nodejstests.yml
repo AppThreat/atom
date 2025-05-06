@@ -114,7 +114,6 @@ jobs:
         run: |
           cd wrapper/nodejs/packages/atom-parsetools
           sudo npm install -g .
-          atom --help
           astgen --help
           rbastgen --help
           which scalasem
