@@ -54,7 +54,15 @@ object Atom:
   val DEFAULT_SOURCE_TAGS =
       Seq(FRAMEWORK_INPUT_TAG, "framework-route", "cli-source", "driver-source")
   val DEFAULT_SINK_TAGS =
-      Seq(FRAMEWORK_OUTPUT_TAG, "library-call", "cloud", "rpc", "http", "cron", "mail")
+      Seq(
+        FRAMEWORK_OUTPUT_TAG,
+        "library-call",
+        "cloud",
+        "rpc",
+        "http",
+        "cron",
+        "mail"
+      )
   private val COMMON_IGNORE_REGEX = ".*(docs|example|samples|mocks|Documentation|demos).*"
   // Identify directories to ignore for python
   private val defaultPythonIgnoreDirs = Seq(
