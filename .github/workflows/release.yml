@@ -27,7 +27,7 @@ jobs:
       - name: Set up JDK
         uses: graalvm/setup-graalvm@v1
         with:
-          distribution: 'graalvm-community'
+          distribution: 'mandrel'
           java-version: '23'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -36,8 +36,8 @@ jobs:
         with:
           arch: amd64
       - run: |
-          Invoke-WebRequest -Uri https://github.com/upx/upx/releases/download/v5.0.0/upx-5.0.0-win64.zip -UseBasicParsing -OutFile upx-5.0.0-win64.zip
-          Expand-Archive -Path upx-5.0.0-win64.zip -DestinationPath . -Force
+          Invoke-WebRequest -Uri https://github.com/upx/upx/releases/download/v5.0.1/upx-5.0.1-win64.zip -UseBasicParsing -OutFile upx-5.0.1-win64.zip
+          Expand-Archive -Path upx-5.0.1-win64.zip -DestinationPath . -Force
           sbt stage createDistribution
           sbt "GraalVMNativeImage / packageBin"
           .\target\graalvm-native-image\atom.exe --help
@@ -67,7 +67,7 @@ jobs:
       - name: Set up JDK
         uses: graalvm/setup-graalvm@v1
         with:
-          distribution: 'graalvm-community'
+          distribution: 'mandrel'
           java-version: '23'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -78,10 +78,10 @@ jobs:
           apps: scala3 scalac
       - uses: oras-project/setup-oras@v1
       - run: |
-          wget https://github.com/upx/upx/releases/download/v5.0.0/upx-5.0.0-amd64_linux.tar.xz
-          tar -xvf upx-5.0.0-amd64_linux.tar.xz
-          chmod +x upx-5.0.0-amd64_linux/upx
-          sudo cp upx-5.0.0-amd64_linux/upx /usr/local/bin/
+          wget https://github.com/upx/upx/releases/download/v5.0.1/upx-5.0.1-amd64_linux.tar.xz
+          tar -xvf upx-5.0.1-amd64_linux.tar.xz
+          chmod +x upx-5.0.1-amd64_linux/upx
+          sudo cp upx-5.0.1-amd64_linux/upx /usr/local/bin/
           sbt stage createDistribution
           sha512sum target/atom.zip > target/atom.zip.sha512
           bash ci/native-image.sh
@@ -142,7 +142,7 @@ jobs:
       - name: Set up JDK
         uses: graalvm/setup-graalvm@v1
         with:
-          distribution: 'graalvm-community'
+          distribution: 'mandrel'
           java-version: '23'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -153,10 +153,10 @@ jobs:
           apps: scala3 scalac
       - uses: oras-project/setup-oras@v1
       - run: |
-          wget https://github.com/upx/upx/releases/download/v5.0.0/upx-5.0.0-arm64_linux.tar.xz
-          tar -xvf upx-5.0.0-arm64_linux.tar.xz
-          chmod +x upx-5.0.0-arm64_linux/upx
-          sudo cp upx-5.0.0-arm64_linux/upx /usr/local/bin/
+          wget https://github.com/upx/upx/releases/download/v5.0.1/upx-5.0.1-arm64_linux.tar.xz
+          tar -xvf upx-5.0.1-arm64_linux.tar.xz
+          chmod +x upx-5.0.1-arm64_linux/upx
+          sudo cp upx-5.0.1-arm64_linux/upx /usr/local/bin/
           sbt stage createDistribution
           bash ci/native-image.sh
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-arm64
@@ -199,7 +199,7 @@ jobs:
       - name: Set up JDK
         uses: graalvm/setup-graalvm@v1
         with:
-          distribution: 'graalvm-community'
+          distribution: 'mandrel'
           java-version: '23'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
