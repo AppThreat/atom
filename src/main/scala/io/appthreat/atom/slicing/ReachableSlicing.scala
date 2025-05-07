@@ -160,7 +160,16 @@ object ReachableSlicing:
         )
       end if
     end if
-    ReachableSlice(flowSlices.flatten.map(toSlice).toList)
+    val slicesList = flowSlices.flatten.map(toSlice).toList
+    if slicesList.isEmpty then
+      println(
+        s"No Reachable Flows identified for the given source tags: ${config.sourceTag} and sink tags: ${config.sinkTag}"
+      )
+      def atomTags =
+          atom.tag.name.filterNot(t => t.startsWith("pkg:") || t.toUpperCase().equals(t)).toSet
+      if atomTags.nonEmpty then
+        println(raw"List of semantic tags found in the atom file:\n${atomTags.mkString("\n")}")
+    ReachableSlice(slicesList)
   end calculateReachableSlice
 
   private def tagAsString(tag: Iterator[Tag]): String =

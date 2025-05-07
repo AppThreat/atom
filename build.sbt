@@ -123,10 +123,12 @@ credentials +=
       "appthreat",
       sys.env.getOrElse("GITHUB_TOKEN", "N/A")
     )
+
+// Mandrel-based builds are released under version 2 of the GNU General Public License with the “Classpath” Exception - https://github.com/graalvm/mandrel/blob/default/LICENSE
 graalVMNativeImageOptions := Seq(
   "-H:+UnlockExperimentalVMOptions",
   "-R:MaximumHeapSizePercent=90", // Reduce for more predictable and deterministic slicing
-  "-H:+UseEpsilonGC",
+  "--gc=epsilon",
   "--initialize-at-build-time=io.appthreat.*",
   "--no-fallback"
 )
