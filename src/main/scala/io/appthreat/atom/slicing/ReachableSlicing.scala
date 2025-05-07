@@ -27,6 +27,8 @@ object ReachableSlicing:
   private def CLI_SOURCE_TAG       = "cli-source"
   private def DRIVER_SOURCE_TAG    = "driver-source"
   private def HTTP_TAG             = "http"
+  private def EVENT_TAG            = "event"
+  private def PARSE_TAG            = "parse"
   private def CRYPTO_GENERATE_TAG  = "crypto-generate"
   private def CRYPTO_ALGORITHM_TAG = "crypto-algorithm"
 
@@ -39,7 +41,13 @@ object ReachableSlicing:
     def sourceP        = atom.tag.name(sourceTagRegex).parameter
     def sourceI        = atom.tag.name(sourceTagRegex).identifier
     def sink           = atom.ret.where(_.tag.name(sinkTagRegex))
-    val flowSlices     = ListBuffer.empty[Iterator[io.appthreat.dataflowengineoss.language.Path]]
+    def atomSemanticTags =
+        atom.tag.name.filterNot(t => t.startsWith("pkg:") || t.toUpperCase().equals(t)).toSet
+    def atomPossibleSinkTags =
+        atomSemanticTags.filterNot(t =>
+            t.contains("source") || t.contains("input") || t.contains("route")
+        )
+    val flowSlices = ListBuffer.empty[Iterator[io.appthreat.dataflowengineoss.language.Path]]
     flowSlices += sink.reachableByFlows(sourceP, sourceI)
     if defaultTagsMode then
       flowSlices += atom.ret.where(_.method.tag.name(sourceTagRegex)).reachableByFlows(
@@ -138,6 +146,11 @@ object ReachableSlicing:
         s"(${CLI_SOURCE_TAG}|${HTTP_TAG})"
       ).parameter)
       if defaultTagsMode then
+        if atomPossibleSinkTags.nonEmpty then
+          flowSlices += atom.tag.name(s"(${atomPossibleSinkTags.slice(0, 5).mkString("|")})")
+              .identifier.reachableByFlows(
+                atom.tag.name(s"(${EVENT_TAG}|${CLI_SOURCE_TAG}|${HTTP_TAG})").parameter
+              )
         println("Collecting additional slices with Reverse Reachability.")
         flowSlices += atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(
           atom.tag.name(
@@ -165,10 +178,10 @@ object ReachableSlicing:
       println(
         s"No Reachable Flows identified for the given source tags: ${config.sourceTag} and sink tags: ${config.sinkTag}"
       )
-      def atomTags =
-          atom.tag.name.filterNot(t => t.startsWith("pkg:") || t.toUpperCase().equals(t)).toSet
-      if atomTags.nonEmpty then
-        println(raw"List of semantic tags found in the atom file:\n${atomTags.mkString("\n")}")
+      if atomSemanticTags.nonEmpty then
+        println(
+          s"List of semantic tags found in the atom file:\n${atomSemanticTags.mkString("\n")}"
+        )
     ReachableSlice(slicesList)
   end calculateReachableSlice
 
