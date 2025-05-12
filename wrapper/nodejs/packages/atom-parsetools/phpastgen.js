@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -11,9 +12,23 @@ if (!url.startsWith("file://")) {
 }
 const dirName = import.meta ? dirname(fileURLToPath(url)) : __dirname;
 export const PLUGINS_HOME = join(dirName, "plugins");
-const PHP_PARSER_BIN =
+export const PARENT_NODE_PLUGINS_HOME = join(
+  dirName,
+  "..",
+  "..",
+  "node_modules",
+  "@appthreat",
+  "atom-parsetools",
+  "plugins"
+);
+let PHP_PARSER_BIN =
   process.env.PHP_PARSER_BIN || join(PLUGINS_HOME, "bin", "php-parse");
-
+if (
+  !existsSync(PHP_PARSER_BIN) &&
+  existsSync(join(PARENT_NODE_PLUGINS_HOME, "bin", "php-parse"))
+) {
+  PHP_PARSER_BIN = join(PARENT_NODE_PLUGINS_HOME, "bin", "php-parse");
+}
 function main(argvs) {
   if (!detectPhp()) {
     console.warn("PHP is not installed!");

@@ -12,8 +12,23 @@ if (!url.startsWith("file://")) {
 }
 const dirName = import.meta ? dirname(fileURLToPath(url)) : __dirname;
 export const PLUGINS_HOME = join(dirName, "plugins");
-const RUBY_ASTGEN_BIN =
+export const PARENT_NODE_PLUGINS_HOME = join(
+  dirName,
+  "..",
+  "..",
+  "node_modules",
+  "@appthreat",
+  "atom-parsetools",
+  "plugins"
+);
+let RUBY_ASTGEN_BIN =
   process.env.RUBY_ASTGEN_BIN || join(PLUGINS_HOME, "bin", "ruby_ast_gen");
+if (
+  !existsSync(RUBY_ASTGEN_BIN) &&
+  existsSync(join(PARENT_NODE_PLUGINS_HOME, "bin", "ruby_ast_gen"))
+) {
+  RUBY_ASTGEN_BIN = join(PARENT_NODE_PLUGINS_HOME, "bin", "ruby_ast_gen");
+}
 // Ruby version needed
 const RUBY_VERSION_NEEDED = "3.4.3";
 function main(argvs) {
