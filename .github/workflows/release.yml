@@ -53,10 +53,55 @@ jobs:
             target/graalvm-native-image/atom.exe
             target/graalvm-native-image/atom.exe.sha512
 
+  release-win-arm64:
+    if: github.repository_owner == 'appthreat'
+    concurrency: release-win
+    runs-on: windows-11-arm
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.3'
+          bundler-cache: false
+      - name: Set up JDK
+        uses: graalvm/setup-graalvm@v1
+        with:
+          distribution: 'mandrel'
+          java-version: '23'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+          cache: 'sbt'
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: arm64
+      - run: |
+          Invoke-WebRequest -Uri https://github.com/upx/upx/releases/download/v5.0.1/upx-5.0.1-win64.zip -UseBasicParsing -OutFile upx-5.0.1-win64.zip
+          Expand-Archive -Path upx-5.0.1-win64.zip -DestinationPath . -Force
+          sbt stage createDistribution
+          sbt "GraalVMNativeImage / packageBin"
+          .\target\graalvm-native-image\atom.exe --help
+          mv .\target\graalvm-native-image\atom.exe .\target\graalvm-native-image\atom-arm64.exe
+          cd target\graalvm-native-image
+          (Get-FileHash -Algorithm SHA512 .\atom-arm64.exe).hash | Out-File -FilePath .\atom-arm64.exe.sha512
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            target/graalvm-native-image/atom-arm64.exe
+            target/graalvm-native-image/atom-arm64.exe.sha512
+
   release:
     if: github.repository_owner == 'appthreat'
     concurrency: release
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
       packages: write
@@ -131,7 +176,7 @@ jobs:
   release-arm64:
     if: github.repository_owner == 'appthreat'
     concurrency: release-arm64
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-22.04-arm
     permissions:
       contents: write
       packages: write
