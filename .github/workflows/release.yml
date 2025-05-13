@@ -54,7 +54,7 @@ jobs:
             target/graalvm-native-image/atom.exe.sha512
 
   release-win-arm64:
-    if: github.repository_owner == 'appthreat'
+    if: false
     concurrency: release-win
     runs-on: windows-11-arm
     permissions:
