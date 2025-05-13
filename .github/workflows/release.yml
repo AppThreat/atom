@@ -173,6 +173,69 @@ jobs:
             target/graalvm-native-image/atom-amd64
             target/graalvm-native-image/atom-amd64.sha512
 
+  release-static:
+    if: github.repository_owner == 'appthreat'
+    concurrency: release
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up JDK
+        uses: graalvm/setup-graalvm@v1
+        with:
+          distribution: 'mandrel'
+          java-version: '21'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+          native-image-musl: true
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
+      - uses: coursier/setup-action@v1
+        with:
+          apps: scala3 scalac
+      - uses: oras-project/setup-oras@v1
+      - run: |
+          wget https://github.com/upx/upx/releases/download/v5.0.1/upx-5.0.1-amd64_linux.tar.xz
+          tar -xvf upx-5.0.1-amd64_linux.tar.xz
+          chmod +x upx-5.0.1-amd64_linux/upx
+          sudo cp upx-5.0.1-amd64_linux/upx /usr/local/bin/
+          sbt stage createDistribution
+          sha512sum target/atom.zip > target/atom.zip.sha512
+          bash ci/native-image.sh
+          cp target/graalvm-native-image/atom target/graalvm-native-image/atom-static-amd64
+          /usr/local/bin/upx -9 --lzma target/graalvm-native-image/atom-static-amd64
+          target/graalvm-native-image/atom-static-amd64 --help
+          sha512sum target/graalvm-native-image/atom-static-amd64 > target/graalvm-native-image/atom-static-amd64.sha512
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: sbt publish
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload atom to ghcr
+        run: |
+          cd target
+          echo $GITHUB_TOKEN | oras login ghcr.io -u $GITHUB_USERNAME --password-stdin
+          cd graalvm-native-image
+          oras push ghcr.io/appthreat/atom-static-amd64:v2 \
+            --artifact-type application/vnd.oras.config.v1+json \
+            ./atom-static-amd64:application/vnd.appthreat.atom.layer.v1+tar \
+            ./atom-static-amd64.sha512:application/vnd.appthreat.atom.layer.v1+tar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            target/graalvm-native-image/atom-static-amd64
+            target/graalvm-native-image/atom-static-amd64.sha512
+
   release-arm64:
     if: github.repository_owner == 'appthreat'
     concurrency: release-arm64
@@ -229,6 +292,64 @@ jobs:
           files: |
             target/graalvm-native-image/atom-arm64
             target/graalvm-native-image/atom-arm64.sha512
+
+  release-static-arm64:
+    if: github.repository_owner == 'appthreat'
+    concurrency: release-arm64
+    runs-on: ubuntu-22.04-arm
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up JDK
+        uses: graalvm/setup-graalvm@v1
+        with:
+          distribution: 'mandrel'
+          java-version: '21'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+          native-image-musl: true
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
+      - uses: coursier/setup-action@v1
+        with:
+          apps: scala3 scalac
+      - uses: oras-project/setup-oras@v1
+      - run: |
+          wget https://github.com/upx/upx/releases/download/v5.0.1/upx-5.0.1-arm64_linux.tar.xz
+          tar -xvf upx-5.0.1-arm64_linux.tar.xz
+          chmod +x upx-5.0.1-arm64_linux/upx
+          sudo cp upx-5.0.1-arm64_linux/upx /usr/local/bin/
+          sbt stage createDistribution
+          bash ci/native-image.sh
+          cp target/graalvm-native-image/atom target/graalvm-native-image/atom-static-arm64
+          /usr/local/bin/upx -9 --lzma target/graalvm-native-image/atom-static-arm64
+          target/graalvm-native-image/atom-static-arm64 --help
+          sha512sum target/graalvm-native-image/atom-static-arm64 > target/graalvm-native-image/atom-static-arm64.sha512
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload atom to ghcr
+        run: |
+          cd target
+          echo $GITHUB_TOKEN | oras login ghcr.io -u $GITHUB_USERNAME --password-stdin
+          cd graalvm-native-image
+          oras push ghcr.io/appthreat/atom-static-arm64:v2 \
+            --artifact-type application/vnd.oras.config.v1+json \
+            ./atom-static-arm64:application/vnd.appthreat.atom.layer.v1+tar \
+            ./atom-static-arm64.sha512:application/vnd.appthreat.atom.layer.v1+tar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            target/graalvm-native-image/atom-static-arm64
+            target/graalvm-native-image/atom-static-arm64.sha512
 
   release-mac:
     if: github.repository_owner == 'appthreat'

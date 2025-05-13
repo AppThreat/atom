@@ -1,6 +1,6 @@
 {
   "name": "@appthreat/atom-parsetools",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Parsing tools that complement the @appthreat/atom project.",
   "main": "./index.js",
   "type": "module",
