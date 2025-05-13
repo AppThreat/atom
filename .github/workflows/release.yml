@@ -175,7 +175,7 @@ jobs:
 
   release-static:
     if: github.repository_owner == 'appthreat'
-    concurrency: release
+    concurrency: release-static
     runs-on: ubuntu-22.04
     permissions:
       contents: write
@@ -295,7 +295,7 @@ jobs:
 
   release-static-arm64:
     if: github.repository_owner == 'appthreat'
-    concurrency: release-arm64
+    concurrency: release-static-arm64
     runs-on: ubuntu-22.04-arm
     permissions:
       contents: write
