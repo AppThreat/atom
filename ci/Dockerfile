@@ -32,12 +32,7 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     PYTHONIOENCODING="utf-8" \
     CDXGEN_NO_BANNER=true \
     COMPOSER_ALLOW_SUPERUSER=1 \
-    RUBY_VERSION=$RUBY_VERSION \
-    MALLOC_CONF="dirty_decay_ms:2000,narenas:2,background_thread:true" \
-    RUBY_CONFIGURE_OPTS="--with-jemalloc --enable-yjit" \
-    RUBYOPT="--yjit" \
-    RUBY_BUILD_BUILD_PATH="/tmp/rbenv" \
-    RUBY_BUILD_HTTP_CLIENT=curl
+    RUBY_VERSION=$RUBY_VERSION
 
 ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:${SBT_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.3/bin:
 
@@ -55,14 +50,13 @@ RUN set -e; \
             ;; \
         *) echo >&2 "error: unsupported architecture: '$ARCH_NAME'"; exit 1 ;; \
     esac; \
-    echo -e "[nodejs]\nname=nodejs\nstream=20\nprofiles=\nstate=enabled\n" > /etc/dnf/modules.d/nodejs.module \
-    && microdnf install -y gcc git-core php php-cli php-curl php-zip php-bcmath php-json php-pear php-mbstring php-devel make \
+    microdnf install -y gcc git-core php php-cli php-curl php-zip php-bcmath php-json php-pear php-mbstring php-devel make \
         python3 python3-devel python3-pip \
         wget bash glibc-common glibc-all-langpacks \
         openssl-devel libffi-devel readline-devel libyaml zlib-devel ncurses ncurses-devel \
         pcre2 findutils which tar gzip zip unzip sudo nodejs rust \
     && microdnf install -y epel-release \
-    && microdnf install --enablerepo=crb -y libyaml-devel jemalloc-devel \
+    && microdnf install --enablerepo=crb -y libyaml-devel \
     && curl -s "https://get.sdkman.io" | bash \
     && source "/root/.sdkman/bin/sdkman-init.sh" \
     && echo -e "sdkman_auto_answer=true\nsdkman_selfupdate_feature=false\nsdkman_auto_env=true\nsdkman_curl_connect_timeout=20\nsdkman_curl_max_time=0" >> /root/.sdkman/etc/config \

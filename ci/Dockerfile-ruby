@@ -45,8 +45,8 @@ WORKDIR /opt
 COPY ./target/atom.zip .
 COPY ./wrapper .
 
-RUN echo -e "[nodejs]\nname=nodejs\nstream=20\nprofiles=\nstate=enabled\n" > /etc/dnf/modules.d/nodejs.module \
-    && microdnf install -y unzip nodejs python3 python3-devel python3-pip java-21-openjdk-headless gcc git-core make \
+RUN set -e; \
+    microdnf install -y unzip nodejs python3 python3-devel python3-pip java-21-openjdk-headless gcc git-core make \
     && unzip -q atom.zip \
     && java --version \
     && python3 --version \
