@@ -156,28 +156,28 @@ object UsageSlicing:
     typeMap: TrieMap[String, String]
   ): List[MethodUsageSlice] =
       atom.call
-          .where(_.callee(NoResolve).isExternal)
+          .where(_.callee(using NoResolve).isExternal)
           .filterNot(_.name.startsWith("<operator"))
           .l
           .map(call =>
             val taobj = CallDef(
-              if call.callee(NoResolve).method.nonEmpty then
-                call.callee(NoResolve).method.head.name
+              if call.callee(using NoResolve).method.nonEmpty then
+                call.callee(using NoResolve).method.head.name
               else "",
               "",
-              if call.callee(NoResolve).method.nonEmpty then
-                Option(call.callee(NoResolve).method.head.fullName)
+              if call.callee(using NoResolve).method.nonEmpty then
+                Option(call.callee(using NoResolve).method.head.fullName)
               else Option(""),
-              Option(call.callee(NoResolve).head.isExternal),
-              call.callee(NoResolve).head.method.lineNumber.map(_.intValue()),
-              call.callee(NoResolve).head.method.columnNumber.map(_.intValue())
+              Option(call.callee(using NoResolve).head.isExternal),
+              call.callee(using NoResolve).head.method.lineNumber.map(_.intValue()),
+              call.callee(using NoResolve).head.method.columnNumber.map(_.intValue())
             )
             val ocall = List(
               ObservedCall(
                 callName = call.name,
                 resolvedMethod =
-                    if call.callee(NoResolve).method.nonEmpty then
-                      Option(call.callee(NoResolve).method.head.fullName)
+                    if call.callee(using NoResolve).method.nonEmpty then
+                      Option(call.callee(using NoResolve).method.head.fullName)
                     else Option(""),
                 paramTypes = List.empty[String],
                 returnType = "",
@@ -232,7 +232,7 @@ object UsageSlicing:
               .collectAll[LocalDef]
               .l,
           call
-              .callee(NoResolve)
+              .callee(using NoResolve)
               .method
               .filterNot(m => m.name.startsWith("<clinit>"))
               .map(m =>
@@ -543,7 +543,7 @@ object UsageSlicing:
                       x.methodFullName
                     ).methodReturn.typeFullName.headOption
                 case x: Call =>
-                    x.callee(resolver).methodReturn.typeFullName.headOption
+                    x.callee(using resolver).methodReturn.typeFullName.headOption
                 case _ => None
             }
             .headOption
@@ -584,7 +584,7 @@ object UsageSlicing:
           resolvedMethod,
           params,
           returnType,
-          baseCall.callee(resolver).isExternal.headOption,
+          baseCall.callee(using resolver).isExternal.headOption,
           baseCall.lineNumber.map(_.intValue()),
           baseCall.columnNumber.map(_.intValue())
         )

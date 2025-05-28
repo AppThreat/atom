@@ -134,7 +134,7 @@ object ReachableSlicing:
         ).call.method.repeat(_.filename(
           s"((app|config)${Pattern.quote(File.separator)})?(routes|controller(s)?|model(s)?|application).*\\.rb.*"
         ))(
-          _.maxDepth(config.sliceDepth)
+          using _.maxDepth(config.sliceDepth)
         ).parameter
       )
     if Array(Languages.NEWC, Languages.C).contains(language)
@@ -155,15 +155,15 @@ object ReachableSlicing:
         flowSlices += atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(
           atom.tag.name(
             LIBRARY_CALL_TAG
-          ).call.method.repeat(_.caller(NoResolve))(
-            _.maxDepth(config.sliceDepth)
+          ).call.method.repeat(_.caller(using NoResolve))(
+            using _.maxDepth(config.sliceDepth)
           ).parameter
         )
         flowSlices += atom.tag.name(s"(${LIBRARY_CALL_TAG}|${HTTP_TAG})").parameter.reachableByFlows(
           atom.tag.name(
             s"(${LIBRARY_CALL_TAG}|${HTTP_TAG})"
-          ).parameter.method.repeat(_.caller(NoResolve))(
-            _.maxDepth(config.sliceDepth)
+          ).parameter.method.repeat(_.caller(using NoResolve))(
+            using _.maxDepth(config.sliceDepth)
           ).parameter
         )
         flowSlices += atom.tag.name(LIBRARY_CALL_TAG).method
@@ -311,20 +311,20 @@ object ReachableSlicing:
               )
             then
               if
-                tags.isEmpty && call.callee(NoResolve).nonEmpty && call
-                    .callee(NoResolve)
+                tags.isEmpty && call.callee(using NoResolve).nonEmpty && call
+                    .callee(using NoResolve)
                     .head
                     .isExternal && !call.methodFullName.startsWith(
                   "<operator"
                 ) && !call.name
                     .startsWith("<operator") && !call.methodFullName.startsWith("new ")
               then
-                tags = tagAsString(call.callee(NoResolve).head.tag)
-                purls ++= purlsFromTag(call.callee(NoResolve).head.tag)
+                tags = tagAsString(call.callee(using NoResolve).head.tag)
+                purls ++= purlsFromTag(call.callee(using NoResolve).head.tag)
               var isExternal =
                   if
-                    call.callee(NoResolve).nonEmpty && call.callee(
-                      NoResolve
+                    call.callee(using NoResolve).nonEmpty && call.callee(
+                      using NoResolve
                     ).head.isExternal && !call.name
                         .startsWith("<operator") && !call.methodFullName.startsWith(
                       "new "
@@ -334,8 +334,8 @@ object ReachableSlicing:
               if call.methodFullName.startsWith("<operator") then isExternal = false
               sliceNode = sliceNode.copy(
                 name = call.name,
-                fullName = if call.callee(NoResolve).nonEmpty then
-                  call.callee(NoResolve).head.fullName
+                fullName = if call.callee(using NoResolve).nonEmpty then
+                  call.callee(using NoResolve).head.fullName
                 else "",
                 code = call.code,
                 isExternal = isExternal,

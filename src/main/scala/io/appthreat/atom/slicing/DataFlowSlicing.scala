@@ -136,7 +136,7 @@ class DataFlowSlicing:
             c.argument.filterNot(_.isBlock).l
           )
       // Slow operation
-      val sliceNodes = sinks.repeat(_.ddgIn)(_.maxDepth(config.sliceDepth).emit).dedup.l
+      val sliceNodes = sinks.repeat(_.ddgIn)(using _.maxDepth(config.sliceDepth).emit).dedup.l
       // This is required to create paths
       val sliceNodesIdSet = sliceNodes.id.toSet
       // Lazily set up the rest if the filters are satisfied
