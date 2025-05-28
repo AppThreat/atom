@@ -58,14 +58,18 @@ ThisBuild / compile / javacOptions ++= Seq(
 
 Universal / topLevelDirectory := None
 
-Universal / mappings := (Universal / mappings).value.filter {
-    case (_, path) => !path.contains("org.scala-lang.scala3-compiler") && !path.contains(
-          "io.get-coursier"
-        ) && !path.contains("com.michaelpollmeier.scala-repl-pp") && !path.contains(
-          "dev.scalapy.scalapy-core"
-        ) && !path.contains(
-          "dev.scalapy.scalapy-macros"
-        )
+// These jars can be excluded
+lazy val excludedNS = Seq(
+    "org.scala-lang.scala3-compiler",
+    "io.get-coursier",
+    "com.michaelpollmeier.scala-repl-pp",
+    "dev.scalapy.scalapy-core",
+    "dev.scalapy.scalapy-macros"
+)
+
+Universal / mappings := (Universal / mappings).value.filterNot {
+    case (_, path) =>
+        excludedNS.exists(path.contains)
 }
 
 enablePlugins(JavaAppPackaging, ClasspathJarPlugin, GraalVMNativeImagePlugin)
