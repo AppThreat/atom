@@ -1,4 +1,4 @@
-FROM ghcr.io/appthreat/base:main
+FROM ghcr.io/appthreat/base-al10:main
 
 LABEL maintainer="appthreat" \
       org.opencontainers.image.authors="Team AppThreat <cloud@appthreat.com>" \
@@ -57,7 +57,7 @@ RUN set -e; \
     esac; \
     echo -e "[nodejs]\nname=nodejs\nstream=20\nprofiles=\nstate=enabled\n" > /etc/dnf/modules.d/nodejs.module \
     && microdnf install -y gcc git-core php php-cli php-curl php-zip php-bcmath php-json php-pear php-mbstring php-devel make \
-        python3.12 python3.12-devel python3.12-pip \
+        python3 python3-devel python3-pip \
         wget bash glibc-common glibc-all-langpacks \
         openssl-devel libffi-devel readline-devel libyaml zlib-devel ncurses ncurses-devel \
         pcre2 findutils which tar gzip zip unzip sudo nodejs rust \
@@ -87,8 +87,6 @@ RUN set -e; \
     && ruby --version \
     && which ruby \
     && rm -rf /root/.rbenv/cache $RUBY_BUILD_BUILD_PATH \
-    && alternatives --install /usr/bin/python3 python /usr/bin/python3.12 10 \
-    && alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 10 \
     && python3 --version \
     && node --version \
     && python3 -m pip install --upgrade pip atom-tools>=0.8.0 \

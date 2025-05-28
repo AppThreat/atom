@@ -15,7 +15,7 @@
         python = {
           enable = true;
           venv.enable = true;
-          version = "3.12";
+          version = "3.13";
         };
         javascript = {
           enable = true;
@@ -53,8 +53,8 @@
       };
       packages = [
         pkgs.nodejs_23
-        pkgs.python312Full
-        (pkgs.python312.withPackages (ps: [ ps.pip ps.setuptools ]))
+        pkgs.python313Full
+        (pkgs.python313.withPackages (ps: [ ps.pip ps.setuptools ]))
         pkgs.sbt
         pkgs.php
       ];
