@@ -40,7 +40,7 @@ COPY --from=builder /root/.rbenv /root/.rbenv
 ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -XX:MinRAMPercentage=30 -XX:MaxRAMPercentage=90" \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING="utf-8" \
-    PATH=/opt/bin:${PATH}:/usr/local/bin/:/root/.local/bin:/root/.rbenv/bin:/root/.rbenv/versions/3.4.3/bin:
+    PATH=/opt/bin:${PATH}:/usr/local/bin/:/root/.local/bin:/root/.rbenv/bin:/root/.rbenv/versions/3.4.4/bin:
 WORKDIR /opt
 COPY ./target/atom.zip .
 COPY ./wrapper .
