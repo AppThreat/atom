@@ -44,8 +44,10 @@ jobs:
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main atom --help
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main rbastgen --help
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-ruby:main rbastgen --help
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-alpine-ruby:main rbastgen --help
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main atom usages --remove-atom -l ruby -o /app/app.atom -s /app/usages.slices.json /app
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-ruby:main atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-alpine-ruby:main atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
           ls -lh
           cp *.slices.json $GITHUB_WORKSPACE/rubyresults/bionomia
       - name: generate usages - railsgoat
@@ -54,6 +56,7 @@ jobs:
           cd repotests/railsgoat
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main atom usages --remove-atom --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-ruby:main atom usages --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-alpine-ruby:main atom usages --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
           ls -lh
           cp *.slices.json $GITHUB_WORKSPACE/rubyresults/railsgoat
       - name: generate usages - campsite
@@ -62,6 +65,7 @@ jobs:
           cd repotests/campsite/api
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom:main atom usages --remove-atom -l ruby -o /app/app.atom -s /app/usages.slices.json /app
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-ruby:main atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+          docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-alpine-ruby:main atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
           ls -lh
           cp *.slices.json $GITHUB_WORKSPACE/rubyresults/campsite
       - name: generate usages - play-samples
