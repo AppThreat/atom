@@ -11,7 +11,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.description="Container image for AppThreat atom" \
       org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom-sle atom -o /app/app.atom -l java /app"
 
-ARG RUBY_VERSION=3.4.3
+ARG RUBY_VERSION=3.4.4
 
 ENV ANDROID_HOME=/opt/android-sdk-linux \
     JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -XX:MinRAMPercentage=30 -XX:MaxRAMPercentage=90" \
@@ -32,19 +32,7 @@ ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:/usr/local/bin/:/root/.local/bin:${AND
 
 WORKDIR /opt
 
-RUN set -e; \
-    ARCH_NAME="$(rpm --eval '%{_arch}')"; \
-    url=; \
-    case "${ARCH_NAME##*-}" in \
-        'x86_64') \
-            OS_ARCH_SUFFIX=''; \
-            ;; \
-        'aarch64') \
-            OS_ARCH_SUFFIX='-aarch64'; \
-            ;; \
-        *) echo >&2 "error: unsupported architecture: '$ARCH_NAME'"; exit 1 ;; \
-    esac; \
-    zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl php8-zip php8-bcmath php8-pear php8-mbstring php8-devel rust1.85 \
+RUN zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl php8-zip php8-bcmath php8-pear php8-mbstring php8-devel rust1.85 \
         libopenssl-devel libffi-devel readline-devel libyaml-devel zlib-devel libncurses6 ncurses-devel jemalloc-devel \
     && source /root/.nvm/nvm.sh \
     && python3 --version \

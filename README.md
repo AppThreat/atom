@@ -170,6 +170,13 @@ docker run --rm --platform=linux/amd64 -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io
 # podman run --rm --platform=linux/amd64 -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
 ```
 
+For Ruby, there is an alpine-based version available.
+
+```shell
+docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-alpine-ruby atom usages --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+# podman run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-alpine-ruby atom usages --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+```
+
 ### Create data-flow slice for a java project.
 
 ```shell
@@ -233,7 +240,7 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 - TypeScript
 - Python
 - PHP (Requires PHP >= 7.0. Supports PHP 5.2 to 8.3)
-- Ruby (Requires Ruby 3.4.3. Supports Ruby 1.8 - 3.3 syntax)
+- Ruby (Requires Ruby 3.4.4. Supports Ruby 1.8 - 3.3 syntax)
 - Scala (WIP)
 
 ## Environment variables

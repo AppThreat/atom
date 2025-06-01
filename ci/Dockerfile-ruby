@@ -8,13 +8,13 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.vendor="appthreat" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="atom" \
-      org.opencontainers.image.description="Container image for AppThreat atom" \
-      org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom usages --extract-endpoints -o /app/app.atom -l ruby /app"
+      org.opencontainers.image.description="Container image for AppThreat atom optimized for Ruby apps" \
+      org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom-ruby atom usages --extract-endpoints -o /app/app.atom -l ruby /app"
 
-ARG RUBY_VERSION=3.4.3
+ARG RUBY_VERSION=3.4.4
 
 ENV RUBY_VERSION=$RUBY_VERSION \
-    PATH=/opt/bin:/opt/vendor/bin:${PATH}:/usr/local/bin/:/root/.local/bin:/root/.rbenv/bin:/root/.rbenv/versions/3.4.3/bin:
+    PATH=/opt/bin:/opt/vendor/bin:${PATH}:/usr/local/bin/:/root/.local/bin:/root/.rbenv/bin:/root/.rbenv/versions/3.4.4/bin:
 
 RUN microdnf install -y gcc git-core make  \
         wget bash glibc-common glibc-all-langpacks \
