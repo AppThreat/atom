@@ -54,6 +54,12 @@ object UsageSlicing:
         slices ++ externalCalleesAsSlices(atom, typeMap),
         userDefTypes ++ routesAsUDT(atom)
       )
+    else if language.get == Languages.RUBYSRC
+    then
+      ProgramUsageSlice(
+        slices ++ danglingRouteCallsAsSlices(atom, typeMap),
+        userDefTypes ++ routesAsUDT(atom)
+      )
     else
       ProgramUsageSlice(slices ++ unusedTypeDeclAsSlices(atom), userDefTypes)
   end calculateUsageSlice
@@ -171,6 +177,57 @@ object UsageSlicing:
               Option(call.callee(using NoResolve).head.isExternal),
               call.callee(using NoResolve).head.method.lineNumber.map(_.intValue()),
               call.callee(using NoResolve).head.method.columnNumber.map(_.intValue())
+            )
+            val ocall = List(
+              ObservedCall(
+                callName = call.name,
+                resolvedMethod =
+                    if call.callee(using NoResolve).method.nonEmpty then
+                      Option(call.callee(using NoResolve).method.head.fullName)
+                    else Option(""),
+                paramTypes = List.empty[String],
+                returnType = "",
+                isExternal = Option(true),
+                lineNumber = call.lineNumber.map(_.intValue()),
+                columnNumber = call.columnNumber.map(_.intValue())
+              )
+            )
+            MethodUsageSlice(
+              code = "",
+              fullName = call.method.fullName,
+              signature = call.method.signature,
+              fileName = call.method.filename,
+              slices = Set(
+                ObjectUsageSlice(
+                  targetObj = taobj,
+                  definedBy = Option(taobj),
+                  invokedCalls = ocall,
+                  argToCalls = List.empty[ObservedCallWithArgPos]
+                )
+              ),
+              lineNumber = call.method.lineNumber.map(_.intValue()),
+              columnNumber = call.method.columnNumber.map(_.intValue())
+            )
+          )
+
+  private def danglingRouteCallsAsSlices(
+    atom: Cpg,
+    typeMap: TrieMap[String, String]
+  ): List[MethodUsageSlice] =
+      atom.call.where(_.method.filename(".*routes.*")).code(
+        ".*(resources|scope|namespace|get|post|patch|delete|match|options).*"
+      )
+          .l
+          .map(call =>
+            val taobj = CallDef(
+              call.method.code,
+              "",
+              if call.callee(using NoResolve).method.nonEmpty then
+                Option(call.callee(using NoResolve).method.head.fullName)
+              else Option(""),
+              Option(false),
+              call.method.lineNumber.map(_.intValue()),
+              call.method.columnNumber.map(_.intValue())
             )
             val ocall = List(
               ObservedCall(
