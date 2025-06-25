@@ -7,7 +7,7 @@ if command -v php >/dev/null 2>&1; then
   php composer-setup.php
   php -r "unlink('composer-setup.php');"
   export COMPOSER_VENDOR_DIR=plugins
-  php composer.phar require nikic/php-parser:4.18.0 --ignore-platform-reqs --optimize-autoloader
+  php composer.phar require nikic/php-parser:5.5.0 --ignore-platform-reqs --optimize-autoloader
   rm composer.phar composer.json composer.lock
 else
   echo "PHP plugins not built."

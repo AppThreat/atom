@@ -558,7 +558,7 @@ object Atom:
           case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
               new Jimple2Cpg()
                   .createCpgWithOverlays(
-                    JimpleConfig(android = ANDROID_JAR_PATH)
+                    JimpleConfig(android = ANDROID_JAR_PATH, fullResolver = true)
                         .withInputPath(config.inputPath.pathAsString)
                         .withOutputPath(outputAtomFile)
                         .withFullResolver(true)
@@ -716,10 +716,10 @@ object Atom:
                   AtomReachablesConfig
                 ]) =>
                 println("Generating data-flow dependencies from atom. Please wait ...")
-                // Enhance with simple and easy tags
-                new EasyTagsPass(ag).createAndApply()
                 // Enhance with the BOM from cdxgen
                 new CdxPass(ag).createAndApply()
+                // Enhance with simple and easy tags
+                new EasyTagsPass(ag).createAndApply()
                 new ChennaiTagsPass(ag).createAndApply()
                 new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions =
                     x.maxNumDef

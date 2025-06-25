@@ -239,8 +239,8 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 - JavaScript
 - TypeScript
 - Python
-- PHP (Requires PHP >= 7.0. Supports PHP 5.2 to 8.3)
-- Ruby (Requires Ruby 3.4.4. Supports Ruby 1.8 - 3.3 syntax)
+- PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.4 with limited support for PHP 5.x)
+- Ruby (Requires Ruby 3.4.5. Supports Ruby 1.8 - 3.4.x syntax)
 - Scala (WIP)
 
 ## Environment variables
