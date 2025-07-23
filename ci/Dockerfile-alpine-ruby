@@ -1,4 +1,4 @@
-FROM ruby:3.4-alpine
+FROM ruby:3.4.5-alpine
 
 LABEL maintainer="appthreat" \
       org.opencontainers.image.authors="Team AppThreat <cloud@appthreat.com>" \
