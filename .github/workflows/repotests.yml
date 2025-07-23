@@ -102,6 +102,12 @@ jobs:
         with:
           ruby-version: '3.4.5'
           bundler-cache: false
+        if: runner.os != 'Windows'
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.4'
+          bundler-cache: false
+        if: runner.os == 'Windows'
       - name: Install sbt
         run: brew install sbt
         if: runner.os == 'macOS'
