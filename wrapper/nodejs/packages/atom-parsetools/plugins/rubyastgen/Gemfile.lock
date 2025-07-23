@@ -1,18 +1,19 @@
 GIT
   remote: https://github.com/appthreat/ruby_ast_gen.git
-  revision: 2a9186207494efd93442138ea69cff87a043965a
-  ref: v1.0.5
+  revision: 8738b155eb4f6bb9cdd150e836ec70677b353b2b
+  ref: v1.1.0
   specs:
-    ruby_ast_gen (1.0.5)
+    ruby_ast_gen (1.1.0)
 
 GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.3)
-    ostruct (0.6.1)
+    ostruct (0.6.3)
     parser (3.3.8.0)
       ast (~> 2.4.1)
       racc
+    prism (1.4.0)
     racc (1.8.1)
 
 PLATFORMS
@@ -22,10 +23,14 @@ PLATFORMS
   x86_64-darwin-23
 
 DEPENDENCIES
-  ostruct (~> 0.6.1)
+  ostruct (~> 0.6.3)
   parser (~> 3.3.8.0)
+  prism (~> 1.4)
   racc (~> 1.8.1)
   ruby_ast_gen!
 
 RUBY VERSION
    ruby 3.4.4p34
+
+BUNDLED WITH
+   2.6.7

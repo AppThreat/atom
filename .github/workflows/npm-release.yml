@@ -44,7 +44,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: '3.4.4'
+        ruby-version: '3.4.5'
         bundler-cache: false
     - name: Prepare 3.4.0 version
       run: |
@@ -97,8 +97,8 @@ jobs:
           npm install -g @appthreat/atom
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4.4'
+          ruby-version: '3.4.5'
           bundler-cache: false
-      - name: Check rbastgen 3.4.4
+      - name: Check rbastgen 3.4.5
         run: |
           rbastgen --help
