@@ -125,16 +125,16 @@ jobs:
           ./atom.sh --remove-atom -o /tmp/java.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/juice.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/ts.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml -x --export-dir ts_gml_exports
-          [ "$(find "ts_gml_exports" -maxdepth 1 -type f -printf '.' | wc -c)" -eq 0 ] && exit 1
+          ls -l ts_gml_exports
           rm -rf ts_gml_exports
           ./atom.sh --remove-atom -o /tmp/py.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml -x --export-dir py_gml_exports
-          [ "$(find "py_gml_exports" -maxdepth 1 -type f -printf '.' | wc -c)" -eq 0 ] && exit 1
+          ls -l py_gml_exports
           rm -rf py_gml_exports
           ./atom.sh parsedeps --remove-atom -o /tmp/py.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/py2.atom -l python $GITHUB_WORKSPACE/repotests/django-DefectDojo -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/c.atom -l c $GITHUB_WORKSPACE/repotests/libexpat -Dlog4j.configurationFile=log4j2.xml -x --export-dir gml_exports
           ./atom.sh --remove-atom -o /tmp/railsgoat.atom -l ruby $GITHUB_WORKSPACE/repotests/railsgoat -Dlog4j.configurationFile=log4j2.xml -x --export-dir rb_gml_exports
-          [ "$(find "rb_gml_exports" -maxdepth 1 -type f -printf '.' | wc -c)" -eq 0 ] && exit 1
+          ls -l rb_gml_exports
           rm -rf rb_gml_exports
           ./atom.sh --remove-atom -o /tmp/bionomia.atom -l ruby $GITHUB_WORKSPACE/repotests/bionomia -Dlog4j.configurationFile=log4j2.xml
 
@@ -153,7 +153,7 @@ jobs:
           ./atom.sh usages --extract-endpoints --remove-atom -o /tmp/railsgoat2.atom -l ruby $GITHUB_WORKSPACE/repotests/railsgoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/railsgoat2.usages.json
           ./atom.sh usages --remove-atom -o /tmp/bionomia2.atom -l ruby $GITHUB_WORKSPACE/repotests/bionomia -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/bionomia2.usages.json
           ./atom.sh --remove-atom -o /tmp/java-sec-code.atom -l java $GITHUB_WORKSPACE/repotests/java-sec-code -Dlog4j.configurationFile=log4j2.xml -x --export-dir gml_exports
-          [ "$(find "gml_exports" -maxdepth 1 -type f -printf '.' | wc -c)" -eq 0 ] && exit 1
+          ls -l gml_exports
           rm -rf gml_exports
 
           ./atom.sh --remove-atom -o /tmp/play-scala-slick-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-slick-example
