@@ -83,7 +83,7 @@ RUN set -e; \
     && rm -rf /root/.rbenv/cache $RUBY_BUILD_BUILD_PATH \
     && python3 --version \
     && node --version \
-    && python3 -m pip install --upgrade pip atom-tools>=0.8.0 \
+    && python3 -m pip install --upgrade pip atom-tools>=0.8.2 \
     && atom-tools --version && atom-tools --help \
     && mkdir -p ${ANDROID_HOME}/cmdline-tools \
     && curl -L https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -o ${ANDROID_HOME}/cmdline-tools/android_tools.zip \

@@ -22,7 +22,7 @@ RUN apk update && apk add --no-cache git build-base ruby-dev bash nodejs npm rub
     && npm -v \
     && unzip -q atom.zip \
     && cd /opt/nodejs && npm install --omit=dev && cd packages/atom-parsetools && bash build.sh && npm install -g . && cd /opt \
-    && python3 -m pip install atom-tools>=0.8.0 --break-system-packages \
+    && python3 -m pip install atom-tools>=0.8.2 --break-system-packages \
     && java --version \
     && npm uninstall -g corepack \
     && apk del npm python3-dev py3-pip build-base git ruby-dev \
