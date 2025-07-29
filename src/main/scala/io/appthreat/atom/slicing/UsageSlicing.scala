@@ -57,7 +57,7 @@ object UsageSlicing:
     else if language.get == Languages.RUBYSRC
     then
       ProgramUsageSlice(
-        slices ++ danglingRouteCallsAsSlices(atom, typeMap),
+        slices ++ danglingRouteCallsAsSlices(atom, typeMap) ++ httpEndpointsAsSlices(atom, typeMap),
         userDefTypes ++ routesAsUDT(atom)
       )
     else
@@ -209,6 +209,54 @@ object UsageSlicing:
               columnNumber = call.method.columnNumber.map(_.intValue())
             )
           )
+
+  private def httpEndpointsAsSlices(
+    atom: Cpg,
+    typeMap: TrieMap[String, String]
+  ): List[MethodUsageSlice] =
+      atom.call.where(_.argument.tag.name("http-endpoint")).l.map(call =>
+        val firstLiteral = call.argument.isLiteral.head
+        val taobj = CallDef(
+          firstLiteral.code,
+          "HttpEndpoint",
+          if call.callee(using NoResolve).method.nonEmpty then
+            Option(call.callee(using NoResolve).method.head.fullName)
+          else Option(call.name),
+          Option(true),
+          call.method.lineNumber.map(_.intValue()),
+          call.method.columnNumber.map(_.intValue())
+        )
+        val ocall = List(
+          ObservedCall(
+            callName = call.name,
+            resolvedMethod =
+                if call.callee(using NoResolve).method.nonEmpty then
+                  Option(call.callee(using NoResolve).method.head.fullName)
+                else Option(call.name),
+            paramTypes = call.argument.typ.fullName.toList,
+            returnType = "",
+            isExternal = Option(true),
+            lineNumber = call.lineNumber.map(_.intValue()),
+            columnNumber = call.columnNumber.map(_.intValue())
+          )
+        )
+        MethodUsageSlice(
+          code = "",
+          fullName = call.method.fullName,
+          signature = call.method.signature,
+          fileName = call.method.filename,
+          slices = Set(
+            ObjectUsageSlice(
+              targetObj = taobj,
+              definedBy = Option(taobj),
+              invokedCalls = ocall,
+              argToCalls = List.empty[ObservedCallWithArgPos]
+            )
+          ),
+          lineNumber = call.method.lineNumber.map(_.intValue()),
+          columnNumber = call.method.columnNumber.map(_.intValue())
+        )
+      )
 
   private def danglingRouteCallsAsSlices(
     atom: Cpg,

@@ -725,7 +725,7 @@ object Atom:
                     x.maxNumDef
                 ))
                     .run(new LayerCreatorContext(ag))
-            case _ =>
+            case _ => new EasyTagsPass(ag).createAndApply()
           generateSlice(config, ag)
           try
             ag.close()
