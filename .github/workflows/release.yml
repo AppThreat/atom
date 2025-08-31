@@ -233,7 +233,7 @@ jobs:
   release-mac:
     if: github.repository_owner == 'appthreat'
     concurrency: release-mac
-    runs-on: macos-latest
+    runs-on: macos-15
     permissions:
       contents: write
       packages: write

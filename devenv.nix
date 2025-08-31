@@ -19,7 +19,7 @@
         };
         javascript = {
           enable = true;
-          package = pkgs.nodejs_23;
+          package = pkgs.nodejs_24;
           npm.enable = true;
         };
         java = {
@@ -52,7 +52,7 @@
         };
       };
       packages = [
-        pkgs.nodejs_23
+        pkgs.nodejs_24
         pkgs.python313Full
         (pkgs.python313.withPackages (ps: [ ps.pip ps.setuptools ]))
         pkgs.sbt
