@@ -15,6 +15,20 @@ and more.
 
 ![npm](https://img.shields.io/npm/dw/@appthreat/atom)
 
+## Languages supported
+
+- C/C++
+- H (C/C++ Header and pre-processed .i files alone)
+- Java (Requires compilation)
+- Jar
+- Android APK (Requires Android SDK. Set the environment variable `ANDROID_HOME` or use the container image.)
+- JavaScript
+- TypeScript
+- Python (Supports 3.x to 3.13)
+- PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.4 with limited support for PHP 5.x)
+- Ruby (Requires Ruby 3.4.5. Supports Ruby 1.8 - 3.4.x syntax)
+- Scala (WIP)
+
 ## Installation
 
 atom comprises a scala core with a Node.js wrapper module. It is currently distributed as a npm package.
@@ -228,20 +242,6 @@ To also compute and include data-dependency graph (DDG) information in the expor
 ```shell
 atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-deps <path to application>
 ```
-
-## Languages supported
-
-- C/C++
-- H (C/C++ Header and pre-processed .i files alone)
-- Java (Requires compilation)
-- Jar
-- Android APK (Requires Android SDK. Set the environment variable `ANDROID_HOME` or use the container image.)
-- JavaScript
-- TypeScript
-- Python
-- PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.4 with limited support for PHP 5.x)
-- Ruby (Requires Ruby 3.4.5. Supports Ruby 1.8 - 3.4.x syntax)
-- Scala (WIP)
 
 ## Environment variables
 
