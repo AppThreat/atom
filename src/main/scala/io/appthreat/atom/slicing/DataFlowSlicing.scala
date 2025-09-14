@@ -47,7 +47,7 @@ class DataFlowSlicing:
     dataFlowSlice
   end calculateDataFlowSlice
 
-  protected def TimedGet(dsf: Future[Option[DataFlowSlice]]) =
+  protected def TimedGet(dsf: Future[Option[DataFlowSlice]]): Option[DataFlowSlice] =
       try
         dsf.get(5, TimeUnit.SECONDS)
       catch

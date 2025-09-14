@@ -61,7 +61,7 @@ object PythonDependencyParser extends XDependencyParser:
             .to(Iterable)
 
     val initialTraversal = if dataFlowEnabled then setupCall.reachableBy(dataSourcesToRequires)
-    else (dataSourcesToRequires ++ installOrExtraRequires)
+    else dataSourcesToRequires ++ installOrExtraRequires
     findOriginalDeclaration(initialTraversal)
         .map(x => X2Cpg.stripQuotes(x.code))
         .map {
@@ -73,7 +73,7 @@ object PythonDependencyParser extends XDependencyParser:
                 ModuleWithVersion(
                   name,
                   exactVersion.stripPrefix("=="),
-                  (versions.diff(Seq(exactVersion))).mkString(",")
+                  versions.diff(Seq(exactVersion)).mkString(",")
                 )
             case requirementsPattern(name, versionSpecifiers, _) =>
                 ModuleWithVersion(name, versionSpecifiers = versionSpecifiers)

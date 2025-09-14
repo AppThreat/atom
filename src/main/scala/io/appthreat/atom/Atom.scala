@@ -107,7 +107,7 @@ object Atom:
           .map(_.pathAsString)
           .headOption
 
-  private val ANDROID_JAR_PATH: Option[String] =
+  private lazy val androidJarPath: Option[String] =
     val envDir    = Option(System.getenv("ANDROID_HOME")).map(File(_))
     val macSdkDir = File.home / "Library" / "Android" / "sdk"
     findAndroidJar(Seq(envDir, Some(macSdkDir)).flatten)
@@ -358,110 +358,161 @@ object Atom:
       s"Atom created successfully at $absolutePath\n"
 
   private def generateSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
-    def sliceCpg(cpg: Cpg): Option[ProgramSlice] =
-        config match
-          case x: AtomDataFlowConfig =>
-              println("Slicing the atom for data-flow. This might take a while ...")
-              val dataFlowConfig = migrateAtomConfigToSliceConfig(x)
-              new DataFlowSlicing().calculateDataFlowSlice(
-                cpg,
-                dataFlowConfig.asInstanceOf[DataFlowConfig]
-              )
-          case x: AtomUsagesConfig =>
-              println("Slicing the atom for usages. This might take a few minutes ...")
-              new ChennaiTagsPass(cpg).createAndApply()
-              val usagesConfig = migrateAtomConfigToSliceConfig(x)
-              Option(UsageSlicing.calculateUsageSlice(
-                cpg,
-                usagesConfig.asInstanceOf[UsagesConfig]
-              ))
-          case x: AtomReachablesConfig =>
-              println("Slicing the atom for reachables. This might take a few minutes ...")
-              val reachablesConfig = migrateAtomConfigToSliceConfig(x)
-              Some(ReachableSlicing.calculateReachableSlice(
-                cpg,
-                reachablesConfig.asInstanceOf[ReachablesConfig]
-              ))
+      try
+        migrateAtomConfigToSliceConfig(config) match
+          case x: AtomConfig if config.exportAtom =>
+              exportAtom(config, ag, x)
+          case _: DataFlowConfig =>
+              generateDataFlowSlice(config, ag)
+          case u: UsagesConfig =>
+              generateUsagesSlice(config, ag, u)
+          case _: ReachablesConfig =>
+              generateReachablesSlice(config, ag)
+          case x: AtomParseDepsConfig =>
+              generateParseDepsSlice(config, ag, x)
           case _ =>
-              None
+              Right("No slice generation required")
+        end match
+      catch
+        case err: Throwable if err.getMessage == null =>
+            Left(err.getStackTrace.take(30).mkString("\n"))
+        case err: Throwable =>
+            Left(err.getStackTrace.take(30).mkString("\n"))
 
+  private def exportAtom(
+    config: AtomConfig,
+    ag: Cpg,
+    exportConfig: AtomConfig
+  ): Either[String, String] =
+    println(s"Exporting the atom to the directory ${exportConfig.exportDir}")
+    exportConfig.exportFormat match
+      case "graphml" =>
+          exportToGraphML(ag, exportConfig.exportDir)
+      case _ =>
+          exportToDot(ag, exportConfig.exportDir)
+    Right("Atom exported successfully")
+
+  private def exportToGraphML(ag: Cpg, exportDir: String): Unit =
+      ag.method.internal
+          .filterNot(_.name.startsWith("<"))
+          .filterNot(_.name.startsWith("lambda"))
+          .gml(exportDir)
+
+  private def exportToDot(ag: Cpg, exportDir: String): Unit =
+    val methods = ag.method.internal
+        .filterNot(_.name.startsWith("<"))
+        .filterNot(_.name.startsWith("lambda"))
+    methods.dot(exportDir)
+    methods.exportAllRepr(exportDir)
+
+  private def generateDataFlowSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
+    println("Slicing the atom for data-flow. This might take a while ...")
+    val dataFlowSlice = calculateDataFlowSlice(ag, config).collect { case x: DataFlowSlice => x }
+    val atomDataFlowSliceJson = dataFlowSlice.map { slice =>
+        AtomDataFlowSlice(slice, DataFlowGraph.buildFromSlice(slice).paths).toJson
+    }
+    saveSlice(config.outputSliceFile, atomDataFlowSliceJson)
+    Right("Data-flow slice generated successfully")
+
+  private def calculateDataFlowSlice(cpg: Cpg, config: BaseConfig): Option[ProgramSlice] =
+      config match
+        case x: AtomDataFlowConfig =>
+            val dataFlowConfig = migrateAtomConfigToSliceConfig(x).asInstanceOf[DataFlowConfig]
+            new DataFlowSlicing().calculateDataFlowSlice(cpg, dataFlowConfig)
+        case _ => None
+
+  private def generateUsagesSlice(
+    config: AtomConfig,
+    ag: Cpg,
+    usagesConfig: UsagesConfig
+  ): Either[String, String] =
+    println("Slicing the atom for usages. This might take a few minutes ...")
+    new ChennaiTagsPass(ag).createAndApply()
+    val slice = calculateUsagesSlice(ag, config)
+    saveSlice(config.outputSliceFile, slice.map(_.toJson))
+    handleEndpointExtraction(config, usagesConfig)
+    Right("Usages slice generated successfully")
+
+  private def calculateUsagesSlice(cpg: Cpg, config: BaseConfig): Option[ProgramSlice] =
+      config match
+        case x: AtomUsagesConfig =>
+            val usagesConfig = migrateAtomConfigToSliceConfig(x).asInstanceOf[UsagesConfig]
+            Option(UsageSlicing.calculateUsageSlice(cpg, usagesConfig))
+        case _ => None
+
+  private def handleEndpointExtraction(config: AtomConfig, usagesConfig: UsagesConfig): Unit =
+      if usagesConfig.extractEndpoints then
+        val openapiFileName = sys.env.getOrElse(
+          "ATOM_TOOLS_OPENAPI_FILENAME",
+          s"${config.language}-openapi.json"
+        )
+        val openapiFormat = sys.env.getOrElse("ATOM_TOOLS_OPENAPI_FORMAT", "openapi3.1.0")
+        val atomToolsWorkDir =
+            sys.env.getOrElse("ATOM_TOOLS_WORK_DIR", config.inputPath.pathAsString)
+        val semanticsSlices = File(atomToolsWorkDir).glob(
+          "*semantics.slices.json",
+          includePath = true,
+          maxDepth = 1
+        )
+        val extraArgs = if semanticsSlices.nonEmpty then
+          s" -e ${semanticsSlices.head.pathAsString}"
+        else ""
+
+        println(
+          s"atom-tools convert -i ${config.outputSliceFile}$extraArgs -t ${config
+                  .language} -f $openapiFormat -o $atomToolsWorkDir${java.io.File.separator}$openapiFileName"
+        )
+
+        ExternalCommand.run(
+          s"atom-tools convert -i ${config.outputSliceFile}$extraArgs -t ${config
+                  .language} -f $openapiFormat -o $atomToolsWorkDir${java.io.File.separator}$openapiFileName",
+          atomToolsWorkDir
+        ) match
+          case Success(_) =>
+              println(s"$openapiFileName created successfully.")
+          case Failure(exception) =>
+              println(
+                s"Failed to run atom-tools. Use the atom container image or perform 'pip install atom-tools' and re-run this command. Exception: ${exception.getMessage}"
+              )
+
+  private def generateReachablesSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
+    println("Slicing the atom for reachables. This might take a few minutes ...")
     try
       migrateAtomConfigToSliceConfig(config) match
-        case x: AtomConfig if config.exportAtom =>
-            println(s"Exporting the atom to the directory ${x.exportDir}")
-            config.exportFormat match
-              case "graphml" =>
-                  ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
-                    _.name.startsWith("lambda")
-                  ).gml(x.exportDir)
-              case _ =>
-                  // Export all representations
-                  ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
-                    _.name.startsWith("lambda")
-                  ).dot(x.exportDir)
-                  // Export individual representations
-                  ag.method.internal.filterNot(_.name.startsWith("<")).filterNot(
-                    _.name.startsWith("lambda")
-                  ).exportAllRepr(x.exportDir)
-        case _: DataFlowConfig =>
-            val dataFlowSlice = sliceCpg(ag).collect { case x: DataFlowSlice => x }
-            val atomDataFlowSliceJson =
-                dataFlowSlice.map(x =>
-                    AtomDataFlowSlice(x, DataFlowGraph.buildFromSlice(x).paths).toJson
-                )
-            saveSlice(config.outputSliceFile, atomDataFlowSliceJson)
-        case u: UsagesConfig =>
-            saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
-            if u.extractEndpoints then
-              val openapiFileName =
-                  sys.env.getOrElse(
-                    "ATOM_TOOLS_OPENAPI_FILENAME",
-                    s"${config.language}-openapi.json"
-                  )
-              val openapiFormat = sys.env.getOrElse("ATOM_TOOLS_OPENAPI_FORMAT", "openapi3.1.0")
-              val atomToolsWorkDir =
-                  sys.env.getOrElse("ATOM_TOOLS_WORK_DIR", config.inputPath.pathAsString)
-              val semanticsSlices = File(atomToolsWorkDir).glob(
-                "*semantics.slices.json",
-                includePath = true,
-                maxDepth = 1
-              )
-              val extraArgs = if semanticsSlices.nonEmpty then
-                s" -e ${semanticsSlices.head.pathAsString}"
-              else ""
-              println(
-                s"atom-tools convert -i ${config.outputSliceFile}${extraArgs} -t ${config
-                        .language} -f ${openapiFormat} -o ${atomToolsWorkDir}${java.io.File.separator}${openapiFileName}"
-              )
-              val result = ExternalCommand.run(
-                s"atom-tools convert -i ${config.outputSliceFile}${extraArgs} -t ${config
-                        .language} -f ${openapiFormat} -o ${atomToolsWorkDir}${java.io.File
-                        .separator}${openapiFileName}",
-                atomToolsWorkDir
-              )
-              result match
-                case Success(_) =>
-                    println(s"${openapiFileName} created successfully.")
-                case Failure(exception) =>
-                    println(
-                      s"Failed to run atom-tools. Use the atom container image or perform 'pip install atom-tools' and re-run this command. Exception: ${exception.getMessage}"
-                    )
-            end if
-        case _: ReachablesConfig =>
-            saveSlice(config.outputSliceFile, sliceCpg(ag).map(_.toJson))
-        case x: AtomParseDepsConfig =>
-            parseDependencies(ag).map(_.toJson) match
-              case Left(err)    => return Left(err)
-              case Right(slice) => saveSlice(x.outputSliceFile, Option(slice))
+        case reachablesConfig: ReachablesConfig =>
+            val baseOutputPath =
+                if config.outputSliceFile.name.endsWith(".json") then
+                  config.outputSliceFile.pathAsString.stripSuffix(".json")
+                else
+                  config.outputSliceFile.pathAsString
+
+            val chunkSize = 1000
+            ReachableSlicing.calculateReachableSliceAndPersist(
+              ag,
+              reachablesConfig,
+              baseOutputPath,
+              chunkSize
+            )
+            Right("Reachables slices generated and persisted successfully to multiple files.")
         case _ =>
-      end match
-      Right("Atom sliced successfully")
+            Left("Invalid configuration for reachables slicing.")
     catch
-      case err: Throwable if err.getMessage == null =>
-          Left(err.getStackTrace.take(7).mkString("\n"))
-      case err: Throwable => Left(err.getMessage)
+      case ex: Exception =>
+          Left(s"Failed to generate or persist reachables slices: ${ex.getMessage}")
     end try
-  end generateSlice
+  end generateReachablesSlice
+
+  private def generateParseDepsSlice(
+    config: AtomConfig,
+    ag: Cpg,
+    parseDepsConfig: AtomParseDepsConfig
+  ): Either[String, String] =
+      parseDependencies(ag).map(_.toJson) match
+        case Left(err) =>
+            Left(err)
+        case Right(slice) =>
+            saveSlice(parseDepsConfig.outputSliceFile, Option(slice))
+            Right("Parse dependencies slice generated successfully")
 
   private def saveSlice(outFile: File, programSlice: Option[String]): Unit =
       programSlice.foreach { slice =>
@@ -519,223 +570,257 @@ object Atom:
 
   private def generateForLanguage(language: String, config: AtomConfig): Either[String, String] =
     val outputAtomFile = config.outputAtomFile.pathAsString
-    // Create a new atom
-    def createAtom =
-        language match
-          case "H" | "HPP" | "I" =>
-              new C2Atom()
-                  .createCpg(
-                    CConfig(
-                      includeComments = false,
-                      logProblems = false,
-                      includePathsAutoDiscovery = false
-                    )
-                        .withLogPreprocessor(false)
-                        .withInputPath(config.inputPath.pathAsString)
-                        .withOutputPath(outputAtomFile)
-                        .withFunctionBodies(false)
-                        .withIgnoredFilesRegex(
-                          COMMON_IGNORE_REGEX
-                        )
-                  )
-          case Languages.C | Languages.NEWC | "CPP" | "C++" =>
-              new C2Cpg()
-                  .createCpgWithOverlays(
-                    CConfig(
-                      includeComments = false,
-                      logProblems = false,
-                      includePathsAutoDiscovery = true
-                    )
-                        .withLogPreprocessor(false)
-                        .withInputPath(config.inputPath.pathAsString)
-                        .withOutputPath(outputAtomFile)
-                        .withFunctionBodies(true)
-                        .withIgnoredFilesRegex(
-                          COMMON_IGNORE_REGEX
-                        )
-                        .withIncludePaths(C2ATOM_INCLUDE_PATH)
-                  )
-          case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
-              new Jimple2Cpg()
-                  .createCpgWithOverlays(
-                    JimpleConfig(android = ANDROID_JAR_PATH, fullResolver = true)
-                        .withInputPath(config.inputPath.pathAsString)
-                        .withOutputPath(outputAtomFile)
-                        .withFullResolver(true)
-                  )
-          case Languages.JAVA | Languages.JAVASRC =>
-              new JavaSrc2Cpg()
-                  .createCpgWithOverlays(
-                    JavaConfig(
-                      fetchDependencies = true,
-                      inferenceJarPaths = JAR_INFERENCE_PATHS,
-                      enableTypeRecovery = true,
-                      delombokMode = Some(DEFAULT_DELOMBOK_MODE)
-                    )
-                        .withInputPath(config.inputPath.pathAsString)
-                        .withIgnoredFilesRegex(
-                          ".*(target|build)/(generated|intermediates|outputs|tmp).*"
-                        )
-                        .withOutputPath(outputAtomFile)
-                  )
-          case "SCALA" | "TASTY" | "SBT" =>
-              val workDir =
-                  sys.env.getOrElse("ATOM_SCALASEM_WORK_DIR", config.inputPath.pathAsString)
-              val defaultSemanticSlicesFiles = config.inputPath / "semantics.slices.json"
-              var semanticSlicesFile =
-                  sys.env.getOrElse(
-                    "ATOM_SCALASEM_SLICES_FILE",
-                    defaultSemanticSlicesFiles.pathAsString
-                  )
-              if !semanticSlicesFile.endsWith("semantics.slices.json") then
-                semanticSlicesFile = defaultSemanticSlicesFiles.pathAsString
-              val result = ExternalCommand.run(
-                s"scalasem ${workDir} ${semanticSlicesFile}",
-                workDir
-              )
-              result match
-                case Success(_) =>
-                    if File(semanticSlicesFile).exists then
-                      println(
-                        s"Semantic slices file '${semanticSlicesFile}' created successfully."
-                      )
-                    else
-                      println(s"scalasem ${workDir} ${semanticSlicesFile}")
-                      println(
-                        s"scalasem command did not produce the semantic slices file."
-                      )
-                case Failure(exception) =>
-                    println(
-                      s"Failed to run scalasem. Use the atom container image and re-run this command. Exception: ${exception.getMessage}"
-                    )
-              new Jimple2Cpg()
-                  .createCpgWithOverlays(
-                    JimpleConfig(scalaSdk = Option(System.getProperty("java.class.path")))
-                        .withInputPath(config.inputPath.pathAsString)
-                        .withOutputPath(outputAtomFile)
-                        .withFullResolver(true)
-                        .withOnlyClasses(true)
-                        .withDepth(1)
-                        .withRecurse(true)
-                  )
-          case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
-              new JsSrc2Cpg()
-                  .createCpgWithOverlays(
-                    JSConfig()
-                        .withDisableDummyTypes(true)
-                        .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
-                        .withInputPath(config.inputPath.pathAsString)
-                        .withOutputPath(outputAtomFile)
-                  )
-                  .map { ag =>
-                    new JavaScriptInheritanceNamePass(ag).createAndApply()
-                    new ConstClosurePass(ag).createAndApply()
-                    new ImportResolverPass(ag).createAndApply()
-                    new JavaScriptTypeRecoveryPass(ag).createAndApply()
-                    new TypeHintPass(ag).createAndApply()
-                    ag
-                  }
-          case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
-              new Py2CpgOnFileSystem()
-                  .createCpgWithOverlays(
-                    PyConfig()
-                        .withDisableDummyTypes(true)
-                        .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
-                        .withInputPath(config.inputPath.pathAsString)
-                        .withOutputPath(outputAtomFile)
-                        .withDefaultIgnoredFilesRegex(List("\\..*".r))
-                        .withIgnoredFilesRegex(
-                          pythonIgnoredFilesRegex
-                        )
-                  )
-                  .map { ag =>
-                    new PythonImportsPass(ag).createAndApply()
-                    new PyImportResolverPass(ag).createAndApply()
-                    new DynamicTypeHintFullNamePass(ag).createAndApply()
-                    new PythonInheritanceNamePass(ag).createAndApply()
-                    new PythonTypeRecoveryPass(
-                      ag,
-                      XTypeRecoveryConfig(enabledDummyTypes = false)
-                    )
-                        .createAndApply()
-                    new PythonTypeHintCallLinker(ag).createAndApply()
-                    new AstLinkerPass(ag).createAndApply()
-                    ag
-                  }
-          case Languages.PHP =>
-              new Php2Atom().createCpgWithOverlays(
-                PhpConfig()
-                    .withDisableDummyTypes(true)
-                    .withInputPath(config.inputPath.pathAsString)
-                    .withOutputPath(outputAtomFile)
-                    .withDefaultIgnoredFilesRegex(List("\\..*".r))
-                    .withIgnoredFilesRegex(".*(samples|examples|docs).*")
-              ).map { ag =>
-                new PhpSetKnownTypesPass(ag).createAndApply()
-                ag
-              }
-          case Languages.RUBYSRC | "RUBY" | "RB" | "JRUBY" =>
-              new Ruby2Atom().createCpgWithOverlays(
-                RubyConfig()
-                    .withInputPath(config.inputPath.pathAsString)
-                    .withOutputPath(outputAtomFile)
-                    .withIgnoredFilesRegex(".*(docs|vendor|spec).*")
-              ).map { ag =>
-                  ag
-              }
-          case _ => Failure(
-                new RuntimeException(
-                  s"No language frontend supported for language '$language'"
-                )
-              )
-    // Should we reuse or create the atom
-    def getOrCreateAtom =
-        config match
-          case x: AtomConfig
-              if (x.isInstanceOf[
-                AtomUsagesConfig
-              ] || config.exportAtom || config.reuseAtom) && config.outputAtomFile.exists() =>
-              try
-                loadFromOdb(outputAtomFile)
-              catch
-                case _: Throwable =>
-                    println("Removing the existing atom file since it is corrupted.")
-                    config.outputAtomFile.delete(true)
-                    createAtom
-          case _ =>
-              config.outputAtomFile.delete(true)
-              createAtom
 
-    getOrCreateAtom match
+    getOrCreateAtom(language, config, outputAtomFile) match
       case Failure(exception) =>
-          Left(exception.getMessage)
+          Left(exception.getStackTrace.take(30).mkString("\n"))
       case Success(ag) =>
-          config match
-            case x: AtomConfig
-                if !x.reuseAtom && (x.dataDeps || x.isInstanceOf[AtomDataFlowConfig] || x.isInstanceOf[
-                  AtomReachablesConfig
-                ]) =>
-                println("Generating data-flow dependencies from atom. Please wait ...")
-                // Enhance with the BOM from cdxgen
-                new CdxPass(ag).createAndApply()
-                // Enhance with simple and easy tags
-                new EasyTagsPass(ag).createAndApply()
-                new ChennaiTagsPass(ag).createAndApply()
-                new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions =
-                    x.maxNumDef
-                ))
-                    .run(new LayerCreatorContext(ag))
-            case _ => new EasyTagsPass(ag).createAndApply()
-          generateSlice(config, ag)
-          try
-            ag.close()
-          catch
-            case err: Throwable if err.getMessage == null =>
-                Left(err.getStackTrace.take(7).mkString("\n"))
-            case err: Throwable => Left(err.getMessage)
-          Right("Atom generation successful")
-    end match
-  end generateForLanguage
+          for
+            _ <- enhanceCpg(config, ag)
+            _ <- generateSlice(config, ag)
+            _ <- closeCpg(ag)
+          yield "Atom generation successful"
+
+  private def getOrCreateAtom(
+    language: String,
+    config: AtomConfig,
+    outputAtomFile: String
+  ): Try[Cpg] =
+      config match
+        case x: AtomConfig if shouldReuseExistingAtom(x, outputAtomFile) =>
+            loadExistingAtom(outputAtomFile)
+        case _ =>
+            createNewAtom(language, config, outputAtomFile)
+
+  private def shouldReuseExistingAtom(config: AtomConfig, outputAtomFile: String): Boolean =
+      (config.isInstanceOf[AtomUsagesConfig] || config.exportAtom || config.reuseAtom) &&
+          File(outputAtomFile).exists
+
+  private def loadExistingAtom(outputAtomFile: String): Try[Cpg] =
+      try
+        loadFromOdb(outputAtomFile)
+      catch
+        case _: Throwable =>
+            println("Removing the existing atom file since it is corrupted.")
+            File(outputAtomFile).delete(true)
+            Failure(new RuntimeException("Corrupted atom file removed"))
+
+  private def createNewAtom(
+    language: String,
+    config: AtomConfig,
+    outputAtomFile: String
+  ): Try[Cpg] =
+    val result = language match
+      case "H" | "HPP" | "I" =>
+          createC2Atom(config, outputAtomFile)
+      case Languages.C | Languages.NEWC | "CPP" | "C++" =>
+          createC2Cpg(config, outputAtomFile)
+      case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
+          createJimple2Cpg(config, outputAtomFile)
+      case Languages.JAVA | Languages.JAVASRC =>
+          createJavaSrc2Cpg(config, outputAtomFile)
+      case "SCALA" | "TASTY" | "SBT" =>
+          createScalaCpg(config, outputAtomFile)
+      case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
+          createJsSrc2Cpg(config, outputAtomFile)
+      case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
+          createPythonCpg(config, outputAtomFile)
+      case Languages.PHP =>
+          createPhpCpg(config, outputAtomFile)
+      case Languages.RUBYSRC | "RUBY" | "RB" | "JRUBY" =>
+          createRubyCpg(config, outputAtomFile)
+      case _ =>
+          Failure(new RuntimeException(s"No language frontend supported for language '$language'"))
+
+    // Clean up output file if creation failed
+    result.recoverWith { case _ =>
+        File(outputAtomFile).delete(true)
+        result
+    }
+  end createNewAtom
+
+  private def createC2Atom(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
+      new C2Atom().createCpg(
+        CConfig(
+          includeComments = false,
+          logProblems = false,
+          includePathsAutoDiscovery = false
+        )
+            .withLogPreprocessor(false)
+            .withInputPath(config.inputPath.pathAsString)
+            .withOutputPath(outputAtomFile)
+            .withFunctionBodies(false)
+            .withIgnoredFilesRegex(COMMON_IGNORE_REGEX)
+      )
+
+  private def createC2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
+      new C2Cpg().createCpgWithOverlays(
+        CConfig(
+          includeComments = false,
+          logProblems = false,
+          includePathsAutoDiscovery = true
+        )
+            .withLogPreprocessor(false)
+            .withInputPath(config.inputPath.pathAsString)
+            .withOutputPath(outputAtomFile)
+            .withFunctionBodies(true)
+            .withIgnoredFilesRegex(COMMON_IGNORE_REGEX)
+            .withIncludePaths(C2ATOM_INCLUDE_PATH)
+      )
+
+  private def createJimple2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
+      new Jimple2Cpg().createCpgWithOverlays(
+        JimpleConfig(android = androidJarPath, fullResolver = true)
+            .withRecurse(true)
+            .withDepth(10)
+            .withInputPath(config.inputPath.pathAsString)
+            .withOutputPath(outputAtomFile)
+            .withFullResolver(true)
+      )
+
+  private def createJavaSrc2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
+      new JavaSrc2Cpg().createCpgWithOverlays(
+        JavaConfig(
+          fetchDependencies = true,
+          inferenceJarPaths = JAR_INFERENCE_PATHS,
+          enableTypeRecovery = true,
+          delombokMode = Some(DEFAULT_DELOMBOK_MODE)
+        )
+            .withInputPath(config.inputPath.pathAsString)
+            .withIgnoredFilesRegex(".*(target|build)/(generated|intermediates|outputs|tmp).*")
+            .withOutputPath(outputAtomFile)
+      )
+
+  private def createScalaCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
+    handleScalaSemantics(config)
+    new Jimple2Cpg().createCpgWithOverlays(
+      JimpleConfig(scalaSdk = Option(System.getProperty("java.class.path")))
+          .withInputPath(config.inputPath.pathAsString)
+          .withOutputPath(outputAtomFile)
+          .withFullResolver(true)
+          .withOnlyClasses(true)
+          .withDepth(1)
+          .withRecurse(true)
+    )
+
+  private def handleScalaSemantics(config: AtomConfig): Unit =
+    val workDir = sys.env.getOrElse("ATOM_SCALASEM_WORK_DIR", config.inputPath.pathAsString)
+    val defaultSemanticSlicesFiles = config.inputPath / "semantics.slices.json"
+    var semanticSlicesFile = sys.env.getOrElse(
+      "ATOM_SCALASEM_SLICES_FILE",
+      defaultSemanticSlicesFiles.pathAsString
+    )
+
+    if !semanticSlicesFile.endsWith("semantics.slices.json") then
+      semanticSlicesFile = defaultSemanticSlicesFiles.pathAsString
+
+    ExternalCommand.run(s"scalasem $workDir $semanticSlicesFile", workDir) match
+      case Success(_) =>
+          if File(semanticSlicesFile).exists then
+            println(s"Semantic slices file '$semanticSlicesFile' created successfully.")
+          else
+            println(s"scalasem $workDir $semanticSlicesFile")
+            println("scalasem command did not produce the semantic slices file.")
+      case Failure(exception) =>
+          println(
+            s"Failed to run scalasem. Use the atom container image and re-run this command. Exception: ${exception.getMessage}"
+          )
+  end handleScalaSemantics
+
+  private def createJsSrc2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
+      new JsSrc2Cpg()
+          .createCpgWithOverlays(
+            JSConfig()
+                .withDisableDummyTypes(true)
+                .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
+                .withInputPath(config.inputPath.pathAsString)
+                .withOutputPath(outputAtomFile)
+          )
+          .map { ag =>
+            new JavaScriptInheritanceNamePass(ag).createAndApply()
+            new ConstClosurePass(ag).createAndApply()
+            new ImportResolverPass(ag).createAndApply()
+            new JavaScriptTypeRecoveryPass(ag).createAndApply()
+            new TypeHintPass(ag).createAndApply()
+            ag
+          }
+
+  private def createPythonCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
+      new Py2CpgOnFileSystem()
+          .createCpgWithOverlays(
+            PyConfig()
+                .withDisableDummyTypes(true)
+                .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
+                .withInputPath(config.inputPath.pathAsString)
+                .withOutputPath(outputAtomFile)
+                .withDefaultIgnoredFilesRegex(List("\\..*".r))
+                .withIgnoredFilesRegex(pythonIgnoredFilesRegex)
+          )
+          .map { ag =>
+            new PythonImportsPass(ag).createAndApply()
+            new PyImportResolverPass(ag).createAndApply()
+            new DynamicTypeHintFullNamePass(ag).createAndApply()
+            new PythonInheritanceNamePass(ag).createAndApply()
+            new PythonTypeRecoveryPass(
+              ag,
+              XTypeRecoveryConfig(enabledDummyTypes = false)
+            ).createAndApply()
+            new PythonTypeHintCallLinker(ag).createAndApply()
+            new AstLinkerPass(ag).createAndApply()
+            ag
+          }
+
+  private def createPhpCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
+      new Php2Atom().createCpgWithOverlays(
+        PhpConfig()
+            .withDisableDummyTypes(true)
+            .withInputPath(config.inputPath.pathAsString)
+            .withOutputPath(outputAtomFile)
+            .withDefaultIgnoredFilesRegex(List("\\..*".r))
+            .withIgnoredFilesRegex(".*(samples|examples|docs).*")
+      ).map { ag =>
+        new PhpSetKnownTypesPass(ag).createAndApply()
+        ag
+      }
+
+  private def createRubyCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
+      new Ruby2Atom().createCpgWithOverlays(
+        RubyConfig()
+            .withInputPath(config.inputPath.pathAsString)
+            .withOutputPath(outputAtomFile)
+            .withIgnoredFilesRegex(".*(docs|vendor|spec).*")
+      ).map { ag =>
+          ag
+      }
+
+  private def enhanceCpg(config: AtomConfig, cpg: Cpg): Either[String, Unit] =
+      config match
+        case x: AtomConfig if needsDataFlowEnhancement(x) =>
+            println("Generating data-flow dependencies from atom. Please wait ...")
+            new CdxPass(cpg).createAndApply()
+            new EasyTagsPass(cpg).createAndApply()
+            new ChennaiTagsPass(cpg).createAndApply()
+            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
+                .run(new LayerCreatorContext(cpg))
+            Right(())
+        case _ =>
+            new EasyTagsPass(cpg).createAndApply()
+            Right(())
+
+  private def needsDataFlowEnhancement(config: AtomConfig): Boolean =
+      !config.reuseAtom && (config.dataDeps ||
+          config.isInstanceOf[AtomDataFlowConfig] ||
+          config.isInstanceOf[AtomReachablesConfig])
+
+  private def closeCpg(cpg: Cpg): Either[String, Unit] =
+      try
+        cpg.close()
+        Right(())
+      catch
+        case err: Throwable if err.getMessage == null =>
+            Left(err.getStackTrace.take(30).mkString("\n"))
+        case err: Throwable =>
+            Left(err.getStackTrace.take(30).mkString("\n"))
 
   private def parseConfig(parserArgs: List[String]): Either[String, BaseConfig] =
       optionParser.parse(
