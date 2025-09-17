@@ -374,10 +374,8 @@ object Atom:
               Right("No slice generation required")
         end match
       catch
-        case err: Throwable if err.getMessage == null =>
-            Left(err.getStackTrace.take(30).mkString("\n"))
         case err: Throwable =>
-            Left(err.getStackTrace.take(30).mkString("\n"))
+            Left(err.getStackTrace.take(20).mkString("\n"))
 
   private def exportAtom(
     config: AtomConfig,
@@ -573,7 +571,7 @@ object Atom:
 
     getOrCreateAtom(language, config, outputAtomFile) match
       case Failure(exception) =>
-          Left(exception.getStackTrace.take(30).mkString("\n"))
+          Left(exception.getStackTrace.take(20).mkString("\n"))
       case Success(ag) =>
           for
             _ <- enhanceCpg(config, ag)
@@ -817,10 +815,8 @@ object Atom:
         cpg.close()
         Right(())
       catch
-        case err: Throwable if err.getMessage == null =>
-            Left(err.getStackTrace.take(30).mkString("\n"))
         case err: Throwable =>
-            Left(err.getStackTrace.take(30).mkString("\n"))
+            Left(err.getStackTrace.take(20).mkString("\n"))
 
   private def parseConfig(parserArgs: List[String]): Either[String, BaseConfig] =
       optionParser.parse(
