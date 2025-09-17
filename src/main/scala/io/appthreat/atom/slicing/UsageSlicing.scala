@@ -13,8 +13,7 @@ import scala.annotation.unused
 import scala.collection.concurrent.TrieMap
 import scala.util.Try
 
-/** A utility for slicing based off of usage references for identifiers and parameters. This is
-  * mainly tested around JavaScript CPGs.
+/** A utility for slicing based off of usage references for identifiers and parameters.
   */
 object UsageSlicing:
 
@@ -33,51 +32,69 @@ object UsageSlicing:
     *   a set of object slices.
     */
   def calculateUsageSlice(atom: Cpg, config: UsagesConfig): ProgramSlice =
-    implicit val implicitConfig: UsagesConfig = config
     excludeOperatorCalls.set(config.excludeOperatorCalls)
 
-    def getDeclarations: Traversal[Declaration] = (config.fileFilter match
-      case Some(fileName) => atom.file.nameExact(fileName).method
-      case None           => atom.method
-    ).withMethodNameFilter.withMethodParameterFilter.withMethodAnnotationFilter.declaration
-
-    def typeMap      = TrieMap.from(atom.typeDecl.map(f => (f.name, f.fullName)).toMap)
-    val slices       = usageSlices(atom, () => getDeclarations, typeMap)
+    val declarations = getDeclarations(atom, config)
+    val typeMap      = TrieMap.from(atom.typeDecl.map(f => (f.name, f.fullName)).toMap)
+    val slices       = usageSlices(atom, declarations, typeMap)(using config)
     val language     = atom.metaData.language.headOption
     val userDefTypes = userDefinedTypes(atom)
-    if language.get == Languages.NEWC || language.get == Languages.C || language.get == Languages.PHP
-    then
-      ProgramUsageSlice(slices ++ importsAsSlices(atom), userDefTypes ++ routesAsUDT(atom))
-    else if language.get == Languages.PYTHON || language.get == Languages.PYTHONSRC
-    then
-      ProgramUsageSlice(
-        slices ++ externalCalleesAsSlices(atom, typeMap),
-        userDefTypes ++ routesAsUDT(atom)
-      )
-    else if language.get == Languages.RUBYSRC
-    then
-      ProgramUsageSlice(
-        slices ++ danglingRouteCallsAsSlices(atom, typeMap) ++ httpEndpointsAsSlices(atom, typeMap),
-        userDefTypes ++ routesAsUDT(atom)
-      )
-    else
-      ProgramUsageSlice(slices ++ unusedTypeDeclAsSlices(atom), userDefTypes)
-  end calculateUsageSlice
+
+    createProgramUsageSlice(atom, language, slices, userDefTypes, typeMap, config)
+
+  private def getDeclarations(atom: Cpg, config: UsagesConfig): Traversal[Declaration] =
+    val methods = config.fileFilter match
+      case Some(fileName) => atom.file.nameExact(fileName).method
+      case None           => atom.method
+
+    methods
+        .withMethodNameFilter(using config)
+        .withMethodParameterFilter(using config)
+        .withMethodAnnotationFilter(using config)
+        .declaration
+
+  private def createProgramUsageSlice(
+    atom: Cpg,
+    language: Option[String],
+    slices: List[MethodUsageSlice],
+    userDefTypes: List[UserDefinedType],
+    typeMap: TrieMap[String, String],
+    config: UsagesConfig
+  ): ProgramUsageSlice =
+      language match
+        case Some(Languages.NEWC | Languages.C | Languages.PHP) =>
+            ProgramUsageSlice(slices ++ importsAsSlices(atom), userDefTypes ++ routesAsUDT(atom))
+        case Some(Languages.PYTHON | Languages.PYTHONSRC) =>
+            ProgramUsageSlice(
+              slices ++ externalCalleesAsSlices(atom),
+              userDefTypes ++ routesAsUDT(atom)
+            )
+        case Some(Languages.RUBYSRC) =>
+            ProgramUsageSlice(
+              slices ++ danglingRouteCallsAsSlices(atom, typeMap) ++ httpEndpointsAsSlices(
+                atom,
+                typeMap
+              ),
+              userDefTypes ++ routesAsUDT(atom)
+            )
+        case _ =>
+            ProgramUsageSlice(slices ++ unusedTypeDeclAsSlices(atom), userDefTypes)
 
   import io.shiftleft.semanticcpg.codedumper.CodeDumper.dump
 
   private def usageSlices(
     atom: Cpg,
-    getDeclIdentifiers: () => Traversal[Declaration],
+    getDeclIdentifiers: Traversal[Declaration],
     typeMap: TrieMap[String, String]
   )(implicit config: UsagesConfig): List[MethodUsageSlice] =
     val language = atom.metaData.language.headOption
     val root     = atom.metaData.root.headOption
-    getDeclIdentifiers()
+
+    getDeclIdentifiers
         .to(LazyList)
-        .filterNot(a => a.name.equals("*"))
+        .filterNot(_.name.equals("*"))
         .filter(a => !a.name.startsWith("_tmp_") && atLeastNCalls(a, config.minNumCalls))
-        .map(a => exec.submit(new TrackUsageTask(atom, a, typeMap)))
+        .map(a => exec.submit(new TrackUsageTask(atom, a, typeMap)(using config)))
         .flatMap(TimedGet)
         .groupBy { case (scope, _) => scope }
         .view
@@ -89,174 +106,191 @@ object UsageSlicing:
             ) || m.name.startsWith("<clinit>")
         )
         .sortBy(_._1.fullName)
-        .map { case (method, slices) =>
-            MethodUsageSlice(
-              code =
-                  if config.excludeMethodSource || !better.files.File(method.filename).exists
-                  then ""
-                  else
-                    Try(dump(
-                      method.location,
-                      language,
-                      root,
-                      highlight = false,
-                      withArrow = false
-                    )).getOrElse("")
-              ,
-              fullName = method.fullName,
-              signature = method.signature,
-              fileName = method.filename,
-              slices = slices.iterator.map(_._2).toSet,
-              lineNumber = method.lineNumber.map(_.intValue()),
-              columnNumber = method.columnNumber.map(_.intValue())
-            )
+        .map { case (method, sliceList) =>
+            val slices = sliceList.map(_._2).toSet
+            createMethodUsageSlice(method, slices, language, root, config)
         }
         .toList
   end usageSlices
 
-  private def cleanupImportCode(code: String) =
+  private def createMethodUsageSlice(
+    method: Method,
+    slices: Set[ObjectUsageSlice],
+    language: Option[String],
+    root: Option[String],
+    config: UsagesConfig
+  ): MethodUsageSlice =
+      MethodUsageSlice(
+        code = getSourceCode(method, config, language, root),
+        fullName = method.fullName,
+        signature = method.signature,
+        fileName = method.filename,
+        slices = slices,
+        lineNumber = method.lineNumber.map(_.intValue()),
+        columnNumber = method.columnNumber.map(_.intValue())
+      )
+
+  private def getSourceCode(
+    method: Method,
+    config: UsagesConfig,
+    language: Option[String],
+    root: Option[String]
+  ): String =
+      if config.excludeMethodSource || !better.files.File(method.filename).exists then
+        ""
+      else
+        Try(dump(
+          method.location,
+          language,
+          root,
+          highlight = false,
+          withArrow = false
+        )).getOrElse("")
+
+  private def cleanupImportCode(code: String): String =
       if code.startsWith("use") then code else code.replaceAll("\\s*", "")
 
-  private def importLineNumber(im: Import) =
+  private def importLineNumber(im: Import): Option[Int] =
       if im.file.nonEmpty && im.file.head.lineNumber.nonEmpty then
         im.file.head.lineNumber.map(_.intValue())
       else if im.lineNumber.nonEmpty then im.lineNumber.map(_.intValue())
       else None
 
-  private def importColumnNumber(im: Import) =
+  private def importColumnNumber(im: Import): Option[Int] =
       if im.file.nonEmpty && im.file.head.columnNumber.nonEmpty then
         im.file.head.columnNumber.map(_.intValue())
       else if im.columnNumber.nonEmpty then im.columnNumber.map(_.intValue())
       else None
 
   private def importsAsSlices(atom: Cpg): List[MethodUsageSlice] =
-      atom.imports.l.map(im =>
-          MethodUsageSlice(
-            code = if im.code.nonEmpty then cleanupImportCode(im.code) else "",
-            fullName = im.importedEntity.get,
-            signature = im.importedAs.getOrElse(""),
-            fileName = if im.file.nonEmpty then im.file.head.name else "",
-            slices = Seq[ObjectUsageSlice]().toSet,
-            lineNumber = importLineNumber(im),
-            columnNumber = importColumnNumber(im)
-          )
+      atom.imports.l.map(createImportSlice)
+
+  private def createImportSlice(im: Import): MethodUsageSlice =
+      MethodUsageSlice(
+        code = if im.code.nonEmpty then cleanupImportCode(im.code) else "",
+        fullName = im.importedEntity.get,
+        signature = im.importedAs.getOrElse(""),
+        fileName = if im.file.nonEmpty then im.file.head.name else "",
+        slices = Set.empty[ObjectUsageSlice],
+        lineNumber = importLineNumber(im),
+        columnNumber = importColumnNumber(im)
       )
 
   private def unusedTypeDeclAsSlices(atom: Cpg): List[MethodUsageSlice] =
-      atom.typeDecl.annotation.filter(_.method.isEmpty).l.map(im =>
-          MethodUsageSlice(
-            code = if im.code.nonEmpty then im.code.replaceAll("\\s*", "") else "",
-            fullName = im.fullName,
-            signature = s"@${im.name}",
-            fileName = if im.file.nonEmpty then im.file.head.name else "",
-            slices = Seq[ObjectUsageSlice]().toSet,
-            lineNumber =
-                im.lineNumber.map(_.intValue()),
-            columnNumber =
-                im.columnNumber.map(_.intValue())
-          )
+      atom.typeDecl.annotation.filter(_.method.isEmpty).l.map(createUnusedTypeDeclSlice)
+
+  private def createUnusedTypeDeclSlice(annot: Annotation): MethodUsageSlice =
+      MethodUsageSlice(
+        code = if annot.code.nonEmpty then annot.code.replaceAll("\\s*", "") else "",
+        fullName = annot.fullName,
+        signature = s"@${annot.name}",
+        fileName = if annot.file.nonEmpty then annot.file.head.name else "",
+        slices = Set.empty[ObjectUsageSlice],
+        lineNumber = annot.lineNumber.map(_.intValue()),
+        columnNumber = annot.columnNumber.map(_.intValue())
       )
 
-  private def externalCalleesAsSlices(
-    atom: Cpg,
-    typeMap: TrieMap[String, String]
-  ): List[MethodUsageSlice] =
+  private def externalCalleesAsSlices(atom: Cpg): List[MethodUsageSlice] =
       atom.call
           .where(_.callee(using NoResolve).isExternal)
           .filterNot(_.name.startsWith("<operator"))
           .l
-          .map(call =>
-            val taobj = CallDef(
-              if call.callee(using NoResolve).method.nonEmpty then
-                call.callee(using NoResolve).method.head.name
-              else "",
-              "",
-              if call.callee(using NoResolve).method.nonEmpty then
-                Option(call.callee(using NoResolve).method.head.fullName)
-              else Option(""),
-              Option(call.callee(using NoResolve).head.isExternal),
-              call.callee(using NoResolve).head.method.lineNumber.map(_.intValue()),
-              call.callee(using NoResolve).head.method.columnNumber.map(_.intValue())
-            )
-            val ocall = List(
-              ObservedCall(
-                callName = call.name,
-                resolvedMethod =
-                    if call.callee(using NoResolve).method.nonEmpty then
-                      Option(call.callee(using NoResolve).method.head.fullName)
-                    else Option(""),
-                paramTypes = List.empty[String],
-                returnType = "",
-                isExternal = Option(true),
-                lineNumber = call.lineNumber.map(_.intValue()),
-                columnNumber = call.columnNumber.map(_.intValue())
-              )
-            )
-            MethodUsageSlice(
-              code = "",
-              fullName = call.method.fullName,
-              signature = call.method.signature,
-              fileName = call.method.filename,
-              slices = Set(
-                ObjectUsageSlice(
-                  targetObj = taobj,
-                  definedBy = Option(taobj),
-                  invokedCalls = ocall,
-                  argToCalls = List.empty[ObservedCallWithArgPos]
-                )
-              ),
-              lineNumber = call.method.lineNumber.map(_.intValue()),
-              columnNumber = call.method.columnNumber.map(_.intValue())
-            )
-          )
+          .map(createExternalCalleeSlice)
+
+  private def createExternalCalleeSlice(call: Call): MethodUsageSlice =
+    val taobj = CallDef(
+      if call.callee(using NoResolve).method.nonEmpty then
+        call.callee(using NoResolve).method.head.name
+      else "",
+      "",
+      if call.callee(using NoResolve).method.nonEmpty then
+        Option(call.callee(using NoResolve).method.head.fullName)
+      else Option(""),
+      Option(call.callee(using NoResolve).head.isExternal),
+      call.callee(using NoResolve).head.method.lineNumber.map(_.intValue()),
+      call.callee(using NoResolve).head.method.columnNumber.map(_.intValue())
+    )
+    val ocall = List(
+      ObservedCall(
+        callName = call.name,
+        resolvedMethod =
+            if call.callee(using NoResolve).method.nonEmpty then
+              Option(call.callee(using NoResolve).method.head.fullName)
+            else Option(""),
+        paramTypes = List.empty[String],
+        returnType = "",
+        isExternal = Option(true),
+        lineNumber = call.lineNumber.map(_.intValue()),
+        columnNumber = call.columnNumber.map(_.intValue())
+      )
+    )
+    MethodUsageSlice(
+      code = "",
+      fullName = call.method.fullName,
+      signature = call.method.signature,
+      fileName = call.method.filename,
+      slices = Set(
+        ObjectUsageSlice(
+          targetObj = taobj,
+          definedBy = Option(taobj),
+          invokedCalls = ocall,
+          argToCalls = List.empty[ObservedCallWithArgPos]
+        )
+      ),
+      lineNumber = call.method.lineNumber.map(_.intValue()),
+      columnNumber = call.method.columnNumber.map(_.intValue())
+    )
+  end createExternalCalleeSlice
 
   private def httpEndpointsAsSlices(
     atom: Cpg,
     typeMap: TrieMap[String, String]
   ): List[MethodUsageSlice] =
-      atom.call.where(_.argument.tag.name("http-endpoint")).l.map(call =>
-        val firstLiteral = call.argument.isLiteral.head
-        val taobj = CallDef(
-          firstLiteral.code,
-          "HttpEndpoint",
-          if call.callee(using NoResolve).method.nonEmpty then
-            Option(call.callee(using NoResolve).method.head.fullName)
-          else Option(call.name),
-          Option(true),
-          call.method.lineNumber.map(_.intValue()),
-          call.method.columnNumber.map(_.intValue())
-        )
-        val ocall = List(
-          ObservedCall(
-            callName = call.name,
-            resolvedMethod =
-                if call.callee(using NoResolve).method.nonEmpty then
-                  Option(call.callee(using NoResolve).method.head.fullName)
-                else Option(call.name),
-            paramTypes = call.argument.typ.fullName.toList,
-            returnType = "",
-            isExternal = Option(true),
-            lineNumber = call.lineNumber.map(_.intValue()),
-            columnNumber = call.columnNumber.map(_.intValue())
-          )
-        )
-        MethodUsageSlice(
-          code = "",
-          fullName = call.method.fullName,
-          signature = call.method.signature,
-          fileName = call.method.filename,
-          slices = Set(
-            ObjectUsageSlice(
-              targetObj = taobj,
-              definedBy = Option(taobj),
-              invokedCalls = ocall,
-              argToCalls = List.empty[ObservedCallWithArgPos]
-            )
-          ),
-          lineNumber = call.method.lineNumber.map(_.intValue()),
-          columnNumber = call.method.columnNumber.map(_.intValue())
-        )
+      atom.call.where(_.argument.tag.name("http-endpoint")).l.map(createHttpEndpointSlice)
+
+  private def createHttpEndpointSlice(call: Call): MethodUsageSlice =
+    val firstLiteral = call.argument.isLiteral.head
+    val taobj = CallDef(
+      firstLiteral.code,
+      "HttpEndpoint",
+      if call.callee(using NoResolve).method.nonEmpty then
+        Option(call.callee(using NoResolve).method.head.fullName)
+      else Option(call.name),
+      Option(true),
+      call.method.lineNumber.map(_.intValue()),
+      call.method.columnNumber.map(_.intValue())
+    )
+    val ocall = List(
+      ObservedCall(
+        callName = call.name,
+        resolvedMethod =
+            if call.callee(using NoResolve).method.nonEmpty then
+              Option(call.callee(using NoResolve).method.head.fullName)
+            else Option(call.name),
+        paramTypes = call.argument.typ.fullName.toList,
+        returnType = "",
+        isExternal = Option(true),
+        lineNumber = call.lineNumber.map(_.intValue()),
+        columnNumber = call.columnNumber.map(_.intValue())
       )
+    )
+    MethodUsageSlice(
+      code = "",
+      fullName = call.method.fullName,
+      signature = call.method.signature,
+      fileName = call.method.filename,
+      slices = Set(
+        ObjectUsageSlice(
+          targetObj = taobj,
+          definedBy = Option(taobj),
+          invokedCalls = ocall,
+          argToCalls = List.empty[ObservedCallWithArgPos]
+        )
+      ),
+      lineNumber = call.method.lineNumber.map(_.intValue()),
+      columnNumber = call.method.columnNumber.map(_.intValue())
+    )
+  end createHttpEndpointSlice
 
   private def danglingRouteCallsAsSlices(
     atom: Cpg,
@@ -266,48 +300,50 @@ object UsageSlicing:
         ".*(resources|scope|namespace|get|post|patch|delete|match|options).*"
       )
           .l
-          .map(call =>
-            val taobj = CallDef(
-              call.method.code,
-              "",
-              if call.callee(using NoResolve).method.nonEmpty then
-                Option(call.callee(using NoResolve).method.head.fullName)
-              else Option(""),
-              Option(false),
-              call.method.lineNumber.map(_.intValue()),
-              call.method.columnNumber.map(_.intValue())
-            )
-            val ocall = List(
-              ObservedCall(
-                callName = call.name,
-                resolvedMethod =
-                    if call.callee(using NoResolve).method.nonEmpty then
-                      Option(call.callee(using NoResolve).method.head.fullName)
-                    else Option(""),
-                paramTypes = List.empty[String],
-                returnType = "",
-                isExternal = Option(true),
-                lineNumber = call.lineNumber.map(_.intValue()),
-                columnNumber = call.columnNumber.map(_.intValue())
-              )
-            )
-            MethodUsageSlice(
-              code = "",
-              fullName = call.method.fullName,
-              signature = call.method.signature,
-              fileName = call.method.filename,
-              slices = Set(
-                ObjectUsageSlice(
-                  targetObj = taobj,
-                  definedBy = Option(taobj),
-                  invokedCalls = ocall,
-                  argToCalls = List.empty[ObservedCallWithArgPos]
-                )
-              ),
-              lineNumber = call.method.lineNumber.map(_.intValue()),
-              columnNumber = call.method.columnNumber.map(_.intValue())
-            )
-          )
+          .map(createDanglingRouteSlice)
+
+  private def createDanglingRouteSlice(call: Call): MethodUsageSlice =
+    val taobj = CallDef(
+      call.method.code,
+      "",
+      if call.callee(using NoResolve).method.nonEmpty then
+        Option(call.callee(using NoResolve).method.head.fullName)
+      else Option(""),
+      Option(false),
+      call.method.lineNumber.map(_.intValue()),
+      call.method.columnNumber.map(_.intValue())
+    )
+    val ocall = List(
+      ObservedCall(
+        callName = call.name,
+        resolvedMethod =
+            if call.callee(using NoResolve).method.nonEmpty then
+              Option(call.callee(using NoResolve).method.head.fullName)
+            else Option(""),
+        paramTypes = List.empty[String],
+        returnType = "",
+        isExternal = Option(true),
+        lineNumber = call.lineNumber.map(_.intValue()),
+        columnNumber = call.columnNumber.map(_.intValue())
+      )
+    )
+    MethodUsageSlice(
+      code = "",
+      fullName = call.method.fullName,
+      signature = call.method.signature,
+      fileName = call.method.filename,
+      slices = Set(
+        ObjectUsageSlice(
+          targetObj = taobj,
+          definedBy = Option(taobj),
+          invokedCalls = ocall,
+          argToCalls = List.empty[ObservedCallWithArgPos]
+        )
+      ),
+      lineNumber = call.method.lineNumber.map(_.intValue()),
+      columnNumber = call.method.columnNumber.map(_.intValue())
+    )
+  end createDanglingRouteSlice
 
   /** Discovers internally defined routes.
     *
@@ -317,63 +353,60 @@ object UsageSlicing:
     *   a list of user defined types.
     */
   def routesAsUDT(atom: Cpg): List[UserDefinedType] =
+      atom.call
+          .where(_.argument.tag.nameExact(FRAMEWORK_ROUTE))
+          .map(generateRouteUDT)
+          .filter(udt => udt.fields.nonEmpty || udt.procedures.nonEmpty)
+          .l
 
-    def generateUDT(call: Call): UserDefinedType =
-        UserDefinedType(
-          call.name,
-          call.argument.isLiteral
-              .map(m =>
-                  LocalDef(
-                    name = m.code,
-                    typeFullName = m.typeFullName,
-                    lineNumber = Option(
-                      m.property(new PropertyKey[Integer](PropertyNames.LINE_NUMBER))
-                    ).map(_.toInt),
-                    columnNumber = Option(
-                      m.property(new PropertyKey[Integer](PropertyNames.COLUMN_NUMBER))
-                    ).map(_.toInt)
-                  )
-              )
-              .collectAll[LocalDef]
-              .l,
-          call
-              .callee(using NoResolve)
-              .method
-              .filterNot(m => m.name.startsWith("<clinit>"))
-              .map(m =>
-                  ObservedCall(
-                    m.name,
-                    Option(m.fullName),
-                    m.parameter.map(_.typeFullName).toList,
-                    m.methodReturn.typeFullName,
-                    Option(m.isExternal),
-                    m.lineNumber.map(_.intValue()),
-                    m.columnNumber.map(_.intValue())
-                  )
-              )
-              .l ++ call.argument.inCall.map(c =>
-              ObservedCall(
-                c.code.takeWhile(_ != '('),
-                Option(c.code),
-                c.argument.map(_.code.replaceAll("\"", "")).toList,
-                "",
-                Option(true),
-                c.lineNumber.map(_.intValue()),
-                c.columnNumber.map(_.intValue())
-              )
-          ).l,
-          call.location.filename,
-          call.lineNumber.map(_.intValue()),
-          call.columnNumber.map(_.intValue())
-        )
-    end generateUDT
-
-    atom.call
-        .where(_.argument.tag.nameExact(FRAMEWORK_ROUTE))
-        .map(generateUDT)
-        .filter(udt => udt.fields.nonEmpty || udt.procedures.nonEmpty)
-        .l
-  end routesAsUDT
+  private def generateRouteUDT(call: Call): UserDefinedType =
+      UserDefinedType(
+        call.name,
+        call.argument.isLiteral
+            .map(m =>
+                LocalDef(
+                  name = m.code,
+                  typeFullName = m.typeFullName,
+                  lineNumber = Option(
+                    m.property(new PropertyKey[Integer](PropertyNames.LINE_NUMBER))
+                  ).map(_.toInt),
+                  columnNumber = Option(
+                    m.property(new PropertyKey[Integer](PropertyNames.COLUMN_NUMBER))
+                  ).map(_.toInt)
+                )
+            )
+            .collectAll[LocalDef]
+            .l,
+        call
+            .callee(using NoResolve)
+            .method
+            .filterNot(m => m.name.startsWith("<clinit>"))
+            .map(m =>
+                ObservedCall(
+                  m.name,
+                  Option(m.fullName),
+                  m.parameter.map(_.typeFullName).toList,
+                  m.methodReturn.typeFullName,
+                  Option(m.isExternal),
+                  m.lineNumber.map(_.intValue()),
+                  m.columnNumber.map(_.intValue())
+                )
+            )
+            .l ++ call.argument.inCall.map(c =>
+            ObservedCall(
+              c.code.takeWhile(_ != '('),
+              Option(c.code),
+              c.argument.map(_.code.replaceAll("\"", "")).toList,
+              "",
+              Option(true),
+              c.lineNumber.map(_.intValue()),
+              c.columnNumber.map(_.intValue())
+            )
+        ).l,
+        call.location.filename,
+        call.lineNumber.map(_.intValue()),
+        call.columnNumber.map(_.intValue())
+      )
 
   private def TimedGet(dsf: Future[Option[(Method, ObjectUsageSlice)]]) =
       try
@@ -428,65 +461,79 @@ object UsageSlicing:
     *   a list of user defined types.
     */
   def userDefinedTypes(atom: Cpg): List[UserDefinedType] =
-
-    def generateUDT(typeDecl: TypeDecl): UserDefinedType =
-        UserDefinedType(
-          typeDecl.fullName,
-          typeDecl.member.map(m => DefComponent.fromNode(m, null)).collectAll[LocalDef].l,
-          typeDecl.method
-              .filterNot(m => m.name.startsWith("<clinit>"))
-              .map(m =>
-                  ObservedCall(
-                    m.name,
-                    Option(m.fullName),
-                    m.parameter.map(_.typeFullName).toList,
-                    m.methodReturn.typeFullName,
-                    Option(m.isExternal),
-                    m.lineNumber.map(_.intValue()),
-                    m.columnNumber.map(_.intValue())
-                  )
+      atom.typeDecl
+          .filterNot(t =>
+              t.isExternal || t.name.matches(
+                "(:program|<module>|<init>|<meta>|<body>|<global>|<clinit>)"
               )
-              .l,
-          typeDecl.filename,
-          typeDecl.lineNumber.map(_.intValue()),
-          typeDecl.columnNumber.map(_.intValue())
-        )
+          )
+          .map(generateTypeUDT)
+          .filter(udt => udt.fields.nonEmpty || udt.procedures.nonEmpty)
+          .l
 
-    atom.typeDecl
-        .filterNot(t =>
-            t.isExternal || t.name.matches(
-              "(:program|<module>|<init>|<meta>|<body>|<global>|<clinit>)"
+  private def generateTypeUDT(typeDecl: TypeDecl): UserDefinedType =
+      UserDefinedType(
+        typeDecl.fullName,
+        typeDecl.member.map(m => DefComponent.fromNode(m, null)).collectAll[LocalDef].l,
+        typeDecl.method
+            .filterNot(m => m.name.startsWith("<clinit>"))
+            .map(m =>
+                ObservedCall(
+                  m.name,
+                  Option(m.fullName),
+                  m.parameter.map(_.typeFullName).toList,
+                  m.methodReturn.typeFullName,
+                  Option(m.isExternal),
+                  m.lineNumber.map(_.intValue()),
+                  m.columnNumber.map(_.intValue())
+                )
             )
-        )
-        .map(generateUDT)
-        .filter(udt => udt.fields.nonEmpty || udt.procedures.nonEmpty)
-        .l
-  end userDefinedTypes
+            .l,
+        typeDecl.filename,
+        typeDecl.lineNumber.map(_.intValue()),
+        typeDecl.columnNumber.map(_.intValue())
+      )
 
   private class TrackUsageTask(atom: Cpg, tgt: Declaration, typeMap: TrieMap[String, String])(
     implicit config: UsagesConfig
   ) extends Callable[Option[(Method, ObjectUsageSlice)]]:
 
     override def call(): Option[(Method, ObjectUsageSlice)] =
-      val defNode = tgt match
-        case local: Local =>
-            local.referencingIdentifiers.inCall.astParent.assignment
-                .where(_.argument(1).code(tgt.name))
-                .argument(2)
-                .headOption match
-              // In the case of a constructor, we should get the "new" call
-              case Some(block: Block) =>
-                  block.ast.isCall.or(
-                    _.nameExact("<operator>.new"),
-                    _.name(".*__init__.*")
-                  ).lastOption
-              case x => x
-        case x => Some(x)
+      val defNode         = getDefNode(tgt)
+      val partitionResult = partitionInvolvementInCalls
 
-      (tgt, defNode, partitionInvolvementInCalls) match
+      createObjectUsageSlice(tgt, defNode, partitionResult) match
+        case Some((method, slice)) => Some((method, slice))
+        case None                  => None
+
+    private def getDefNode(tgt: Declaration): Option[AstNode] =
+        tgt match
+          case local: Local =>
+              local.referencingIdentifiers.inCall.astParent.assignment
+                  .where(_.argument(1).code(tgt.name))
+                  .argument(2)
+                  .headOption match
+                // In the case of a constructor, we should get the "new" call
+                case Some(block: Block) =>
+                    block.ast.isCall.or(
+                      _.nameExact("<operator>.new"),
+                      _.name(".*__init__.*")
+                    ).lastOption
+                case x => x
+          case x: AstNode => Some(x)
+          case _          => None
+
+    private def createObjectUsageSlice(
+      tgt: Declaration,
+      defNode: Option[AstNode],
+      partitionResult: (List[ObservedCall], List[ObservedCallWithArgPos])
+    ): Option[(Method, ObjectUsageSlice)] =
+      val (invokedCalls, argToCalls) = partitionResult
+
+      (tgt, defNode, partitionResult) match
         // Case 1: Generated by variable assignment
-        case (local: Local, Some(genCall: Call), (invokedCalls, argToCalls)) =>
-            Option(
+        case (local: Local, Some(genCall: Call), _) =>
+            Some(
               (
                 local.method.head,
                 ObjectUsageSlice(
@@ -498,9 +545,9 @@ object UsageSlicing:
               )
             )
         // Case 2: Generated by incoming parameter
-        case (param: MethodParameterIn, _, (invokedCalls, argToCalls))
+        case (param: MethodParameterIn, _, _)
             if !param.name.matches("(this|self)") =>
-            Option(
+            Some(
               (
                 param.method,
                 ObjectUsageSlice(
@@ -511,38 +558,45 @@ object UsageSlicing:
                 )
               )
             )
-        case (m: Method, _, (invokedCalls, argToCalls)) =>
-            var method  = m
-            val defComp = createDefComponent(m, null)
-            if method.filename == "<empty>" && defComp.label == "CALL" && method.callIn.nonEmpty
-            then
-              method = method.callIn.head.method
-            val annotationCalls = m.annotation
-                .map(a =>
-                    ObservedCall(
-                      if a.fullName.nonEmpty then a.fullName else a.name,
-                      if a.code.nonEmpty then Option(a.code) else Option(a.fullName),
-                      List.empty,
-                      "",
-                      Option(m.isExternal),
-                      a.lineNumber.map(_.intValue()),
-                      a.columnNumber.map(_.intValue())
-                    )
-                )
-                .toList
-            Option(
-              method,
-              ObjectUsageSlice(
-                targetObj = defComp,
-                definedBy = Option(defComp),
-                invokedCalls = invokedCalls ++ annotationCalls,
-                argToCalls = argToCalls
-              )
-            )
+        case (m: Method, _, _) =>
+            createMethodObjectUsageSlice(m, invokedCalls, argToCalls)
         case _ =>
             None
       end match
-    end call
+    end createObjectUsageSlice
+
+    private def createMethodObjectUsageSlice(
+      m: Method,
+      invokedCalls: List[ObservedCall],
+      argToCalls: List[ObservedCallWithArgPos]
+    ): Option[(Method, ObjectUsageSlice)] =
+      var method  = m
+      val defComp = createDefComponent(m, null)
+      if method.filename == "<empty>" && defComp.label == "CALL" && method.callIn.nonEmpty then
+        method = method.callIn.head.method
+      val annotationCalls = m.annotation
+          .map(a =>
+              ObservedCall(
+                if a.fullName.nonEmpty then a.fullName else a.name,
+                if a.code.nonEmpty then Option(a.code) else Option(a.fullName),
+                List.empty,
+                "",
+                Option(m.isExternal),
+                a.lineNumber.map(_.intValue()),
+                a.columnNumber.map(_.intValue())
+              )
+          )
+          .toList
+      Some(
+        method,
+        ObjectUsageSlice(
+          targetObj = defComp,
+          definedBy = Option(defComp),
+          invokedCalls = invokedCalls ++ annotationCalls,
+          argToCalls = argToCalls
+        )
+      )
+    end createMethodObjectUsageSlice
 
     private def partitionInvolvementInCalls: (List[ObservedCall], List[ObservedCallWithArgPos]) =
       val (invokedCalls, argToCalls) = getInCallsForReferencedIdentifiers(tgt)
@@ -584,109 +638,25 @@ object UsageSlicing:
           ).nonEmpty
 
       def getResolvedMethod(x: Call): Option[String] =
-          if
-            DefComponent.unresolvedCallPattern.matcher(x.methodFullName).matches()
-          then None
+          if DefComponent.unresolvedCallPattern.matcher(x.methodFullName).matches() then None
           else Option(x.methodFullName)
 
       // Handle the case where a call is an invocation of a field member (lambda) or function/method call
-      var (callName, resolvedMethod): (Option[String], Option[String]) =
-          if isMemberInvocation then
-            baseCall.argumentOut
-                .flatMap {
-                    case x: FieldIdentifier =>
-                        Option(Option(x.code) -> None)
-                    case x: Call => Option(Option(x.name) -> getResolvedMethod(x))
-                    case _       => None
-                }
-                .headOption
-                .getOrElse((None, None))
-          else if isConstructor then
-            val m = constructorTypeMatcher.matcher(baseCall.code)
-            val typeName =
-                if m.find() then m.group(1)
-                else baseCall.code.stripPrefix("new ").takeWhile(!_.equals('('))
-            Option(typeName) -> typeMap.get(typeName)
-          else Option(baseCall.name) -> getResolvedMethod(baseCall)
+      val (callName, resolvedMethod) =
+          getCallInfo(baseCall, isMemberInvocation, isConstructor, getResolvedMethod)
 
       if callName.isEmpty then return None
 
-      val params = (if isMemberInvocation then baseCall.inCall.argument
-                    else if isConstructor then
-                      baseCall.ast.isCall
-                          .nameExact("<operator>.new")
-                          .lastOption
-                          .map(_.argument)
-                          .getOrElse(Iterator.empty)
-                    else baseCall.argument)
-      .collect { case n: Expression if n.argumentIndex > 0 => n }
-      .flatMap {
-          case _: MethodRef => Option("LAMBDA")
-          case x =>
-              Option(
-                x.property(
-                  PropertyNames.TYPE_FULL_NAME,
-                  x.property(PropertyNames.DYNAMIC_TYPE_HINT_FULL_NAME, Seq("ANY")).headOption
-                )
-              )
-      }
-      .collect { case x: String => x }
-      .toList
-      // Not sure how we can get the return type unless it's typescript or we can resolve the callee?
-      val returnType = if isConstructor then
-        resolvedMethod match
-          case Some(methodFullName) => methodFullName
-          case None                 => "ANY"
-      else
-        baseCall.argumentOut
-            .flatMap {
-                case x: Call
-                    if !DefComponent.unresolvedCallPattern.matcher(
-                      x.methodFullName
-                    ).matches() =>
-                    atom.method.fullNameExact(
-                      x.methodFullName
-                    ).methodReturn.typeFullName.headOption
-                case x: Call =>
-                    x.callee(using resolver).methodReturn.typeFullName.headOption
-                case _ => None
-            }
-            .headOption
-            .getOrElse("ANY")
-      // If resolvedMethod is null then use the code property to construct the method name
-      if baseCall.code.nonEmpty && baseCall.code.contains(
-          "("
-        ) && language.get == Languages.JSSRC
-      then
-        var baseCallCode = baseCall.code.takeWhile(_ != '(')
-        if baseCallCode.contains(" ") then
-          baseCallCode = baseCallCode.split(" ").last
-        // Retain the full code for route detection purposes
-        if language.get == Languages.JSSRC then
-          if baseCallCode.startsWith(
-              "app.use"
-            )
-          then
-            if baseCall.argument.nonEmpty && baseCall.argument.isLiteral.nonEmpty
-            then
-              baseCallCode =
-                  baseCall.argument.isLiteral.filterNot(_.code == "*").head.code
-          else if baseCallCode.startsWith(
-              "route"
-            ) || baseCallCode.startsWith("app")
-          then
-            baseCallCode = baseCall.code
-                .replaceAll("\n", "\\n").replaceAll(
-                  " {4}",
-                  " {2}"
-                ).replaceAll(" {2}", "\\t")
-          end if
-        resolvedMethod = Option(baseCallCode)
-      end if
+      val params     = getCallParameters(baseCall, isMemberInvocation, isConstructor)
+      val returnType = getReturnType(baseCall, isConstructor, resolvedMethod)
+
+      // Handle JavaScript specific logic
+      val finalResolvedMethod = handleJavaScriptLogic(baseCall, resolvedMethod, language)
+
       Option(
         ObservedCall(
           callName.get,
-          resolvedMethod,
+          finalResolvedMethod,
           params,
           returnType,
           baseCall.callee(using resolver).isExternal.headOption,
@@ -695,6 +665,120 @@ object UsageSlicing:
         )
       )
     end exprToObservedCall
+
+    private def getCallInfo(
+      baseCall: Call,
+      isMemberInvocation: Boolean,
+      isConstructor: Boolean,
+      getResolvedMethod: Call => Option[String]
+    ): (Option[String], Option[String]) =
+        if isMemberInvocation then
+          baseCall.argumentOut
+              .flatMap {
+                  case x: FieldIdentifier =>
+                      Option(Option(x.code) -> None)
+                  case x: Call => Option(Option(x.name) -> getResolvedMethod(x))
+                  case _       => None
+              }
+              .headOption
+              .getOrElse((None, None))
+        else if isConstructor then
+          val m = constructorTypeMatcher.matcher(baseCall.code)
+          val typeName =
+              if m.find() then m.group(1)
+              else baseCall.code.stripPrefix("new ").takeWhile(!_.equals('('))
+          Option(typeName) -> typeMap.get(typeName)
+        else Option(baseCall.name) -> getResolvedMethod(baseCall)
+
+    private def getCallParameters(
+      baseCall: Call,
+      isMemberInvocation: Boolean,
+      isConstructor: Boolean
+    ): List[String] =
+      val paramSource =
+          if isMemberInvocation then baseCall.inCall.argument
+          else if isConstructor then
+            baseCall.ast.isCall
+                .nameExact("<operator>.new")
+                .lastOption
+                .map(_.argument)
+                .getOrElse(Iterator.empty)
+          else baseCall.argument
+
+      paramSource
+          .collect { case n: Expression if n.argumentIndex > 0 => n }
+          .flatMap {
+              case _: MethodRef => Option("LAMBDA")
+              case x =>
+                  Option(
+                    x.property(
+                      PropertyNames.TYPE_FULL_NAME,
+                      x.property(PropertyNames.DYNAMIC_TYPE_HINT_FULL_NAME, Seq("ANY")).headOption
+                    )
+                  )
+          }
+          .collect { case x: String => x }
+          .toList
+    end getCallParameters
+
+    private def getReturnType(
+      baseCall: Call,
+      isConstructor: Boolean,
+      resolvedMethod: Option[String]
+    ): String =
+        if isConstructor then
+          resolvedMethod match
+            case Some(methodFullName) => methodFullName
+            case None                 => "ANY"
+        else
+          baseCall.argumentOut
+              .flatMap {
+                  case x: Call
+                      if !DefComponent.unresolvedCallPattern.matcher(
+                        x.methodFullName
+                      ).matches() =>
+                      atom.method.fullNameExact(
+                        x.methodFullName
+                      ).methodReturn.typeFullName.headOption
+                  case x: Call =>
+                      x.callee(using resolver).methodReturn.typeFullName.headOption
+                  case _ => None
+              }
+              .headOption
+              .getOrElse("ANY")
+
+    private def handleJavaScriptLogic(
+      baseCall: Call,
+      resolvedMethod: Option[String],
+      language: Option[String]
+    ): Option[String] =
+      var finalResolvedMethod = resolvedMethod
+
+      if baseCall.code.nonEmpty && baseCall.code.contains(
+          "("
+        ) && language.contains(Languages.JSSRC)
+      then
+        var baseCallCode = baseCall.code.takeWhile(_ != '(')
+        if baseCallCode.contains(" ") then
+          baseCallCode = baseCallCode.split(" ").last
+
+        // Retain the full code for route detection purposes
+        if language.contains(Languages.JSSRC) then
+          if baseCallCode.startsWith("app.use") then
+            if baseCall.argument.nonEmpty && baseCall.argument.isLiteral.nonEmpty then
+              baseCallCode = baseCall.argument.isLiteral.filterNot(_.code == "*").head.code
+          else if baseCallCode.startsWith("route") || baseCallCode.startsWith("app") then
+            baseCallCode = baseCall.code
+                .replaceAll("\n", "\\n").replaceAll(
+                  " {4}",
+                  " {2}"
+                ).replaceAll(" {2}", "\\t")
+
+        finalResolvedMethod = Option(baseCallCode)
+      end if
+
+      finalResolvedMethod
+    end handleJavaScriptLogic
 
     /** Creates a def component with the workaround of correcting the type full name if it is only a
       * type name.

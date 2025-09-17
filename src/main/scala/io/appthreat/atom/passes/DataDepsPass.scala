@@ -5,13 +5,13 @@ import io.appthreat.dataflowengineoss.semanticsloader.Semantics
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
-
+import io.shiftleft.passes.ConcurrentWriterCpgPass
 import scala.collection.mutable
 
 /** A pass that calculates reaching definitions ("data dependencies") based on ReachingDefPass
   */
 class DataDepsPass(cpg: Cpg, maxNumberOfDefinitions: Int = 2000)(implicit s: Semantics)
-    extends SafeConcurrentCpgPass[Method](cpg):
+    extends ConcurrentWriterCpgPass[Method](cpg):
 
   // If there are any regex method full names, load them early
   s.loadRegexSemantics(cpg)
