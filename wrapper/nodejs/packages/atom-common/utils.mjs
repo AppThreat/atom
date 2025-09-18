@@ -5,11 +5,8 @@ import { spawnSync } from "node:child_process";
 const IGNORE_DIRS = process.env.ASTGEN_IGNORE_DIRS
   ? process.env.ASTGEN_IGNORE_DIRS.split(",")
   : [
-      "node_modules",
       "venv",
       "docs",
-      "test",
-      "tests",
       "e2e",
       "e2e-beta",
       "examples",
@@ -19,20 +16,15 @@ const IGNORE_DIRS = process.env.ASTGEN_IGNORE_DIRS
       "codemods",
       "flow-typed",
       "i18n",
-      "vendor",
-      "www",
-      "dist",
-      "build",
-      "__tests__"
     ];
 
 const IGNORE_FILE_PATTERN = new RegExp(
   process.env.ASTGEN_IGNORE_FILE_PATTERN ||
-    "(test|spec|min|three|\\.d)\\.(js|ts|jsx|tsx)$",
+    "(three|\\.d)\\.(js|ts|jsx|tsx)$",
   "i"
 );
 
-export const getAllFiles = (dir, extn, files, result, regex) => {
+export const getAllFiles = (dir, extn, files, result, regex, ignore_node_modules=true) => {
   files = files || readdirSync(dir);
   result = result || [];
   regex = regex || new RegExp(`\\${extn}$`);
@@ -40,9 +32,8 @@ export const getAllFiles = (dir, extn, files, result, regex) => {
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     if (
-      file.startsWith(".") ||
-      file.startsWith("__") ||
-      IGNORE_FILE_PATTERN.test(file)
+          file.startsWith(".") ||
+          IGNORE_FILE_PATTERN.test(file)
     ) {
       continue;
     }
@@ -52,8 +43,8 @@ export const getAllFiles = (dir, extn, files, result, regex) => {
       const dirName = basename(fileWithDir);
       if (
         dirName.startsWith(".") ||
-        dirName.startsWith("__") ||
-        IGNORE_DIRS.includes(dirName.toLowerCase())
+        IGNORE_DIRS.includes(dirName.toLowerCase()) ||
+        (ignore_node_modules && dirName.toLowerCase() === "node_modules")
       ) {
         continue;
       }
@@ -63,7 +54,8 @@ export const getAllFiles = (dir, extn, files, result, regex) => {
           extn,
           readdirSync(fileWithDir),
           result,
-          regex
+          regex,
+          ignore_node_modules
         );
       } catch (error) {
         // ignore

@@ -59,17 +59,53 @@ const babelSafeParserOptions = {
 
 /**
  * Return paths to all (j|tsx?) files.
+ * Optionally includes specific bundled files from node_modules if:
+ * 1. ASTGEN_INCLUDE_NODE_MODULES_BUNDLES is "true", OR
+ * 2. ASTGEN_IGNORE_DIRS is non-empty and doesn't include "node_modules"
  */
-const getAllSrcJSAndTSFiles = (src) =>
-  Promise.all([
+const getAllSrcJSAndTSFiles = (src) => {
+  const filePattern = "\\.(js|jsx|cjs|mjs|ts|tsx|vue|svelte|xsjs|xsjslib|ejs)$";
+  const bundledNodeModulesPattern =
+    "node_modules/.*\\.(bundle|dist|index|min|app)\\.(js|cjs|mjs)$";
+
+  // Step 1: Collect all JS/TS files EXCLUDING node_modules
+  const allFilesPromise = Promise.resolve(
     getAllFiles(
       src,
       undefined,
       undefined,
       undefined,
-      new RegExp("\\.(js|jsx|cjs|mjs|ts|tsx|vue|svelte)$")
+      new RegExp(filePattern),
+      true // ignore node_modules
     )
-  ]);
+  );
+
+  // Step 2: Check if we should include node_modules bundles
+  const shouldIncludeNodeModulesBundles =
+    process.env?.ASTGEN_INCLUDE_NODE_MODULES_BUNDLES === "true" ||
+    (process.env?.ASTGEN_IGNORE_DIRS &&
+      process.env.ASTGEN_IGNORE_DIRS.length > 0 &&
+      !process.env.ASTGEN_IGNORE_DIRS.toLowerCase().includes("node_modules"));
+
+  let bundledFilesPromise = Promise.resolve([]);
+  if (shouldIncludeNodeModulesBundles) {
+    bundledFilesPromise = Promise.resolve(
+      getAllFiles(
+        src,
+        undefined,
+        undefined,
+        undefined,
+        new RegExp(bundledNodeModulesPattern),
+        false // DO NOT ignore node_modules
+      )
+    );
+  }
+
+  // Step 3: Combine both lists
+  return Promise.all([allFilesPromise, bundledFilesPromise]).then(
+    ([allFiles, bundledFiles]) => [...allFiles, ...bundledFiles]
+  );
+};
 
 /**
  * Convert a single JS/TS file to AST
@@ -242,30 +278,44 @@ const createJSAst = async (options) => {
   try {
     const promiseMap = await getAllSrcJSAndTSFiles(options.src);
     const srcFiles = promiseMap.flatMap((d) => d);
+    const CONCURRENCY_LIMIT = 10;
+    const chunks = [];
+    for (let i = 0; i < srcFiles.length; i += CONCURRENCY_LIMIT) {
+      chunks.push(srcFiles.slice(i, i + CONCURRENCY_LIMIT));
+    }
     let ts;
     if (options.tsTypes) {
-      ts = createTsc(srcFiles);
+      const projectFiles = srcFiles.filter(
+        (file) => !file.includes("node_modules")
+      );
+      ts = createTsc(projectFiles);
     }
-    for (const file of srcFiles) {
-      try {
-        const ast = fileToJsAst(file);
-        writeAstFile(file, ast, options);
-      } catch (err) {
-        console.error(file, err.message);
-      }
-      if (ts) {
-        try {
-          const tsAst = ts.program.getSourceFile(file);
-          tsc.forEachChild(tsAst, ts.addType);
-          writeTypesFile(file, ts.seenTypes, options);
-          ts.seenTypes.clear();
-        } catch (err) {
-          console.warn("Retrieving types", file, ":", err.message);
-        }
-      }
+    for (const chunk of chunks) {
+      await Promise.all(chunk.map((file) => processFile(file, options, ts)));
     }
   } catch (err) {
     console.error(err);
+  }
+};
+
+const processFile = (file, options, ts) => {
+  try {
+    const ast = fileToJsAst(file);
+    writeAstFile(file, ast, options);
+    if (ts) {
+      try {
+        const tsAst = ts.program.getSourceFile(file);
+        if (tsAst) {
+          tsc.forEachChild(tsAst, ts.addType);
+          writeTypesFile(file, ts.seenTypes, options);
+          ts.seenTypes.clear();
+        }
+      } catch (err) {
+        console.warn("Retrieving types", file, ":", err.message);
+      }
+    }
+  } catch (err) {
+    console.error(file, err.message);
   }
 };
 
