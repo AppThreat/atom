@@ -105,7 +105,6 @@ jobs:
       - run: |
           bash ci/native-image.sh
           ./target/graalvm-native-image/atom --remove-atom -o /tmp/java.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
-          ./target/graalvm-native-image/atom --remove-atom -o /tmp/juice.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

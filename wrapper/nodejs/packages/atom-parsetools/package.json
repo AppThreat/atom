@@ -1,15 +1,15 @@
 {
   "name": "@appthreat/atom-parsetools",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Parsing tools that complement the @appthreat/atom project.",
   "main": "./index.js",
   "type": "module",
   "scripts": {
-    "pretty": "prettier --write *.mjs *.js --trailing-comma=none",
+    "pretty": "prettier --write *.cjs *.js --trailing-comma=none",
     "lint": "eslint *.mjs *.js"
   },
   "dependencies": {
-    "@appthreat/atom-common": "^1.0.9",
+    "@appthreat/atom-common": "^1.0.10",
     "@babel/parser": "^7.28.4",
     "typescript": "^5.9.2",
     "yargs": "^17.7.2"

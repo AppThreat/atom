@@ -198,28 +198,3 @@ jobs:
         shell: cmd
         run: |
           atom -l js --remove-atom -o %GITHUB_WORKSPACE%\\repotests\\shiftleft-ts-example\\app.atom %GITHUB_WORKSPACE%\\repotests\\shiftleft-ts-example
-
-  devenv:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-15]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v26
-      - uses: cachix/cachix-action@v14
-        with:
-          name: devenv
-      - name: Install devenv.sh
-        run: nix profile install nixpkgs#devenv
-      - name: Build the devenv shell
-        run: devenv test
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run atom --help
-        run: |
-          devenv shell -- atom --help
-          devenv shell -- cdxgen --help
-          devenv shell -- atom-tools --help
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,8 +1,9 @@
 name: repotests
 on:
+  pull_request:
   push:
     branches:
-      - feature/*
+      - main
   workflow_dispatch:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
