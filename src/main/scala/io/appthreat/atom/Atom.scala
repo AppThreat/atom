@@ -791,18 +791,27 @@ object Atom:
           ag
       }
 
-  private def enhanceCpg(config: AtomConfig, cpg: Cpg): Either[String, Unit] =
+  private def enhanceCpg(config: AtomConfig, atom: Cpg): Either[String, Unit] =
       config match
         case x: AtomConfig if needsDataFlowEnhancement(x) =>
             println("Generating data-flow dependencies from atom. Please wait ...")
-            new CdxPass(cpg).createAndApply()
-            new EasyTagsPass(cpg).createAndApply()
-            new ChennaiTagsPass(cpg).createAndApply()
-            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
-                .run(new LayerCreatorContext(cpg))
-            Right(())
+            try
+              new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
+                  .run(new LayerCreatorContext(atom))
+              new CdxPass(atom).createAndApply()
+              new EasyTagsPass(atom).createAndApply()
+              new ChennaiTagsPass(atom).createAndApply()
+              Right(())
+            catch
+              case npe: NullPointerException
+                  if npe.getMessage != null &&
+                      npe.getMessage.contains("AdjacentNodes") =>
+                  Left(s"CPG appears to be corrupted with broken references. " +
+                      s"Try removing the atom file and regenerating it. Error: ${npe.getMessage}")
+              case ex: Exception =>
+                  Left(s"Failed to enhance CPG: ${ex.getStackTrace.take(40).mkString("\n")}")
         case _ =>
-            new EasyTagsPass(cpg).createAndApply()
+            new EasyTagsPass(atom).createAndApply()
             Right(())
 
   private def needsDataFlowEnhancement(config: AtomConfig): Boolean =
