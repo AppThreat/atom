@@ -795,20 +795,23 @@ object Atom:
       config match
         case x: AtomConfig if needsDataFlowEnhancement(x) =>
             println("Generating data-flow dependencies from atom. Please wait ...")
+            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
+                .run(new LayerCreatorContext(cpg))
             new CdxPass(cpg).createAndApply()
             new EasyTagsPass(cpg).createAndApply()
             new ChennaiTagsPass(cpg).createAndApply()
-            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
-                .run(new LayerCreatorContext(cpg))
             Right(())
         case _ =>
             new EasyTagsPass(cpg).createAndApply()
             Right(())
 
   private def needsDataFlowEnhancement(config: AtomConfig): Boolean =
-      !config.reuseAtom && (config.dataDeps ||
-          config.isInstanceOf[AtomDataFlowConfig] ||
-          config.isInstanceOf[AtomReachablesConfig])
+    val isCpg      = config.outputAtomFile.extension(true, true, true).getOrElse(".atom") == ".cpg"
+    val canEnhance = !config.reuseAtom || (config.reuseAtom && isCpg)
+    val needsEnhancement = config.dataDeps || isCpg ||
+        config.isInstanceOf[AtomDataFlowConfig] ||
+        config.isInstanceOf[AtomReachablesConfig]
+    canEnhance && needsEnhancement
 
   private def closeCpg(cpg: Cpg): Either[String, Unit] =
       try
