@@ -795,12 +795,21 @@ object Atom:
       config match
         case x: AtomConfig if needsDataFlowEnhancement(x) =>
             println("Generating data-flow dependencies from atom. Please wait ...")
-            new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
-                .run(new LayerCreatorContext(cpg))
-            new CdxPass(cpg).createAndApply()
-            new EasyTagsPass(cpg).createAndApply()
-            new ChennaiTagsPass(cpg).createAndApply()
-            Right(())
+            try
+              new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
+                  .run(new LayerCreatorContext(cpg))
+              new CdxPass(cpg).createAndApply()
+              new EasyTagsPass(cpg).createAndApply()
+              new ChennaiTagsPass(cpg).createAndApply()
+              Right(())
+            catch
+              case npe: NullPointerException
+                  if npe.getMessage != null &&
+                      npe.getMessage.contains("AdjacentNodes") =>
+                  Left(s"CPG appears to be corrupted with broken references. " +
+                      s"Try removing the atom file and regenerating it. Error: ${npe.getMessage}")
+              case ex: Exception =>
+                  Left(s"Failed to enhance CPG: ${ex.getMessage}")
         case _ =>
             new EasyTagsPass(cpg).createAndApply()
             Right(())
