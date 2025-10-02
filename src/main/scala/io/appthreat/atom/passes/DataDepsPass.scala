@@ -10,13 +10,13 @@ import scala.collection.mutable
 
 /** A pass that calculates reaching definitions ("data dependencies") based on ReachingDefPass
   */
-class DataDepsPass(cpg: Cpg, maxNumberOfDefinitions: Int = 2000)(implicit s: Semantics)
-    extends ConcurrentWriterCpgPass[Method](cpg):
+class DataDepsPass(atom: Cpg, maxNumberOfDefinitions: Int = 2000)(implicit s: Semantics)
+    extends ConcurrentWriterCpgPass[Method](atom):
 
   // If there are any regex method full names, load them early
-  s.loadRegexSemantics(cpg)
+  s.loadRegexSemantics(atom)
 
-  override def generateParts(): Array[Method] = cpg.method.toArray
+  override def generateParts(): Array[Method] = atom.method.toArray
 
   override def runOnPart(dstGraph: DiffGraphBuilder, method: Method): Unit =
     val problem = ReachingDefProblem.create(method)

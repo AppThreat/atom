@@ -13,7 +13,7 @@ import scala.util.Try
 class C2Atom extends X2CpgFrontend[Config]:
 
   def createCpg(config: Config): Try[Cpg] =
-      withNewEmptyCpg(config.outputPath, config) { (cpg, config) =>
-        new MetaDataPass(cpg, Languages.NEWC, config.inputPath).createAndApply()
-        new AstCreationPass(cpg, config).createAndApply()
+      withNewEmptyCpg(config.outputPath, config) { (atom, config) =>
+        new MetaDataPass(atom, Languages.NEWC, config.inputPath).createAndApply()
+        new AstCreationPass(atom, config).createAndApply()
       }
