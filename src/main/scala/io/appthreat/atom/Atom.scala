@@ -809,7 +809,7 @@ object Atom:
                   Left(s"CPG appears to be corrupted with broken references. " +
                       s"Try removing the atom file and regenerating it. Error: ${npe.getMessage}")
               case ex: Exception =>
-                  Left(s"Failed to enhance CPG: ${ex.getStackTrace.take(40).mkString("\n")}")
+                  Left(s"Failed to enhance CPG: ${ex.getMessage} ${ex.getStackTrace.take(40).mkString("\n")}")
         case _ =>
             new EasyTagsPass(atom).createAndApply()
             Right(())

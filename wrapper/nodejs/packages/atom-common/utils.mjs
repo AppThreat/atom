@@ -15,16 +15,22 @@ const IGNORE_DIRS = process.env.ASTGEN_IGNORE_DIRS
       "eslint-rules",
       "codemods",
       "flow-typed",
-      "i18n",
+      "i18n"
     ];
 
 const IGNORE_FILE_PATTERN = new RegExp(
-  process.env.ASTGEN_IGNORE_FILE_PATTERN ||
-    "(three|\\.d)\\.(js|ts|jsx|tsx)$",
+  process.env.ASTGEN_IGNORE_FILE_PATTERN || "(three|\\.d)\\.(js|ts|jsx|tsx)$",
   "i"
 );
 
-export const getAllFiles = (dir, extn, files, result, regex, ignore_node_modules=true) => {
+export const getAllFiles = (
+  dir,
+  extn,
+  files,
+  result,
+  regex,
+  ignore_node_modules = true
+) => {
   files = files || readdirSync(dir);
   result = result || [];
   regex = regex || new RegExp(`\\${extn}$`);
@@ -32,8 +38,8 @@ export const getAllFiles = (dir, extn, files, result, regex, ignore_node_modules
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     if (
-          file.startsWith(".") ||
-          IGNORE_FILE_PATTERN.test(file)
+      (ignore_node_modules && file.startsWith(".")) ||
+      IGNORE_FILE_PATTERN.test(file)
     ) {
       continue;
     }
@@ -42,7 +48,7 @@ export const getAllFiles = (dir, extn, files, result, regex, ignore_node_modules
       // Ignore directories
       const dirName = basename(fileWithDir);
       if (
-        dirName.startsWith(".") ||
+        (ignore_node_modules && dirName.startsWith(".")) ||
         IGNORE_DIRS.includes(dirName.toLowerCase()) ||
         (ignore_node_modules && dirName.toLowerCase() === "node_modules")
       ) {
