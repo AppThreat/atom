@@ -1,5 +1,7 @@
 # atom (⚛)
 
+<img src="./docs/static/img/Atom-logo.png" width="200" height="auto" />
+
 atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation (a network with nodes and links) is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and vectoring.
 
 Our vision is to make atom useful for many use cases such as:
