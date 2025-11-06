@@ -149,14 +149,13 @@ A necessary pre-requisite is the presence of the Software Bill-of-Materials (SBO
 
 #### How to parse?
 
-1. Parse the reachables json.
-2. Iterate over the `reachables` array. Each item in this array is an object containing flows (Reachable data-flows) and purls (List of [Package URLs](https://github.com/package-url/purl-spec))
+1. Parse the reachables json files. Multiple json files could be generated for large projects.
+2. Iterate over the array. Each item in this array is an object containing flows (Reachable data-flows) and purls (List of [Package URLs](https://github.com/package-url/purl-spec))
 3. Each item in the flows array is of type `node` similar to the nodes array in the data flow slice above.
 4. Each item in the purls array is of type string
 
 ```json
-{
-  "reachables": [
+[
     {
       "flows": [
         {
@@ -182,8 +181,7 @@ A necessary pre-requisite is the presence of the Software Bill-of-Materials (SBO
         "pkg:maven/org.springframework.kafka/spring-kafka@2.8.11?type=jar"
       ]
     }
-  ]
-}
+]
 ```
 
 ## Generate slices
