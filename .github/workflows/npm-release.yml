@@ -91,7 +91,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '23'
+          java-version: '24'
       - name: Install atom latest
         run: |
           npm install -g @appthreat/atom
