@@ -68,7 +68,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '23.x'
+          node-version: '25.x'
       - name: Delete `.rustup` directory
         run: rm -rf /home/runner/.rustup # to save disk space
         if: runner.os == 'Linux'

@@ -11,9 +11,9 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
-        java-version: ['21', '23', '24']
-        node-version: ['20.x', '23.x']
-        ruby: ["3.4.5"]
+        java-version: ['21', '23', '24', '25']
+        node-version: ['20.x', '25.x']
+        ruby: ["3.4.7"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

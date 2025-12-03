@@ -1,6 +1,6 @@
 {
   "name": "@appthreat/atom-parsetools",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Parsing tools that complement the @appthreat/atom project.",
   "main": "./index.js",
   "type": "module",
@@ -9,9 +9,9 @@
     "lint": "eslint *.mjs *.js"
   },
   "dependencies": {
-    "@appthreat/atom-common": "^1.0.12",
-    "@babel/parser": "^7.28.4",
-    "typescript": "^5.9.2",
+    "@appthreat/atom-common": "^1.0.13",
+    "@babel/parser": "^7.28.5",
+    "typescript": "^5.9.3",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 {
   "name": "@appthreat/atom-common",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Common library for the @appthreat/atom project.",
   "main": "index.js",
   "type": "module",

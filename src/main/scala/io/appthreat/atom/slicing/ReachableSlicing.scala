@@ -11,10 +11,8 @@ import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
 
-import java.io.{File as JFile, BufferedWriter, FileWriter}
+import java.io.{BufferedWriter, FileWriter, File as JFile}
 import java.util.regex.Pattern
-import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 
@@ -23,19 +21,35 @@ object ReachableSlicing:
   implicit val semantics: Semantics      = DefaultSemantics()
   private val engineConfig: EngineConfig = EngineConfig()
   implicit val context: EngineContext    = EngineContext(semantics, engineConfig)
-  private def API_TAG                    = "api"
-  private def FRAMEWORK_TAG              = "framework"
 
-  private def LIBRARY_CALL_TAG     = "library-call"
-  private def CLI_SOURCE_TAG       = "cli-source"
-  private def DRIVER_SOURCE_TAG    = "driver-source"
-  private def HTTP_TAG             = "http"
-  private def EVENT_TAG            = "event"
-  private def PARSE_TAG            = "parse"
-  private def CRYPTO_GENERATE_TAG  = "crypto-generate"
-  private def CRYPTO_ALGORITHM_TAG = "crypto-algorithm"
+  private val API_TAG              = "api"
+  private val FRAMEWORK_TAG        = "framework"
+  private val LIBRARY_CALL_TAG     = "library-call"
+  private val CLI_SOURCE_TAG       = "cli-source"
+  private val DRIVER_SOURCE_TAG    = "driver-source"
+  private val HTTP_TAG             = "http"
+  private val EVENT_TAG            = "event"
+  private val PARSE_TAG            = "parse"
+  private val CRYPTO_GENERATE_TAG  = "crypto-generate"
+  private val CRYPTO_ALGORITHM_TAG = "crypto-algorithm"
+  private val PURL_PREFIX          = "pkg.*"
+
   private val JVM_BASED_LANGUAGES =
       Set(Languages.JAVA, Languages.JAVASRC, "JAR", "JIMPLE", "ANDROID", "APK", "DEX")
+  private val DYNAMIC_LANGUAGES =
+      Set(
+        Languages.JSSRC,
+        Languages.JAVASCRIPT,
+        Languages.PYTHON,
+        Languages.PYTHONSRC,
+        Languages.RUBYSRC
+      )
+  private val PHP_RUBY_LANGUAGES =
+      Set(Languages.PHP, Languages.RUBYSRC)
+  private val C_LANGUAGES =
+      Set(Languages.NEWC, Languages.C)
+  private val PYTHON_LANGUAGES =
+      Set(Languages.PYTHON, Languages.PYTHONSRC)
 
   private val DEFAULT_CHUNK_SIZE = 1000
 
@@ -45,114 +59,57 @@ object ReachableSlicing:
     outputBasePath: String,
     chunkSize: Int = DEFAULT_CHUNK_SIZE
   ): Unit =
-    val language        = atom.metaData.language.head
-    val flowSlices      = collectFlowSlices(atom, config, language)
-    var fileCounter     = 0
-    val currentChunk    = ListBuffer[ReachableFlows]()
-    var totalFlowsCount = 0L
-    val currentOutputFile = File(if fileCounter == 0 then s"$outputBasePath.json"
-    else s"${outputBasePath}_$fileCounter.json")
-    var writer = new BufferedWriter(new FileWriter(currentOutputFile.toJava))
-    writer.write("[")
-    var isFirstInFile = true
+    val language = atom.metaData.language.head
+    val flowIterator = collectFlowSlices(atom, config, language)
+        .iterator
+        .flatten
+        .map(toSlice)
 
-    try
-      flowSlices.foreach { pathIterator =>
-          pathIterator.foreach { path =>
-            val reachableFlow = toSlice(path)
-            currentChunk += reachableFlow
-            totalFlowsCount += 1
+    val chunkedIterator = flowIterator.grouped(chunkSize).zipWithIndex
+    var hasFlows        = false
 
-            if currentChunk.size >= chunkSize then
-              currentChunk.foreach { flow =>
-                if !isFirstInFile then writer.write(",")
-                writer.write(flow.asJson.noSpaces)
-                isFirstInFile = false
-              }
-              currentChunk.clear()
-              writer.write("]")
-              writer.close()
-              fileCounter += 1
-              val nextOutputFile = File(s"${outputBasePath}_$fileCounter.json")
-              val nextWriter     = new BufferedWriter(new FileWriter(nextOutputFile.toJava))
-              nextWriter.write("[")
-              writer = nextWriter
-              isFirstInFile = true
-          }
-      }
-      if currentChunk.nonEmpty then
-        currentChunk.foreach { flow =>
-          if !isFirstInFile then writer.write(",")
-          writer.write(flow.asJson.noSpaces)
-          isFirstInFile = false
-        }
-        currentChunk.clear()
-      writer.write("]")
-      writer.close()
-      if totalFlowsCount == 0 then
-        handleEmptySlices(atom, config)
-        if fileCounter == 1 && isFirstInFile then
-          writer.close()
-          val finalWriter = new BufferedWriter(new FileWriter(currentOutputFile.toJava))
-          finalWriter.write("[]")
-          finalWriter.close()
-        else if fileCounter >= 1 && !isFirstInFile then
-          writer.write("]")
-          writer.close()
-    catch
-      case t: Throwable =>
-          writer.close()
-          throw t
-    end try
-  end calculateReachableSliceAndPersist
+    chunkedIterator.foreach { case (chunk, index) =>
+        hasFlows = true
+        val fileName =
+            if index == 0 then s"$outputBasePath.json" else s"${outputBasePath}_$index.json"
+        File(fileName).writeText(chunk.asJson.noSpaces)
+    }
 
-  @deprecated(
-    "Use calculateReachableSliceAndPersist for large datasets",
-    "Since Chunking Implementation"
-  )
-  def calculateReachableSlice(atom: Cpg, config: ReachablesConfig): ReachableSlice =
-    val language   = atom.metaData.language.head
-    val flowSlices = collectFlowSlices(atom, config, language)
-    val slicesList = flowSlices.flatten.map(toSlice).toList
-
-    if slicesList.isEmpty then
+    if !hasFlows then
       handleEmptySlices(atom, config)
-
-    ReachableSlice(slicesList)
+      File(s"$outputBasePath.json").writeText("[]")
+  end calculateReachableSliceAndPersist
 
   private def collectFlowSlices(
     atom: Cpg,
     config: ReachablesConfig,
     language: String
-  ): ListBuffer[Iterator[Path]] =
-    val flowSlices = ListBuffer.empty[Iterator[Path]]
+  ): Iterator[Iterator[Path]] =
     val defaultTagsMode =
         config.sourceTag == DEFAULT_SOURCE_TAGS && config.sinkTag == DEFAULT_SINK_TAGS
     val sourceTagRegex = raw"""(${config.sourceTag.mkString("|")})"""
     val sinkTagRegex   = raw"""(${config.sinkTag.mkString("|")})"""
 
-    // Basic flows
-    flowSlices += collectBasicFlows(atom, sourceTagRegex, sinkTagRegex)
+    val basicFlows = Iterator(collectBasicFlows(atom, sourceTagRegex, sinkTagRegex))
 
-    if defaultTagsMode then
-      flowSlices ++= collectDefaultTagFlows(atom, sourceTagRegex)
+    val defaultFlows = if defaultTagsMode then
+      collectDefaultTagFlows(atom, sourceTagRegex).iterator
+    else Iterator.empty
 
-    // Crypto flows
-    if config.includeCryptoFlows then
-      flowSlices ++= collectCryptoFlows(atom, language)
+    val cryptoFlows = if config.includeCryptoFlows then
+      collectCryptoFlows(atom, language).iterator
+    else Iterator.empty
 
-    // Language-specific flows
-    collectLanguageSpecificFlows(
+    val languageFlows = collectLanguageSpecificFlows(
       atom,
       config,
       language,
       defaultTagsMode,
       sourceTagRegex,
-      sinkTagRegex,
-      flowSlices
+      sinkTagRegex
     )
 
-    flowSlices
+    basicFlows ++ defaultFlows ++ cryptoFlows ++ languageFlows
   end collectFlowSlices
 
   private def collectBasicFlows(
@@ -175,17 +132,16 @@ object ReachableSlicing:
       )
 
   private def collectCryptoFlows(atom: Cpg, language: String): List[Iterator[Path]] =
-      language match
-        case l if JVM_BASED_LANGUAGES.contains(l) =>
-            List(atom.tag.name(CRYPTO_GENERATE_TAG).call.reachableByFlows(
-              atom.tag.name(CRYPTO_ALGORITHM_TAG).literal
-            ))
-        case l if Seq(Languages.PYTHON, Languages.PYTHONSRC).contains(l) =>
-            List(atom.tag.name(CRYPTO_GENERATE_TAG).call.reachableByFlows(
-              atom.tag.name(CRYPTO_ALGORITHM_TAG).call
-            ))
-        case _ =>
-            List.empty
+      if JVM_BASED_LANGUAGES.contains(language) then
+        List(atom.tag.name(CRYPTO_GENERATE_TAG).call.reachableByFlows(
+          atom.tag.name(CRYPTO_ALGORITHM_TAG).literal
+        ))
+      else if PYTHON_LANGUAGES.contains(language) then
+        List(atom.tag.name(CRYPTO_GENERATE_TAG).call.reachableByFlows(
+          atom.tag.name(CRYPTO_ALGORITHM_TAG).call
+        ))
+      else
+        List.empty
 
   private def collectLanguageSpecificFlows(
     atom: Cpg,
@@ -193,21 +149,21 @@ object ReachableSlicing:
     language: String,
     defaultTagsMode: Boolean,
     sourceTagRegex: String,
-    sinkTagRegex: String,
-    flowSlices: ListBuffer[Iterator[Path]]
-  ): Unit =
-    collectDynamicLanguageFlows(
+    sinkTagRegex: String
+  ): Iterator[Iterator[Path]] =
+    val dynamic = collectDynamicLanguageFlows(
       atom,
       config,
       language,
       defaultTagsMode,
       sourceTagRegex,
-      sinkTagRegex,
-      flowSlices
+      sinkTagRegex
     )
-    collectPHPRubyFlows(atom, language, sourceTagRegex, flowSlices)
-    collectRubySpecificFlows(atom, language, defaultTagsMode, config, flowSlices)
-    collectCLanguageFlows(atom, language, defaultTagsMode, config, flowSlices)
+    val phpRuby = collectPHPRubyFlows(atom, language, sourceTagRegex)
+    val ruby    = collectRubySpecificFlows(atom, language, defaultTagsMode, config)
+    val cLang   = collectCLanguageFlows(atom, language, defaultTagsMode, config)
+
+    dynamic ++ phpRuby ++ ruby ++ cLang
   end collectLanguageSpecificFlows
 
   private def collectDynamicLanguageFlows(
@@ -216,105 +172,99 @@ object ReachableSlicing:
     language: String,
     defaultTagsMode: Boolean,
     sourceTagRegex: String,
-    sinkTagRegex: String,
-    flowSlices: ListBuffer[Iterator[Path]]
-  ): Unit =
-      if Array(
-          Languages.JSSRC,
-          Languages.JAVASCRIPT,
-          Languages.PYTHON,
-          Languages.PYTHONSRC,
-          Languages.RUBYSRC
-        ).contains(language)
-      then
-        val dynCallSource          = atom.tag.name(sourceTagRegex).call.argument.isIdentifier
-        val dynFrameworkIdentifier = atom.tag.name(FRAMEWORK_TAG).identifier
-        val dynFrameworkParameter  = atom.tag.name(FRAMEWORK_TAG).parameter
-        val dynSink                = atom.tag.name(sinkTagRegex).call.argument.isIdentifier
+    sinkTagRegex: String
+  ): Iterator[Iterator[Path]] =
+    if !DYNAMIC_LANGUAGES.contains(language) then return Iterator.empty
 
-        flowSlices += dynSink.reachableByFlows(dynCallSource, dynFrameworkParameter)
+    val dynCallSource          = atom.tag.name(sourceTagRegex).call.argument.isIdentifier
+    val dynFrameworkIdentifier = atom.tag.name(FRAMEWORK_TAG).identifier
+    val dynFrameworkParameter  = atom.tag.name(FRAMEWORK_TAG).parameter
+    val dynSink                = atom.tag.name(sinkTagRegex).call.argument.isIdentifier
 
-        if defaultTagsMode then
-          flowSlices += atom.tag.name(FRAMEWORK_TAG).call.argument.reachableByFlows(
-            dynFrameworkParameter,
-            atom.tag.name(sourceTagRegex).parameter
+    val flow1 = dynSink.reachableByFlows(dynCallSource, dynFrameworkParameter)
+
+    val defaultFlows = if defaultTagsMode then
+      val f1 = atom.tag.name(FRAMEWORK_TAG).call.argument.reachableByFlows(
+        dynFrameworkParameter,
+        atom.tag.name(sourceTagRegex).parameter
+      )
+      val f2 = if dynFrameworkParameter.isEmpty then
+        Iterator(
+          dynSink.reachableByFlows(dynCallSource, dynFrameworkIdentifier),
+          atom.tag.name(FRAMEWORK_TAG).call.argument.isIdentifier.reachableByFlows(
+            atom.tag.name(sourceTagRegex).identifier
           )
+        )
+      else Iterator.empty
+      Iterator(f1) ++ f2
+    else Iterator.empty
 
-          if dynFrameworkParameter.isEmpty then
-            flowSlices ++= List(
-              dynSink.reachableByFlows(dynCallSource, dynFrameworkIdentifier),
-              atom.tag.name(FRAMEWORK_TAG).call.argument.isIdentifier.reachableByFlows(
-                atom.tag.name(sourceTagRegex).identifier
-              )
-            )
+    val pythonFlows = collectPythonSpecificFlows(atom, language, defaultTagsMode, sinkTagRegex)
 
-        collectPythonSpecificFlows(atom, language, defaultTagsMode, flowSlices, sinkTagRegex)
+    Iterator(flow1) ++ defaultFlows ++ pythonFlows
+  end collectDynamicLanguageFlows
 
   private def collectPythonSpecificFlows(
     atom: Cpg,
     language: String,
     defaultTagsMode: Boolean,
-    flowSlices: ListBuffer[Iterator[Path]],
     sinkTagRegex: String
-  ): Unit =
-    val dynSink = atom.tag.name(sinkTagRegex).call.argument.isIdentifier
-    val dynCallSource =
-        atom.tag.name(sinkTagRegex).call.argument.isIdentifier // This should use sourceTagRegex instead
-    val correctedDynCallSource =
-        atom.tag.name(raw"""(${DEFAULT_SOURCE_TAGS.mkString("|")})""").call.argument.isIdentifier
+  ): Iterator[Iterator[Path]] =
+    if !PYTHON_LANGUAGES.contains(language) then return Iterator.empty
 
-    if Array(Languages.PYTHON, Languages.PYTHONSRC).contains(language) && defaultTagsMode then
+    val flows = if defaultTagsMode then
       if atom.tag.name(CLI_SOURCE_TAG).identifier.nonEmpty then
-        flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
+        atom.tag.name(PURL_PREFIX).identifier.reachableByFlows(
           atom.tag.name(CLI_SOURCE_TAG).identifier
         )
       else
-        flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
+        atom.tag.name(PURL_PREFIX).identifier.reachableByFlows(
           atom.tag.name(FRAMEWORK_TAG).parameter
         )
     else
-      flowSlices += atom.tag.name("pkg.*").identifier.reachableByFlows(
+      atom.tag.name(PURL_PREFIX).identifier.reachableByFlows(
         atom.tag.name(CLI_SOURCE_TAG).call
       )
+    Iterator(flows)
   end collectPythonSpecificFlows
 
   private def collectPHPRubyFlows(
     atom: Cpg,
     language: String,
-    sourceTagRegex: String,
-    flowSlices: ListBuffer[Iterator[Path]]
-  ): Unit =
-      if Array(Languages.PHP, Languages.RUBYSRC).contains(language) then
-        flowSlices += atom.tag.name(FRAMEWORK_TAG).parameter.reachableByFlows(
+    sourceTagRegex: String
+  ): Iterator[Iterator[Path]] =
+      if PHP_RUBY_LANGUAGES.contains(language) then
+        Iterator(atom.tag.name(FRAMEWORK_TAG).parameter.reachableByFlows(
           atom.tag.name(sourceTagRegex).parameter
-        )
+        ))
+      else Iterator.empty
 
   private def collectRubySpecificFlows(
     atom: Cpg,
     language: String,
     defaultTagsMode: Boolean,
-    config: ReachablesConfig,
-    flowSlices: ListBuffer[Iterator[Path]]
-  ): Unit =
+    config: ReachablesConfig
+  ): Iterator[Iterator[Path]] =
       if language == Languages.RUBYSRC && defaultTagsMode then
-        flowSlices += atom.tag.name("pkg.*").call.argument.reachableByFlows(
-          atom.tag.name("pkg.*").call.method.repeat(_.filename(
+        Iterator(atom.tag.name(PURL_PREFIX).call.argument.reachableByFlows(
+          atom.tag.name(PURL_PREFIX).call.method.repeat(_.filename(
             s"((app|config)${Pattern.quote(JFile.separator)})?(routes|controller(s)?|model(s)?|application).*\\.rb.*"
           ))(using _.maxDepth(config.sliceDepth)).parameter
-        )
+        ))
+      else Iterator.empty
 
   private def collectCLanguageFlows(
     atom: Cpg,
     language: String,
     defaultTagsMode: Boolean,
-    config: ReachablesConfig,
-    flowSlices: ListBuffer[Iterator[Path]]
-  ): Unit =
-      if Array(Languages.NEWC, Languages.C).contains(language) then
-        flowSlices ++= collectCBasicFlows(atom)
+    config: ReachablesConfig
+  ): Iterator[Iterator[Path]] =
+    if !C_LANGUAGES.contains(language) then return Iterator.empty
 
-        if defaultTagsMode then
-          flowSlices ++= collectCDefaultFlows(atom, config)
+    val basic = collectCBasicFlows(atom).iterator
+    val defaults =
+        if defaultTagsMode then collectCDefaultFlows(atom, config).iterator else Iterator.empty
+    basic ++ defaults
 
   private def collectCBasicFlows(atom: Cpg): List[Iterator[Path]] =
       List(
@@ -333,16 +283,15 @@ object ReachableSlicing:
         t.contains("source") || t.contains("input") || t.contains("route")
     )
 
-    val flows = ListBuffer[Iterator[Path]]()
-
-    if atomPossibleSinkTags.nonEmpty then
-      flows += atom.tag.name(s"(${atomPossibleSinkTags.slice(0, 5).mkString("|")})")
+    val sinkFlows = if atomPossibleSinkTags.nonEmpty then
+      List(atom.tag.name(s"(${atomPossibleSinkTags.slice(0, 5).mkString("|")})")
           .identifier.reachableByFlows(atom.tag.name(
             s"($EVENT_TAG|$CLI_SOURCE_TAG|$HTTP_TAG)"
-          ).parameter)
+          ).parameter))
+    else List.empty
 
     println("Collecting additional slices with Reverse Reachability.")
-    flows ++= List(
+    val reverseFlows = List(
       atom.tag.name(LIBRARY_CALL_TAG).call.reachableByFlows(
         atom.tag.name(LIBRARY_CALL_TAG).call.method.repeat(_.caller(using NoResolve))(using
         _.maxDepth(config.sliceDepth)).parameter
@@ -359,7 +308,7 @@ object ReachableSlicing:
       )
     )
 
-    flows.toList
+    sinkFlows ++ reverseFlows
   end collectCDefaultFlows
 
   private def handleEmptySlices(atom: Cpg, config: ReachablesConfig): Unit =
@@ -371,306 +320,172 @@ object ReachableSlicing:
     if atomSemanticTags.nonEmpty then
       println(s"List of semantic tags found in the atom file:\n${atomSemanticTags.mkString("\n")}")
 
-  private def tagAsString(tag: Iterator[Tag]): String =
-      if tag.nonEmpty then
-        tag.name.filterNot(v => v.toUpperCase() == v && v.contains("_")).mkString(", ")
-      else ""
+  private def resolveTagsAndPurls(
+    node: AstNode,
+    fallback: Option[AstNode] = None
+  ): (String, Set[String]) =
+    val nodeTags = node.tag.toList
+    val effectiveTags =
+        if nodeTags.isEmpty && fallback.isDefined then fallback.get.tag.toList else nodeTags
 
-  private def purlsFromTag(tag: Iterator[Tag]): Set[String] =
-      if tag.nonEmpty then tag.name.filter(_.startsWith("pkg:")).toSet else Set.empty
+    val tagStr = if effectiveTags.nonEmpty then
+      effectiveTags.map(_.name).filterNot(v => v.toUpperCase == v && v.contains("_")).mkString(", ")
+    else ""
+
+    val purls = effectiveTags.map(_.name).filter(_.startsWith("pkg:")).toSet
+    (tagStr, purls)
 
   private def toSlice(path: Path): ReachableFlows =
-    val tableRows  = ArrayBuffer[SliceNode]()
-    val addedPaths = mutable.Set[String]()
-    val purls      = mutable.Set[String]()
+    val (sliceNodes, purls, _) =
+        path.elements.foldLeft((Vector.empty[SliceNode], Set.empty[String], Set.empty[String])) {
+            case ((nodes, accPurls, visited), astNode) =>
+                val (nodeOpt, nodePurls) = createSliceNode(astNode)
+                val fileLoc = s"${astNode.file.name.headOption.getOrElse("")}#${astNode.lineNumber
+                        .map(_.intValue()).getOrElse(0)}"
 
-    path.elements.foreach { astNode =>
-        processAstNode(astNode, tableRows, addedPaths, purls)
-    }
+                val shouldAdd = nodeOpt.isDefined && (astNode match
+                  case _: Literal | _: Identifier => !visited.contains(fileLoc)
+                  case _                          => true
+                )
 
-    ReachableFlows(flows = tableRows.toList, purls = purls.toSet)
+                val newNodes = if shouldAdd then nodes :+ nodeOpt.get else nodes
+                (newNodes, accPurls ++ nodePurls, visited + fileLoc)
+        }
+    ReachableFlows(flows = sliceNodes.toList, purls = purls)
 
-  private def processAstNode(
-    astNode: AstNode,
-    tableRows: ArrayBuffer[SliceNode],
-    addedPaths: mutable.Set[String],
-    purls: mutable.Set[String]
-  ): Unit =
-    val lineNumber   = astNode.lineNumber.map(_.intValue())
-    val fileName     = astNode.file.name.headOption.getOrElse("").replace("<unknown>", "")
-    var fileLocation = s"$fileName#$lineNumber"
-    val tags: String = tagAsString(astNode.tag)
-    purls ++= purlsFromTag(astNode.tag)
+  private def createSliceNode(astNode: AstNode): (Option[SliceNode], Set[String]) =
+    val (tags, purls) = resolveTagsAndPurls(astNode)
 
-    if fileLocation == "#" then fileLocation = "N/A"
-
-    val sliceNode = SliceNode(
+    val baseNode = SliceNode(
       astNode.id(),
       astNode.label,
       code = astNode.code,
-      parentFileName = astNode.file.name.headOption.getOrElse(""),
+      parentFileName = astNode.file.name.headOption.getOrElse("").replace("<unknown>", ""),
       lineNumber = astNode.lineNumber,
       columnNumber = astNode.columnNumber,
       tags = tags
     )
 
     astNode match
-      case _: MethodReturn =>
-      case _: Block        =>
-      case methodParameterIn: MethodParameterIn =>
-          processMethodParameterIn(methodParameterIn, sliceNode, tableRows, purls)
-      case ret: Return =>
-          processReturn(ret, sliceNode, tableRows)
-      case literal: Literal =>
-          processLiteral(literal, sliceNode, tableRows, addedPaths, fileName, lineNumber, purls)
-      case identifier: Identifier =>
-          processIdentifier(
-            identifier,
-            sliceNode,
-            tableRows,
-            addedPaths,
-            fileName,
-            lineNumber,
+      case m: MethodParameterIn =>
+          val (finalTags, finalPurls) = resolveTagsAndPurls(m, Some(m.method))
+          (
+            Some(baseNode.copy(
+              name = m.name,
+              typeFullName = m.typeFullName,
+              parentMethodName = m.method.name,
+              parentMethodSignature = m.method.signature,
+              parentPackageName = m.method.location.packageName,
+              parentClassName = m.method.location.className,
+              isExternal = m.method.isExternal,
+              tags = finalTags
+            )),
+            finalPurls
+          )
+
+      case r: Return =>
+          (
+            Some(baseNode.copy(
+              name = r.argumentName.getOrElse(""),
+              parentMethodName = r.method.name,
+              parentMethodSignature = r.method.signature,
+              parentPackageName = r.method.location.packageName,
+              parentClassName = r.method.location.className
+            )),
             purls
           )
-      case member: Member =>
-          processMember(member, sliceNode, tableRows)
-      case call: Call =>
-          processCall(call, sliceNode, tableRows, purls)
-      case cfgNode: CfgNode =>
-          processCfgNode(cfgNode, sliceNode, tableRows, purls)
+
+      case l: Literal =>
+          val (finalTags, finalPurls) = if tags.isEmpty && l.inCall.nonEmpty then
+            resolveTagsAndPurls(l, Some(l.inCall.head))
+          else (tags, purls)
+
+          (
+            Some(baseNode.copy(
+              name = l.code.replaceAll("""(['"])""", ""),
+              code = l.code.replaceAll("""(['"])""", ""),
+              typeFullName = l.typeFullName,
+              parentMethodName = l.method.name,
+              parentMethodSignature = l.method.signature,
+              parentPackageName = l.method.location.packageName,
+              parentClassName = l.method.location.className,
+              tags = finalTags
+            )),
+            finalPurls
+          )
+
+      case i: Identifier =>
+          val (finalTags, finalPurls) = if tags.isEmpty && i.inCall.nonEmpty then
+            resolveTagsAndPurls(i, Some(i.inCall.head))
+          else (tags, purls)
+
+          if i.inCall.nonEmpty then
+            (
+              Some(baseNode.copy(
+                name = i.name,
+                code = i.inCall.head.code,
+                parentMethodName = i.method.name,
+                parentMethodSignature = i.method.signature,
+                parentPackageName = i.method.location.packageName,
+                parentClassName = i.method.location.className,
+                tags = finalTags
+              )),
+              finalPurls
+            )
+          else (None, purls)
+
+      case m: Member =>
+          (Some(baseNode.copy(name = m.name, parentMethodName = "<not-in-method>")), purls)
+
+      case c: Call =>
+          if c.code.startsWith("<operator") || c.methodFullName.startsWith("<operator") then
+            (None, purls)
+          else
+            val resolvedCallee = c.callee(using NoResolve).headOption
+            val (finalTags, finalPurls) =
+                if tags.isEmpty && resolvedCallee.exists(_.isExternal) && !c.methodFullName
+                      .startsWith("new ")
+                then
+                  resolveTagsAndPurls(c, resolvedCallee)
+                else (tags, purls)
+
+            val isExternal =
+                resolvedCallee.exists(_.isExternal) && !c.methodFullName.startsWith("new ")
+
+            (
+              Some(baseNode.copy(
+                name = c.name,
+                fullName = resolvedCallee.map(_.fullName).getOrElse(""),
+                isExternal = isExternal,
+                parentMethodName = c.method.name,
+                parentMethodSignature = c.method.signature,
+                parentPackageName = c.method.location.packageName,
+                parentClassName = c.method.location.className,
+                tags = finalTags
+              )),
+              finalPurls
+            )
+
+      case cfg: CfgNode =>
+          val (finalTags, finalPurls) = resolveTagsAndPurls(cfg, Some(cfg.method))
+          val method                  = cfg.method
+          val stmtStr = cfg match
+            case _: MethodParameterIn =>
+                val paramsPretty =
+                    method.parameter.toList.sortBy(_.index).map(_.code).mkString(", ")
+                s"${method.name}($paramsPretty)"
+            case _ => cfg.statement.repr
+
+          (
+            Some(baseNode.copy(
+              parentMethodName = method.name,
+              code = stmtStr,
+              tags = finalTags
+            )),
+            finalPurls
+          )
+
+      case _ => (Some(baseNode), purls)
     end match
-
-    addedPaths += s"$fileName#$lineNumber"
-  end processAstNode
-
-  private def processMethodParameterIn(
-    methodParameterIn: MethodParameterIn,
-    sliceNode: SliceNode,
-    tableRows: ArrayBuffer[SliceNode],
-    purls: mutable.Set[String]
-  ): Unit =
-    val methodName = methodParameterIn.method.name
-    var tags       = tagAsString(methodParameterIn.tag)
-    var localPurls = purlsFromTag(methodParameterIn.tag)
-
-    if tags.isEmpty && methodParameterIn.method.tag.nonEmpty then
-      tags = tagAsString(methodParameterIn.method.tag)
-      localPurls ++= purlsFromTag(methodParameterIn.method.tag)
-
-    if tags.isEmpty && methodParameterIn.tag.nonEmpty then
-      tags = tagAsString(methodParameterIn.tag)
-      localPurls ++= purlsFromTag(methodParameterIn.tag)
-
-    purls ++= localPurls
-
-    val updatedSliceNode = sliceNode.copy(
-      name = methodParameterIn.name,
-      code = methodParameterIn.code,
-      typeFullName = methodParameterIn.typeFullName,
-      parentMethodName = methodName,
-      parentMethodSignature = methodParameterIn.method.signature,
-      parentPackageName = methodParameterIn.method.location.packageName,
-      parentClassName = methodParameterIn.method.location.className,
-      isExternal = methodParameterIn.method.isExternal,
-      lineNumber = methodParameterIn.lineNumber,
-      columnNumber = methodParameterIn.columnNumber,
-      tags = tags
-    )
-    tableRows += updatedSliceNode
-  end processMethodParameterIn
-
-  private def processReturn(
-    ret: Return,
-    sliceNode: SliceNode,
-    tableRows: ArrayBuffer[SliceNode]
-  ): Unit =
-    val methodName = ret.method.name
-    val updatedSliceNode = sliceNode.copy(
-      name = ret.argumentName.getOrElse(""),
-      code = ret.code,
-      parentMethodName = methodName,
-      parentMethodSignature = ret.method.signature,
-      parentPackageName = ret.method.location.packageName,
-      parentClassName = ret.method.location.className,
-      lineNumber = ret.lineNumber,
-      columnNumber = ret.columnNumber
-    )
-    tableRows += updatedSliceNode
-
-  private def processLiteral(
-    literal: Literal,
-    sliceNode: SliceNode,
-    tableRows: ArrayBuffer[SliceNode],
-    addedPaths: mutable.Set[String],
-    fileName: String,
-    lineNumber: Option[Int],
-    purls: mutable.Set[String]
-  ): Unit =
-    val methodName = literal.method.name
-    var tags       = tagAsString(literal.tag)
-    var localPurls = purlsFromTag(literal.tag)
-
-    if tags.isEmpty && literal.inCall.nonEmpty && literal.inCall.head.tag.nonEmpty then
-      tags = tagAsString(literal.inCall.head.tag)
-      localPurls ++= purlsFromTag(literal.inCall.head.tag)
-
-    purls ++= localPurls
-
-    if !addedPaths.contains(s"$fileName#$lineNumber") then
-      val updatedSliceNode = sliceNode.copy(
-        name = literal.code.replaceAll("""(['"])""", ""),
-        code = literal.code.replaceAll("""(['"])""", ""),
-        typeFullName = literal.typeFullName,
-        parentMethodName = methodName,
-        parentMethodSignature = literal.method.signature,
-        parentPackageName = literal.method.location.packageName,
-        parentClassName = literal.method.location.className,
-        lineNumber = literal.lineNumber,
-        columnNumber = literal.columnNumber,
-        tags = tags
-      )
-      tableRows += updatedSliceNode
-  end processLiteral
-
-  private def processIdentifier(
-    identifier: Identifier,
-    sliceNode: SliceNode,
-    tableRows: ArrayBuffer[SliceNode],
-    addedPaths: mutable.Set[String],
-    fileName: String,
-    lineNumber: Option[Int],
-    purls: mutable.Set[String]
-  ): Unit =
-    val methodName = identifier.method.name
-    var tags       = tagAsString(identifier.tag)
-    var localPurls = purlsFromTag(identifier.tag)
-
-    if tags.isEmpty && identifier.inCall.nonEmpty && identifier.inCall.head.tag.nonEmpty then
-      tags = tagAsString(identifier.inCall.head.tag)
-      localPurls ++= purlsFromTag(identifier.inCall.head.tag)
-
-    purls ++= localPurls
-
-    if !addedPaths.contains(s"$fileName#$lineNumber") && identifier.inCall.nonEmpty then
-      val updatedSliceNode = sliceNode.copy(
-        name = identifier.name,
-        code = if identifier.inCall.nonEmpty then identifier.inCall.head.code else identifier.code,
-        parentMethodName = methodName,
-        parentMethodSignature = identifier.method.signature,
-        parentPackageName = identifier.method.location.packageName,
-        parentClassName = identifier.method.location.className,
-        lineNumber = identifier.lineNumber,
-        columnNumber = identifier.columnNumber,
-        tags = tags
-      )
-      tableRows += updatedSliceNode
-  end processIdentifier
-
-  private def processMember(
-    member: Member,
-    sliceNode: SliceNode,
-    tableRows: ArrayBuffer[SliceNode]
-  ): Unit =
-    val methodName = "<not-in-method>"
-    val updatedSliceNode = sliceNode.copy(
-      name = member.name,
-      code = member.code,
-      parentMethodName = methodName
-    )
-    tableRows += updatedSliceNode
-
-  private def processCall(
-    call: Call,
-    sliceNode: SliceNode,
-    tableRows: ArrayBuffer[SliceNode],
-    purls: mutable.Set[String]
-  ): Unit =
-      if !call.code.startsWith("<operator") || !call.methodFullName.startsWith("<operator") then
-        var tags       = tagAsString(call.tag)
-        var localPurls = purlsFromTag(call.tag)
-        var isExternal = false
-
-        if tags.isEmpty && call.callee(using NoResolve).nonEmpty && call.callee(using NoResolve)
-              .head.isExternal &&
-          !call.methodFullName.startsWith("<operator") && !call.name.startsWith(
-            "<operator"
-          ) && !call.methodFullName.startsWith("new ")
-        then
-          tags = tagAsString(call.callee(using NoResolve).head.tag)
-          localPurls ++= purlsFromTag(call.callee(using NoResolve).head.tag)
-
-        isExternal =
-            if call.callee(using NoResolve).nonEmpty && call.callee(using NoResolve).head.isExternal &&
-              !call.name.startsWith("<operator") && !call.methodFullName.startsWith("new ")
-            then
-              true
-            else false
-
-        if call.methodFullName.startsWith("<operator") then isExternal = false
-
-        purls ++= localPurls
-
-        val updatedSliceNode = sliceNode.copy(
-          name = call.name,
-          fullName = if call.callee(using NoResolve).nonEmpty then
-            call.callee(using NoResolve).head.fullName
-          else "",
-          code = call.code,
-          isExternal = isExternal,
-          parentMethodName = call.method.name,
-          parentMethodSignature = call.method.signature,
-          parentPackageName = call.method.location.packageName,
-          parentClassName = call.method.location.className,
-          lineNumber = call.lineNumber,
-          columnNumber = call.columnNumber,
-          tags = tags
-        )
-        tableRows += updatedSliceNode
-
-  private def processCfgNode(
-    cfgNode: CfgNode,
-    sliceNode: SliceNode,
-    tableRows: ArrayBuffer[SliceNode],
-    purls: mutable.Set[String]
-  ): Unit =
-    val method     = cfgNode.method
-    var tags       = tagAsString(cfgNode.tag)
-    var localPurls = purlsFromTag(cfgNode.tag)
-
-    if tags.isEmpty && method.tag.nonEmpty then
-      tags = tagAsString(method.tag)
-      localPurls ++= purlsFromTag(method.tag)
-
-    val methodName = method.name
-    val statement = cfgNode match
-      case param: MethodParameterIn =>
-          val paramTags  = tagAsString(method.parameter.tag)
-          var paramPurls = purlsFromTag(method.parameter.tag)
-
-          if tags.isEmpty && method.parameter.tag.nonEmpty then
-            tags = paramTags
-            localPurls ++= paramPurls
-
-          val paramsPretty = method.parameter.toList.sortBy(_.index).map(_.code).mkString(", ")
-          s"$methodName($paramsPretty)"
-      case _ =>
-          val stmtTags  = tagAsString(cfgNode.statement.tag)
-          var stmtPurls = purlsFromTag(cfgNode.statement.tag)
-
-          if tags.isEmpty && cfgNode.statement.tag.nonEmpty then
-            tags = stmtTags
-            localPurls ++= stmtPurls
-
-          cfgNode.statement.repr
-
-    purls ++= localPurls
-
-    val updatedSliceNode = sliceNode.copy(
-      parentMethodName = methodName,
-      code = statement,
-      tags = tags
-    )
-    tableRows += updatedSliceNode
-  end processCfgNode
+  end createSliceNode
 end ReachableSlicing
