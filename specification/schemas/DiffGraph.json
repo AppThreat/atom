@@ -539,45 +539,95 @@
             },
             "additionalProperties": false,
             "type": "object",
-            "oneOf": [
+            "allOf": [
                 {
-                    "required": [
-                        "node"
-                    ]
-                },
-                {
-                    "required": [
-                        "edge"
-                    ]
-                },
-                {
-                    "required": [
-                        "node_property"
-                    ]
-                },
-                {
-                    "required": [
-                        "edge_property"
-                    ]
-                },
-                {
-                    "required": [
-                        "remove_node"
-                    ]
-                },
-                {
-                    "required": [
-                        "remove_node_property"
-                    ]
-                },
-                {
-                    "required": [
-                        "remove_edge"
-                    ]
-                },
-                {
-                    "required": [
-                        "remove_edge_property"
+                    "oneOf": [
+                        {
+                            "not": {
+                                "anyOf": [
+                                    {
+                                        "required": [
+                                            "node"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "edge"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "node_property"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "edge_property"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "remove_node"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "remove_node_property"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "remove_edge"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "remove_edge_property"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "required": [
+                                "node"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "edge"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "node_property"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "edge_property"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "remove_node"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "remove_node_property"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "remove_edge"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "remove_edge_property"
+                            ]
+                        }
                     ]
                 }
             ],
@@ -1003,70 +1053,145 @@
             },
             "additionalProperties": false,
             "type": "object",
-            "oneOf": [
+            "allOf": [
                 {
-                    "required": [
-                        "string_value"
-                    ]
-                },
-                {
-                    "required": [
-                        "bool_value"
-                    ]
-                },
-                {
-                    "required": [
-                        "int_value"
-                    ]
-                },
-                {
-                    "required": [
-                        "long_value"
-                    ]
-                },
-                {
-                    "required": [
-                        "float_value"
-                    ]
-                },
-                {
-                    "required": [
-                        "double_value"
-                    ]
-                },
-                {
-                    "required": [
-                        "string_list"
-                    ]
-                },
-                {
-                    "required": [
-                        "bool_list"
-                    ]
-                },
-                {
-                    "required": [
-                        "int_list"
-                    ]
-                },
-                {
-                    "required": [
-                        "long_list"
-                    ]
-                },
-                {
-                    "required": [
-                        "float_list"
-                    ]
-                },
-                {
-                    "required": [
-                        "double_list"
-                    ]
-                },
-                {
-                    "required": [
-                        "contained_refs"
+                    "oneOf": [
+                        {
+                            "not": {
+                                "anyOf": [
+                                    {
+                                        "required": [
+                                            "string_value"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "bool_value"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "int_value"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "long_value"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "float_value"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "double_value"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "string_list"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "bool_list"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "int_list"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "long_list"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "float_list"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "double_list"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "contained_refs"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "required": [
+                                "string_value"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "bool_value"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "int_value"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "long_value"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "float_value"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "double_value"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "string_list"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "bool_list"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "int_list"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "long_list"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "float_list"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "double_list"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "contained_refs"
+                            ]
+                        }
                     ]
                 }
             ],

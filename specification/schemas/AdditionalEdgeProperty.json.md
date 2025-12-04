@@ -1,0 +1,56 @@
+# JSON Schema
+
+## Definitions
+
+- <a id="definitions/AdditionalEdgeProperty"></a>**`AdditionalEdgeProperty`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/AdditionalEdgeProperty/properties/edge_id"></a>**`edge_id`** *(string)*
+  - <a id="definitions/AdditionalEdgeProperty/properties/property"></a>**`property`**: Cannot contain additional properties. Refer to *[#/definitions/atom.CpgStruct.Edge.Property](#definitions/atom.CpgStruct.Edge.Property)*.
+  - <a id="definitions/AdditionalEdgeProperty/properties/out_node_key"></a>**`out_node_key`** *(string)*
+  - <a id="definitions/AdditionalEdgeProperty/properties/in_node_key"></a>**`in_node_key`** *(string)*
+  - <a id="definitions/AdditionalEdgeProperty/properties/edge_type"></a>**`edge_type`**: Edge type. Must be one of: "UNKNOWN_EDGE_TYPE", 0, "AST", 3, "CALL", 6, "REF", 10, "TAGGED_BY", 11, "PARAMETER_LINK", 12, "CFG", 19, "EVAL_TYPE", 21, "BINDS_TO", 22, "INHERITS_FROM", 23, "CONTAINS", 28, "CAPTURE", 40, "CAPTURED_BY", 41, "RECEIVER", 55, "CONDITION", 56, "REACHING_DEF", 137, "ALIAS_OF", 138, "BINDS", 155, "ARGUMENT", 156, "SOURCE_FILE", 157, "DOMINATE", 181, "POST_DOMINATE", 182, "CDG", 183, "IMPORTS", 23663, "IS_CALL_FOR_IMPORT", or 23664.
+    - **One of**
+      - <a id="definitions/AdditionalEdgeProperty/properties/edge_type/oneOf/0"></a>*string*
+      - <a id="definitions/AdditionalEdgeProperty/properties/edge_type/oneOf/1"></a>*integer*
+- <a id="definitions/atom.BoolList"></a>**`atom.BoolList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.BoolList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.BoolList/properties/values/items"></a>**Items** *(boolean)*
+- <a id="definitions/atom.ContainedRefs"></a>**`atom.ContainedRefs`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.ContainedRefs/properties/local_name"></a>**`local_name`** *(string)*
+  - <a id="definitions/atom.ContainedRefs/properties/refs"></a>**`refs`** *(array)*
+    - <a id="definitions/atom.ContainedRefs/properties/refs/items"></a>**Items** *(string)*
+- <a id="definitions/atom.CpgStruct.Edge.Property"></a>**`atom.CpgStruct.Edge.Property`** *(object)*: Edge properties. Cannot contain additional properties.
+  - <a id="definitions/atom.CpgStruct.Edge.Property/properties/name"></a>**`name`**: Enum for the name of an edge. Must be one of: "UNKNOWN_EDGE_PROPERTY", 0, "VARIABLE", or 11.
+    - **One of**
+      - <a id="definitions/atom.CpgStruct.Edge.Property/properties/name/oneOf/0"></a>*string*
+      - <a id="definitions/atom.CpgStruct.Edge.Property/properties/name/oneOf/1"></a>*integer*
+  - <a id="definitions/atom.CpgStruct.Edge.Property/properties/value"></a>**`value`**: Cannot contain additional properties. Refer to *[#/definitions/atom.PropertyValue](#definitions/atom.PropertyValue)*.
+- <a id="definitions/atom.DoubleList"></a>**`atom.DoubleList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.DoubleList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.DoubleList/properties/values/items"></a>**Items** *(number)*
+- <a id="definitions/atom.FloatList"></a>**`atom.FloatList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.FloatList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.FloatList/properties/values/items"></a>**Items** *(number)*
+- <a id="definitions/atom.IntList"></a>**`atom.IntList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.IntList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.IntList/properties/values/items"></a>**Items** *(integer)*
+- <a id="definitions/atom.LongList"></a>**`atom.LongList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.LongList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.LongList/properties/values/items"></a>**Items** *(string)*
+- <a id="definitions/atom.PropertyValue"></a>**`atom.PropertyValue`** *(object)*: Message to store the property values such as string or int values. Cannot contain additional properties.
+  - **One of**
+  - <a id="definitions/atom.PropertyValue/properties/string_value"></a>**`string_value`** *(string)*
+  - <a id="definitions/atom.PropertyValue/properties/bool_value"></a>**`bool_value`** *(boolean)*
+  - <a id="definitions/atom.PropertyValue/properties/int_value"></a>**`int_value`** *(integer)*
+  - <a id="definitions/atom.PropertyValue/properties/long_value"></a>**`long_value`** *(string)*
+  - <a id="definitions/atom.PropertyValue/properties/float_value"></a>**`float_value`** *(number)*
+  - <a id="definitions/atom.PropertyValue/properties/double_value"></a>**`double_value`** *(number)*
+  - <a id="definitions/atom.PropertyValue/properties/string_list"></a>**`string_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.StringList](#definitions/atom.StringList)*.
+  - <a id="definitions/atom.PropertyValue/properties/bool_list"></a>**`bool_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.BoolList](#definitions/atom.BoolList)*.
+  - <a id="definitions/atom.PropertyValue/properties/int_list"></a>**`int_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.IntList](#definitions/atom.IntList)*.
+  - <a id="definitions/atom.PropertyValue/properties/long_list"></a>**`long_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.LongList](#definitions/atom.LongList)*.
+  - <a id="definitions/atom.PropertyValue/properties/float_list"></a>**`float_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.FloatList](#definitions/atom.FloatList)*.
+  - <a id="definitions/atom.PropertyValue/properties/double_list"></a>**`double_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.DoubleList](#definitions/atom.DoubleList)*.
+  - <a id="definitions/atom.PropertyValue/properties/contained_refs"></a>**`contained_refs`**: Cannot contain additional properties. Refer to *[#/definitions/atom.ContainedRefs](#definitions/atom.ContainedRefs)*.
+- <a id="definitions/atom.StringList"></a>**`atom.StringList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.StringList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.StringList/properties/values/items"></a>**Items** *(string)*

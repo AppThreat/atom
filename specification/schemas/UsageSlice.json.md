@@ -1,0 +1,89 @@
+# JSON Schema
+
+## Definitions
+
+- <a id="definitions/UsageSlice"></a>**`UsageSlice`** *(object)*: * The usages slice describes how a variable interacts within its procedure. This is perhaps a more "descriptive" slice in some ways. The variables are locals and parameters and the referencing identifiers are tracked to find what the variable calls and what calls it forms an argument of. There are two lists. There is a list of MethodUsageSlice with key "objectSlices" and a list of UserDefinedTypes with key "userDefinedTypes" ![Usage slices overview](./docs/Library%20Usages.png). Cannot contain additional properties.
+  - <a id="definitions/UsageSlice/properties/objectSlices"></a>**`objectSlices`** *(array)*: Cannot contain additional properties.
+    - <a id="definitions/UsageSlice/properties/objectSlices/items"></a>**Items**: Refer to *[#/definitions/atom.UsageSlice.MethodUsageSlice](#definitions/atom.UsageSlice.MethodUsageSlice)*.
+  - <a id="definitions/UsageSlice/properties/userDefinedTypes"></a>**`userDefinedTypes`** *(array)*: Cannot contain additional properties.
+    - <a id="definitions/UsageSlice/properties/userDefinedTypes/items"></a>**Items**: Refer to *[#/definitions/atom.UsageSlice.UserDefinedTypes](#definitions/atom.UsageSlice.UserDefinedTypes)*.
+- <a id="definitions/atom.UsageSlice.ArgToCalls"></a>**`atom.UsageSlice.ArgToCalls`** *(object)*: The calls this object is observed to be an argument of. Cannot contain additional properties.
+  - <a id="definitions/atom.UsageSlice.ArgToCalls/properties/callName"></a>**`callName`** *(string)*: Call method name.
+  - <a id="definitions/atom.UsageSlice.ArgToCalls/properties/resolvedMethod"></a>**`resolvedMethod`** *(string)*: Full name of the resolved method.
+  - <a id="definitions/atom.UsageSlice.ArgToCalls/properties/paramTypes"></a>**`paramTypes`** *(array)*: Types of the parameters.
+    - <a id="definitions/atom.UsageSlice.ArgToCalls/properties/paramTypes/items"></a>**Items** *(string)*
+  - <a id="definitions/atom.UsageSlice.ArgToCalls/properties/returnType"></a>**`returnType`** *(string)*: Return type.
+  - <a id="definitions/atom.UsageSlice.ArgToCalls/properties/position"></a>**`position`** *(integer)*: Argument position.
+  - <a id="definitions/atom.UsageSlice.ArgToCalls/properties/isExternal"></a>**`isExternal`** *(boolean)*: Boolean to indicate if the call belongs to an external method.
+  - <a id="definitions/atom.UsageSlice.ArgToCalls/properties/lineNumber"></a>**`lineNumber`** *(integer)*: Line number.
+  - <a id="definitions/atom.UsageSlice.ArgToCalls/properties/columnNumber"></a>**`columnNumber`** *(integer)*: Column number.
+- <a id="definitions/atom.UsageSlice.DefinedBy"></a>**`atom.UsageSlice.DefinedBy`** *(object)*: Places where the given symbol is defined. Cannot contain additional properties.
+  - <a id="definitions/atom.UsageSlice.DefinedBy/properties/name"></a>**`name`** *(string)*: variable or parameter name.
+  - <a id="definitions/atom.UsageSlice.DefinedBy/properties/typeFullName"></a>**`typeFullName`** *(string)*: Fullname of the data type.
+  - <a id="definitions/atom.UsageSlice.DefinedBy/properties/resolvedMethod"></a>**`resolvedMethod`** *(string)*: Method name.
+  - <a id="definitions/atom.UsageSlice.DefinedBy/properties/position"></a>**`position`** *(integer)*: Position.
+  - <a id="definitions/atom.UsageSlice.DefinedBy/properties/isExternal"></a>**`isExternal`** *(boolean)*: Boolean to indicate if the call belongs to an external method. label=CALL.
+  - <a id="definitions/atom.UsageSlice.DefinedBy/properties/lineNumber"></a>**`lineNumber`** *(integer)*: Line number.
+  - <a id="definitions/atom.UsageSlice.DefinedBy/properties/columnNumber"></a>**`columnNumber`** *(integer)*: Column number.
+  - <a id="definitions/atom.UsageSlice.DefinedBy/properties/label"></a>**`label`** *(string)*: Label describing the resolved method or position.
+- <a id="definitions/atom.UsageSlice.Fields"></a>**`atom.UsageSlice.Fields`** *(object)*: Represents a local transfer of data via aliasing. The data defined is via some alias. Cannot contain additional properties.
+  - <a id="definitions/atom.UsageSlice.Fields/properties/name"></a>**`name`** *(string)*: Name of the local variable.
+  - <a id="definitions/atom.UsageSlice.Fields/properties/typeFullName"></a>**`typeFullName`** *(string)*: Full name of the type.
+  - <a id="definitions/atom.UsageSlice.Fields/properties/lineNumber"></a>**`lineNumber`** *(integer)*: Line number.
+  - <a id="definitions/atom.UsageSlice.Fields/properties/columnNumber"></a>**`columnNumber`** *(integer)*: Column number.
+  - <a id="definitions/atom.UsageSlice.Fields/properties/label"></a>**`label`**: Label type. Must be one of: "ANY", 0, "LOCAL", 1, "LITERAL", 2, "PARAM", 3, "CALL", 4, "IDENTIFIER", 5, "TYPE_REF", 6, "UNKNOWN", or 10.
+    - **One of**
+      - <a id="definitions/atom.UsageSlice.Fields/properties/label/oneOf/0"></a>*string*
+      - <a id="definitions/atom.UsageSlice.Fields/properties/label/oneOf/1"></a>*integer*
+- <a id="definitions/atom.UsageSlice.InvokedCalls"></a>**`atom.UsageSlice.InvokedCalls`** *(object)*: The calls this object is observed to call. Cannot contain additional properties.
+  - <a id="definitions/atom.UsageSlice.InvokedCalls/properties/callName"></a>**`callName`** *(string)*: Call method name.
+  - <a id="definitions/atom.UsageSlice.InvokedCalls/properties/resolvedMethod"></a>**`resolvedMethod`** *(string)*: Full name of the resolved method.
+  - <a id="definitions/atom.UsageSlice.InvokedCalls/properties/paramTypes"></a>**`paramTypes`** *(array)*: Types of the parameters.
+    - <a id="definitions/atom.UsageSlice.InvokedCalls/properties/paramTypes/items"></a>**Items** *(string)*
+  - <a id="definitions/atom.UsageSlice.InvokedCalls/properties/returnType"></a>**`returnType`** *(string)*: Return type.
+  - <a id="definitions/atom.UsageSlice.InvokedCalls/properties/isExternal"></a>**`isExternal`** *(boolean)*: Boolean to indicate if the call belongs to an external method.
+  - <a id="definitions/atom.UsageSlice.InvokedCalls/properties/lineNumber"></a>**`lineNumber`** *(integer)*: Line number.
+  - <a id="definitions/atom.UsageSlice.InvokedCalls/properties/columnNumber"></a>**`columnNumber`** *(integer)*: Column number.
+- <a id="definitions/atom.UsageSlice.MethodUsageSlice"></a>**`atom.UsageSlice.MethodUsageSlice`** *(object)*: Packages the object usage slices along with location and an optional method source code. Cannot contain additional properties.
+  - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/code"></a>**`code`** *(string)*: Raw source code of the method.
+  - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/fullName"></a>**`fullName`** *(string)*: Method full name.
+  - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/fileName"></a>**`fileName`** *(string)*: File name.
+  - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/lineNumber"></a>**`lineNumber`** *(integer)*: Line number.
+  - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/columnNumber"></a>**`columnNumber`** *(integer)*: Column number.
+  - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/usages"></a>**`usages`** *(array)*: Cannot contain additional properties.
+    - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/usages/items"></a>**Items**: Refer to *[#/definitions/atom.UsageSlice.ObjectUsageSlice](#definitions/atom.UsageSlice.ObjectUsageSlice)*.
+- <a id="definitions/atom.UsageSlice.ObjectUsageSlice"></a>**`atom.UsageSlice.ObjectUsageSlice`** *(object)*: Describes where and how the given external object/type is used. Cannot contain additional properties.
+  - <a id="definitions/atom.UsageSlice.ObjectUsageSlice/properties/targetObj"></a>**`targetObj`**: Cannot contain additional properties. Refer to *[#/definitions/atom.UsageSlice.TargetObj](#definitions/atom.UsageSlice.TargetObj)*.
+  - <a id="definitions/atom.UsageSlice.ObjectUsageSlice/properties/definedBy"></a>**`definedBy`**: Cannot contain additional properties. Refer to *[#/definitions/atom.UsageSlice.DefinedBy](#definitions/atom.UsageSlice.DefinedBy)*.
+  - <a id="definitions/atom.UsageSlice.ObjectUsageSlice/properties/invokedCalls"></a>**`invokedCalls`** *(array)*: Cannot contain additional properties.
+    - <a id="definitions/atom.UsageSlice.ObjectUsageSlice/properties/invokedCalls/items"></a>**Items**: Refer to *[#/definitions/atom.UsageSlice.InvokedCalls](#definitions/atom.UsageSlice.InvokedCalls)*.
+  - <a id="definitions/atom.UsageSlice.ObjectUsageSlice/properties/argToCalls"></a>**`argToCalls`** *(array)*: Cannot contain additional properties.
+    - <a id="definitions/atom.UsageSlice.ObjectUsageSlice/properties/argToCalls/items"></a>**Items**: Refer to *[#/definitions/atom.UsageSlice.ArgToCalls](#definitions/atom.UsageSlice.ArgToCalls)*.
+- <a id="definitions/atom.UsageSlice.Procedures"></a>**`atom.UsageSlice.Procedures`** *(object)*: Details related to an observed call. Cannot contain additional properties.
+  - <a id="definitions/atom.UsageSlice.Procedures/properties/callName"></a>**`callName`** *(string)*: Name of the method or call.
+  - <a id="definitions/atom.UsageSlice.Procedures/properties/resolvedMethod"></a>**`resolvedMethod`** *(string)*: Full name of the resolved method.
+  - <a id="definitions/atom.UsageSlice.Procedures/properties/paramTypes"></a>**`paramTypes`** *(array)*: Types of the parameters.
+    - <a id="definitions/atom.UsageSlice.Procedures/properties/paramTypes/items"></a>**Items** *(string)*
+  - <a id="definitions/atom.UsageSlice.Procedures/properties/returnType"></a>**`returnType`** *(string)*: Type of the return value.
+  - <a id="definitions/atom.UsageSlice.Procedures/properties/lineNumber"></a>**`lineNumber`** *(integer)*: Line number.
+  - <a id="definitions/atom.UsageSlice.Procedures/properties/columnNumber"></a>**`columnNumber`** *(integer)*: Column number.
+- <a id="definitions/atom.UsageSlice.TargetObj"></a>**`atom.UsageSlice.TargetObj`** *(object)*: Represents a source of data-generation, i.e., where data is defined and can be assigned to some variable or used in an argument. Cannot contain additional properties.
+  - <a id="definitions/atom.UsageSlice.TargetObj/properties/name"></a>**`name`** *(string)*: variable or parameter name.
+  - <a id="definitions/atom.UsageSlice.TargetObj/properties/typeFullName"></a>**`typeFullName`** *(string)*: Fullname of the data type.
+  - <a id="definitions/atom.UsageSlice.TargetObj/properties/position"></a>**`position`** *(integer)*: Position of the parameter or argument.
+  - <a id="definitions/atom.UsageSlice.TargetObj/properties/isExternal"></a>**`isExternal`** *(boolean)*: Boolean to indicate if the call belongs to an external method. label=CALL.
+  - <a id="definitions/atom.UsageSlice.TargetObj/properties/lineNumber"></a>**`lineNumber`** *(integer)*: Line number in the file.
+  - <a id="definitions/atom.UsageSlice.TargetObj/properties/columnNumber"></a>**`columnNumber`** *(integer)*: Column number.
+  - <a id="definitions/atom.UsageSlice.TargetObj/properties/label"></a>**`label`**: Label type. Must be one of: "ANY", 0, "LOCAL", 1, "LITERAL", 2, "PARAM", 3, "CALL", 4, "IDENTIFIER", 5, "TYPE_REF", 6, "UNKNOWN", or 10.
+    - **One of**
+      - <a id="definitions/atom.UsageSlice.TargetObj/properties/label/oneOf/0"></a>*string*
+      - <a id="definitions/atom.UsageSlice.TargetObj/properties/label/oneOf/1"></a>*integer*
+- <a id="definitions/atom.UsageSlice.UserDefinedTypes"></a>**`atom.UsageSlice.UserDefinedTypes`** *(object)*: Describes custom types defined within the application. Cannot contain additional properties.
+  - <a id="definitions/atom.UsageSlice.UserDefinedTypes/properties/name"></a>**`name`** *(string)*: Name of the type.
+  - <a id="definitions/atom.UsageSlice.UserDefinedTypes/properties/fields"></a>**`fields`** *(array)*: Cannot contain additional properties.
+    - <a id="definitions/atom.UsageSlice.UserDefinedTypes/properties/fields/items"></a>**Items**: Refer to *[#/definitions/atom.UsageSlice.Fields](#definitions/atom.UsageSlice.Fields)*.
+  - <a id="definitions/atom.UsageSlice.UserDefinedTypes/properties/procedures"></a>**`procedures`** *(array)*: Cannot contain additional properties.
+    - <a id="definitions/atom.UsageSlice.UserDefinedTypes/properties/procedures/items"></a>**Items**: Refer to *[#/definitions/atom.UsageSlice.Procedures](#definitions/atom.UsageSlice.Procedures)*.
+  - <a id="definitions/atom.UsageSlice.UserDefinedTypes/properties/fileName"></a>**`fileName`** *(string)*: File name.
+  - <a id="definitions/atom.UsageSlice.UserDefinedTypes/properties/lineNumber"></a>**`lineNumber`** *(integer)*: Line number.
+  - <a id="definitions/atom.UsageSlice.UserDefinedTypes/properties/columnNumber"></a>**`columnNumber`** *(integer)*: Column number.

@@ -283,6 +283,10 @@
                     "type": "string",
                     "description": "Parent method name"
                 },
+                "parentMethodSignature": {
+                    "type": "string",
+                    "description": "Parent method signature"
+                },
                 "parentFileName": {
                     "type": "string",
                     "description": "Parent filename"

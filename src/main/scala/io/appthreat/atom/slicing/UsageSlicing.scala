@@ -475,7 +475,7 @@ object UsageSlicing:
         col.map(_.intValue())
       )
 
-  def routesAsUDT(atom: Cpg): List[UserDefinedType] =
+  private def routesAsUDT(atom: Cpg): List[UserDefinedType] =
       atom.call.where(_.argument.tag.nameExact(FRAMEWORK_ROUTE)).map(generateRouteUDT).filter(u =>
           u.fields.nonEmpty || u.procedures.nonEmpty
       ).l

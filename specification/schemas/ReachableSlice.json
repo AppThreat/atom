@@ -4,13 +4,18 @@
     "definitions": {
         "ReachableSlice": {
             "properties": {
-                "reachables": {
-                    "$ref": "#/definitions/atom.ReachableSlice.Reachables",
-                    "additionalProperties": false
+                "flows": {
+                    "items": {
+                        "$ref": "#/definitions/atom.Nodes"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
                 },
                 "purls": {
-                    "$ref": "#/definitions/atom.ReachableSlice.Purls",
-                    "additionalProperties": false
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
                 }
             },
             "additionalProperties": false,
@@ -154,6 +159,10 @@
                     "type": "string",
                     "description": "Parent method name"
                 },
+                "parentMethodSignature": {
+                    "type": "string",
+                    "description": "Parent method signature"
+                },
                 "parentFileName": {
                     "type": "string",
                     "description": "Parent filename"
@@ -182,33 +191,6 @@
             "additionalProperties": false,
             "type": "object",
             "title": "Nodes"
-        },
-        "atom.ReachableSlice.Purls": {
-            "properties": {
-                "purls": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                }
-            },
-            "additionalProperties": false,
-            "type": "object",
-            "title": "Purls"
-        },
-        "atom.ReachableSlice.Reachables": {
-            "properties": {
-                "nodes": {
-                    "items": {
-                        "$ref": "#/definitions/atom.Nodes"
-                    },
-                    "additionalProperties": false,
-                    "type": "array"
-                }
-            },
-            "additionalProperties": false,
-            "type": "object",
-            "title": "Reachables"
         }
     }
 }

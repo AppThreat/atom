@@ -150,8 +150,7 @@ A necessary pre-requisite is the presence of the Software Bill-of-Materials (SBO
 4. Each item in the purls array is of type string
 
 ```json
-{
-  "reachables": [
+[
     {
       "flows": [
         {
@@ -177,8 +176,7 @@ A necessary pre-requisite is the presence of the Software Bill-of-Materials (SBO
         "pkg:maven/org.springframework.kafka/spring-kafka@2.8.11?type=jar"
       ]
     }
-  ]
-}
+]
 ```
 
 ## Generate slices

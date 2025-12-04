@@ -276,7 +276,7 @@ The current specification version is 1.0.0
 
 ## Generating atom files
 
-atom files (app.⚛ or app.atom) are zip files with serialized protobuf data. atom cli is the preferred approach to generate these files. It is possible to author a generator tool from scratch using the [proto specification](./specification/atom.proto). We offer samples in [Python](./specification/samples/python-atomgen/README.md) and [Deno](./specification/samples/deno-atomgen/README.md) for interested users. We also offer proto bindings in additional languages which can be found [here](./specification/bindings/).
+atom files (app.⚛ or app.atom) are zip files with serialized protobuf data. atom cli is the preferred approach to generate these files. It is possible to author a generator tool from scratch using the [proto specification](./specification/atom.proto). We offer a sample in [Python](./specification/samples/python-atomgen/README.md) for interested users. We also offer proto bindings in additional languages which can be found [here](./specification/bindings/).
 
 Example code snippet for generating an atom in python.
 
