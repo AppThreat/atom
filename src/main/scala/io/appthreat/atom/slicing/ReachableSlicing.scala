@@ -117,10 +117,11 @@ object ReachableSlicing:
     sourceTagRegex: String,
     sinkTagRegex: String
   ): Iterator[Path] =
-    val sourceP = atom.tag.name(sourceTagRegex).parameter
-    val sourceI = atom.tag.name(sourceTagRegex).identifier
-    val sink    = atom.ret.where(_.tag.name(sinkTagRegex))
-    sink.reachableByFlows(sourceP, sourceI)
+    val sourceP     = atom.tag.name(sourceTagRegex).parameter
+    val sourceI     = atom.tag.name(sourceTagRegex).identifier
+    val identiSinks = atom.tag.name(sinkTagRegex).call.argument.isIdentifier
+    val retSinks    = atom.ret.where(_.tag.name(sinkTagRegex))
+    identiSinks.reachableByFlows(sourceP, sourceI) ++ retSinks.reachableByFlows(sourceP, sourceI)
 
   private def collectDefaultTagFlows(atom: Cpg, sourceTagRegex: String): List[Iterator[Path]] =
       List(

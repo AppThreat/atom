@@ -39,7 +39,47 @@ const babelParserOptions = {
   ]
 };
 
+const babelFlowParserOptions = {
+  sourceType: "unambiguous",
+  allowImportExportEverywhere: true,
+  allowAwaitOutsideFunction: true,
+  allowNewTargetOutsideFunction: true,
+  allowReturnOutsideFunction: true,
+  allowSuperOutsideMethod: true,
+  allowUndeclaredExports: true,
+  errorRecovery: true,
+  plugins: [
+    "optionalChaining",
+    "classProperties",
+    "decorators-legacy",
+    "exportDefaultFrom",
+    "doExpressions",
+    "numericSeparator",
+    "dynamicImport",
+    "jsx",
+    "flow"
+  ]
+};
+
 const babelSafeParserOptions = {
+  sourceType: "module",
+  allowImportExportEverywhere: true,
+  allowAwaitOutsideFunction: true,
+  allowReturnOutsideFunction: true,
+  errorRecovery: true,
+  plugins: [
+    "optionalChaining",
+    "classProperties",
+    "decorators-legacy",
+    "exportDefaultFrom",
+    "doExpressions",
+    "numericSeparator",
+    "dynamicImport",
+    "typescript"
+  ]
+};
+
+const babelSafeFlowParserOptions = {
   sourceType: "module",
   allowImportExportEverywhere: true,
   allowAwaitOutsideFunction: true,
@@ -110,21 +150,31 @@ const getAllSrcJSAndTSFiles = (src) => {
 /**
  * Convert a single JS/TS file to AST
  */
-const fileToJsAst = (file) => {
+const fileToJsAst = (file, projectType) => {
   if (file.endsWith(".vue") || file.endsWith(".svelte")) {
     return toVueAst(file);
   }
-  return codeToJsAst(readFileSync(file, "utf-8"));
+  return codeToJsAst(readFileSync(file, "utf-8"), projectType);
 };
 
 /**
  * Convert a single JS/TS code snippet to AST
  */
-const codeToJsAst = (code) => {
+const codeToJsAst = (code, projectType) => {
+  const optionsToUse =
+    projectType === "flow" ? babelFlowParserOptions : babelParserOptions;
   try {
-    return parse(code, babelParserOptions);
+    return parse(code, optionsToUse);
   } catch {
-    return parse(code, babelSafeParserOptions);
+    try {
+      return parse(code, babelSafeParserOptions);
+    } catch (errFlow) {
+      try {
+        return parse(code, babelFlowParserOptions);
+      } catch (errFlow) {
+        return parse(code, babelSafeFlowParserOptions);
+      }
+    }
   }
 };
 
@@ -211,50 +261,83 @@ function createTsc(srcFiles) {
         return "any";
       }
     };
-
     const addType = (node) => {
-      let typeStr;
+      // STRUCTURAL/CONTAINER NODES
+      // These nodes define structure (imports, exports, blocks, declarations)
       if (
-        tsc.isSetAccessor(node) ||
-        tsc.isGetAccessor(node) ||
-        tsc.isGetAccessorDeclaration(node) ||
-        tsc.isCallSignatureDeclaration(node) ||
-        tsc.isIndexSignatureDeclaration(node) ||
-        tsc.isClassStaticBlockDeclaration(node) ||
-        tsc.isConstructSignatureDeclaration(node) ||
-        tsc.isMethodDeclaration(node) ||
-        tsc.isFunctionDeclaration(node) ||
-        tsc.isConstructorDeclaration(node) ||
-        tsc.isTypeAliasDeclaration(node) ||
-        tsc.isEnumDeclaration(node) ||
-        tsc.isNamespaceExportDeclaration(node) ||
-        tsc.isImportEqualsDeclaration(node)
+        node.kind === tsc.SyntaxKind.SourceFile ||
+        node.kind === tsc.SyntaxKind.Block ||
+        node.kind === tsc.SyntaxKind.ImportDeclaration ||
+        node.kind === tsc.SyntaxKind.ImportClause ||
+        node.kind === tsc.SyntaxKind.NamedImports ||
+        node.kind === tsc.SyntaxKind.NamespaceImport ||
+        node.kind === tsc.SyntaxKind.ExportDeclaration ||
+        node.kind === tsc.SyntaxKind.NamedExports ||
+        node.kind === tsc.SyntaxKind.TypeAliasDeclaration ||
+        node.kind === tsc.SyntaxKind.InterfaceDeclaration ||
+        node.kind === tsc.SyntaxKind.ModuleDeclaration
       ) {
-        const signature = typeChecker.getSignatureFromDeclaration(node);
-        const returnType = typeChecker.getReturnTypeOfSignature(signature);
-        typeStr = safeTypeToString(returnType);
-      } else if (tsc.isFunctionLike(node)) {
-        const funcType = typeChecker.getTypeAtLocation(node);
-        const funcSignature = typeChecker.getSignaturesOfType(
-          funcType,
-          tsc.SignatureKind.Call
-        )[0];
-        if (funcSignature) {
-          typeStr = safeTypeToString(funcSignature.getReturnType());
-        } else {
+        tsc.forEachChild(node, addType);
+        return;
+      }
+
+      let typeStr;
+
+      try {
+        // WRAPPER NODES
+        if (
+          (tsc.SyntaxKind.SatisfiesExpression &&
+            node.kind === tsc.SyntaxKind.SatisfiesExpression) ||
+          node.kind === tsc.SyntaxKind.AsExpression ||
+          node.kind === tsc.SyntaxKind.TypeAssertionExpression
+        ) {
           typeStr = safeTypeWithContextToString(
-            typeChecker.getTypeAtLocation(node),
-            node
+            typeChecker.getTypeAtLocation(node.expression),
+            node.expression
           );
         }
-      } else {
-        typeStr = safeTypeWithContextToString(
-          typeChecker.getTypeAtLocation(node),
-          node
+        // FUNCTION/METHOD SIGNATURES
+        else if (
+          tsc.isFunctionLike(node) ||
+          tsc.isMethodDeclaration(node) ||
+          tsc.isGetAccessor(node) ||
+          tsc.isSetAccessor(node) ||
+          tsc.isCallSignatureDeclaration(node) ||
+          tsc.isConstructSignatureDeclaration(node)
+        ) {
+          const signature = typeChecker.getSignatureFromDeclaration(node);
+          if (signature) {
+            const returnType = typeChecker.getReturnTypeOfSignature(signature);
+            typeStr = safeTypeToString(returnType);
+          } else {
+            const funcType = typeChecker.getTypeAtLocation(node);
+            const callSignatures = typeChecker.getSignaturesOfType(
+              funcType,
+              tsc.SignatureKind.Call
+            );
+            if (callSignatures.length > 0) {
+              typeStr = safeTypeToString(callSignatures[0].getReturnType());
+            }
+          }
+        }
+        // STANDARD EXPRESSIONS & IDENTIFIERS
+        else {
+          const typeObj = typeChecker.getTypeAtLocation(node);
+          typeStr = safeTypeWithContextToString(typeObj, node);
+        }
+        if (
+          typeStr &&
+          !["any", "unknown", "any[]", "unknown[]", "error"].includes(typeStr)
+        ) {
+          seenTypes.set(node.getStart(), typeStr);
+        }
+      } catch (err) {
+        /*
+        console.warn(
+          `Failed to resolve type for kind: ${tsc.SyntaxKind[node.kind]}`,
+          err.message
         );
-      }
-      if (!["any", "unknown", "any[]", "unknown[]"].includes(typeStr)) {
-        seenTypes.set(node.getStart(), typeStr);
+        */
       }
       tsc.forEachChild(node, addType);
     };
@@ -266,7 +349,7 @@ function createTsc(srcFiles) {
       seenTypes: seenTypes
     };
   } catch (err) {
-    console.warn("Retrieving types", err.message);
+    // console.warn("Retrieving types", err.message);
     return undefined;
   }
 }
@@ -300,7 +383,7 @@ const createJSAst = async (options) => {
 
 const processFile = (file, options, ts) => {
   try {
-    const ast = fileToJsAst(file);
+    const ast = fileToJsAst(file, options.type);
     writeAstFile(file, ast, options);
     if (ts) {
       try {
@@ -311,7 +394,7 @@ const processFile = (file, options, ts) => {
           ts.seenTypes.clear();
         }
       } catch (err) {
-        console.warn("Retrieving types", file, ":", err.message);
+        // console.warn("Process file", file, ":", err.message);
       }
     }
   } catch (err) {
@@ -414,6 +497,7 @@ const start = async (options) => {
     case "javascript":
     case "typescript":
     case "ts":
+    case "flow":
       return await createJSAst(options);
     case "vue":
       return await createVueAst(options);
