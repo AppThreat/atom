@@ -381,6 +381,7 @@ const createJSAst = async (options) => {
 
 const processFile = (file, options, ts) => {
   try {
+    console.log(file);
     const ast = fileToJsAst(file, options.type);
     writeAstFile(file, ast, options);
     if (ts) {
