@@ -1038,18 +1038,20 @@ class Nodes(betterproto.Message):
     type_full_name: str = betterproto.string_field(8)
     # Parent method name
     parent_method_name: str = betterproto.string_field(9)
+    # Parent method signature
+    parent_method_signature: str = betterproto.string_field(10)
     # Parent filename
-    parent_file_name: str = betterproto.string_field(10)
+    parent_file_name: str = betterproto.string_field(11)
     # Parent package name
-    parent_package_name: str = betterproto.string_field(11)
+    parent_package_name: str = betterproto.string_field(12)
     # Parent class name
-    parent_class_name: str = betterproto.string_field(12)
+    parent_class_name: str = betterproto.string_field(13)
     # Line number
-    line_number: int = betterproto.uint32_field(13)
+    line_number: int = betterproto.uint32_field(14)
     # Column number
-    column_number: int = betterproto.uint32_field(14)
+    column_number: int = betterproto.uint32_field(15)
     # Tags. Can contain simple names including package url
-    tags: str = betterproto.string_field(15)
+    tags: str = betterproto.string_field(16)
 
 
 @dataclass
@@ -1098,15 +1100,10 @@ class ReachableSlice(betterproto.Message):
     tags exported from data dependency graph
     """
 
-    reachables: "ReachableSliceReachables" = betterproto.message_field(1)
-    purls: "ReachableSlicePurls" = betterproto.message_field(2)
+    flows: List["Nodes"] = betterproto.message_field(1)
+    purls: List[str] = betterproto.string_field(2)
 
 
 @dataclass
-class ReachableSliceReachables(betterproto.Message):
-    nodes: List["Nodes"] = betterproto.message_field(1)
-
-
-@dataclass
-class ReachableSlicePurls(betterproto.Message):
-    purls: List[str] = betterproto.string_field(1)
+class ReachableSliceList(betterproto.Message):
+    slices: List["ReachableSlice"] = betterproto.message_field(1)

@@ -943,18 +943,20 @@ message Nodes {
         string typeFullName = 8;
         // Parent method name
         string parentMethodName = 9;
+        // Parent method signature
+        string parentMethodSignature = 10;
         // Parent filename
-        string parentFileName = 10;
+        string parentFileName = 11;
         // Parent package name
-        string parentPackageName = 11;
+        string parentPackageName = 12;
         // Parent class name
-        string parentClassName = 12;
+        string parentClassName = 13;
         // Line number
-        uint32 lineNumber = 13;
+        uint32 lineNumber = 14;
         // Column number
-        uint32 columnNumber = 14;
+        uint32 columnNumber = 15;
         // Tags. Can contain simple names including package url
-        string tags = 15;
+        string tags = 16;
 }
 
 /**
@@ -997,14 +999,11 @@ message DataFlowSlice {
  */
 message ReachableSlice {
 
-    message Reachables {
-      repeated Nodes nodes = 1;
-    }
-
-    message Purls {
-      repeated string purls = 1;
-    }
-
-    Reachables reachables = 1;
-    Purls purls = 2;
+    repeated Nodes flows = 1;
+    repeated string purls = 2;
 }
+
+message ReachableSliceList {
+    repeated ReachableSlice slices = 1;
+}
+

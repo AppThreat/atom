@@ -1,0 +1,50 @@
+# JSON Schema
+
+## Definitions
+
+- <a id="definitions/AdditionalNodeProperty"></a>**`AdditionalNodeProperty`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/AdditionalNodeProperty/properties/node_id"></a>**`node_id`** *(string)*
+  - <a id="definitions/AdditionalNodeProperty/properties/property"></a>**`property`**: Cannot contain additional properties. Refer to *[#/definitions/atom.CpgStruct.Node.Property](#definitions/atom.CpgStruct.Node.Property)*.
+- <a id="definitions/atom.BoolList"></a>**`atom.BoolList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.BoolList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.BoolList/properties/values/items"></a>**Items** *(boolean)*
+- <a id="definitions/atom.ContainedRefs"></a>**`atom.ContainedRefs`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.ContainedRefs/properties/local_name"></a>**`local_name`** *(string)*
+  - <a id="definitions/atom.ContainedRefs/properties/refs"></a>**`refs`** *(array)*
+    - <a id="definitions/atom.ContainedRefs/properties/refs/items"></a>**Items** *(string)*
+- <a id="definitions/atom.CpgStruct.Node.Property"></a>**`atom.CpgStruct.Node.Property`** *(object)*: Node properties. Cannot contain additional properties.
+  - <a id="definitions/atom.CpgStruct.Node.Property/properties/name"></a>**`name`**: Enum for the name of a node property. Must be one of: "UNKNOWN_NODE_PROPERTY", 0, "LINE_NUMBER", 2, "PARSER_TYPE_NAME", 3, "ORDER", 4, "NAME", 5, "FULL_NAME", 6, "IS_EXTERNAL", 7, "VALUE", 8, "COLUMN_NUMBER", 11, "LINE_NUMBER_END", 12, "VERSION", 13, "EVALUATION_STRATEGY", 15, "COLUMN_NUMBER_END", 16, "LANGUAGE", 19, "CONTENT", 20, "CODE", 21, "SIGNATURE", 22, "DISPATCH_TYPE", 25, "MODIFIER_TYPE", 26, "CONTROL_STRUCTURE_TYPE", 27, "ARGUMENT_INDEX", 40, "CLOSURE_BINDING_ID", 50, "TYPE_FULL_NAME", 51, "TYPE_DECL_FULL_NAME", 52, "INHERITS_FROM_TYPE_FULL_NAME", 53, "METHOD_FULL_NAME", 54, "AST_PARENT_TYPE", 56, "AST_PARENT_FULL_NAME", 57, "DEPENDENCY_GROUP_ID", 58, "SYMBOL", 100, "METHOD_SHORT_NAME", 102, "PACKAGE_NAME", 103, "CLASS_NAME", 104, "NODE_LABEL", 105, "FILENAME", 106, "OVERLAYS", 118, "HASH", 120, "ARGUMENT_NAME", 130, "KEY", 131, "CLASS_SHORT_NAME", 132, "ALIAS_TYPE_FULL_NAME", 158, "CLOSURE_ORIGINAL_NAME", 159, "IS_VARIADIC", 221, "ROOT", 1199, "DYNAMIC_TYPE_HINT_FULL_NAME", 1591, "INDEX", 2223, "CANONICAL_NAME", 2001092, "CONTAINED_REF", or 2007161.
+    - **One of**
+      - <a id="definitions/atom.CpgStruct.Node.Property/properties/name/oneOf/0"></a>*string*
+      - <a id="definitions/atom.CpgStruct.Node.Property/properties/name/oneOf/1"></a>*integer*
+  - <a id="definitions/atom.CpgStruct.Node.Property/properties/value"></a>**`value`**: Cannot contain additional properties. Refer to *[#/definitions/atom.PropertyValue](#definitions/atom.PropertyValue)*.
+- <a id="definitions/atom.DoubleList"></a>**`atom.DoubleList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.DoubleList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.DoubleList/properties/values/items"></a>**Items** *(number)*
+- <a id="definitions/atom.FloatList"></a>**`atom.FloatList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.FloatList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.FloatList/properties/values/items"></a>**Items** *(number)*
+- <a id="definitions/atom.IntList"></a>**`atom.IntList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.IntList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.IntList/properties/values/items"></a>**Items** *(integer)*
+- <a id="definitions/atom.LongList"></a>**`atom.LongList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.LongList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.LongList/properties/values/items"></a>**Items** *(string)*
+- <a id="definitions/atom.PropertyValue"></a>**`atom.PropertyValue`** *(object)*: Message to store the property values such as string or int values. Cannot contain additional properties.
+  - **One of**
+  - <a id="definitions/atom.PropertyValue/properties/string_value"></a>**`string_value`** *(string)*
+  - <a id="definitions/atom.PropertyValue/properties/bool_value"></a>**`bool_value`** *(boolean)*
+  - <a id="definitions/atom.PropertyValue/properties/int_value"></a>**`int_value`** *(integer)*
+  - <a id="definitions/atom.PropertyValue/properties/long_value"></a>**`long_value`** *(string)*
+  - <a id="definitions/atom.PropertyValue/properties/float_value"></a>**`float_value`** *(number)*
+  - <a id="definitions/atom.PropertyValue/properties/double_value"></a>**`double_value`** *(number)*
+  - <a id="definitions/atom.PropertyValue/properties/string_list"></a>**`string_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.StringList](#definitions/atom.StringList)*.
+  - <a id="definitions/atom.PropertyValue/properties/bool_list"></a>**`bool_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.BoolList](#definitions/atom.BoolList)*.
+  - <a id="definitions/atom.PropertyValue/properties/int_list"></a>**`int_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.IntList](#definitions/atom.IntList)*.
+  - <a id="definitions/atom.PropertyValue/properties/long_list"></a>**`long_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.LongList](#definitions/atom.LongList)*.
+  - <a id="definitions/atom.PropertyValue/properties/float_list"></a>**`float_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.FloatList](#definitions/atom.FloatList)*.
+  - <a id="definitions/atom.PropertyValue/properties/double_list"></a>**`double_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.DoubleList](#definitions/atom.DoubleList)*.
+  - <a id="definitions/atom.PropertyValue/properties/contained_refs"></a>**`contained_refs`**: Cannot contain additional properties. Refer to *[#/definitions/atom.ContainedRefs](#definitions/atom.ContainedRefs)*.
+- <a id="definitions/atom.StringList"></a>**`atom.StringList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.StringList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.StringList/properties/values/items"></a>**Items** *(string)*

@@ -998,20 +998,15 @@ message DataFlowSlice {
 }
 
 /**
- * Reachables slices offers a list of reachable nodes based on automated tags exported from data dependency graph
- */
+* Reachables slices offers a list of reachable nodes based on automated tags exported from data dependency graph
+*/
 message ReachableSlice {
+  repeated Nodes flows = 1;
+  repeated string purls = 2;
+}
 
-    message Reachables {
-      repeated Nodes nodes = 1;
-    }
-
-    message Purls {
-      repeated string purls = 1;
-    }
-
-    Reachables reachables = 1;
-    Purls purls = 2;
+message ReachableSliceList {
+    repeated ReachableSlice slices = 1;
 }
 
 ```

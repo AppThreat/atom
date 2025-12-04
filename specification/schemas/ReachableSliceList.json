@@ -1,8 +1,22 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "$ref": "#/definitions/Nodes",
+    "$ref": "#/definitions/ReachableSliceList",
     "definitions": {
-        "Nodes": {
+        "ReachableSliceList": {
+            "properties": {
+                "slices": {
+                    "items": {
+                        "$ref": "#/definitions/atom.ReachableSlice"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Reachable Slice List"
+        },
+        "atom.Nodes": {
             "properties": {
                 "id": {
                     "type": "integer",
@@ -170,6 +184,27 @@
             "additionalProperties": false,
             "type": "object",
             "title": "Nodes"
+        },
+        "atom.ReachableSlice": {
+            "properties": {
+                "flows": {
+                    "items": {
+                        "$ref": "#/definitions/atom.Nodes"
+                    },
+                    "additionalProperties": false,
+                    "type": "array"
+                },
+                "purls": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Reachable Slice",
+            "description": "* Reachables slices offers a list of reachable nodes based on automated tags exported from data dependency graph"
         }
     }
 }

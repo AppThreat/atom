@@ -1225,6 +1225,13 @@
             </row>
             
             <row>
+              <entry>parentMethodSignature</entry>
+              <entry><link linkend="string">string</link></entry>
+              <entry></entry>
+              <entry><para>Parent method signature</para></entry>
+            </row>
+            
+            <row>
               <entry>parentFileName</entry>
               <entry><link linkend="string">string</link></entry>
               <entry></entry>
@@ -1414,46 +1421,11 @@
           <tbody>
             
             <row>
-              <entry>reachables</entry>
-              <entry><link linkend="atom.ReachableSlice.Reachables">ReachableSlice.Reachables</link></entry>
-              <entry></entry>
+              <entry>flows</entry>
+              <entry><link linkend="atom.Nodes">Nodes</link></entry>
+              <entry>repeated</entry>
               <entry><para></para></entry>
             </row>
-            
-            <row>
-              <entry>purls</entry>
-              <entry><link linkend="atom.ReachableSlice.Purls">ReachableSlice.Purls</link></entry>
-              <entry></entry>
-              <entry><para></para></entry>
-            </row>
-            
-          </tbody>
-        </tgroup>
-      </table>
-      
-      
-    </section>
-    
-    <section id="atom.ReachableSlice.Purls">
-      <title>ReachableSlice.Purls</title>
-      <para></para>
-      
-      <table frame="all">
-        <title><classname>ReachableSlice.Purls</classname> Fields</title>
-        <tgroup cols="4">
-          <colspec colwidth="*"/>
-          <colspec colwidth="*"/>
-          <colspec colwidth="0.5*"/>
-          <colspec colwidth="3*"/>
-          <thead>
-            <row>
-              <entry>Field</entry>
-              <entry>Type</entry>
-              <entry>Label</entry>
-              <entry>Description</entry>
-            </row>
-          </thead>
-          <tbody>
             
             <row>
               <entry>purls</entry>
@@ -1469,12 +1441,12 @@
       
     </section>
     
-    <section id="atom.ReachableSlice.Reachables">
-      <title>ReachableSlice.Reachables</title>
+    <section id="atom.ReachableSliceList">
+      <title>ReachableSliceList</title>
       <para></para>
       
       <table frame="all">
-        <title><classname>ReachableSlice.Reachables</classname> Fields</title>
+        <title><classname>ReachableSliceList</classname> Fields</title>
         <tgroup cols="4">
           <colspec colwidth="*"/>
           <colspec colwidth="*"/>
@@ -1491,8 +1463,8 @@
           <tbody>
             
             <row>
-              <entry>nodes</entry>
-              <entry><link linkend="atom.Nodes">Nodes</link></entry>
+              <entry>slices</entry>
+              <entry><link linkend="atom.ReachableSlice">ReachableSlice</link></entry>
               <entry>repeated</entry>
               <entry><para></para></entry>
             </row>

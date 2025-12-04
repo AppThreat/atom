@@ -28,7 +28,7 @@ and more.
 - TypeScript
 - Python (Supports 3.x to 3.13)
 - PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.4 with limited support for PHP 5.x)
-- Ruby (Requires Ruby 3.4.5. Supports Ruby 1.8 - 3.4.x syntax)
+- Ruby (Requires Ruby 3.4.7. Supports Ruby 1.8 - 3.4.x syntax)
 - Scala (WIP)
 
 ## Installation
@@ -276,7 +276,7 @@ The current specification version is 1.0.0
 
 ## Generating atom files
 
-atom files (app.⚛ or app.atom) are zip files with serialized protobuf data. atom cli is the preferred approach to generate these files. It is possible to author a generator tool from scratch using the [proto specification](./specification/atom.proto). We offer samples in [Python](./specification/samples/python-atomgen/README.md) and [Deno](./specification/samples/deno-atomgen/README.md) for interested users. We also offer proto bindings in additional languages which can be found [here](./specification/bindings/).
+atom files (app.⚛ or app.atom) are zip files with serialized protobuf data. atom cli is the preferred approach to generate these files. It is possible to author a generator tool from scratch using the [proto specification](./specification/atom.proto). We offer a sample in [Python](./specification/samples/python-atomgen/README.md) for interested users. We also offer proto bindings in additional languages which can be found [here](./specification/bindings/).
 
 Example code snippet for generating an atom in python.
 

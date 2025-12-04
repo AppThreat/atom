@@ -291,11 +291,7 @@
                 </li>
               
                 <li>
-                  <a href="#atom.ReachableSlice.Purls"><span class="badge">M</span>ReachableSlice.Purls</a>
-                </li>
-              
-                <li>
-                  <a href="#atom.ReachableSlice.Reachables"><span class="badge">M</span>ReachableSlice.Reachables</a>
+                  <a href="#atom.ReachableSliceList"><span class="badge">M</span>ReachableSliceList</a>
                 </li>
               
                 <li>
@@ -1333,6 +1329,13 @@
                 </tr>
               
                 <tr>
+                  <td>parentMethodSignature</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Parent method signature </p></td>
+                </tr>
+              
+                <tr>
                   <td>parentFileName</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
@@ -1500,35 +1503,11 @@
             <tbody>
               
                 <tr>
-                  <td>reachables</td>
-                  <td><a href="#atom.ReachableSlice.Reachables">ReachableSlice.Reachables</a></td>
-                  <td></td>
+                  <td>flows</td>
+                  <td><a href="#atom.Nodes">Nodes</a></td>
+                  <td>repeated</td>
                   <td><p> </p></td>
                 </tr>
-              
-                <tr>
-                  <td>purls</td>
-                  <td><a href="#atom.ReachableSlice.Purls">ReachableSlice.Purls</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="atom.ReachableSlice.Purls">ReachableSlice.Purls</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
               
                 <tr>
                   <td>purls</td>
@@ -1544,7 +1523,7 @@
 
         
       
-        <h3 id="atom.ReachableSlice.Reachables">ReachableSlice.Reachables</h3>
+        <h3 id="atom.ReachableSliceList">ReachableSliceList</h3>
         <p></p>
 
         
@@ -1555,8 +1534,8 @@
             <tbody>
               
                 <tr>
-                  <td>nodes</td>
-                  <td><a href="#atom.Nodes">Nodes</a></td>
+                  <td>slices</td>
+                  <td><a href="#atom.ReachableSlice">ReachableSlice</a></td>
                   <td>repeated</td>
                   <td><p> </p></td>
                 </tr>

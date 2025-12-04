@@ -1,0 +1,41 @@
+# JSON Schema
+
+## Definitions
+
+- <a id="definitions/PropertyValue"></a>**`PropertyValue`** *(object)*: Message to store the property values such as string or int values. Cannot contain additional properties.
+  - **One of**
+  - <a id="definitions/PropertyValue/properties/string_value"></a>**`string_value`** *(string)*
+  - <a id="definitions/PropertyValue/properties/bool_value"></a>**`bool_value`** *(boolean)*
+  - <a id="definitions/PropertyValue/properties/int_value"></a>**`int_value`** *(integer)*
+  - <a id="definitions/PropertyValue/properties/long_value"></a>**`long_value`** *(string)*
+  - <a id="definitions/PropertyValue/properties/float_value"></a>**`float_value`** *(number)*
+  - <a id="definitions/PropertyValue/properties/double_value"></a>**`double_value`** *(number)*
+  - <a id="definitions/PropertyValue/properties/string_list"></a>**`string_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.StringList](#definitions/atom.StringList)*.
+  - <a id="definitions/PropertyValue/properties/bool_list"></a>**`bool_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.BoolList](#definitions/atom.BoolList)*.
+  - <a id="definitions/PropertyValue/properties/int_list"></a>**`int_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.IntList](#definitions/atom.IntList)*.
+  - <a id="definitions/PropertyValue/properties/long_list"></a>**`long_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.LongList](#definitions/atom.LongList)*.
+  - <a id="definitions/PropertyValue/properties/float_list"></a>**`float_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.FloatList](#definitions/atom.FloatList)*.
+  - <a id="definitions/PropertyValue/properties/double_list"></a>**`double_list`**: Cannot contain additional properties. Refer to *[#/definitions/atom.DoubleList](#definitions/atom.DoubleList)*.
+  - <a id="definitions/PropertyValue/properties/contained_refs"></a>**`contained_refs`**: Cannot contain additional properties. Refer to *[#/definitions/atom.ContainedRefs](#definitions/atom.ContainedRefs)*.
+- <a id="definitions/atom.BoolList"></a>**`atom.BoolList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.BoolList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.BoolList/properties/values/items"></a>**Items** *(boolean)*
+- <a id="definitions/atom.ContainedRefs"></a>**`atom.ContainedRefs`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.ContainedRefs/properties/local_name"></a>**`local_name`** *(string)*
+  - <a id="definitions/atom.ContainedRefs/properties/refs"></a>**`refs`** *(array)*
+    - <a id="definitions/atom.ContainedRefs/properties/refs/items"></a>**Items** *(string)*
+- <a id="definitions/atom.DoubleList"></a>**`atom.DoubleList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.DoubleList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.DoubleList/properties/values/items"></a>**Items** *(number)*
+- <a id="definitions/atom.FloatList"></a>**`atom.FloatList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.FloatList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.FloatList/properties/values/items"></a>**Items** *(number)*
+- <a id="definitions/atom.IntList"></a>**`atom.IntList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.IntList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.IntList/properties/values/items"></a>**Items** *(integer)*
+- <a id="definitions/atom.LongList"></a>**`atom.LongList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.LongList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.LongList/properties/values/items"></a>**Items** *(string)*
+- <a id="definitions/atom.StringList"></a>**`atom.StringList`** *(object)*: Cannot contain additional properties.
+  - <a id="definitions/atom.StringList/properties/values"></a>**`values`** *(array)*
+    - <a id="definitions/atom.StringList/properties/values/items"></a>**Items** *(string)*

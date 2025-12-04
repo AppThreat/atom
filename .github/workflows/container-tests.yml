@@ -104,7 +104,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '23.x'
+          node-version: '25.x'
           registry-url: https://registry.npmjs.org/
       - uses: coursier/cache-action@v6
       - name: Set up JDK
@@ -117,8 +117,8 @@ jobs:
           npm install -g @appthreat/atom
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4.5'
+          ruby-version: '3.4.7'
           bundler-cache: false
-      - name: Check rbastgen 3.4.5
+      - name: Check rbastgen 3.4.7
         run: |
           rbastgen --help

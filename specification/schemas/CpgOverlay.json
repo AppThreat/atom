@@ -626,70 +626,145 @@
             },
             "additionalProperties": false,
             "type": "object",
-            "oneOf": [
+            "allOf": [
                 {
-                    "required": [
-                        "string_value"
-                    ]
-                },
-                {
-                    "required": [
-                        "bool_value"
-                    ]
-                },
-                {
-                    "required": [
-                        "int_value"
-                    ]
-                },
-                {
-                    "required": [
-                        "long_value"
-                    ]
-                },
-                {
-                    "required": [
-                        "float_value"
-                    ]
-                },
-                {
-                    "required": [
-                        "double_value"
-                    ]
-                },
-                {
-                    "required": [
-                        "string_list"
-                    ]
-                },
-                {
-                    "required": [
-                        "bool_list"
-                    ]
-                },
-                {
-                    "required": [
-                        "int_list"
-                    ]
-                },
-                {
-                    "required": [
-                        "long_list"
-                    ]
-                },
-                {
-                    "required": [
-                        "float_list"
-                    ]
-                },
-                {
-                    "required": [
-                        "double_list"
-                    ]
-                },
-                {
-                    "required": [
-                        "contained_refs"
+                    "oneOf": [
+                        {
+                            "not": {
+                                "anyOf": [
+                                    {
+                                        "required": [
+                                            "string_value"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "bool_value"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "int_value"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "long_value"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "float_value"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "double_value"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "string_list"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "bool_list"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "int_list"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "long_list"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "float_list"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "double_list"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "contained_refs"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "required": [
+                                "string_value"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "bool_value"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "int_value"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "long_value"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "float_value"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "double_value"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "string_list"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "bool_list"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "int_list"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "long_list"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "float_list"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "double_list"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "contained_refs"
+                            ]
+                        }
                     ]
                 }
             ],
