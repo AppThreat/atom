@@ -332,10 +332,12 @@ function createTsc(srcFiles) {
           seenTypes.set(node.getStart(), typeStr);
         }
       } catch (err) {
+        /*
         console.warn(
           `Failed to resolve type for kind: ${tsc.SyntaxKind[node.kind]}`,
           err.message
         );
+        */
       }
       tsc.forEachChild(node, addType);
     };
@@ -347,7 +349,7 @@ function createTsc(srcFiles) {
       seenTypes: seenTypes
     };
   } catch (err) {
-    console.warn("Retrieving types", err.message);
+    // console.warn("Retrieving types", err.message);
     return undefined;
   }
 }
@@ -381,7 +383,6 @@ const createJSAst = async (options) => {
 
 const processFile = (file, options, ts) => {
   try {
-    console.log(file);
     const ast = fileToJsAst(file, options.type);
     writeAstFile(file, ast, options);
     if (ts) {
@@ -393,7 +394,7 @@ const processFile = (file, options, ts) => {
           ts.seenTypes.clear();
         }
       } catch (err) {
-        console.warn("Process file", file, ":", err.message);
+        // console.warn("Process file", file, ":", err.message);
       }
     }
   } catch (err) {
