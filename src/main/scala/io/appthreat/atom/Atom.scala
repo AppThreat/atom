@@ -619,7 +619,7 @@ object Atom:
           createJavaSrc2Cpg(config, outputAtomFile)
       case "SCALA" | "TASTY" | "SBT" =>
           createScalaCpg(config, outputAtomFile)
-      case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
+      case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" | "FLOW" =>
           createJsSrc2Cpg(config, outputAtomFile)
       case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
           createPythonCpg(config, outputAtomFile)
