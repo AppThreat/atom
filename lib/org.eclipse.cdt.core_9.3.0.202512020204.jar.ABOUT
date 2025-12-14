@@ -1,0 +1,13 @@
+about_resource: org.eclipse.cdt.core_9.3.0.202512020204.jar
+name: Eclipse CDT Core
+version: 9.3.0.202512020204
+homepage_url: http://eclipse.org/cdt
+download_url: https://www.eclipse.org/downloads/download.php?file=/tools/cdt/releases/12.3/cdt-12.3.0/plugins/org.eclipse.cdt.core_9.3.0.202512020204.jar
+license_expression: EPL-2.0
+licenses:
+    -   key: EPL-2.0
+        name: Eclipse Public License 2.0
+        file: LICENSE
+        url: https://github.com/eclipse-cdt/cdt/blob/main/LICENSE
+        spdx_license_key: EPL-2.0
+copyright: Copyright (c) The Eclipse Foundation.

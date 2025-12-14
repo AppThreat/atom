@@ -25,6 +25,7 @@ and more.
 - Jar
 - Android APK (Requires Android SDK. Set the environment variable `ANDROID_HOME` or use the container image.)
 - JavaScript
+- Flow
 - TypeScript
 - Python (Supports 3.x to 3.13)
 - PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.4 with limited support for PHP 5.x)
@@ -319,7 +320,7 @@ bash build.sh && sudo npm install -g .
 [chennai](https://github.com/AppThreat/chen) is the recommended query interface for working with atom.
 
 ```shell
-chennai> importatom("/home/almalinux/work/sandbox/apollo/app.atom")
+chennai> importAtom("/home/almalinux/work/sandbox/apollo/app.atom")
 ```
 
 ## atom tools
