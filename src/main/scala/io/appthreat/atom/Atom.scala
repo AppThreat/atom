@@ -122,16 +122,6 @@ object Atom:
         Set.empty
 
   private val optionParser: OptionParser[BaseConfig] = new scopt.OptionParser[BaseConfig]("atom"):
-    arg[String]("input")
-        .optional()
-        .text("source file or directory")
-        .action((x, c) => c.withInputPath(File(x)))
-        .validate { x =>
-            if x == "" then failure("Input path required")
-            else if !File(x).exists then
-              failure(s"Input path does not exist at `\"$x\"`, exiting.")
-            else success
-        }
     opt[String]('o', "output")
         .text("output filename. Default app.⚛ or app.atom in windows")
         .action((x, c) =>
@@ -227,6 +217,16 @@ object Atom:
             if x <= 0 then failure("`max-num-def` must be an integer larger than 0")
             else success
         )
+    arg[String]("input")
+        .optional()
+        .text("source file or directory")
+        .action((x, c) => c.withInputPath(File(x)))
+        .validate { x =>
+            if x == "" then failure("Input path required")
+            else if !File(x).exists then
+              failure(s"Input path does not exist at `\"$x\"`, exiting.")
+            else success
+        }
     cmd("parsedeps")
         .text("Extract dependencies from the build file and imports")
         .action((_, *) => AtomParseDepsConfig().withRemoveAtom(true))
@@ -726,22 +726,26 @@ object Atom:
   end handleScalaSemantics
 
   private def createJsSrc2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-      new JsSrc2Cpg()
-          .createCpgWithOverlays(
-            JSConfig()
-                .withDisableDummyTypes(true)
-                .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
-                .withInputPath(config.inputPath.pathAsString)
-                .withOutputPath(outputAtomFile)
-          )
-          .map { ag =>
-            new JavaScriptInheritanceNamePass(ag).createAndApply()
-            new ConstClosurePass(ag).createAndApply()
-            new ImportResolverPass(ag).createAndApply()
-            new JavaScriptTypeRecoveryPass(ag).createAndApply()
-            new TypeHintPass(ag).createAndApply()
-            ag
-          }
+    val initialConfig = JSConfig()
+        .withDisableDummyTypes(true)
+        .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
+        .withInputPath(config.inputPath.pathAsString)
+        .withOutputPath(outputAtomFile)
+        .withFlow(config.language.equalsIgnoreCase("FLOW"))
+    val finalConfig = sys.env.get("CHEN_ASTGEN_OUT") match
+      case Some(dir) => initialConfig.withAstGenOutDir(dir)
+      case None      => initialConfig
+    new JsSrc2Cpg()
+        .createCpgWithOverlays(finalConfig)
+        .map { ag =>
+          new JavaScriptInheritanceNamePass(ag).createAndApply()
+          new ConstClosurePass(ag).createAndApply()
+          new ImportResolverPass(ag).createAndApply()
+          new JavaScriptTypeRecoveryPass(ag).createAndApply()
+          new TypeHintPass(ag).createAndApply()
+          ag
+        }
+  end createJsSrc2Cpg
 
   private def createPythonCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
       new Py2CpgOnFileSystem()
