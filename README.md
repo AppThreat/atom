@@ -267,7 +267,7 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 | **SCALAC_CMD**                           | Overrides the scalac command used by the scala frontend.                                                                                                   |
 | **ASTGEN_IGNORE_DIRS**                   | Comma-separated list of directories to ignore by the JavaScript astgen pre-processor command.                                                              |
 | **ASTGEN_IGNORE_FILE_PATTERN**           | File pattern to ignore by the JavaScript astgen pre-processor command.                                                                                     |
-| **ASTGEN_INCLUDE_NODE_MODULES_BUNDLES ** | Also include source code from node_modules directory. Makes the flows more complete at the cost of increased memory use.                                   |
+| **ASTGEN_INCLUDE_NODE_MODULES_BUNDLES** | Also include source code from node_modules directory. Makes the flows more complete at the cost of increased memory use.                                   |
 | **JAVA_CMD**                             | Overrides the java command.                                                                                                                                |
 | **RUBY_CMD**                             | Overrides the Ruby command.                                                                                                                                |
 
