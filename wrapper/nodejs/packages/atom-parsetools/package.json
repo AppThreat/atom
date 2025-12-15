@@ -12,6 +12,7 @@
     "@appthreat/atom-common": "^1.0.14",
     "@babel/parser": "^7.28.5",
     "typescript": "^5.9.3",
+    "hermes-parser": "^0.33.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

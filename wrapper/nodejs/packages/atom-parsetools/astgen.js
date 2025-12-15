@@ -4,6 +4,7 @@ import { join, dirname } from "path";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { parse } from "@babel/parser";
+import { parse as parseHermes } from "hermes-parser";
 import tsc from "typescript";
 import {
   readFileSync,
@@ -57,7 +58,7 @@ const babelFlowParserOptions = {
     "numericSeparator",
     "dynamicImport",
     "jsx",
-    "flow"
+    ["flow", { all: true, enums: true }]
   ]
 };
 
@@ -93,9 +94,15 @@ const babelSafeFlowParserOptions = {
     "doExpressions",
     "numericSeparator",
     "dynamicImport",
-    "typescript"
+    "flow"
   ]
 };
+
+const shouldIncludeNodeModulesBundles =
+  process.env?.ASTGEN_INCLUDE_NODE_MODULES_BUNDLES === "true" ||
+  (process.env?.ASTGEN_IGNORE_DIRS &&
+    process.env.ASTGEN_IGNORE_DIRS.length > 0 &&
+    !process.env.ASTGEN_IGNORE_DIRS.toLowerCase().includes("node_modules"));
 
 /**
  * Return paths to all (j|tsx?) files.
@@ -106,7 +113,7 @@ const babelSafeFlowParserOptions = {
 const getAllSrcJSAndTSFiles = (src) => {
   const filePattern = "\\.(js|jsx|cjs|mjs|ts|tsx|vue|svelte|xsjs|xsjslib|ejs)$";
   const bundledNodeModulesPattern =
-    "node_modules/.*\\.(bundle|dist|index|min|app)\\.(js|cjs|mjs)$";
+    "node_modules[\\\\/].*[\\\\/](?:.*\\.)?(bundle|dist|index|min|app)\\.(js|cjs|mjs)$";
 
   // Step 1: Collect all JS/TS files EXCLUDING node_modules
   const allFilesPromise = Promise.resolve(
@@ -119,14 +126,6 @@ const getAllSrcJSAndTSFiles = (src) => {
       true // ignore node_modules
     )
   );
-
-  // Step 2: Check if we should include node_modules bundles
-  const shouldIncludeNodeModulesBundles =
-    process.env?.ASTGEN_INCLUDE_NODE_MODULES_BUNDLES === "true" ||
-    (process.env?.ASTGEN_IGNORE_DIRS &&
-      process.env.ASTGEN_IGNORE_DIRS.length > 0 &&
-      !process.env.ASTGEN_IGNORE_DIRS.toLowerCase().includes("node_modules"));
-
   let bundledFilesPromise = Promise.resolve([]);
   if (shouldIncludeNodeModulesBundles) {
     bundledFilesPromise = Promise.resolve(
@@ -140,8 +139,7 @@ const getAllSrcJSAndTSFiles = (src) => {
       )
     );
   }
-
-  // Step 3: Combine both lists
+  // Step 2: Combine both lists
   return Promise.all([allFilesPromise, bundledFilesPromise]).then(
     ([allFiles, bundledFiles]) => [...allFiles, ...bundledFiles]
   );
@@ -154,25 +152,60 @@ const fileToJsAst = (file, projectType) => {
   if (file.endsWith(".vue") || file.endsWith(".svelte")) {
     return toVueAst(file);
   }
-  return codeToJsAst(readFileSync(file, "utf-8"), projectType);
+  if (file.endsWith(".ejs")) {
+    return toEjsAst(file);
+  }
+  return codeToJsAst(file, readFileSync(file, "utf-8"), projectType);
 };
 
 /**
  * Convert a single JS/TS code snippet to AST
  */
-const codeToJsAst = (code, projectType) => {
-  const optionsToUse =
-    projectType === "flow" ? babelFlowParserOptions : babelParserOptions;
-  try {
-    return parse(code, optionsToUse);
-  } catch {
+const codeToJsAst = (file, code, projectType) => {
+  const isJs = /\.(js|jsx|cjs|mjs)$/.test(file);
+  if (isJs && projectType === "flow") {
     try {
-      return parse(code, babelSafeParserOptions);
-    } catch (errFlow) {
+      return parseHermes(code, {
+        sourceType: "unambiguous",
+        babel: true,
+        allowReturnOutsideFunction: true,
+        flow: "all",
+        sourceFilename: file,
+        tokens: true
+      });
+    } catch (err) {
+      // Ignore
+    }
+  }
+  // If user explicitly said 'flow', we try Babel-Flow first, then Babel-Standard.
+  // Otherwise, we try Babel-Standard (TS/ESNext) first, then Babel-Flow and finally hermes.
+  let primaryBabelOptions = babelParserOptions;
+  let secondaryBabelOptions = babelFlowParserOptions;
+  if (projectType === "flow") {
+    primaryBabelOptions = babelFlowParserOptions;
+    secondaryBabelOptions = babelParserOptions;
+  }
+  try {
+    return parse(code, primaryBabelOptions);
+  } catch (errPrimary) {
+    try {
+      return parse(code, secondaryBabelOptions);
+    } catch (errSecondary) {
       try {
-        return parse(code, babelFlowParserOptions);
-      } catch (errFlow) {
-        return parse(code, babelSafeFlowParserOptions);
+        return parse(code, babelSafeParserOptions);
+      } catch (errSafe) {
+        try {
+          return parse(code, babelSafeFlowParserOptions);
+        } catch (errSafeFlow) {
+          return parseHermes(code, {
+            sourceType: "unambiguous",
+            babel: true,
+            allowReturnOutsideFunction: true,
+            flow: "all",
+            sourceFilename: file,
+            tokens: true
+          });
+        }
       }
     }
   }
@@ -218,19 +251,92 @@ const toVueAst = (file) => {
     .replace(vueTemplateRegex, function (match, grA, grB, grC) {
       return grA + grB.replaceAll("{{", "{ ").replaceAll("}}", " }") + grC;
     });
-  return codeToJsAst(cleanedCode);
+  return codeToJsAst(file, cleanedCode, "ts");
+};
+
+/**
+ * Convert a single EJS file to AST.
+ */
+const toEjsAst = (file) => {
+  const originalCode = readFileSync(file, "utf-8");
+  let arr = originalCode.split("");
+  const scriptRegex = /(<script>)([\s\S]*?)(<\/script>)/gi;
+  let match;
+
+  while ((match = scriptRegex.exec(originalCode)) !== null) {
+    const openStart = match.index;
+    const openLen = match[1].length;
+    arr[openStart] = "<";
+    arr[openStart + 1] = "%";
+    for (let i = 2; i < openLen; i++) arr[openStart + i] = " ";
+    const closeStart = match.index + match[0].length - match[3].length;
+    const closeLen = match[3].length;
+    arr[closeStart] = "%";
+    arr[closeStart + 1] = ">";
+    for (let i = 2; i < closeLen; i++) arr[closeStart + i] = " ";
+    const content = match[2];
+    const contentOffset = openStart + openLen;
+    const innerRegex = /(<%[=\-_#]?)([\s\S]*?)([-_#]?%>)/g;
+    let innerMatch;
+    while ((innerMatch = innerRegex.exec(content)) !== null) {
+      const innerAbsStart = contentOffset + innerMatch.index;
+      if (innerMatch[1] === "<%" && innerMatch[3] === "-%>") {
+        for (let k = 0; k < innerMatch[0].length; k++)
+          arr[innerAbsStart + k] = " ";
+      } else {
+        for (let k = 0; k < innerMatch[1].length; k++)
+          arr[innerAbsStart + k] = " ";
+        const endDelimStart =
+          innerAbsStart + innerMatch[0].length - innerMatch[3].length;
+        for (let k = 0; k < innerMatch[3].length; k++)
+          arr[endDelimStart + k] = " ";
+      }
+    }
+  }
+  const codeWithoutScriptTag = arr.join("");
+  const out = new Array(codeWithoutScriptTag.length).fill(" ");
+  for (let i = 0; i < codeWithoutScriptTag.length; i++) {
+    const c = codeWithoutScriptTag[i];
+    if (c === "\n" || c === "\r") out[i] = c;
+  }
+
+  const tagRegex = /(<%[=\-_#]?)([\s\S]*?)([-_#]?%>)/g;
+  let tagMatch;
+  while ((tagMatch = tagRegex.exec(codeWithoutScriptTag)) !== null) {
+    const [fullMatch, openTag, content, closeTag] = tagMatch;
+    if (openTag === "<%#" || content.trim().startsWith("include ")) continue;
+    const startIndex = tagMatch.index + openTag.length;
+    const endIndex = tagMatch.index + fullMatch.length - closeTag.length;
+    for (let k = startIndex; k < endIndex; k++) {
+      out[k] = codeWithoutScriptTag[k];
+    }
+    const trimmed = content.trim();
+    const needsSemi =
+      trimmed.length > 0 &&
+      !trimmed.endsWith("{") &&
+      !trimmed.endsWith("}") &&
+      !trimmed.endsWith(";");
+
+    if (needsSemi) {
+      out[endIndex] = ";";
+    }
+  }
+
+  return codeToJsAst(file, out.join(""), "ts");
 };
 
 function createTsc(srcFiles) {
   try {
     const program = tsc.createProgram(srcFiles, {
-      target: tsc.ScriptTarget.ES2020,
+      target: tsc.ScriptTarget.ES2022,
       module: tsc.ModuleKind.CommonJS,
+      moduleResolution: tsc.ModuleResolutionKind.Node10,
       allowImportingTsExtensions: false,
       allowArbitraryExtensions: false,
       allowSyntheticDefaultImports: true,
       allowUmdGlobalAccess: true,
       allowJs: true,
+      checkJs: true,
       allowUnreachableCode: true,
       allowUnusedLabels: true,
       alwaysStrict: false,
@@ -241,7 +347,7 @@ function createTsc(srcFiles) {
       noStrictGenericChecks: true,
       noUncheckedIndexedAccess: false,
       noPropertyAccessFromIndexSignature: false,
-      removeComments: true
+      lib: ["lib.es2022.d.ts", "lib.dom.d.ts"]
     });
     const typeChecker = program.getTypeChecker();
     const seenTypes = new Map();
@@ -261,9 +367,9 @@ function createTsc(srcFiles) {
         return "any";
       }
     };
+
     const addType = (node) => {
       // STRUCTURAL/CONTAINER NODES
-      // These nodes define structure (imports, exports, blocks, declarations)
       if (
         node.kind === tsc.SyntaxKind.SourceFile ||
         node.kind === tsc.SyntaxKind.Block ||
@@ -322,22 +428,34 @@ function createTsc(srcFiles) {
         }
         // STANDARD EXPRESSIONS & IDENTIFIERS
         else {
-          const typeObj = typeChecker.getTypeAtLocation(node);
+          let typeObj = typeChecker.getTypeAtLocation(node);
+          if (
+            typeObj.isLiteral() ||
+            typeObj.flags & tsc.TypeFlags.BooleanLiteral
+          ) {
+            try {
+              typeObj = typeChecker.getBaseTypeOfLiteralType(typeObj);
+            } catch (e) {
+              // ignore
+            }
+          }
           typeStr = safeTypeWithContextToString(typeObj, node);
         }
         if (
           typeStr &&
-          !["any", "unknown", "any[]", "unknown[]", "error"].includes(typeStr)
+          ![
+            "any",
+            "unknown",
+            "any[]",
+            "unknown[]",
+            "error",
+            "/*unresolved*/ any"
+          ].includes(typeStr)
         ) {
           seenTypes.set(node.getStart(), typeStr);
         }
       } catch (err) {
-        /*
-        console.warn(
-          `Failed to resolve type for kind: ${tsc.SyntaxKind[node.kind]}`,
-          err.message
-        );
-        */
+        // Silently fail on type resolution errors
       }
       tsc.forEachChild(node, addType);
     };
@@ -349,7 +467,6 @@ function createTsc(srcFiles) {
       seenTypes: seenTypes
     };
   } catch (err) {
-    // console.warn("Retrieving types", err.message);
     return undefined;
   }
 }
@@ -368,13 +485,26 @@ const createJSAst = async (options) => {
     }
     let ts;
     if (options.tsTypes) {
-      const projectFiles = srcFiles.filter(
-        (file) => !file.includes("node_modules")
-      );
+      const projectFiles = !shouldIncludeNodeModulesBundles
+        ? srcFiles.filter((file) => !file.includes("node_modules"))
+        : srcFiles;
       ts = createTsc(projectFiles);
     }
     for (const chunk of chunks) {
       await Promise.all(chunk.map((file) => processFile(file, options, ts)));
+      if (typeof globalThis.gc === "function") {
+        try {
+          globalThis.gc();
+        } catch (e) {
+          // ignore
+        }
+      } else if (typeof Bun !== "undefined" && typeof Bun.gc === "function") {
+        try {
+          Bun.gc(true);
+        } catch (e) {
+          // ignore
+        }
+      }
     }
   } catch (err) {
     console.error(err);
@@ -394,11 +524,11 @@ const processFile = (file, options, ts) => {
           ts.seenTypes.clear();
         }
       } catch (err) {
-        // console.warn("Process file", file, ":", err.message);
+        console.warn("Process file", file, ":", err.message);
       }
     }
   } catch (err) {
-    console.error(file, err.message);
+    console.error("Failure:", file, err?.message);
   }
 };
 
@@ -447,7 +577,10 @@ const writeAstFile = (file, ast, options) => {
     ast: ast
   };
   mkdirSync(dirname(outAstFile), { recursive: true });
-  writeFileSync(outAstFile, JSON.stringify(data, getCircularReplacer(), "  "));
+  writeFileSync(
+    outAstFile,
+    JSON.stringify(data, getCircularReplacer(), undefined)
+  );
   console.log("Converted AST for", relativePath, "to", outAstFile);
 };
 
@@ -457,7 +590,7 @@ const writeTypesFile = (file, seenTypes, options) => {
   mkdirSync(dirname(outTypeFile), { recursive: true });
   writeFileSync(
     outTypeFile,
-    JSON.stringify(Object.fromEntries(seenTypes), undefined, "  ")
+    JSON.stringify(Object.fromEntries(seenTypes), undefined, undefined)
   );
   console.log("Converted types for", relativePath, "to", outTypeFile);
 };

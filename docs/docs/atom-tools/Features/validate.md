@@ -28,10 +28,11 @@ Options:
       --no-ansi                  Disable ANSI output.
   -n, --no-interaction           Do not ask any interactive question.
   -v|vv|vvv, --verbose           Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug.
-  
+
 Help:
   Validate source file line numbers in an atom usages or reachables slice.
 ```
 
 **Example**
+
 > `atom-tools validate-lines -t java -j project_json_report.json -i usages.slices.json -d /home/my_project_dir`

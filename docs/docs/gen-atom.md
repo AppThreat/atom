@@ -5,7 +5,7 @@ title: Generate Atom Files
 
 # Generating atom files
 
-Atom files (app.⚛ or app.atom) are zip files with serialized protobuf data. Atom cli is the preferred approach to generate these files. It is possible to author a generator tool from scratch using the [proto specification](./specification/atom.proto). We offer samples in [Python](./specification/samples/python-atomgen/README.md) and [Deno](./specification/samples/deno-atomgen/README.md) for interested users. We also offer proto bindings in additional languages which can be found [here](./specification/bindings/).
+Atom files (app.⚛ or app.atom) are zip files with serialized protobuf data. Atom cli is the preferred approach to generate these files. It is possible to author a generator tool from scratch using the [proto specification](./specification/atom.proto). We offer samples in [Python](./specification/samples/python-atomgen/README.md) for interested users. We also offer proto bindings in additional languages which can be found [here](./specification/bindings/).
 
 Example code snippet for generating an atom in python.
 
