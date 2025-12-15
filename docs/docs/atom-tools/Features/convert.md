@@ -39,4 +39,3 @@ Help:
 **Example**
 
 > `atom-tools convert -i usages.slices.json -f openapi3.0.1 -o openapi_usages.json -t java -s https://myserver.com`
-

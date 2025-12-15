@@ -2,7 +2,7 @@
 title: Atom Proto Specification
 ---
 
-```proto
+````proto
 syntax = "proto3";
 
 /**
@@ -1009,4 +1009,4 @@ message ReachableSliceList {
     repeated ReachableSlice slices = 1;
 }
 
-```
+````

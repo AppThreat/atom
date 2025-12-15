@@ -156,31 +156,31 @@ A necessary pre-requisite is the presence of the Software Bill-of-Materials (SBO
 
 ```json
 [
-    {
-      "flows": [
-        {
-          "id": 44,
-          "label": "METHOD_PARAMETER_IN",
-          "name": "this",
-          "fullName": "",
-          "signature": "",
-          "isExternal": false,
-          "code": "this",
-          "typeFullName": "com.example.SpringKafkaDemo.config.KafkaConsumerConfig",
-          "parentMethodName": "consumerFactory",
-          "parentMethodSignature": "org.springframework.kafka.core.ConsumerFactory()",
-          "parentFileName": "src/main/java/com/example/SpringKafkaDemo/config/KafkaConsumerConfig.java",
-          "parentPackageName": "com.example.SpringKafkaDemo.config",
-          "parentClassName": "com.example.SpringKafkaDemo.config.KafkaConsumerConfig",
-          "lineNumber": 36,
-          "columnNumber": null,
-          "tags": "framework-input"
-        }
-      ],
-      "purls": [
-        "pkg:maven/org.springframework.kafka/spring-kafka@2.8.11?type=jar"
-      ]
-    }
+  {
+    "flows": [
+      {
+        "id": 44,
+        "label": "METHOD_PARAMETER_IN",
+        "name": "this",
+        "fullName": "",
+        "signature": "",
+        "isExternal": false,
+        "code": "this",
+        "typeFullName": "com.example.SpringKafkaDemo.config.KafkaConsumerConfig",
+        "parentMethodName": "consumerFactory",
+        "parentMethodSignature": "org.springframework.kafka.core.ConsumerFactory()",
+        "parentFileName": "src/main/java/com/example/SpringKafkaDemo/config/KafkaConsumerConfig.java",
+        "parentPackageName": "com.example.SpringKafkaDemo.config",
+        "parentClassName": "com.example.SpringKafkaDemo.config.KafkaConsumerConfig",
+        "lineNumber": 36,
+        "columnNumber": null,
+        "tags": "framework-input"
+      }
+    ],
+    "purls": [
+      "pkg:maven/org.springframework.kafka/spring-kafka@2.8.11?type=jar"
+    ]
+  }
 ]
 ```
 

@@ -3,9 +3,10 @@ title: Query Endpoints
 ---
 
 ## Query Endpoints
+
 Query endpoints generates a list of endpoints and returns the output directly to the console.
 
->Note: To suppress logging messages and ONLY output the results, use --quiet/-q
+> Note: To suppress logging messages and ONLY output the results, use --quiet/-q
 
 **_Examples_**
 

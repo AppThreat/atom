@@ -15,7 +15,8 @@ the [AppThreat/atom](https://github.com/AppThreat/atom?tab=readme-ov-file) GitHu
 
 Atom can easily be installed from
 a [native image](https://github.com/AppThreat/atom#atom-native-image) or via
-npm 
+npm
+
 ```bash
 npm install -g @appthreat/atom
 ```
@@ -25,4 +26,3 @@ npm install -g @appthreat/atom
 ```bash
 pip install atom-tools
 ```
-
