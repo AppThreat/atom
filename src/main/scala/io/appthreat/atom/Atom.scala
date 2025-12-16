@@ -51,9 +51,9 @@ object Atom:
   val DEFAULT_MAX_DEFS: Int         = 2000
   val FRAMEWORK_INPUT_TAG: String   = "framework-input"
   val FRAMEWORK_OUTPUT_TAG: String  = "framework-output"
-  val DEFAULT_SOURCE_TAGS =
+  val DEFAULT_SOURCE_TAGS: Seq[String] =
       Seq(FRAMEWORK_INPUT_TAG, "framework-route", "cli-source", "driver-source")
-  val DEFAULT_SINK_TAGS =
+  val DEFAULT_SINK_TAGS: Seq[String] =
       Seq(
         FRAMEWORK_OUTPUT_TAG,
         "library-call",
