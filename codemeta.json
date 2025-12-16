@@ -7,7 +7,7 @@
   "downloadUrl": "https://github.com/AppThreat/atom",
   "issueTracker": "https://github.com/AppThreat/atom/issues",
   "name": "atom",
-  "version": "2.4.5",
+  "version": "2.4.6",
   "description": "Atom is a novel intermediate representation for next-generation code analysis.",
   "applicationCategory": "code-analysis",
   "keywords": [
