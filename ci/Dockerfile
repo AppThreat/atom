@@ -15,7 +15,7 @@ ARG JAVA_VERSION=23.0.2-tem
 ARG MAVEN_VERSION=3.9.10
 ARG SCALA_VERSION=3.7.4
 ARG SBT_VERSION=1.11.7
-ARG RUBY_VERSION=3.4.7
+ARG RUBY_VERSION=3.4.8
 
 ENV MAVEN_VERSION=$MAVEN_VERSION \
     MAVEN_HOME="/opt/maven/${MAVEN_VERSION}" \
@@ -34,7 +34,7 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     COMPOSER_ALLOW_SUPERUSER=1 \
     RUBY_VERSION=$RUBY_VERSION
 
-ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:${SBT_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.7/bin:
+ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:${SBT_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.8/bin:
 
 WORKDIR /opt
 
