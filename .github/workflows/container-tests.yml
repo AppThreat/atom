@@ -122,3 +122,10 @@ jobs:
       - name: Check rbastgen 3.4.7
         run: |
           rbastgen --help
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.8'
+          bundler-cache: false
+      - name: Check rbastgen 3.4.8
+        run: |
+          rbastgen --help

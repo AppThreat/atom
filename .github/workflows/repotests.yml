@@ -106,12 +106,12 @@ jobs:
           python-version: '3.12'
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4.7'
+          ruby-version: '3.4.8'
           bundler-cache: false
         if: runner.os != 'Windows'
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4.4'
+          ruby-version: '3.4.8'
           bundler-cache: false
         if: runner.os == 'Windows'
       - name: Install sbt

@@ -109,9 +109,10 @@ export const detectRuby = (versionNeeded) => {
   }
   const stdout = result.stdout;
   if (versionNeeded && stdout) {
+    versionNeeded = versionNeeded.replaceAll(".x", ".");
     const cmdOutput = Buffer.from(stdout).toString();
     const versionStr = cmdOutput.trim().replaceAll("\r", "");
-    return versionStr.startsWith(`ruby ${versionNeeded} `);
+    return versionStr.startsWith(`ruby ${versionNeeded}`);
   }
   return true;
 };

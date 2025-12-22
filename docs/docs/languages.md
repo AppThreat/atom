@@ -15,5 +15,5 @@ title: Languages supported
 - TypeScript
 - Python (Supports 3.x to 3.13)
 - PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.4 with limited support for PHP 5.x)
-- Ruby (Requires Ruby 3.4.7. Supports Ruby 1.8 - 3.4.x syntax)
+- Ruby (Requires Ruby 3.4.x. Supports Ruby 1.8 - 3.4.x syntax)
 - Scala (WIP)

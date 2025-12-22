@@ -28,7 +28,7 @@
         };
         ruby = {
           enable = lib.mkIf (config.profile == "ruby") true;
-          version = "3.4.7";
+          version = "3.4.8";
         };
         c = {
           enable = lib.mkIf (config.profile == "c") true;

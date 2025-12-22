@@ -44,7 +44,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: '3.4.7'
+        ruby-version: '3.4.8'
         bundler-cache: false
     - name: Prepare 3.4.0 version
       run: |
@@ -100,5 +100,12 @@ jobs:
           ruby-version: '3.4.7'
           bundler-cache: false
       - name: Check rbastgen 3.4.7
+        run: |
+          rbastgen --help
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.8'
+          bundler-cache: false
+      - name: Check rbastgen 3.4.8
         run: |
           rbastgen --help

@@ -30,7 +30,7 @@ if (
   RUBY_ASTGEN_BIN = join(PARENT_NODE_PLUGINS_HOME, "bin", "ruby_ast_gen");
 }
 // Ruby version needed
-const RUBY_VERSION_NEEDED = "3.4.7";
+const RUBY_VERSION_NEEDED = "3.4.x";
 function main(argvs) {
   const cwd = process.env.ATOM_CWD || process.cwd();
   argvs.splice(0, 0, RUBY_ASTGEN_BIN);
