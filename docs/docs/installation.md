@@ -10,8 +10,8 @@ title: Installation
 Atom comprises a core (standalone chen application developed in scala) with a nodejs wrapper module. It is currently distributed as an npm package.
 
 ```shell
-npm install @appthreat/atom
-# sudo npm install -g @appthreat/atom
+npm install @appthreat/atom @appthreat/atom-parsetools
+# sudo npm install -g @appthreat/atom @appthreat/atom-parsetools
 ```
 
 Install cdxgen to generate a Software Bill-of-Materials which is required for reachables slicing.

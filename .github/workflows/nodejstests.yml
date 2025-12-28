@@ -11,9 +11,9 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
-        java-version: ['21', '23', '24', '25']
+        java-version: ['21', '24', '25']
         node-version: ['20.x', '25.x']
-        ruby: ["3.4.7", "3.4.8"]
+        ruby: ["4.0.0"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -95,6 +95,7 @@ jobs:
           cd wrapper/nodejs
           bash build.sh
           sudo npm install -g .
+          sudo npm install -g @appthreat/atom-parsetools
           atom --help
           astgen --version
           rbastgen --help
@@ -107,13 +108,14 @@ jobs:
           atom -o ${GITHUB_WORKSPACE}/repotests/railsgoat/app.atom -l ruby ${GITHUB_WORKSPACE}/repotests/railsgoat
           atom -o ${GITHUB_WORKSPACE}/repotests/bionomia/app.atom -l ruby ${GITHUB_WORKSPACE}/repotests/bionomia
           atom -o ${GITHUB_WORKSPACE}/repotests/play-samples/play-scala-rest-api-example/app.atom -l scala ${GITHUB_WORKSPACE}/repotests/play-samples/play-scala-rest-api-example
-          sudo npm uninstall -g @appthreat/atom
+          sudo npm uninstall -g @appthreat/atom @appthreat/atom-parsetools
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: atom parse tools checks
         run: |
-          cd wrapper/nodejs/packages/atom-parsetools
+          cd wrapper/nodejs
           sudo npm install -g .
+          sudo npm install -g @appthreat/atom-parsetools
           astgen --help
           rbastgen --help
           which scalasem
@@ -122,7 +124,7 @@ jobs:
     strategy:
       matrix:
         java-version: ['21', '23', '24']
-        node-version: ['23.x']
+        node-version: ['25.x']
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
@@ -180,6 +182,7 @@ jobs:
           php --php-ini php.ini composer.phar require nikic/php-parser:4.18.0 --ignore-platform-reqs --optimize-autoloader
           npm install
           npm install -g .
+          npm install -g @appthreat/atom-parsetools
           get-command atom
           get-command astgen
           get-command phpastgen

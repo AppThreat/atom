@@ -114,18 +114,11 @@ jobs:
           java-version: '24'
       - name: Install atom latest
         run: |
-          npm install -g @appthreat/atom
+          npm install -g @appthreat/atom @appthreat/atom-parsetools
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4.7'
+          ruby-version: '4.0.0'
           bundler-cache: false
-      - name: Check rbastgen 3.4.7
-        run: |
-          rbastgen --help
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.4.8'
-          bundler-cache: false
-      - name: Check rbastgen 3.4.8
+      - name: Check rbastgen 4.0.0
         run: |
           rbastgen --help

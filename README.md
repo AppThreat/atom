@@ -29,7 +29,7 @@ and more.
 - TypeScript
 - Python (Supports 3.x to 3.13)
 - PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.4 with limited support for PHP 5.x)
-- Ruby (Requires Ruby 3.4.x. Supports Ruby 1.8 - 3.4.x syntax)
+- Ruby (Requires Ruby 4.0.x. Supports Ruby 1.8 - 4.0.x syntax)
 - Scala (WIP)
 
 ## Installation
@@ -37,7 +37,7 @@ and more.
 atom comprises a scala core with a Node.js wrapper module. It is currently distributed as a npm package.
 
 ```shell
-npm install -g @appthreat/atom
+npm install -g @appthreat/atom @appthreat/atom-parsetools
 atom --help
 ```
 
