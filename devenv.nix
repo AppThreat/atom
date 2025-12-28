@@ -75,6 +75,7 @@
         cd wrapper/nodejs
         bash build.sh
         sudo npm install --cache /tmp/empty-cache --prefer-online -g .
+        sudo npm install --cache /tmp/empty-cache --prefer-online -g @appthreat/atom-parsetools
         cd ../..
         which atom
         which astgen
