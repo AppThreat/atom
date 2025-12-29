@@ -106,7 +106,7 @@ jobs:
           python-version: '3.12'
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4.8'
+          ruby-version: '4.0.0'
           bundler-cache: false
         if: runner.os != 'Windows'
       - uses: ruby/setup-ruby@v1
@@ -127,6 +127,7 @@ jobs:
           cd wrapper/nodejs
           bash build.sh
           npm install -g .
+          npm install -g @appthreat/atom-parsetools
           cd ../..
           ./atom.sh --remove-atom -o /tmp/java.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/juice.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
@@ -182,6 +183,7 @@ jobs:
           Expand-Archive -Path ..\..\target\atom.zip -DestinationPath plugins\ -Force
           Remove-Item -Force plugins\atom.zip
           npm install -g .
+          npm install -g @appthreat/atom-parsetools
           cd ../..
           .\atom.bat usages --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\juice-shop\\jshop.atom -l js $env:GITHUB_WORKSPACE\\repotests\\juice-shop --slice-outfile $env:GITHUB_WORKSPACE\\repotests\\juice-shop\\jshop.usages.json
           .\atom.bat usages --extract-endpoints --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\py3.atom -l python $env:GITHUB_WORKSPACE\\repotests\\DjanGoat --slice-outfile $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\py.usages.json

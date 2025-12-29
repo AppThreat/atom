@@ -3,10 +3,10 @@
     "devenv": {
       "locked": {
         "dir": "src/modules",
-        "lastModified": 1765837513,
+        "lastModified": 1766921574,
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "ae61898e634c79b8a322214f59f2613d53795dac",
+        "rev": "02c9dcf3e050400d8101057f9f00ec458af7c959",
         "type": "github"
       },
       "original": {
@@ -19,10 +19,10 @@
     "flake-compat": {
       "flake": false,
       "locked": {
-        "lastModified": 1765121682,
+        "lastModified": 1766929376,
         "owner": "edolstra",
         "repo": "flake-compat",
-        "rev": "65f23138d8d09a92e30f1e5c87611b23ef451bf3",
+        "rev": "236f248441a986331cda53b039e7f9fd96e03635",
         "type": "github"
       },
       "original": {
@@ -34,10 +34,10 @@
     "flake-compat_2": {
       "flake": false,
       "locked": {
-        "lastModified": 1765121682,
+        "lastModified": 1766929376,
         "owner": "edolstra",
         "repo": "flake-compat",
-        "rev": "65f23138d8d09a92e30f1e5c87611b23ef451bf3",
+        "rev": "236f248441a986331cda53b039e7f9fd96e03635",
         "type": "github"
       },
       "original": {
@@ -49,10 +49,10 @@
     "flake-compat_3": {
       "flake": false,
       "locked": {
-        "lastModified": 1765121682,
+        "lastModified": 1766929376,
         "owner": "edolstra",
         "repo": "flake-compat",
-        "rev": "65f23138d8d09a92e30f1e5c87611b23ef451bf3",
+        "rev": "236f248441a986331cda53b039e7f9fd96e03635",
         "type": "github"
       },
       "original": {
@@ -87,10 +87,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1765464257,
+        "lastModified": 1765911976,
         "owner": "cachix",
         "repo": "git-hooks.nix",
-        "rev": "09e45f2598e1a8499c3594fe11ec2943f34fe509",
+        "rev": "b68b780b69702a090c8bb1b973bab13756cc7a27",
         "type": "github"
       },
       "original": {
@@ -163,10 +163,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1765587275,
+        "lastModified": 1766728475,
         "owner": "bobvanderlinden",
         "repo": "nixpkgs-ruby",
-        "rev": "6ae67be3862a2442cce588bea8e5f7ae88b54870",
+        "rev": "f167828eab19c3a7e3faa066a140d92e307f7b16",
         "type": "github"
       },
       "original": {

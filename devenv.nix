@@ -28,7 +28,7 @@
         };
         ruby = {
           enable = lib.mkIf (config.profile == "ruby") true;
-          version = "3.4.8";
+          version = "4.0.0";
         };
         c = {
           enable = lib.mkIf (config.profile == "c") true;
@@ -75,6 +75,7 @@
         cd wrapper/nodejs
         bash build.sh
         sudo npm install --cache /tmp/empty-cache --prefer-online -g .
+        sudo npm install --cache /tmp/empty-cache --prefer-online -g @appthreat/atom-parsetools
         cd ../..
         which atom
         which astgen

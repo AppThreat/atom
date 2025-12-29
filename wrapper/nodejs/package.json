@@ -1,26 +1,21 @@
 {
   "name": "@appthreat/atom",
-  "version": "2.4.8",
+  "version": "2.5.0",
   "description": "Create atom (⚛) representation for your application, packages and libraries",
   "exports": "./index.js",
   "type": "module",
   "scripts": {
-    "pretty": "prettier --write *.js packages/atom-parsetools/*.js packages/atom-common/*.js packages/atom-common/*.mjs --trailing-comma=none",
+    "pretty": "prettier --write *.js --trailing-comma=none",
     "lint": "eslint *.mjs *.js"
   },
   "dependencies": {
-    "@appthreat/atom-common": "*",
-    "@appthreat/atom-parsetools": "*"
+    "@appthreat/atom-common": "^1.1.0"
   },
   "devDependencies": {
     "eslint": "8.57.0"
   },
   "bin": {
-    "atom": "index.js",
-    "astgen": "packages/atom-parsetools/astgen.js",
-    "phpastgen": "packages/atom-parsetools/phpastgen.js",
-    "rbastgen": "packages/atom-parsetools/rbastgen.js",
-    "scalasem": "packages/atom-parsetools/scalasem.js"
+    "atom": "index.js"
   },
   "engines": {
     "node": ">=16.0.0"
@@ -49,10 +44,6 @@
     "LICENSE"
   ],
   "packageManager": "npm",
-  "workspaces": [
-    "packages/atom-parsetools",
-    "packages/atom-common"
-  ],
   "overrides": {
     "glob": "^11.0.2"
   }

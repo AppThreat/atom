@@ -18,7 +18,7 @@ a [native image](https://github.com/AppThreat/atom#atom-native-image) or via
 npm
 
 ```bash
-npm install -g @appthreat/atom
+npm install -g @appthreat/atom @appthreat/atom-parsetools
 ```
 
 ## Atom-tools installation

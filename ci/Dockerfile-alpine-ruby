@@ -1,10 +1,10 @@
-FROM ruby:3.4.8-alpine
+FROM ruby:4.0-alpine
 
 LABEL maintainer="appthreat" \
       org.opencontainers.image.authors="Team AppThreat <cloud@appthreat.com>" \
       org.opencontainers.image.source="https://github.com/appthreat/atom" \
       org.opencontainers.image.url="https://github.com/appthreat/atom" \
-      org.opencontainers.image.version="2.4.x" \
+      org.opencontainers.image.version="2.5.x" \
       org.opencontainers.image.vendor="appthreat" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="atom" \
@@ -21,7 +21,7 @@ RUN apk update && apk add --no-cache git build-base ruby-dev bash nodejs npm rub
     && node -v \
     && npm -v \
     && unzip -q atom.zip \
-    && cd /opt/nodejs && npm install --omit=dev && cd packages/atom-parsetools && bash build.sh && npm install -g . && cd /opt \
+    && cd /opt/nodejs && npm install --omit=dev && bash build.sh && npm install -g . && npm install -g @appthreat/atom-parsetools && cd /opt \
     && python3 -m pip install atom-tools>=0.8.2 --break-system-packages \
     && java --version \
     && npm uninstall -g corepack \

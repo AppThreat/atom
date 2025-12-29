@@ -4,7 +4,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.authors="Team AppThreat <cloud@appthreat.com>" \
       org.opencontainers.image.source="https://github.com/appthreat/atom" \
       org.opencontainers.image.url="https://github.com/appthreat/atom" \
-      org.opencontainers.image.version="2.4.x" \
+      org.opencontainers.image.version="2.5.x" \
       org.opencontainers.image.vendor="appthreat" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="atom" \
@@ -15,7 +15,7 @@ ARG JAVA_VERSION=23.0.2-tem
 ARG MAVEN_VERSION=3.9.10
 ARG SCALA_VERSION=3.7.4
 ARG SBT_VERSION=1.11.7
-ARG RUBY_VERSION=3.4.8
+ARG RUBY_VERSION=4.0.0
 
 ENV MAVEN_VERSION=$MAVEN_VERSION \
     MAVEN_HOME="/opt/maven/${MAVEN_VERSION}" \
@@ -34,7 +34,7 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     COMPOSER_ALLOW_SUPERUSER=1 \
     RUBY_VERSION=$RUBY_VERSION
 
-ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:${SBT_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/3.4.8/bin:
+ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:${SBT_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/4.0.0/bin:
 
 WORKDIR /opt
 
@@ -107,7 +107,7 @@ COPY ./target/atom.zip .
 COPY ./wrapper .
 RUN unzip -q atom.zip \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
-    && cd /opt/nodejs && npm install --omit=dev && cd packages/atom-parsetools && bash build.sh && npm install -g . && cd /opt \
+    && cd /opt/nodejs && npm install --omit=dev && bash build.sh && npm install -g . && npm install -g @appthreat/atom-parsetools && cd /opt \
     && rm -rf atom.zip composer.json composer.lock composer-setup.php /usr/local/bin/atom \
     && /opt/bin/atom --help \
     && which astgen \
