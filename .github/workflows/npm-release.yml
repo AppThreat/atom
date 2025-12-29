@@ -77,7 +77,6 @@ jobs:
       - name: Install atom latest
         run: |
           npm install -g @appthreat/atom @appthreat/atom-parsetools
-
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '4.0.0'
