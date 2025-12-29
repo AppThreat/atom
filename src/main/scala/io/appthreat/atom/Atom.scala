@@ -392,14 +392,10 @@ object Atom:
 
   private def exportToGraphML(ag: Cpg, exportDir: String): Unit =
       ag.method.internal
-          .filterNot(_.name.startsWith("<"))
-          .filterNot(_.name.startsWith("lambda"))
           .gml(exportDir)
 
   private def exportToDot(ag: Cpg, exportDir: String): Unit =
     val methods = ag.method.internal
-        .filterNot(_.name.startsWith("<"))
-        .filterNot(_.name.startsWith("lambda"))
     methods.dot(exportDir)
     methods.exportAllRepr(exportDir)
 
