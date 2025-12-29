@@ -173,7 +173,7 @@ docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthre
 atom usages -o app.atom --slice-outfile usages.json -l java .
 ```
 
-Example for a Ruby project with container-based invocation.
+Example for a Ruby 4 project with container-based invocation.
 
 ```shell
 docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
@@ -187,11 +187,18 @@ docker run --rm --platform=linux/amd64 -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io
 # podman run --rm --platform=linux/amd64 -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom usages -l ruby -o /app/app.atom -s /app/usages.slices.json /app
 ```
 
-For Ruby, there is an alpine-based version available.
+For Ruby 4, there is an alpine-based version available.
 
 ```shell
 docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-alpine-ruby atom usages --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
 # podman run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-alpine-ruby atom usages --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+```
+
+Ruby 3 variant is also available for alpine.
+
+```shell
+docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-alpine-ruby3 atom usages --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
+# podman run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/appthreat/atom-alpine-ruby3 atom usages --extract-endpoints -l ruby -o /app/app.atom -s /app/usages.slices.json /app
 ```
 
 ### Create data-flow slice for a java project.
@@ -248,28 +255,28 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 
 ## Environment variables
 
-| Variable                                 | Description                                                                                                                                                |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **CHEN_IGNORE_TEST_DIRS**                | Set to true to ignore `test` directories. Only supported for Python for now.                                                                               |
-| **CHEN_PYTHON_IGNORE_DIRS**              | Comma-separated list of directories to ignore for Python.                                                                                                  |
-| **CHEN_DELOMBOK_MODE**                   | Delombok mode for the Java frontend (`no-delombok`, `default`, `types-only`, `run-delombok`).                                                              |
-| **CHEN_INCLUDE_PATH**                    | Include directories for the C frontend. Separate paths with `:` or `;`.                                                                                    |
-| **CHEN_ASTGEN_OUT**                      | Existing astgen output directory. Improves performance for JavaScript, TypeScript, and Flow during repeated invocations by reusing existing AST json data. |
-| **ATOM_TOOLS_OPENAPI_FORMAT**            | OpenAPI format for atom-tools. Default: `openapi3.1.0`; alternative: `openapi3.0.1`.                                                                       |
-| **ATOM_TOOLS_WORK_DIR**                  | Working directory for atom-tools. Defaults to atom input path.                                                                                             |
-| **ATOM_SCALASEM_WORK_DIR**               | Working directory for scalasem. Defaults to atom input path.                                                                                               |
-| **ATOM_SCALASEM_SLICES_FILE**            | Slices file name. Defaults to `semantics.slices.json`.                                                                                                     |
-| **ATOM_JVM_ARGS**                        | Overrides the JVM arguments, including heap memory values, constructed by the atom Node.js wrapper.                                                        |
-| **ATOM_JAVA_HOME**                       | Java 21 or above to be used by atom.                                                                                                                       |
-| **PHP_CMD**                              | Overrides the PHP command used by the PHP frontend.                                                                                                        |
-| **PHP_PARSER_BIN**                       | Overrides the php-parse command used by the PHP frontend.                                                                                                  |
-| **SCALA_CMD**                            | Overrides the scala command.                                                                                                                               |
-| **SCALAC_CMD**                           | Overrides the scalac command used by the scala frontend.                                                                                                   |
-| **ASTGEN_IGNORE_DIRS**                   | Comma-separated list of directories to ignore by the JavaScript astgen pre-processor command.                                                              |
-| **ASTGEN_IGNORE_FILE_PATTERN**           | File pattern to ignore by the JavaScript astgen pre-processor command.                                                                                     |
+| Variable                                | Description                                                                                                                                                |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CHEN_IGNORE_TEST_DIRS**               | Set to true to ignore `test` directories. Only supported for Python for now.                                                                               |
+| **CHEN_PYTHON_IGNORE_DIRS**             | Comma-separated list of directories to ignore for Python.                                                                                                  |
+| **CHEN_DELOMBOK_MODE**                  | Delombok mode for the Java frontend (`no-delombok`, `default`, `types-only`, `run-delombok`).                                                              |
+| **CHEN_INCLUDE_PATH**                   | Include directories for the C frontend. Separate paths with `:` or `;`.                                                                                    |
+| **CHEN_ASTGEN_OUT**                     | Existing astgen output directory. Improves performance for JavaScript, TypeScript, and Flow during repeated invocations by reusing existing AST json data. |
+| **ATOM_TOOLS_OPENAPI_FORMAT**           | OpenAPI format for atom-tools. Default: `openapi3.1.0`; alternative: `openapi3.0.1`.                                                                       |
+| **ATOM_TOOLS_WORK_DIR**                 | Working directory for atom-tools. Defaults to atom input path.                                                                                             |
+| **ATOM_SCALASEM_WORK_DIR**              | Working directory for scalasem. Defaults to atom input path.                                                                                               |
+| **ATOM_SCALASEM_SLICES_FILE**           | Slices file name. Defaults to `semantics.slices.json`.                                                                                                     |
+| **ATOM_JVM_ARGS**                       | Overrides the JVM arguments, including heap memory values, constructed by the atom Node.js wrapper.                                                        |
+| **ATOM_JAVA_HOME**                      | Java 21 or above to be used by atom.                                                                                                                       |
+| **PHP_CMD**                             | Overrides the PHP command used by the PHP frontend.                                                                                                        |
+| **PHP_PARSER_BIN**                      | Overrides the php-parse command used by the PHP frontend.                                                                                                  |
+| **SCALA_CMD**                           | Overrides the scala command.                                                                                                                               |
+| **SCALAC_CMD**                          | Overrides the scalac command used by the scala frontend.                                                                                                   |
+| **ASTGEN_IGNORE_DIRS**                  | Comma-separated list of directories to ignore by the JavaScript astgen pre-processor command.                                                              |
+| **ASTGEN_IGNORE_FILE_PATTERN**          | File pattern to ignore by the JavaScript astgen pre-processor command.                                                                                     |
 | **ASTGEN_INCLUDE_NODE_MODULES_BUNDLES** | Also include source code from node_modules directory. Makes the flows more complete at the cost of increased memory use.                                   |
-| **JAVA_CMD**                             | Overrides the java command.                                                                                                                                |
-| **RUBY_CMD**                             | Overrides the Ruby command.                                                                                                                                |
+| **JAVA_CMD**                            | Overrides the java command.                                                                                                                                |
+| **RUBY_CMD**                            | Overrides the Ruby command.                                                                                                                                |
 
 ## atom Specification
 

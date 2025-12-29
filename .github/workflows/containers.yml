@@ -41,12 +41,26 @@ jobs:
             arch: arm64
             image-suffix: -ruby
             runner-suffix: -arm
+          - id: amd64-ruby3
+            arch: amd64
+            image-suffix: -ruby3
+          - id: arm64-ruby3
+            arch: arm64
+            image-suffix: -ruby3
+            runner-suffix: -arm
           - id: amd64-alpine-ruby
             arch: amd64
             image-suffix: -alpine-ruby
           - id: arm64-alpine-ruby
             arch: arm64
             image-suffix: -alpine-ruby
+            runner-suffix: -arm
+          - id: amd64-alpine-ruby3
+            arch: amd64
+            image-suffix: -alpine-ruby3
+          - id: arm64-alpine-ruby3
+            arch: arm64
+            image-suffix: -alpine-ruby3
             runner-suffix: -arm
     runs-on: ubuntu-24.04${{ matrix.image.runner-suffix }}
     permissions:
