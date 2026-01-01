@@ -645,6 +645,9 @@ object Atom:
             .withOutputPath(outputAtomFile)
             .withFunctionBodies(false)
             .withIgnoredFilesRegex(COMMON_IGNORE_REGEX)
+            .withParseInactiveCode(false)
+            .withImageLocations(false)
+            .withIncludeTrivialExpressions(false)
       )
 
   private def createC2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
@@ -660,6 +663,9 @@ object Atom:
             .withFunctionBodies(true)
             .withIgnoredFilesRegex(COMMON_IGNORE_REGEX)
             .withIncludePaths(C2ATOM_INCLUDE_PATH)
+            .withParseInactiveCode(false)
+            .withImageLocations(false)
+            .withIncludeTrivialExpressions(false)
       )
 
   private def createJimple2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
