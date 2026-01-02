@@ -10,15 +10,16 @@ package object atom:
   trait AtomConfig extends BaseConfig:
     this.inputPath = File(".")
     this.outputSliceFile = File(DEFAULT_SLICE_OUT_FILE)
-    var outputAtomFile: File = File(DEFAULT_ATOM_OUT_FILE)
-    var language: String     = ""
-    var dataDeps: Boolean    = false
-    var removeAtom: Boolean  = false
-    var maxNumDef: Int       = DEFAULT_MAX_DEFS
-    var exportAtom: Boolean  = false
-    var reuseAtom: Boolean   = false
-    var exportDir: String    = DEFAULT_EXPORT_DIR
-    var exportFormat: String = DEFAULT_EXPORT_FORMAT
+    var outputAtomFile: File              = File(DEFAULT_ATOM_OUT_FILE)
+    var language: String                  = ""
+    var dataDeps: Boolean                 = false
+    var removeAtom: Boolean               = false
+    var maxNumDef: Int                    = DEFAULT_MAX_DEFS
+    var exportAtom: Boolean               = false
+    var reuseAtom: Boolean                = false
+    var exportDir: String                 = DEFAULT_EXPORT_DIR
+    var exportFormat: String              = DEFAULT_EXPORT_FORMAT
+    var frontendArgs: Map[String, String] = Map.empty
 
     def withOutputAtomFile(x: File): AtomConfig =
       this.outputAtomFile = x
@@ -55,6 +56,11 @@ package object atom:
     def withMaxNumDef(x: Int): AtomConfig =
       this.maxNumDef = x
       this
+
+    def withFrontendArgs(args: Map[String, String]): AtomConfig =
+      this.frontendArgs = args
+      this
+
   end AtomConfig
 
   case class DefaultAtomConfig() extends AtomConfig
