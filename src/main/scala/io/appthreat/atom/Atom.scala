@@ -146,7 +146,7 @@ object Atom:
         )
     opt[Map[String, String]]("frontend-args")
         .text(
-          "Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,cpp-standard=c++17"
+          "Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,cpp-standard=c++17,enable-ast-cache=true"
         )
         .action((x, c) =>
             c match
@@ -656,9 +656,12 @@ object Atom:
   end createNewAtom
 
   private def createC2Atom(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-    val defines       = extractArgSet(config, "defines")
-    val extraIncludes = extractArgSet(config, "includes") ++ extractArgSet(config, "include-paths")
-    val cppStandard   = extractArgString(config, "cpp-standard")
+    val defines        = extractArgSet(config, "defines")
+    val extraIncludes  = extractArgSet(config, "includes") ++ extractArgSet(config, "include-paths")
+    val cppStandard    = extractArgString(config, "cpp-standard")
+    val enableAstCache = extractArgBoolean(config, "enable-ast-cache", default = false)
+    val defaultCacheDir = (config.inputPath / "ast_out").pathAsString
+    val cacheDir        = extractArgString(config, "ast-cache-dir", default = defaultCacheDir)
     val baseConfig = CConfig(
       includeComments = false,
       logProblems = false,
@@ -672,6 +675,9 @@ object Atom:
         .withParseInactiveCode(false)
         .withImageLocations(false)
         .withIncludeTrivialExpressions(false)
+        .withAstCache(enableAstCache)
+        .withCacheDir(cacheDir)
+
     val finalConfig = baseConfig
         .withDefines(defines)
         .withCppStandard(cppStandard)
@@ -689,6 +695,9 @@ object Atom:
     val includeComments = extractArgBoolean(config, "include-comments", default = false)
     val includeTrivialExpressions =
         extractArgBoolean(config, "include-trivial-expressions", default = false)
+    val enableAstCache  = extractArgBoolean(config, "enable-ast-cache", default = false)
+    val defaultCacheDir = (config.inputPath / "ast_out").pathAsString
+    val cacheDir        = extractArgString(config, "ast-cache-dir", default = defaultCacheDir)
     val baseConfig = CConfig(
       includeComments = includeComments,
       logProblems = false,
@@ -702,6 +711,9 @@ object Atom:
         .withParseInactiveCode(parseInactive)
         .withImageLocations(imageLocations)
         .withIncludeTrivialExpressions(includeTrivialExpressions)
+        .withAstCache(enableAstCache)
+        .withCacheDir(cacheDir)
+
     val finalConfig = baseConfig
         .withDefines(defines)
         .withCppStandard(cppStandard)
