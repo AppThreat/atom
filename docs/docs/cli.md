@@ -77,7 +77,7 @@ For complex projects, specifically those written in C or C++, you may need to pa
 
 This flag accepts a comma-separated list of key-value pairs in the format `key=value`.
 
-### usage
+### Usage
 
 ```bash
 --frontend-args key1=value1,key2=value2,key3=value3
@@ -95,6 +95,9 @@ The following arguments are supported when `--language` is set to `c`, `cpp`, or
 | `function-bodies`      | Boolean | Whether to extract function bodies.                                             | `function-bodies=false`       |
 | `parse-inactive-code`  | Boolean | Parse code within disabled preprocessor blocks (e.g., inside `#if 0`).          | `parse-inactive-code=true`    |
 | `with-image-locations` | Boolean | Create image locations (explains how a name made it into the translation unit). | `with-image-locations=true`   |
+| `enable-ast-cache`     | Boolean | Cache parsed ASTs to disk to speed up subsequent runs on unchanged files.       | `enable-ast-cache=true`       |
+| `ast-cache-dir`        | String  | Directory to store cached AST files. Defaults to `ast_out` in input directory.  | `ast-cache-dir=/tmp/cache`    |
+| `only-ast-cache`       | Boolean | Only generate AST cache files and exit. Useful for large projects to avoid OOM. | `only-ast-cache=true`         |
 
 > **Note:** Boolean values must be passed as the strings `true` or `false`.
 
@@ -128,4 +131,27 @@ java -jar atom.jar \
   --language c \
   --input ./src \
   --frontend-args parse-inactive-code=true
+```
+
+**4. Large Projects: Two-Stage Generation (Memory Optimization)**
+For very large C/C++ codebases, generating the full graph in one pass might consume too much memory. You can split the process into two stages using the AST cache.
+
+_Stage 1: Generate AST Cache Only_
+This parses files one by one and saves their ASTs to disk (`./src/ast_out` by default), keeping memory usage low.
+
+```bash
+java -jar atom.jar \
+  --language c \
+  --input ./src \
+  --frontend-args only-ast-cache=true,ast-cache-dir=/tmp/cache
+```
+
+_Stage 2: Generate Atom from Cache_
+Run the command again with caching enabled. It will load the pre-computed ASTs from disk, significantly speeding up graph creation.
+
+```bash
+java -jar atom.jar \
+  --language c \
+  --input ./src \
+  --frontend-args enable-ast-cache=true,ast-cache-dir=/tmp/cache
 ```
