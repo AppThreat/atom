@@ -144,6 +144,15 @@ object Atom:
             if x.isBlank then failure(s"Please specify a language using the --language option.")
             else success
         )
+    opt[Map[String, String]]("frontend-args")
+        .text(
+          "Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,cpp-standard=c++17"
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArgs(x)
+              case _                  => c
+        )
     opt[Unit]("with-data-deps")
         .text("generate the atom with data-dependencies - defaults to `false`")
         .action((_, c) =>
@@ -319,6 +328,19 @@ object Atom:
               )
         )
     help("help").text("display this help message")
+
+  private def extractArgSet(config: AtomConfig, key: String): Set[String] =
+      config.frontendArgs.get(key)
+          .map(_.split(",").map(_.trim).filter(_.nonEmpty).toSet)
+          .getOrElse(Set.empty)
+
+  private def extractArgString(config: AtomConfig, key: String, default: String = ""): String =
+      config.frontendArgs.getOrElse(key, default)
+
+  private def extractArgBoolean(config: AtomConfig, key: String, default: Boolean): Boolean =
+      config.frontendArgs.get(key)
+          .map(v => Try(v.toBoolean).getOrElse(default))
+          .getOrElse(default)
 
   def main(args: Array[String]): Unit =
       run(args) match
@@ -634,39 +656,58 @@ object Atom:
   end createNewAtom
 
   private def createC2Atom(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-      new C2Atom().createCpg(
-        CConfig(
-          includeComments = false,
-          logProblems = false,
-          includePathsAutoDiscovery = false
-        )
-            .withLogPreprocessor(false)
-            .withInputPath(config.inputPath.pathAsString)
-            .withOutputPath(outputAtomFile)
-            .withFunctionBodies(false)
-            .withIgnoredFilesRegex(COMMON_IGNORE_REGEX)
-            .withParseInactiveCode(false)
-            .withImageLocations(false)
-            .withIncludeTrivialExpressions(false)
-      )
+    val defines       = extractArgSet(config, "defines")
+    val extraIncludes = extractArgSet(config, "includes") ++ extractArgSet(config, "include-paths")
+    val cppStandard   = extractArgString(config, "cpp-standard")
+    val baseConfig = CConfig(
+      includeComments = false,
+      logProblems = false,
+      includePathsAutoDiscovery = false
+    )
+        .withLogPreprocessor(false)
+        .withInputPath(config.inputPath.pathAsString)
+        .withOutputPath(outputAtomFile)
+        .withFunctionBodies(false)
+        .withIgnoredFilesRegex(".*(docs|example|samples|mocks|Documentation|demos).*")
+        .withParseInactiveCode(false)
+        .withImageLocations(false)
+        .withIncludeTrivialExpressions(false)
+    val finalConfig = baseConfig
+        .withDefines(defines)
+        .withCppStandard(cppStandard)
+        .withIncludePaths(C2ATOM_INCLUDE_PATH ++ extraIncludes)
+    new C2Atom().createCpg(finalConfig)
+  end createC2Atom
 
   private def createC2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-      new C2Cpg().createCpgWithOverlays(
-        CConfig(
-          includeComments = false,
-          logProblems = false,
-          includePathsAutoDiscovery = true
-        )
-            .withLogPreprocessor(false)
-            .withInputPath(config.inputPath.pathAsString)
-            .withOutputPath(outputAtomFile)
-            .withFunctionBodies(true)
-            .withIgnoredFilesRegex(COMMON_IGNORE_REGEX)
-            .withIncludePaths(C2ATOM_INCLUDE_PATH)
-            .withParseInactiveCode(false)
-            .withImageLocations(false)
-            .withIncludeTrivialExpressions(false)
-      )
+    val defines        = extractArgSet(config, "defines")
+    val extraIncludes  = extractArgSet(config, "includes") ++ extractArgSet(config, "include-paths")
+    val cppStandard    = extractArgString(config, "cpp-standard")
+    val functionBodies = extractArgBoolean(config, "function-bodies", default = true)
+    val parseInactive  = extractArgBoolean(config, "parse-inactive-code", default = false)
+    val imageLocations = extractArgBoolean(config, "with-image-locations", default = false)
+    val includeComments = extractArgBoolean(config, "include-comments", default = false)
+    val includeTrivialExpressions =
+        extractArgBoolean(config, "include-trivial-expressions", default = false)
+    val baseConfig = CConfig(
+      includeComments = includeComments,
+      logProblems = false,
+      includePathsAutoDiscovery = true
+    )
+        .withLogPreprocessor(false)
+        .withInputPath(config.inputPath.pathAsString)
+        .withOutputPath(outputAtomFile)
+        .withFunctionBodies(functionBodies)
+        .withIgnoredFilesRegex(".*(docs|example|samples|mocks|Documentation|demos).*")
+        .withParseInactiveCode(parseInactive)
+        .withImageLocations(imageLocations)
+        .withIncludeTrivialExpressions(includeTrivialExpressions)
+    val finalConfig = baseConfig
+        .withDefines(defines)
+        .withCppStandard(cppStandard)
+        .withIncludePaths(C2ATOM_INCLUDE_PATH ++ extraIncludes)
+    new C2Cpg().createCpgWithOverlays(finalConfig)
+  end createC2Cpg
 
   private def createJimple2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
       new Jimple2Cpg().createCpgWithOverlays(
