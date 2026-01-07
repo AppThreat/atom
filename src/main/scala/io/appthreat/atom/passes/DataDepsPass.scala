@@ -5,13 +5,13 @@ import io.appthreat.dataflowengineoss.semanticsloader.Semantics
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
-import io.shiftleft.passes.StreamingCpgPass
+import io.shiftleft.passes.OrderedParallelCpgPass
 import scala.collection.mutable
 
 /** A pass that calculates reaching definitions ("data dependencies") based on ReachingDefPass
   */
 class DataDepsPass(atom: Cpg, maxNumberOfDefinitions: Int = 2000)(implicit s: Semantics)
-    extends StreamingCpgPass[Method](atom):
+    extends OrderedParallelCpgPass[Method](atom):
 
   // If there are any regex method full names, load them early
   s.loadRegexSemantics(atom)
