@@ -252,11 +252,14 @@ object UsageSlicing:
     resolvedMethod: Option[String],
     language: Option[String]
   ): Option[String] =
-      if !language.contains(Languages.JSSRC) || baseCall.code.isEmpty || !baseCall.code.contains(
-          "("
-        )
-      then
-        resolvedMethod
+    val isJs = language.contains(Languages.JSSRC) || language.contains(Languages.JAVASCRIPT)
+    if !isJs || baseCall.code.isEmpty || !baseCall.code.contains("(") then
+      resolvedMethod
+    else
+      val taggedArg =
+          baseCall.argument.filter(_.tag.nameExact(FRAMEWORK_ROUTE).nonEmpty).isLiteral.headOption
+      if taggedArg.isDefined then
+        Option(taggedArg.get.code)
       else
         var code = baseCall.code.takeWhile(_ != '(')
         if code.contains(" ") then code = code.split(" ").last
@@ -269,6 +272,8 @@ object UsageSlicing:
             "\\t"
           )
         Option(code)
+    end if
+  end handleJavaScriptLogic
 
   private def getDefNode(tgt: Declaration): Option[AstNode] = tgt match
     case local: Local =>
@@ -321,10 +326,13 @@ object UsageSlicing:
           (externalCalleesAsSlices(atom), routesAsUDT(atom))
       case Some(Languages.RUBYSRC) =>
           (danglingRouteCallsAsSlices(atom) ++ httpEndpointsAsSlices(atom), routesAsUDT(atom))
+      case Some(lang) if lang == Languages.JSSRC || lang == Languages.JAVASCRIPT =>
+          (unusedTypeDeclAsSlices(atom), routesAsUDT(atom))
       case _ =>
           (unusedTypeDeclAsSlices(atom), Nil)
 
     ProgramUsageSlice(slices ++ extraSlices, userDefTypes ++ extraTypes)
+  end createProgramUsageSlice
 
   private def createMethodUsageSlice(
     method: Method,

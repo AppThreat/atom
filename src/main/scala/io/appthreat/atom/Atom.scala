@@ -146,7 +146,7 @@ object Atom:
         )
     opt[Map[String, String]]("frontend-args")
         .text(
-          "Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,cpp-standard=c++17"
+          "Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,enable-ast-cache=true,only-ast-cache=true"
         )
         .action((x, c) =>
             c match
@@ -586,16 +586,22 @@ object Atom:
 
   private def generateForLanguage(language: String, config: AtomConfig): Either[String, String] =
     val outputAtomFile = config.outputAtomFile.pathAsString
+    val onlyAstCache   = extractArgBoolean(config, "only-ast-cache", default = false)
 
     getOrCreateAtom(language, config, outputAtomFile) match
       case Failure(exception) =>
           Left(exception.getStackTrace.take(20).mkString("\n"))
       case Success(ag) =>
-          for
-            _ <- enhanceCpg(config, ag)
-            _ <- generateSlice(config, ag)
-            _ <- closeCpg(ag)
-          yield "Atom generation successful"
+          if onlyAstCache then
+            closeCpg(ag)
+            Try(File(outputAtomFile).delete(true))
+            Right("AST cache generated successfully. Skipped CPG enhancement and slicing.")
+          else
+            for
+              _ <- enhanceCpg(config, ag)
+              _ <- generateSlice(config, ag)
+              _ <- closeCpg(ag)
+            yield "Atom generation successful"
 
   private def getOrCreateAtom(
     language: String,
@@ -659,6 +665,11 @@ object Atom:
     val defines       = extractArgSet(config, "defines")
     val extraIncludes = extractArgSet(config, "includes") ++ extractArgSet(config, "include-paths")
     val cppStandard   = extractArgString(config, "cpp-standard")
+    val onlyAstCache  = extractArgBoolean(config, "only-ast-cache", default = false)
+    val enableAstCache =
+        extractArgBoolean(config, "enable-ast-cache", default = false) || onlyAstCache
+    val defaultCacheDir = (config.inputPath / "ast_out").pathAsString
+    val cacheDir        = extractArgString(config, "ast-cache-dir", default = defaultCacheDir)
     val baseConfig = CConfig(
       includeComments = false,
       logProblems = false,
@@ -672,6 +683,10 @@ object Atom:
         .withParseInactiveCode(false)
         .withImageLocations(false)
         .withIncludeTrivialExpressions(false)
+        .withAstCache(enableAstCache)
+        .withCacheDir(cacheDir)
+        .withOnlyAstCache(onlyAstCache)
+
     val finalConfig = baseConfig
         .withDefines(defines)
         .withCppStandard(cppStandard)
@@ -689,6 +704,11 @@ object Atom:
     val includeComments = extractArgBoolean(config, "include-comments", default = false)
     val includeTrivialExpressions =
         extractArgBoolean(config, "include-trivial-expressions", default = false)
+    val onlyAstCache = extractArgBoolean(config, "only-ast-cache", default = false)
+    val enableAstCache =
+        extractArgBoolean(config, "enable-ast-cache", default = false) || onlyAstCache
+    val defaultCacheDir = (config.inputPath / "ast_out").pathAsString
+    val cacheDir        = extractArgString(config, "ast-cache-dir", default = defaultCacheDir)
     val baseConfig = CConfig(
       includeComments = includeComments,
       logProblems = false,
@@ -702,6 +722,10 @@ object Atom:
         .withParseInactiveCode(parseInactive)
         .withImageLocations(imageLocations)
         .withIncludeTrivialExpressions(includeTrivialExpressions)
+        .withAstCache(enableAstCache)
+        .withCacheDir(cacheDir)
+        .withOnlyAstCache(onlyAstCache)
+
     val finalConfig = baseConfig
         .withDefines(defines)
         .withCppStandard(cppStandard)
