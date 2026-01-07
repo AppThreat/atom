@@ -74,7 +74,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '24'
+          java-version: '25'
       - uses: sbt/setup-sbt@v1
       - uses: coursier/setup-action@v1
         with:
