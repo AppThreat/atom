@@ -155,3 +155,29 @@ java -jar atom.jar \
   --input ./src \
   --frontend-args enable-ast-cache=true,ast-cache-dir=/tmp/cache
 ```
+
+---
+
+## Tips & Tricks
+
+### c/++ monorepos:
+
+Given a large monorepo of C/C++ source code (such as mongodb), atom and chen cannot reliably determine the base directory to use for all of them. These base directories are crucial and are often set by the build tools such as CMake, Ninja, etc., to successfully compile the project.
+
+A trick we used recently is to first run atom in `only-ast-cache` mode from the parent directories of src, include, and source.
+
+```shell
+find . -type d \( -name "src" -o -name "source" -o -name "include" \) -print0 | \
+xargs -0 -n1 dirname | \
+sort -u -r | \
+while read -r parent; do
+    echo "Processing: $parent"
+    ~/work/AppThreat/atom/atom.sh -l c -o foo.atom --frontend-args enable-ast-cache=true,ast-cache-dir=/home/appthreat/sandbox/mongo/ast_out,only-ast-cache=true $parent
+done
+```
+
+Re-running atom with the cache led to fewer time-out errors.
+
+```
+~/work/AppThreat/atom/atom.sh --with-data-deps -l c -o foo.atom --frontend-args enable-ast-cache=true,ast-cache-dir=/home/appthreat/sandbox/mongo/ast_out $parent
+```
