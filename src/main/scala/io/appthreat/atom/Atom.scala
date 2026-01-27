@@ -397,7 +397,7 @@ object Atom:
         end match
       catch
         case err: Throwable =>
-            Left(err.getStackTrace.take(20).mkString("\n"))
+            Left(s"${err.toString}\n${err.getStackTrace.take(20).mkString("\n")}")
 
   private def exportAtom(
     config: AtomConfig,
