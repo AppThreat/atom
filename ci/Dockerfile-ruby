@@ -11,7 +11,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.description="Container image for AppThreat atom optimized for Ruby 4 apps" \
       org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -it ghcr.io/appthreat/atom-ruby atom usages --extract-endpoints -o /app/app.atom -l ruby /app"
 
-ARG RUBY_VERSION=4.0.0
+ARG RUBY_VERSION=4.0.1
 
 ENV RUBY_VERSION=$RUBY_VERSION \
     PATH=/opt/bin:/opt/vendor/bin:${PATH}:/usr/local/bin/:/root/.local/bin:/root/.rbenv/bin:/root/.rbenv/versions/4.0.0/bin:
