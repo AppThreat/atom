@@ -54,6 +54,7 @@ jobs:
     - name: Publish
       run: |
         cd wrapper/nodejs
+        bash build.sh
         npm publish --provenance --access=public
       if: startsWith(github.ref, 'refs/tags/')
   npm-release-tests:
@@ -77,6 +78,7 @@ jobs:
       - name: Install atom latest
         run: |
           npm install -g @appthreat/atom @appthreat/atom-parsetools
+          atom --help
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '4.0.0'
