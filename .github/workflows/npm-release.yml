@@ -45,11 +45,18 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: '4.0.0'
+        ruby-version: '4.0.1'
         bundler-cache: false
+    - name: Generate SBOM with cdxgen
+      run: |
+        npm install -g @cyclonedx/cdxgen
+        cdxgen -t sbt -o sbom-build.cdx.json . -p --no-recurse
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Prepare 4.0.0 version
       run: |
         cd wrapper/nodejs
+        bash build.sh
         npm publish --dry-run
     - name: Publish
       run: |
@@ -81,7 +88,7 @@ jobs:
           atom --help
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '4.0.0'
+          ruby-version: '4.0.1'
           bundler-cache: false
       - name: Check rbastgen 4.0.0
         run: |
