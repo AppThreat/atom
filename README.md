@@ -393,8 +393,8 @@ Generate an atom for a C++ project using C++17.
 ```bash
 java -jar atom.jar \
   --language c++ \
-  --input ./my-cpp-project \
-  --frontend-args cpp-standard=c++17
+  --frontend-args cpp-standard=c++17 \
+  ./my-cpp-project
 ```
 
 **2. Handling Custom Include Paths**
@@ -403,8 +403,8 @@ If your project relies on headers located outside the source tree:
 ```bash
 java -jar atom.jar \
   --language c \
-  --input ./src \
-  --frontend-args includes=/usr/local/include,/opt/mylib/include
+  --frontend-args includes=/usr/local/include,/opt/mylib/include \
+  ./src
 ```
 
 **3. Parsing Inactive Code**
@@ -413,8 +413,8 @@ To include code hidden behind preprocessor directives (like `#ifdef WINDOWS` whe
 ```bash
 java -jar atom.jar \
   --language c \
-  --input ./src \
-  --frontend-args parse-inactive-code=true
+  --frontend-args parse-inactive-code=true \
+  ./src
 ```
 
 **4. Large Projects: Two-Stage Generation (Memory Optimization)**
@@ -426,8 +426,8 @@ This parses files one by one and saves their ASTs to disk (`./src/ast_out` by de
 ```bash
 java -jar atom.jar \
   --language c \
-  --input ./src \
-  --frontend-args only-ast-cache=true,ast-cache-dir=/tmp/cache
+  --frontend-args only-ast-cache=true,ast-cache-dir=/tmp/cache \
+  ./src
 ```
 
 _Stage 2: Generate Atom from Cache_
@@ -436,8 +436,8 @@ Run the command again with caching enabled. It will load the pre-computed ASTs f
 ```bash
 java -jar atom.jar \
   --language c \
-  --input ./src \
-  --frontend-args enable-ast-cache=true,ast-cache-dir=/tmp/cache
+  --frontend-args enable-ast-cache=true,ast-cache-dir=/tmp/cache \
+  ./src
 ```
 
 ## Troubleshooting
