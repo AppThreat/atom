@@ -343,7 +343,8 @@ package object slicing:
     position: Integer,
     lineNumber: Option[Int] = None,
     columnNumber: Option[Int] = None,
-    label: String = "PARAM"
+    label: String = "PARAM",
+    annotations: List[String] = List.empty
   ) extends DefComponent:
     override def toString: String = super.toString + s" @ pos #$position"
 
@@ -390,7 +391,7 @@ package object slicing:
       case local @ LocalDef(_, _, _, _, _)     => local.asJson
       case literal @ LiteralDef(_, _, _, _, _) => literal.asJson
       case call @ CallDef(_, _, _, _, _, _, _) => call.asJson
-      case param @ ParamDef(_, _, _, _, _, _)  => param.asJson
+      case param @ ParamDef(_, _, _, _, _, _, _)  => param.asJson
       case unknown @ UnknownDef(_, _, _, _, _) => unknown.asJson
   }
 
@@ -445,7 +446,8 @@ package object slicing:
           Option(node.property(new PropertyKey[Boolean](PropertyNames.IS_EXTERNAL)))
       node match
         case x: MethodParameterIn =>
-            ParamDef(x.name, typeFullName, x.index, lineNumber, columnNumber)
+            val paramAnnotations = x.annotation.map(_.fullName).filter(_.nonEmpty).toList
+            ParamDef(x.name, typeFullName, x.index, lineNumber, columnNumber, annotations = paramAnnotations)
         case x: Call if x.code.startsWith("new ") =>
             val typeName = x.code.stripPrefix("new ").takeWhile(!_.equals('('))
             CallDef(
