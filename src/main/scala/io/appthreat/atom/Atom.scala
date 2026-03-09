@@ -52,7 +52,14 @@ object Atom:
   val FRAMEWORK_INPUT_TAG: String   = "framework-input"
   val FRAMEWORK_OUTPUT_TAG: String  = "framework-output"
   val DEFAULT_SOURCE_TAGS: Seq[String] =
-      Seq(FRAMEWORK_INPUT_TAG, "framework-route", "cli-source", "driver-source")
+      Seq(
+        FRAMEWORK_INPUT_TAG,
+        "framework-route",
+        "cli-source",
+        "driver-source",
+        "framework",
+        "event"
+      )
   val DEFAULT_SINK_TAGS: Seq[String] =
       Seq(
         FRAMEWORK_OUTPUT_TAG,
@@ -60,8 +67,20 @@ object Atom:
         "cloud",
         "rpc",
         "http",
+        "http-client",
+        "network",
+        "file-io",
+        "sql",
+        "code-execution",
+        "reflection",
+        "concurrent",
+        "serialization",
+        "regex",
         "cron",
-        "mail"
+        "mail",
+        "framework",
+        "api",
+        "pkg.*"
       )
   private val COMMON_IGNORE_REGEX = ".*(docs|example|samples|mocks|Documentation|demos).*"
   // Identify directories to ignore for python
