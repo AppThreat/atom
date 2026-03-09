@@ -117,19 +117,31 @@ object ReachableSlicing:
     sourceTagRegex: String,
     sinkTagRegex: String
   ): Iterator[Path] =
-    val sourceP     = atom.tag.name(sourceTagRegex).parameter
-    val sourceI     = atom.tag.name(sourceTagRegex).identifier
-    val identiSinks = atom.tag.name(sinkTagRegex).call.argument.isIdentifier
-    val retSinks    = atom.ret.where(_.tag.name(sinkTagRegex))
-    identiSinks.reachableByFlows(sourceP, sourceI) ++ retSinks.reachableByFlows(sourceP, sourceI)
+    def sourcesP = atom.tag.name(sourceTagRegex).parameter
+    def sourcesI = atom.tag.name(sourceTagRegex).identifier
+    def sourcesC = atom.tag.name(sourceTagRegex).call
+
+    def flowsFrom(sinks: Traversal[CfgNode]) = sinks.reachableByFlows(sourcesP, sourcesI, sourcesC)
+
+    Iterator(
+      flowsFrom(atom.tag.name(sinkTagRegex).call),
+      flowsFrom(atom.tag.name(sinkTagRegex).identifier),
+      flowsFrom(atom.tag.name(sinkTagRegex).call.argument.isIdentifier),
+      flowsFrom(atom.tag.name(sinkTagRegex).parameter),
+      flowsFrom(atom.ret.where(_.tag.name(sinkTagRegex)))
+    ).flatten
 
   private def collectDefaultTagFlows(atom: Cpg, sourceTagRegex: String): List[Iterator[Path]] =
       List(
         atom.ret.where(_.method.tag.name(sourceTagRegex)).reachableByFlows(
           atom.tag.name(sourceTagRegex).parameter,
-          atom.tag.name(sourceTagRegex).identifier
+          atom.tag.name(sourceTagRegex).identifier,
+          atom.tag.name(sourceTagRegex).call
         ),
-        atom.tag.name(API_TAG).parameter.reachableByFlows(atom.tag.name(API_TAG).parameter)
+        atom.tag.name(API_TAG).parameter.reachableByFlows(
+          atom.tag.name(API_TAG).parameter,
+          atom.tag.name(API_TAG).identifier
+        )
       )
 
   private def collectCryptoFlows(atom: Cpg, language: String): List[Iterator[Path]] =
@@ -178,21 +190,26 @@ object ReachableSlicing:
     if !DYNAMIC_LANGUAGES.contains(language) then return Iterator.empty
 
     val dynCallSource          = atom.tag.name(sourceTagRegex).call.argument.isIdentifier
-    val dynFrameworkIdentifier = atom.tag.name(FRAMEWORK_TAG).identifier
-    val dynFrameworkParameter  = atom.tag.name(FRAMEWORK_TAG).parameter
+    val dynCallAllArgSource    = atom.tag.name(sourceTagRegex).call.argument
+    val dynFrameworkIdentifier = atom.tag.name(s"($FRAMEWORK_TAG|$FRAMEWORK_INPUT_TAG)").identifier
+    val dynFrameworkParameter  = atom.tag.name(s"($FRAMEWORK_TAG|$FRAMEWORK_INPUT_TAG)").parameter
     val dynSink                = atom.tag.name(sinkTagRegex).call.argument.isIdentifier
-
-    val flow1 = dynSink.reachableByFlows(dynCallSource, dynFrameworkParameter)
-
+    val dynSinkMethodCallIn    = atom.tag.name(sinkTagRegex).method.callIn(using NoResolve)
+    val flow1                  = dynSink.reachableByFlows(dynCallSource, dynFrameworkParameter)
+    val dynCallInFlows =
+        dynSinkMethodCallIn.reachableByFlows(
+          dynCallAllArgSource
+        )
     val defaultFlows = if defaultTagsMode then
-      val f1 = atom.tag.name(FRAMEWORK_TAG).call.argument.reachableByFlows(
-        dynFrameworkParameter,
-        atom.tag.name(sourceTagRegex).parameter
-      )
+      val f1 =
+          atom.tag.name(s"($FRAMEWORK_TAG|$FRAMEWORK_INPUT_TAG)").call.argument.reachableByFlows(
+            dynFrameworkParameter,
+            atom.tag.name(sourceTagRegex).parameter
+          )
       val f2 = if dynFrameworkParameter.isEmpty then
         Iterator(
           dynSink.reachableByFlows(dynCallSource, dynFrameworkIdentifier),
-          atom.tag.name(FRAMEWORK_TAG).call.argument.isIdentifier.reachableByFlows(
+          atom.tag.name(s"($FRAMEWORK_TAG|$FRAMEWORK_INPUT_TAG)").call.argument.isIdentifier.reachableByFlows(
             atom.tag.name(sourceTagRegex).identifier
           )
         )
@@ -202,7 +219,7 @@ object ReachableSlicing:
 
     val pythonFlows = collectPythonSpecificFlows(atom, language, defaultTagsMode, sinkTagRegex)
 
-    Iterator(flow1) ++ defaultFlows ++ pythonFlows
+    Iterator(dynCallInFlows) ++ Iterator(flow1) ++ defaultFlows ++ pythonFlows
   end collectDynamicLanguageFlows
 
   private def collectPythonSpecificFlows(
@@ -211,23 +228,7 @@ object ReachableSlicing:
     defaultTagsMode: Boolean,
     sinkTagRegex: String
   ): Iterator[Iterator[Path]] =
-    if !PYTHON_LANGUAGES.contains(language) then return Iterator.empty
-
-    val flows = if defaultTagsMode then
-      if atom.tag.name(CLI_SOURCE_TAG).identifier.nonEmpty then
-        atom.tag.name(PURL_PREFIX).identifier.reachableByFlows(
-          atom.tag.name(CLI_SOURCE_TAG).identifier
-        )
-      else
-        atom.tag.name(PURL_PREFIX).identifier.reachableByFlows(
-          atom.tag.name(FRAMEWORK_TAG).parameter
-        )
-    else
-      atom.tag.name(PURL_PREFIX).identifier.reachableByFlows(
-        atom.tag.name(CLI_SOURCE_TAG).call
-      )
-    Iterator(flows)
-  end collectPythonSpecificFlows
+      Iterator.empty
 
   private def collectPHPRubyFlows(
     atom: Cpg,
@@ -235,7 +236,7 @@ object ReachableSlicing:
     sourceTagRegex: String
   ): Iterator[Iterator[Path]] =
       if PHP_RUBY_LANGUAGES.contains(language) then
-        Iterator(atom.tag.name(FRAMEWORK_TAG).parameter.reachableByFlows(
+        Iterator(atom.tag.name(s"($FRAMEWORK_TAG|$FRAMEWORK_INPUT_TAG)").parameter.reachableByFlows(
           atom.tag.name(sourceTagRegex).parameter
         ))
       else Iterator.empty
@@ -287,7 +288,7 @@ object ReachableSlicing:
     val sinkFlows = if atomPossibleSinkTags.nonEmpty then
       List(atom.tag.name(s"(${atomPossibleSinkTags.slice(0, 5).mkString("|")})")
           .identifier.reachableByFlows(atom.tag.name(
-            s"($EVENT_TAG|$CLI_SOURCE_TAG|$HTTP_TAG)"
+            s"($EVENT_TAG|$CLI_SOURCE_TAG|$HTTP_TAG|$FRAMEWORK_INPUT_TAG)"
           ).parameter))
     else List.empty
 
