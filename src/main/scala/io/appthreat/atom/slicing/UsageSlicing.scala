@@ -62,7 +62,7 @@ object UsageSlicing:
         .map { decl =>
             exec.submit(() => computeUsageSlice(atom, decl, typeMap, config.excludeOperatorCalls))
         }
-        .flatMap(f => Try(f.get(5, TimeUnit.SECONDS)).toOption.flatten)
+        .flatMap(f => Try(f.get(5, TimeUnit.SECONDS)).getOrElse(List.empty))
         .groupBy { case (method, _) => method }
         .view
         .filterKeys(m => !isExcludedMethod(m))
@@ -78,29 +78,47 @@ object UsageSlicing:
     tgt: Declaration,
     typeMap: Map[String, String],
     excludeOperatorCalls: Boolean
-  ): Option[(Method, ObjectUsageSlice)] =
+  ): List[(Method, ObjectUsageSlice)] =
     val defNode = getDefNode(tgt)
     val (invokedCalls, argToCalls) =
         partitionInvolvementInCalls(atom, tgt, typeMap, excludeOperatorCalls)
 
     (tgt, defNode) match
       case (local: Local, Some(genCall: Call)) =>
-          Some(local.method.head -> ObjectUsageSlice(
+          List(local.method.head -> ObjectUsageSlice(
             targetObj = DefComponent.fromNode(local, genCall, typeMap),
             definedBy = Some(DefComponent.fromNode(genCall, null, typeMap)),
             invokedCalls = invokedCalls,
             argToCalls = argToCalls
           ))
       case (param: MethodParameterIn, _) if !param.name.matches("(this|self)") =>
-          Some(param.method -> ObjectUsageSlice(
+          val paramSlice = param.method -> ObjectUsageSlice(
             targetObj = DefComponent.fromNode(param, null, typeMap),
             definedBy = Some(DefComponent.fromNode(param, null, typeMap)),
             invokedCalls = invokedCalls,
             argToCalls = argToCalls
-          ))
+          )
+          val annotationSlices = param.annotation.map { ann =>
+              val annDef = CallDef(
+                param.name,
+                ann.fullName,
+                Option(ann.code).filter(_.nonEmpty).orElse(Option(ann.fullName)),
+                Some(param.method.isExternal),
+                ann.lineNumber.map(_.intValue()),
+                ann.columnNumber.map(_.intValue()),
+                label = ann.label
+              )
+              param.method -> ObjectUsageSlice(
+                targetObj = annDef,
+                definedBy = Some(annDef),
+                invokedCalls = List.empty,
+                argToCalls = List.empty
+              )
+          }.toList
+          paramSlice :: annotationSlices
       case (m: Method, _) =>
-          createMethodObjectUsageSlice(m, invokedCalls, argToCalls, typeMap)
-      case _ => None
+          createMethodObjectUsageSlice(m, invokedCalls, argToCalls, typeMap).toList
+      case _ => List.empty
   end computeUsageSlice
 
   private def createMethodObjectUsageSlice(
