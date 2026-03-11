@@ -49,7 +49,7 @@ object UsageSlicing:
     val language = atom.metaData.language.headOption
     val root     = atom.metaData.root.headOption
 
-    declarations
+    val filteredDecls = declarations
         .to(LazyList)
         .filterNot(_.name == "*")
         .filter(d =>
@@ -59,10 +59,18 @@ object UsageSlicing:
               config.excludeOperatorCalls
             )
         )
+
+    val mainSlices = filteredDecls
         .map { decl =>
             exec.submit(() => computeUsageSlice(atom, decl, typeMap, config.excludeOperatorCalls))
         }
-        .flatMap(f => Try(f.get(5, TimeUnit.SECONDS)).getOrElse(List.empty))
+        .flatMap(f => Try(f.get(5, TimeUnit.SECONDS)).toOption.flatten)
+
+    val annotationSlices = filteredDecls.collect {
+        case param: MethodParameterIn if !param.name.matches("(this|self)") => param
+    }.flatMap(param => paramAnnotationSlices(param, typeMap))
+
+    (mainSlices ++ annotationSlices)
         .groupBy { case (method, _) => method }
         .view
         .filterKeys(m => !isExcludedMethod(m))
@@ -78,48 +86,53 @@ object UsageSlicing:
     tgt: Declaration,
     typeMap: Map[String, String],
     excludeOperatorCalls: Boolean
-  ): List[(Method, ObjectUsageSlice)] =
+  ): Option[(Method, ObjectUsageSlice)] =
     val defNode = getDefNode(tgt)
     val (invokedCalls, argToCalls) =
         partitionInvolvementInCalls(atom, tgt, typeMap, excludeOperatorCalls)
 
     (tgt, defNode) match
       case (local: Local, Some(genCall: Call)) =>
-          List(local.method.head -> ObjectUsageSlice(
+          Some(local.method.head -> ObjectUsageSlice(
             targetObj = DefComponent.fromNode(local, genCall, typeMap),
             definedBy = Some(DefComponent.fromNode(genCall, null, typeMap)),
             invokedCalls = invokedCalls,
             argToCalls = argToCalls
           ))
       case (param: MethodParameterIn, _) if !param.name.matches("(this|self)") =>
-          val paramSlice = param.method -> ObjectUsageSlice(
+          Some(param.method -> ObjectUsageSlice(
             targetObj = DefComponent.fromNode(param, null, typeMap),
             definedBy = Some(DefComponent.fromNode(param, null, typeMap)),
             invokedCalls = invokedCalls,
             argToCalls = argToCalls
-          )
-          val annotationSlices = param.annotation.map { ann =>
-              val annDef = CallDef(
-                param.name,
-                ann.fullName,
-                Option(ann.code).filter(_.nonEmpty).orElse(Option(ann.fullName)),
-                Some(param.method.isExternal),
-                ann.lineNumber.map(_.intValue()),
-                ann.columnNumber.map(_.intValue()),
-                label = ann.label
-              )
-              param.method -> ObjectUsageSlice(
-                targetObj = annDef,
-                definedBy = Some(annDef),
-                invokedCalls = List.empty,
-                argToCalls = List.empty
-              )
-          }.toList
-          paramSlice :: annotationSlices
+          ))
       case (m: Method, _) =>
-          createMethodObjectUsageSlice(m, invokedCalls, argToCalls, typeMap).toList
-      case _ => List.empty
+          createMethodObjectUsageSlice(m, invokedCalls, argToCalls, typeMap)
+      case _ => None
   end computeUsageSlice
+
+  private def paramAnnotationSlices(
+    param: MethodParameterIn,
+    typeMap: Map[String, String]
+  ): List[(Method, ObjectUsageSlice)] =
+    param.annotation.map { ann =>
+        val annDef = CallDef(
+          param.name,
+          ann.fullName,
+          Option(ann.code).filter(_.nonEmpty).orElse(Option(ann.fullName)),
+          Some(param.method.isExternal),
+          ann.lineNumber.map(_.intValue()),
+          ann.columnNumber.map(_.intValue()),
+          label = ann.label
+        )
+        param.method -> ObjectUsageSlice(
+          targetObj = annDef,
+          definedBy = Some(annDef),
+          invokedCalls = List.empty,
+          argToCalls = List.empty
+        )
+    }.toList
+  end paramAnnotationSlices
 
   private def createMethodObjectUsageSlice(
     m: Method,
