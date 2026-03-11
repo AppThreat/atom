@@ -125,10 +125,19 @@ object UsageSlicing:
           ann.columnNumber.map(_.intValue()),
           label = ann.label
         )
+        val annCall = ObservedCall(
+          if ann.fullName.nonEmpty then ann.fullName else ann.name,
+          Option(ann.code).filter(_.nonEmpty).orElse(Option(ann.fullName)),
+          List.empty,
+          "",
+          Some(param.method.isExternal),
+          ann.lineNumber.map(_.intValue()),
+          ann.columnNumber.map(_.intValue())
+        )
         param.method -> ObjectUsageSlice(
           targetObj = annDef,
           definedBy = Some(annDef),
-          invokedCalls = List.empty,
+          invokedCalls = List(annCall),
           argToCalls = List.empty
         )
     }.toList
