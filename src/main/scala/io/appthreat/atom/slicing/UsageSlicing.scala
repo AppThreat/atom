@@ -49,7 +49,7 @@ object UsageSlicing:
     val language = atom.metaData.language.headOption
     val root     = atom.metaData.root.headOption
 
-    declarations
+    val filteredDecls = declarations
         .to(LazyList)
         .filterNot(_.name == "*")
         .filter(d =>
@@ -59,10 +59,27 @@ object UsageSlicing:
               config.excludeOperatorCalls
             )
         )
+
+    val mainSlices = filteredDecls
         .map { decl =>
             exec.submit(() => computeUsageSlice(atom, decl, typeMap, config.excludeOperatorCalls))
         }
         .flatMap(f => Try(f.get(5, TimeUnit.SECONDS)).toOption.flatten)
+
+    val annotationSlices = filteredDecls.collect {
+        case param: MethodParameterIn if !param.name.matches("(this|self)") => param
+    }.flatMap(param => paramAnnotationSlices(param, typeMap))
+
+    val httpStatusMethods = filteredDecls.flatMap {
+        case p: MethodParameterIn => Some(p.method)
+        case l: Local             => l.method.headOption
+        case m: Method            => Some(m)
+        case _                    => None
+    }.toSet
+
+    val statusSlices = httpStatusMethods.toList.flatMap(m => httpStatusFieldAccessSlices(m, typeMap))
+
+    (mainSlices ++ annotationSlices ++ statusSlices)
         .groupBy { case (method, _) => method }
         .view
         .filterKeys(m => !isExcludedMethod(m))
@@ -102,6 +119,71 @@ object UsageSlicing:
           createMethodObjectUsageSlice(m, invokedCalls, argToCalls, typeMap)
       case _ => None
   end computeUsageSlice
+
+  private def paramAnnotationSlices(
+    param: MethodParameterIn,
+    typeMap: Map[String, String]
+  ): List[(Method, ObjectUsageSlice)] =
+      param.annotation.map { ann =>
+        val annDef = CallDef(
+          param.name,
+          ann.fullName,
+          Option(ann.code).filter(_.nonEmpty).orElse(Option(ann.fullName)),
+          Some(param.method.isExternal),
+          ann.lineNumber.map(_.intValue()),
+          ann.columnNumber.map(_.intValue()),
+          label = ann.label
+        )
+        val annCall = ObservedCall(
+          if ann.fullName.nonEmpty then ann.fullName else ann.name,
+          Option(ann.code).filter(_.nonEmpty).orElse(Option(ann.fullName)),
+          List.empty,
+          "",
+          Some(param.method.isExternal),
+          ann.lineNumber.map(_.intValue()),
+          ann.columnNumber.map(_.intValue())
+        )
+        param.method -> ObjectUsageSlice(
+          targetObj = annDef,
+          definedBy = Some(annDef),
+          invokedCalls = List(annCall),
+          argToCalls = List.empty
+        )
+      }.toList
+  end paramAnnotationSlices
+
+  private def httpStatusFieldAccessSlices(
+    method: Method,
+    typeMap: Map[String, String]
+  ): List[(Method, ObjectUsageSlice)] =
+      method.ast.isCall
+          .nameExact(Operators.fieldAccess)
+          .flatMap { call =>
+              val fieldId = call.argument.collectFirst { case fi: FieldIdentifier => fi }
+              val isHttpStatus = call.argument.exists {
+                  case id: Identifier => id.typeFullName.contains("HttpStatus") || id.name == "HttpStatus"
+                  case _              => false
+              }
+              if isHttpStatus && fieldId.isDefined then
+                  val fi = fieldId.get
+                  val statusDef = CallDef(
+                    fi.canonicalName,
+                    "org.springframework.http.HttpStatus",
+                    Option(s"org.springframework.http.HttpStatus.${fi.canonicalName}"),
+                    Some(true),
+                    call.lineNumber.map(_.intValue()),
+                    call.columnNumber.map(_.intValue())
+                  )
+                  Some(method -> ObjectUsageSlice(
+                    targetObj = statusDef,
+                    definedBy = Some(statusDef),
+                    invokedCalls = List.empty,
+                    argToCalls = List.empty
+                  ))
+              else
+                  None
+          }.toList
+  end httpStatusFieldAccessSlices
 
   private def createMethodObjectUsageSlice(
     m: Method,
