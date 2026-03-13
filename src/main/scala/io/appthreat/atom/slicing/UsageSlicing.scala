@@ -70,7 +70,16 @@ object UsageSlicing:
         case param: MethodParameterIn if !param.name.matches("(this|self)") => param
     }.flatMap(param => paramAnnotationSlices(param, typeMap))
 
-    (mainSlices ++ annotationSlices)
+    val httpStatusMethods = filteredDecls.flatMap {
+        case p: MethodParameterIn => Some(p.method)
+        case l: Local             => l.method.headOption
+        case m: Method            => Some(m)
+        case _                    => None
+    }.toSet
+
+    val statusSlices = httpStatusMethods.toList.flatMap(m => httpStatusFieldAccessSlices(m, typeMap))
+
+    (mainSlices ++ annotationSlices ++ statusSlices)
         .groupBy { case (method, _) => method }
         .view
         .filterKeys(m => !isExcludedMethod(m))
@@ -115,7 +124,7 @@ object UsageSlicing:
     param: MethodParameterIn,
     typeMap: Map[String, String]
   ): List[(Method, ObjectUsageSlice)] =
-    param.annotation.map { ann =>
+      param.annotation.map { ann =>
         val annDef = CallDef(
           param.name,
           ann.fullName,
@@ -140,8 +149,41 @@ object UsageSlicing:
           invokedCalls = List(annCall),
           argToCalls = List.empty
         )
-    }.toList
+      }.toList
   end paramAnnotationSlices
+
+  private def httpStatusFieldAccessSlices(
+    method: Method,
+    typeMap: Map[String, String]
+  ): List[(Method, ObjectUsageSlice)] =
+      method.ast.isCall
+          .nameExact(Operators.fieldAccess)
+          .flatMap { call =>
+              val fieldId = call.argument.collectFirst { case fi: FieldIdentifier => fi }
+              val isHttpStatus = call.argument.exists {
+                  case id: Identifier => id.typeFullName.contains("HttpStatus") || id.name == "HttpStatus"
+                  case _              => false
+              }
+              if isHttpStatus && fieldId.isDefined then
+                  val fi = fieldId.get
+                  val statusDef = CallDef(
+                    fi.canonicalName,
+                    "org.springframework.http.HttpStatus",
+                    Option(s"org.springframework.http.HttpStatus.${fi.canonicalName}"),
+                    Some(true),
+                    call.lineNumber.map(_.intValue()),
+                    call.columnNumber.map(_.intValue())
+                  )
+                  Some(method -> ObjectUsageSlice(
+                    targetObj = statusDef,
+                    definedBy = Some(statusDef),
+                    invokedCalls = List.empty,
+                    argToCalls = List.empty
+                  ))
+              else
+                  None
+          }.toList
+  end httpStatusFieldAccessSlices
 
   private def createMethodObjectUsageSlice(
     m: Method,
