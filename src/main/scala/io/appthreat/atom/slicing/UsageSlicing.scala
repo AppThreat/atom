@@ -49,7 +49,7 @@ object UsageSlicing:
     val language = atom.metaData.language.headOption
     val root     = atom.metaData.root.headOption
 
-    declarations
+    val filteredDecls = declarations
         .to(LazyList)
         .filterNot(_.name == "*")
         .filter(d =>
@@ -59,10 +59,18 @@ object UsageSlicing:
               config.excludeOperatorCalls
             )
         )
+
+    val mainSlices = filteredDecls
         .map { decl =>
             exec.submit(() => computeUsageSlice(atom, decl, typeMap, config.excludeOperatorCalls))
         }
         .flatMap(f => Try(f.get(5, TimeUnit.SECONDS)).toOption.flatten)
+
+    val annotationSlices = filteredDecls.collect {
+        case param: MethodParameterIn if !param.name.matches("(this|self)") => param
+    }.flatMap(param => paramAnnotationSlices(param, typeMap))
+
+    (mainSlices ++ annotationSlices)
         .groupBy { case (method, _) => method }
         .view
         .filterKeys(m => !isExcludedMethod(m))
@@ -102,6 +110,38 @@ object UsageSlicing:
           createMethodObjectUsageSlice(m, invokedCalls, argToCalls, typeMap)
       case _ => None
   end computeUsageSlice
+
+  private def paramAnnotationSlices(
+    param: MethodParameterIn,
+    typeMap: Map[String, String]
+  ): List[(Method, ObjectUsageSlice)] =
+      param.annotation.map { ann =>
+        val annDef = CallDef(
+          param.name,
+          ann.fullName,
+          Option(ann.code).filter(_.nonEmpty).orElse(Option(ann.fullName)),
+          Some(param.method.isExternal),
+          ann.lineNumber.map(_.intValue()),
+          ann.columnNumber.map(_.intValue()),
+          label = ann.label
+        )
+        val annCall = ObservedCall(
+          if ann.fullName.nonEmpty then ann.fullName else ann.name,
+          Option(ann.code).filter(_.nonEmpty).orElse(Option(ann.fullName)),
+          List.empty,
+          "",
+          Some(param.method.isExternal),
+          ann.lineNumber.map(_.intValue()),
+          ann.columnNumber.map(_.intValue())
+        )
+        param.method -> ObjectUsageSlice(
+          targetObj = annDef,
+          definedBy = Some(annDef),
+          invokedCalls = List(annCall),
+          argToCalls = List.empty
+        )
+      }.toList
+  end paramAnnotationSlices
 
   private def createMethodObjectUsageSlice(
     m: Method,
