@@ -15,7 +15,9 @@ Our vision is to make atom useful for many use cases such as:
 
 and more.
 
+[![SBOM](https://img.shields.io/badge/SBOM-with_%E2%9D%A4%EF%B8%8F_by_cdxgen-FF753D)](https://github.com/cdxgen/cdxgen)
 ![npm](https://img.shields.io/npm/dw/@appthreat/atom)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/AppThreat/atom/total?color=FF753D)
 
 ## Languages supported
 
