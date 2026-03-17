@@ -115,7 +115,7 @@ object UsageSlicing:
     param: MethodParameterIn,
     typeMap: Map[String, String]
   ): List[(Method, ObjectUsageSlice)] =
-    param.annotation.map { ann =>
+      param.annotation.map { ann =>
         val annDef = CallDef(
           param.name,
           ann.fullName,
@@ -140,7 +140,7 @@ object UsageSlicing:
           invokedCalls = List(annCall),
           argToCalls = List.empty
         )
-    }.toList
+      }.toList
   end paramAnnotationSlices
 
   private def createMethodObjectUsageSlice(
