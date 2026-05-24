@@ -164,6 +164,8 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5  # v4.1.0
       - uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee  # v4.2.0
         with:
           registry: ghcr.io
@@ -177,11 +179,61 @@ jobs:
         id: read
         with:
           matrix-step-name: deploy
-      - uses: int128/docker-manifest-create-action@b9d644eaa3312dd895ffdafb19333a7b266e6ba9  # v2.21.0
+      - name: Create and push multi-arch manifest
         id: build
-        with:
-          index-annotations: ${{ steps.metadata.outputs.labels }}
-          tags: ${{ steps.metadata.outputs.tags }}
-          sources: |
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          annotation_args=()
+          while IFS= read -r label; do
+            [ -n "${label}" ] || continue
+            annotation_args+=(--annotation "index:${label}")
+          done <<< "${LABELS}"
+
+          sources=()
+          while IFS= read -r source; do
+            [ -n "${source}" ] || continue
+            sources+=("${source}")
+          done <<< "${SOURCES}"
+
+          if [ "${#sources[@]}" -lt 2 ]; then
+            echo "Expected two source images for manifest, found ${#sources[@]}" >&2
+            exit 1
+          fi
+
+          first_tag=""
+          while IFS= read -r tag; do
+            [ -n "${tag}" ] || continue
+
+            if [ -z "${first_tag}" ]; then
+              first_tag="${tag}"
+            fi
+
+            echo "Creating multi-arch manifest: ${tag}"
+            docker buildx imagetools create \
+              "${annotation_args[@]}" \
+              --tag "${tag}" \
+              "${sources[@]}"
+
+            docker buildx imagetools inspect "${tag}"
+          done <<< "${TAGS}"
+
+          if [ -z "${first_tag}" ]; then
+            echo "No tags found for manifest" >&2
+            exit 1
+          fi
+
+          digest="$(docker buildx imagetools inspect "${first_tag}" | awk '$1 == "Digest:" {print $2; exit}')"
+          if [ -z "${digest}" ]; then
+            echo "Unable to determine manifest digest for ${first_tag}" >&2
+            exit 1
+          fi
+
+          echo "digest=${digest}" >> "${GITHUB_OUTPUT}"
+        env:
+          LABELS: ${{ steps.metadata.outputs.labels }}
+          TAGS: ${{ steps.metadata.outputs.tags }}
+          SOURCES: |
             ${{ fromJSON(steps.read.outputs.result).image-uri[format('amd64{0}', matrix.image.image-suffix)] }}
             ${{ fromJSON(steps.read.outputs.result).image-uri[format('arm64{0}', matrix.image.image-suffix)] }}
