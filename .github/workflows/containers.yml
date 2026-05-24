@@ -191,11 +191,19 @@ jobs:
             annotation_args+=(--annotation "index:${label}")
           done <<< "${LABELS}"
 
+          amd64_key="amd64${IMAGE_SUFFIX}"
+          arm64_key="arm64${IMAGE_SUFFIX}"
           sources=()
-          while IFS= read -r source; do
-            [ -n "${source}" ] || continue
+          for key in "${amd64_key}" "${arm64_key}"; do
+            source="$(jq -r --arg key "${key}" '."image-uri"[$key] // empty' <<< "${MATRIX_OUTPUTS}")"
+            if [ -z "${source}" ]; then
+              echo "Unable to find source image for matrix output key: ${key}" >&2
+              echo "Matrix outputs:" >&2
+              jq . <<< "${MATRIX_OUTPUTS}" >&2 || true
+              exit 1
+            fi
             sources+=("${source}")
-          done <<< "${SOURCES}"
+          done
 
           if [ "${#sources[@]}" -lt 2 ]; then
             echo "Expected two source images for manifest, found ${#sources[@]}" >&2
@@ -234,6 +242,5 @@ jobs:
         env:
           LABELS: ${{ steps.metadata.outputs.labels }}
           TAGS: ${{ steps.metadata.outputs.tags }}
-          SOURCES: |
-            ${{ fromJSON(steps.read.outputs.result).image-uri[format('amd64{0}', matrix.image.image-suffix)] }}
-            ${{ fromJSON(steps.read.outputs.result).image-uri[format('arm64{0}', matrix.image.image-suffix)] }}
+          IMAGE_SUFFIX: ${{ matrix.image.image-suffix }}
+          MATRIX_OUTPUTS: ${{ steps.read.outputs.result }}
