@@ -5,6 +5,8 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
+permissions:
+  contents: read
 jobs:
   lang-container-tests:
     strategy:
@@ -13,30 +15,36 @@ jobs:
         os: ["ubuntu-24.04", "ubuntu-24.04-arm"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
       - name: setup paths
         run: |
           mkdir -p repotests rubyresults scalaresults
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'campsite/campsite'
           path: 'repotests/campsite'
           ref: '10197238bbbefd9c9ac7c77467b647fd93993ba0'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'bionomia/bionomia'
           path: 'repotests/bionomia'
           ref: '5ada8b5f4a5f68561a7195e2badc2f744dc4676e'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'OWASP/railsgoat'
           path: 'repotests/railsgoat'
           ref: 'c1e8ff1e3b24a1c48fcfc9fbee0f65dc296b49d9'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'playframework/play-samples'
           path: 'repotests/play-samples'
           ref: '0dccba17856e89dbb5e457ab760efb14cc691395'
+          persist-credentials: false
       - name: generate usages - bionomia
         run: |
           mkdir -p $GITHUB_WORKSPACE/rubyresults/bionomia
@@ -82,12 +90,12 @@ jobs:
           docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -w /app -t ghcr.io/appthreat/atom:main atom usages --extract-endpoints -l scala -o /app/app.atom -s /app/usages.slices.json /app
           ls -lh
           cp *.slices.json $GITHUB_WORKSPACE/scalaresults/play-samples
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: rubyresults
           path: rubyresults
         if: matrix.os == 'ubuntu-24.04'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: scalaresults
           path: scalaresults
@@ -102,20 +110,20 @@ jobs:
       contents: read
     steps:
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
         with:
           node-version: '25.x'
-          registry-url: https://registry.npmjs.org/
-      - uses: coursier/cache-action@v6
+          package-manager-cache: false
+      - uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d  # v8.1.1
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654  # v5.2.0
         with:
           distribution: 'temurin'
           java-version: '25'
       - name: Install atom latest
         run: |
           npm install -g @appthreat/atom @appthreat/atom-parsetools
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@afeafc3d1ab54a631816aba4c914a0081c12ff2f  # v1.310.0
         with:
           ruby-version: '4.0.0'
           bundler-cache: false
