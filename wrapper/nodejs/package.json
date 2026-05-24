@@ -1,6 +1,6 @@
 {
   "name": "@appthreat/atom",
-  "version": "2.5.4",
+  "version": "2.5.3",
   "description": "Create atom (⚛) representation for your application, packages and libraries",
   "exports": "./index.js",
   "type": "module",
