@@ -131,6 +131,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+          sbom: false
       - name: Write image metadata
         shell: bash
         run: |
@@ -232,13 +234,9 @@ jobs:
             exit 1
           fi
 
-          first_tag=""
+          first_digest=""
           while IFS= read -r tag; do
             [ -n "${tag}" ] || continue
-
-            if [ -z "${first_tag}" ]; then
-              first_tag="${tag}"
-            fi
 
             echo "Creating multi-arch manifest: ${tag}"
             docker buildx imagetools create \
@@ -246,21 +244,31 @@ jobs:
               --tag "${tag}" \
               "${sources[@]}"
 
-            docker buildx imagetools inspect "${tag}"
+            inspect_status=0
+            inspect_output="$(docker buildx imagetools inspect "${tag}" 2>&1)" || inspect_status=$?
+            printf '%s\n' "${inspect_output}"
+
+            tag_digest="$(awk '$1 == "Digest:" {print $2; exit}' <<< "${inspect_output}")"
+            if [ -z "${tag_digest}" ]; then
+              echo "Unable to determine manifest digest for ${tag}" >&2
+              exit 1
+            fi
+
+            if [ "${inspect_status}" -ne 0 ]; then
+              echo "::warning::docker buildx imagetools inspect exited with status ${inspect_status} for ${tag}, but reported digest ${tag_digest}; continuing"
+            fi
+
+            if [ -z "${first_digest}" ]; then
+              first_digest="${tag_digest}"
+            fi
           done <<< "${TAGS}"
 
-          if [ -z "${first_tag}" ]; then
+          if [ -z "${first_digest}" ]; then
             echo "No tags found for manifest" >&2
             exit 1
           fi
 
-          digest="$(docker buildx imagetools inspect "${first_tag}" | awk '$1 == "Digest:" {print $2; exit}')"
-          if [ -z "${digest}" ]; then
-            echo "Unable to determine manifest digest for ${first_tag}" >&2
-            exit 1
-          fi
-
-          echo "digest=${digest}" >> "${GITHUB_OUTPUT}"
+          echo "digest=${first_digest}" >> "${GITHUB_OUTPUT}"
         env:
           LABELS: ${{ steps.metadata.outputs.labels }}
           TAGS: ${{ steps.metadata.outputs.tags }}
