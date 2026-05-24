@@ -8,6 +8,8 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
+permissions:
+  contents: read
 
 jobs:
   jvm-testing:
@@ -17,99 +19,115 @@ jobs:
         java-version: ['21', '25']
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           fetch-depth: 0
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'ShiftLeftSecurity/shiftleft-java-example'
           path: 'repotests/shiftleft-java-example'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'rodbate/bouncycastle-examples'
           path: 'repotests/bouncycastle-examples'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'juice-shop/juice-shop'
           path: 'repotests/juice-shop'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'ShiftLeftSecurity/shiftleft-ts-example'
           path: 'repotests/shiftleft-ts-example'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'libexpat/libexpat'
           path: 'repotests/libexpat'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'HooliCorp/java-sec-code'
           path: 'repotests/java-sec-code'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'HooliCorp/DjanGoat'
           path: 'repotests/DjanGoat'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'DefectDojo/django-DefectDojo'
           path: 'repotests/django-DefectDojo'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'nodejs/node'
           path: 'repotests/nodejs'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'awsdocs/aws-doc-sdk-examples'
           path: 'repotests/aws-doc-sdk-examples'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'bionomia/bionomia'
           path: 'repotests/bionomia'
           ref: '5ada8b5f4a5f68561a7195e2badc2f744dc4676e'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'OWASP/railsgoat'
           path: 'repotests/railsgoat'
           ref: 'c1e8ff1e3b24a1c48fcfc9fbee0f65dc296b49d9'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'playframework/play-samples'
           path: 'repotests/play-samples'
           ref: '0dccba17856e89dbb5e457ab760efb14cc691395'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'aboutcode-org/dejacode'
           path: 'repotests/dejacode'
           ref: 'v5.4.0'
-      - uses: coursier/cache-action@v6
+          persist-credentials: false
+      - uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d  # v8.1.1
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654  # v5.2.0
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
-      - uses: sbt/setup-sbt@v1
-      - uses: coursier/setup-action@v1
+      - uses: sbt/setup-sbt@2e222825582620cc38d2a54e674f3c01b7c14f5d  # v1.1.24
+      - uses: coursier/setup-action@fd1707a76b027efdfb66ca79318b4d29b72e5a02  # v3.0.0
         with:
           apps: scala3 scalac
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - name: Use Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
         with:
           node-version: '25.x'
+          package-manager-cache: false
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc  # 2.37.1
         with:
           coverage: "none"
           php-version: "8.3"
           tools: composer:v2
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: '3.12'
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@afeafc3d1ab54a631816aba4c914a0081c12ff2f  # v1.310.0
         with:
           ruby-version: '4.0.0'
           bundler-cache: false
         if: runner.os != 'Windows'
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@afeafc3d1ab54a631816aba4c914a0081c12ff2f  # v1.310.0
         with:
           ruby-version: '3.4.8'
           bundler-cache: false

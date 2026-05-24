@@ -5,63 +5,74 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
+permissions:
+  contents: read
 
 jobs:
   testing:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           fetch-depth: 0
-      - uses: ruby/setup-ruby@v1
+          persist-credentials: false
+      - uses: ruby/setup-ruby@afeafc3d1ab54a631816aba4c914a0081c12ff2f  # v1.310.0
         with:
           ruby-version: '4.0.0'
           bundler-cache: false
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'ShiftLeftSecurity/shiftleft-java-example'
           path: 'repotests/shiftleft-java-example'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'juice-shop/juice-shop'
           path: 'repotests/juice-shop'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'ShiftLeftSecurity/shiftleft-ts-example'
           path: 'repotests/shiftleft-ts-example'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'libexpat/libexpat'
           path: 'repotests/libexpat'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'HooliCorp/DjanGoat'
           path: 'repotests/DjanGoat'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'DefectDojo/django-DefectDojo'
           path: 'repotests/django-DefectDojo'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'bionomia/bionomia'
           path: 'repotests/bionomia'
           ref: '5ada8b5f4a5f68561a7195e2badc2f744dc4676e'
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: 'OWASP/railsgoat'
           path: 'repotests/railsgoat'
           ref: 'c1e8ff1e3b24a1c48fcfc9fbee0f65dc296b49d9'
-      - uses: coursier/cache-action@v6
+          persist-credentials: false
+      - uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d  # v8.1.1
       - name: Set up JDK
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@bef4b0e916c7dd079bf60fb95d49139f67e32c5f  # v1.5.3
         with:
           distribution: 'graalvm-community'
           java-version: '25'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
-          cache: 'sbt'
-      - uses: sbt/setup-sbt@v1
-      - uses: coursier/setup-action@v1
+          cache: ''
+      - uses: sbt/setup-sbt@2e222825582620cc38d2a54e674f3c01b7c14f5d  # v1.1.24
+      - uses: coursier/setup-action@fd1707a76b027efdfb66ca79318b4d29b72e5a02  # v3.0.0
         with:
           apps: scala3 scalac
       - run: |
