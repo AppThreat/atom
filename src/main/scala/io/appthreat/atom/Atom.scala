@@ -40,6 +40,7 @@ import io.shiftleft.semanticcpg.layers.LayerCreatorContext
 import scopt.OptionParser
 
 import java.util.Locale
+import java.util.regex.Pattern
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
@@ -83,6 +84,11 @@ object Atom:
         "pkg.*"
       )
   private val COMMON_IGNORE_REGEX = ".*(docs|example|samples|mocks|Documentation|demos).*"
+  private val JAVA_IGNORE_REGEX   = ".*(target|build)/(generated|intermediates|outputs|tmp).*"
+  private val PHP_IGNORE_REGEX    = ".*(samples|examples|docs).*"
+  private val RUBY_IGNORE_REGEX   = ".*(docs|vendor|spec).*"
+
+  private val COMMON_IGNORE_DIRS_ENV = "CHEN_IGNORE_DIRS"
   // Identify directories to ignore for python
   private val defaultPythonIgnoreDirs = Seq(
     "samples",
@@ -94,17 +100,67 @@ object Atom:
     "noxfile"
   )
   private val testIgnoreDirs = Seq("test", "tests", "mocks")
-  private val basePythonIgnoreDirs: Seq[String] = Option(System.getenv("CHEN_PYTHON_IGNORE_DIRS"))
-      .map(_.split(',').map(_.trim).filter(_.nonEmpty).toSeq)
-      .getOrElse(defaultPythonIgnoreDirs)
-  private val includeTestDirs: Boolean =
+  private val ignoreTestDirs: Boolean =
       Option(System.getenv("CHEN_IGNORE_TEST_DIRS"))
           .exists(_.trim.equalsIgnoreCase("true"))
-  private val pyIgnoreDirs: Seq[String] =
-      if includeTestDirs then basePythonIgnoreDirs ++ testIgnoreDirs
-      else basePythonIgnoreDirs
+  private val pythonIgnoreDirsEnv = "CHEN_PYTHON_IGNORE_DIRS"
+  private val basePythonIgnoreDirs: Seq[String] =
+    val pythonSpecificIgnoreDirs = envSpecificIgnoreDirs(pythonIgnoreDirsEnv)
+    val pythonBaseIgnoreDirs = pythonSpecificIgnoreDirs match
+      case Seq() => defaultPythonIgnoreDirs
+      case dirs  => dirs
+    (pythonBaseIgnoreDirs ++ commonIgnoreDirs).distinct
+  private val pyIgnoreDirs: Seq[String] = appendTestIgnoreDirs(basePythonIgnoreDirs)
   // This regex will be eventually passed to chen
-  private val pythonIgnoredFilesRegex: String = ".*(" + pyIgnoreDirs.mkString("|") + ").*"
+  private val pythonIgnoredFilesRegex: String = ignoredPathFragmentsRegex(pyIgnoreDirs)
+      .getOrElse("$^")
+
+  private def parseIgnoreDirs(value: String): Seq[String] =
+      value.split(',').map(_.trim).filter(_.nonEmpty).toSeq
+
+  private def commonIgnoreDirs: Seq[String] =
+      envSpecificIgnoreDirs(COMMON_IGNORE_DIRS_ENV)
+
+  private def envIgnoreDirs(envVars: String*): Seq[String] =
+      (commonIgnoreDirs ++ envSpecificIgnoreDirs(envVars*)).distinct
+
+  private def envSpecificIgnoreDirs(envVars: String*): Seq[String] =
+      envVars.flatMap(envVar => Option(System.getenv(envVar)).toSeq.flatMap(parseIgnoreDirs))
+          .distinct
+
+  private def appendTestIgnoreDirs(ignoreDirs: Seq[String]): Seq[String] =
+      if ignoreTestDirs then (ignoreDirs ++ testIgnoreDirs).distinct
+      else ignoreDirs.distinct
+
+  private def ignoredPathFragmentsRegex(ignoreDirs: Seq[String]): Option[String] =
+    val escapedPathFragments = ignoreDirs.filter(_.nonEmpty).map(Pattern.quote)
+    Option.when(escapedPathFragments.nonEmpty)(s".*(?:${escapedPathFragments.mkString("|")}).*")
+
+  private def ignoredDirectoriesRegex(ignoreDirs: Seq[String]): Option[String] =
+    val directoryPatterns = ignoreDirs.map(toDirectoryRegex).filter(_.nonEmpty)
+    Option.when(directoryPatterns.nonEmpty) {
+        s"(?:^|.*[/\\\\])(?:${directoryPatterns.mkString("|")})(?:[/\\\\].*|$$)"
+    }
+
+  private def toDirectoryRegex(ignoreDir: String): String =
+      ignoreDir
+          .replace('\\', '/')
+          .stripPrefix("./")
+          .stripPrefix("/")
+          .stripSuffix("/")
+          .split("/+")
+          .filter(_.nonEmpty)
+          .map(Pattern.quote)
+          .mkString("[/\\\\]")
+
+  private def ignoredFilesRegexFromEnv(envVars: String*): Option[String] =
+      ignoredDirectoriesRegex(appendTestIgnoreDirs(envIgnoreDirs(envVars*)))
+
+  private def ignoredFilesRegex(defaultRegex: String, envVars: String*): String =
+      combineIgnoredFilesRegex(Some(defaultRegex), ignoredFilesRegexFromEnv(envVars*))
+
+  private def combineIgnoredFilesRegex(regexes: Option[String]*): String =
+      regexes.flatten.filter(_.nonEmpty).map(regex => s"(?:$regex)").mkString("|")
 
   val DEFAULT_EXPORT_DIR: String = "atom-exports"
   // Possible values: graphml, dot
@@ -698,7 +754,7 @@ object Atom:
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
         .withFunctionBodies(false)
-        .withIgnoredFilesRegex(".*(docs|example|samples|mocks|Documentation|demos).*")
+        .withIgnoredFilesRegex(ignoredFilesRegex(COMMON_IGNORE_REGEX, "CHEN_C_IGNORE_DIRS"))
         .withParseInactiveCode(false)
         .withImageLocations(false)
         .withIncludeTrivialExpressions(false)
@@ -737,7 +793,9 @@ object Atom:
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
         .withFunctionBodies(functionBodies)
-        .withIgnoredFilesRegex(".*(docs|example|samples|mocks|Documentation|demos).*")
+        .withIgnoredFilesRegex(
+          ignoredFilesRegex(COMMON_IGNORE_REGEX, "CHEN_C_IGNORE_DIRS", "CHEN_CPP_IGNORE_DIRS")
+        )
         .withParseInactiveCode(parseInactive)
         .withImageLocations(imageLocations)
         .withIncludeTrivialExpressions(includeTrivialExpressions)
@@ -753,14 +811,16 @@ object Atom:
   end createC2Cpg
 
   private def createJimple2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-      new Jimple2Cpg().createCpgWithOverlays(
-        JimpleConfig(android = androidJarPath, fullResolver = true)
-            .withRecurse(true)
-            .withDepth(10)
-            .withInputPath(config.inputPath.pathAsString)
-            .withOutputPath(outputAtomFile)
-            .withFullResolver(true)
-      )
+    val baseConfig = JimpleConfig(android = androidJarPath, fullResolver = true)
+        .withRecurse(true)
+        .withDepth(10)
+        .withInputPath(config.inputPath.pathAsString)
+        .withOutputPath(outputAtomFile)
+        .withFullResolver(true)
+    val finalConfig = ignoredFilesRegexFromEnv("CHEN_JIMPLE_IGNORE_DIRS") match
+      case Some(regex) => baseConfig.withIgnoredFilesRegex(regex)
+      case None        => baseConfig
+    new Jimple2Cpg().createCpgWithOverlays(finalConfig)
 
   private def createJavaSrc2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
       new JavaSrc2Cpg().createCpgWithOverlays(
@@ -771,7 +831,7 @@ object Atom:
           delombokMode = Some(DEFAULT_DELOMBOK_MODE)
         )
             .withInputPath(config.inputPath.pathAsString)
-            .withIgnoredFilesRegex(".*(target|build)/(generated|intermediates|outputs|tmp).*")
+            .withIgnoredFilesRegex(ignoredFilesRegex(JAVA_IGNORE_REGEX, "CHEN_JAVA_IGNORE_DIRS"))
             .withOutputPath(outputAtomFile)
       )
 
@@ -782,6 +842,7 @@ object Atom:
           .withInputPath(config.inputPath.pathAsString)
           .withOutputPath(outputAtomFile)
           .withFullResolver(true)
+          .withIgnoredFilesRegex(ignoredFilesRegex("$^", "CHEN_SCALA_IGNORE_DIRS"))
           .withOnlyClasses(true)
           .withDepth(1)
           .withRecurse(true)
@@ -818,9 +879,16 @@ object Atom:
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
         .withFlow(config.language.equalsIgnoreCase("FLOW"))
-    val finalConfig = sys.env.get("CHEN_ASTGEN_OUT") match
+    val astGenConfig = sys.env.get("CHEN_ASTGEN_OUT") match
       case Some(dir) => initialConfig.withAstGenOutDir(dir)
       case None      => initialConfig
+    val finalConfig = ignoredFilesRegexFromEnv(
+      "CHEN_JAVASCRIPT_IGNORE_DIRS",
+      "CHEN_JS_IGNORE_DIRS",
+      "CHEN_TYPESCRIPT_IGNORE_DIRS"
+    ) match
+      case Some(regex) => astGenConfig.withIgnoredFilesRegex(regex)
+      case None        => astGenConfig
     new JsSrc2Cpg()
         .createCpgWithOverlays(finalConfig)
         .map { ag =>
@@ -865,7 +933,7 @@ object Atom:
             .withInputPath(config.inputPath.pathAsString)
             .withOutputPath(outputAtomFile)
             .withDefaultIgnoredFilesRegex(List("\\..*".r))
-            .withIgnoredFilesRegex(".*(samples|examples|docs).*")
+            .withIgnoredFilesRegex(ignoredFilesRegex(PHP_IGNORE_REGEX, "CHEN_PHP_IGNORE_DIRS"))
       ).map { ag =>
         new PhpSetKnownTypesPass(ag).createAndApply()
         ag
@@ -876,7 +944,7 @@ object Atom:
         RubyConfig()
             .withInputPath(config.inputPath.pathAsString)
             .withOutputPath(outputAtomFile)
-            .withIgnoredFilesRegex(".*(docs|vendor|spec).*")
+            .withIgnoredFilesRegex(ignoredFilesRegex(RUBY_IGNORE_REGEX, "CHEN_RUBY_IGNORE_DIRS"))
       ).map { ag =>
           ag
       }
