@@ -96,24 +96,29 @@ object Atom:
     "virtualenvs",
     "venv",
     "benchmarks",
-    "tutorials",
-    "noxfile"
+    "tutorials"
   )
-  private val testIgnoreDirs = Seq("test", "tests", "mocks")
+  private val defaultPythonIgnorePathFragments = Seq("noxfile")
+  private val testIgnoreDirs                   = Seq("test", "tests", "mocks")
   private val ignoreTestDirs: Boolean =
       Option(System.getenv("CHEN_IGNORE_TEST_DIRS"))
           .exists(_.trim.equalsIgnoreCase("true"))
-  private val pythonIgnoreDirsEnv = "CHEN_PYTHON_IGNORE_DIRS"
+  private val pythonIgnoreDirsEnv                   = "CHEN_PYTHON_IGNORE_DIRS"
+  private val pythonSpecificIgnoreDirs: Seq[String] = envSpecificIgnoreDirs(pythonIgnoreDirsEnv)
   private val basePythonIgnoreDirs: Seq[String] =
-    val pythonSpecificIgnoreDirs = envSpecificIgnoreDirs(pythonIgnoreDirsEnv)
     val pythonBaseIgnoreDirs = pythonSpecificIgnoreDirs match
       case Seq() => defaultPythonIgnoreDirs
       case dirs  => dirs
     (pythonBaseIgnoreDirs ++ commonIgnoreDirs).distinct
   private val pyIgnoreDirs: Seq[String] = appendTestIgnoreDirs(basePythonIgnoreDirs)
+  private val pythonIgnorePathFragments: Seq[String] = pythonSpecificIgnoreDirs match
+    case Seq() => defaultPythonIgnorePathFragments
+    case _     => Seq.empty
   // This regex will be eventually passed to chen
-  private val pythonIgnoredFilesRegex: String = ignoredPathFragmentsRegex(pyIgnoreDirs)
-      .getOrElse("$^")
+  private val pythonIgnoredFilesRegex: String = combineIgnoredFilesRegex(
+    ignoredDirectoriesRegex(pyIgnoreDirs),
+    ignoredPathFragmentsRegex(pythonIgnorePathFragments)
+  )
 
   private def parseIgnoreDirs(value: String): Seq[String] =
       value.split(',').map(_.trim).filter(_.nonEmpty).toSeq

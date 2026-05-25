@@ -117,8 +117,8 @@ atom reachables --reuse-atom -o app.atom -s reachables.json -l java .
 | **CHEN_JIMPLE_IGNORE_DIRS**             | Comma-separated list of directories to ignore for the Jimple/JAR/Android/APK/DEX frontend.                                                                |
 | **CHEN_SCALA_IGNORE_DIRS**              | Comma-separated list of directories to ignore for the Scala frontend.                                                                                      |
 | **CHEN_JAVASCRIPT_IGNORE_DIRS**         | Comma-separated list of directories to ignore for the JavaScript, TypeScript, and Flow frontend.                                                          |
-| **CHEN_JS_IGNORE_DIRS**                 | Alias for JavaScript and TypeScript ignored directories.                                                                                                   |
-| **CHEN_TYPESCRIPT_IGNORE_DIRS**         | Alias for TypeScript ignored directories.                                                                                                                  |
+| **CHEN_JS_IGNORE_DIRS**                 | Alias for JavaScript, TypeScript, and Flow ignored directories.                                                                                            |
+| **CHEN_TYPESCRIPT_IGNORE_DIRS**         | Alias for TypeScript and Flow ignored directories.                                                                                                         |
 | **CHEN_PYTHON_IGNORE_DIRS**             | Comma-separated list of directories to ignore for Python. If unset, Atom uses Python's default ignored directories.                                        |
 | **CHEN_PHP_IGNORE_DIRS**                | Comma-separated list of additional directories to ignore for the PHP frontend.                                                                             |
 | **CHEN_RUBY_IGNORE_DIRS**               | Comma-separated list of additional directories to ignore for the Ruby frontend.                                                                            |
