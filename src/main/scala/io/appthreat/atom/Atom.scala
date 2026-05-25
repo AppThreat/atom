@@ -789,6 +789,10 @@ object Atom:
         extractArgBoolean(config, "enable-ast-cache", default = false) || onlyAstCache
     val defaultCacheDir = (config.inputPath / "ast_out").pathAsString
     val cacheDir        = extractArgString(config, "ast-cache-dir", default = defaultCacheDir)
+    val cIgnoreDirEnvVars =
+        if config.language.equalsIgnoreCase("CPP") || config.language.equalsIgnoreCase("C++") then
+          Seq("CHEN_C_IGNORE_DIRS", "CHEN_CPP_IGNORE_DIRS")
+        else Seq("CHEN_C_IGNORE_DIRS")
     val baseConfig = CConfig(
       includeComments = includeComments,
       logProblems = false,
@@ -798,9 +802,7 @@ object Atom:
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
         .withFunctionBodies(functionBodies)
-        .withIgnoredFilesRegex(
-          ignoredFilesRegex(COMMON_IGNORE_REGEX, "CHEN_C_IGNORE_DIRS", "CHEN_CPP_IGNORE_DIRS")
-        )
+        .withIgnoredFilesRegex(ignoredFilesRegex(COMMON_IGNORE_REGEX, cIgnoreDirEnvVars*))
         .withParseInactiveCode(parseInactive)
         .withImageLocations(imageLocations)
         .withIncludeTrivialExpressions(includeTrivialExpressions)
@@ -887,11 +889,15 @@ object Atom:
     val astGenConfig = sys.env.get("CHEN_ASTGEN_OUT") match
       case Some(dir) => initialConfig.withAstGenOutDir(dir)
       case None      => initialConfig
-    val finalConfig = ignoredFilesRegexFromEnv(
-      "CHEN_JAVASCRIPT_IGNORE_DIRS",
-      "CHEN_JS_IGNORE_DIRS",
-      "CHEN_TYPESCRIPT_IGNORE_DIRS"
-    ) match
+    val jsIgnoreDirEnvVars =
+        if config.language.equalsIgnoreCase("TS") || config.language.equalsIgnoreCase(
+            "TYPESCRIPT"
+          ) ||
+          config.language.equalsIgnoreCase("FLOW")
+        then
+          Seq("CHEN_JAVASCRIPT_IGNORE_DIRS", "CHEN_JS_IGNORE_DIRS", "CHEN_TYPESCRIPT_IGNORE_DIRS")
+        else Seq("CHEN_JAVASCRIPT_IGNORE_DIRS", "CHEN_JS_IGNORE_DIRS")
+    val finalConfig = ignoredFilesRegexFromEnv(jsIgnoreDirEnvVars*) match
       case Some(regex) => astGenConfig.withIgnoredFilesRegex(regex)
       case None        => astGenConfig
     new JsSrc2Cpg()
