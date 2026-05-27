@@ -58,13 +58,31 @@ ThisBuild / compile / javacOptions ++= Seq(
 
 Universal / topLevelDirectory := None
 
-// These jars can be excluded
+// These jars can be excluded from the distribution
 lazy val excludedNS = Seq(
+    // Build-time / REPL dependencies
     "org.scala-lang.scala3-compiler",
     "io.get-coursier",
     "com.michaelpollmeier.scala-repl-pp",
     "dev.scalapy.scalapy-core",
-    "dev.scalapy.scalapy-macros"
+    "dev.scalapy.scalapy-macros",
+    // Eclipse platform packages not needed by CDT at runtime
+    "org.eclipse.platform.org.eclipse.equinox.app",
+    "org.eclipse.platform.org.eclipse.equinox.preferences",
+    "org.eclipse.platform.org.eclipse.equinox.registry",
+    "org.eclipse.platform.org.eclipse.core.expressions",
+    "org.eclipse.platform.org.eclipse.core.contenttype",
+    "org.eclipse.platform.org.eclipse.core.filesystem",
+    "org.eclipse.platform.org.eclipse.core.resources",
+    // JSON/XML libraries not used by atom at runtime
+    "org.json4s",
+    "org.glassfish.jaxb",
+    "io.spray.spray-json",
+    // Bytecode manipulation not used by atom at runtime
+    "org.javassist.javassist",
+    "org.reflections.reflections",
+    // Scala XML module not used by atom at runtime
+    "org.scala-lang.modules.scala-xml"
 )
 
 Universal / mappings := (Universal / mappings).value.filterNot {
