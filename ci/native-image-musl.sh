@@ -125,6 +125,7 @@ echo "Building linux/${ARCH} musl native image with ${ENGINE} using ${IMAGE}"
   --entrypoint /bin/bash \
   -e HOME=/tmp/home \
   -e GITHUB_TOKEN=${GITHUB_TOKEN} \
+  -e ATOM_GRAALVM_LIBC=musl \
   -e COURSIER_CACHE=/tmp/home/.cache/coursier \
   -v "${REPO_ROOT}:/workspace" \
   -v "${SBT_CACHE_DIR}:/tmp/home/.sbt" \
