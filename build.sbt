@@ -1,12 +1,12 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.5.4"
+ThisBuild / version      := "2.5.5"
 ThisBuild / scalaVersion := "3.8.3"
 
-val chenVersion = "2.5.20"
+val chenVersion = "2.5.22"
 
 lazy val atom = Projects.atom
-
+resolvers += "Google Maven" at "https://maven.google.com/"
 libraryDependencies ++= Seq(
   "com.github.pathikrit" %% "better-files" % "3.9.2",
   "com.github.scopt"     %% "scopt"        % "4.1.0",
@@ -58,13 +58,28 @@ ThisBuild / compile / javacOptions ++= Seq(
 
 Universal / topLevelDirectory := None
 
-// These jars can be excluded
+// These jars can be excluded from the distribution
 lazy val excludedNS = Seq(
+    // Build-time / REPL dependencies
     "org.scala-lang.scala3-compiler",
     "io.get-coursier",
     "com.michaelpollmeier.scala-repl-pp",
     "dev.scalapy.scalapy-core",
-    "dev.scalapy.scalapy-macros"
+    "dev.scalapy.scalapy-macros",
+    // Eclipse platform packages not needed by CDT at runtime
+    "org.eclipse.platform.org.eclipse.equinox.app",
+    "org.eclipse.platform.org.eclipse.equinox.preferences",
+    "org.eclipse.platform.org.eclipse.equinox.registry",
+    "org.eclipse.platform.org.eclipse.core.expressions",
+    "org.eclipse.platform.org.eclipse.core.contenttype",
+    "org.eclipse.platform.org.eclipse.core.filesystem",
+    "org.eclipse.platform.org.eclipse.core.resources",
+    // JSON/XML libraries not used by atom at runtime
+    "org.json4s",
+    "org.glassfish.jaxb",
+    "io.spray.spray-json",
+    "org.reflections.reflections",
+    "org.scala-lang.modules.scala-xml"
 )
 
 Universal / mappings := (Universal / mappings).value.filterNot {
