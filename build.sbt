@@ -3,10 +3,10 @@ ThisBuild / organization := "io.appthreat"
 ThisBuild / version      := "2.5.4"
 ThisBuild / scalaVersion := "3.8.3"
 
-val chenVersion = "2.5.20"
+val chenVersion = "2.5.22"
 
 lazy val atom = Projects.atom
-
+resolvers += "Google Maven" at "https://maven.google.com/"
 libraryDependencies ++= Seq(
   "com.github.pathikrit" %% "better-files" % "3.9.2",
   "com.github.scopt"     %% "scopt"        % "4.1.0",
