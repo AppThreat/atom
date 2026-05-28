@@ -124,8 +124,7 @@ echo "Building linux/${ARCH} musl native image with ${ENGINE} using ${IMAGE}"
   --platform "linux/${ARCH}" \
   --entrypoint /bin/bash \
   -e HOME=/tmp/home \
-  -e GITHUB_TOKEN="${GITHUB_TOKEN}" \
-  -e ATOM_GRAALVM_LIBC=musl \
+  -e GITHUB_TOKEN=${GITHUB_TOKEN} \
   -e COURSIER_CACHE=/tmp/home/.cache/coursier \
   -v "${REPO_ROOT}:/workspace" \
   -v "${SBT_CACHE_DIR}:/tmp/home/.sbt" \
@@ -166,6 +165,6 @@ if [[ "${VERIFY_BINARY}" == true ]]; then
     -v "${REPO_ROOT}:/workspace" \
     -w /workspace \
     alpine:3.22 \
-    -c "${OUTPUT} --help >/dev/null"
+    -c "${OUTPUT} --help"
   echo "Verification passed."
 fi

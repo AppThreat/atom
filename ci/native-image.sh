@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 # bash ci/native-image.sh
-# Environment variables:
-#   ATOM_GRAALVM_LIBC=musl - Build a MUSL-linked binary (requires musl-dev package)
-
 # sdk use java 23.0.2-graalce
 
 echo "About to build the native image. This would take a few minutes ..."

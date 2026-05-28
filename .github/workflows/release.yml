@@ -333,7 +333,7 @@ jobs:
             target/graalvm-native-image/atom-linux-musl-amd64.sha512
 
   release-linux-musl-arm64:
-    if: github.repository_owner == 'appthreat'
+    if: false
     concurrency: release-linux-musl-arm64
     runs-on: ubuntu-22.04-arm
     permissions:
