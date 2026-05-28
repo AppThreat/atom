@@ -124,7 +124,7 @@ echo "Building linux/${ARCH} musl native image with ${ENGINE} using ${IMAGE}"
   --platform "linux/${ARCH}" \
   --entrypoint /bin/bash \
   -e HOME=/tmp/home \
-  -e GITHUB_TOKEN=${GITHUB_TOKEN} \
+  -e GITHUB_TOKEN="${GITHUB_TOKEN}" \
   -e ATOM_GRAALVM_LIBC=musl \
   -e COURSIER_CACHE=/tmp/home/.cache/coursier \
   -v "${REPO_ROOT}:/workspace" \
@@ -138,7 +138,7 @@ echo "Building linux/${ARCH} musl native image with ${ENGINE} using ${IMAGE}"
     set -euo pipefail
     microdnf install -y git findutils tar gzip unzip which >/dev/null
     if [ ! -f /usr/local/bin/sbt-launch.jar ]; then
-      curl -fsSL https://repo1.maven.org/maven2/org/scala-sbt/sbt-launch/1.11.7/sbt-launch-1.11.7.jar -o /usr/local/bin/sbt-launch.jar
+      curl -fsSL https://repo1.maven.org/maven2/org/scala-sbt/sbt-launch/1.12.11/sbt-launch-1.12.11.jar -o /usr/local/bin/sbt-launch.jar
     fi
     cat > /usr/local/bin/sbt <<"SBT"
 #!/usr/bin/env bash
