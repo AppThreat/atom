@@ -288,3 +288,89 @@ jobs:
           files: |
             target/graalvm-native-image/atom-darwin-arm64
             target/graalvm-native-image/atom-darwin-arm64.sha512
+
+  release-linux-musl-amd64:
+    if: github.repository_owner == 'appthreat'
+    concurrency: release-linux-musl-amd64
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: oras-project/setup-oras@38de303aac69abb66f3e6255b7198bff35f323e3  # v2.0.0
+      - run: |
+          wget https://github.com/upx/upx/releases/download/v5.0.1/upx-5.0.1-amd64_linux.tar.xz
+          tar -xvf upx-5.0.1-amd64_linux.tar.xz
+          chmod +x upx-5.0.1-amd64_linux/upx
+          sudo cp upx-5.0.1-amd64_linux/upx /usr/local/bin/
+          bash ci/native-image-musl.sh --arch amd64 --output target/graalvm-native-image/atom-linux-musl-amd64
+          /usr/local/bin/upx -9 --lzma target/graalvm-native-image/atom-linux-musl-amd64
+          docker run --rm -v "$(pwd):/workspace" -w /workspace alpine:3.22 /bin/sh -c "target/graalvm-native-image/atom-linux-musl-amd64 --help"
+          sha512sum target/graalvm-native-image/atom-linux-musl-amd64 > target/graalvm-native-image/atom-linux-musl-amd64.sha512
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload atom to ghcr
+        run: |
+          cd target/graalvm-native-image
+          echo $GITHUB_TOKEN | oras login ghcr.io -u $GITHUB_USERNAME --password-stdin
+          oras push ghcr.io/appthreat/atom-linux-musl-amd64:v2 \
+            --artifact-type application/vnd.oras.config.v1+json \
+            ./atom-linux-musl-amd64:application/vnd.appthreat.atom.layer.v1+tar \
+            ./atom-linux-musl-amd64.sha512:application/vnd.appthreat.atom.layer.v1+tar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
+        with:
+          files: |
+            target/graalvm-native-image/atom-linux-musl-amd64
+            target/graalvm-native-image/atom-linux-musl-amd64.sha512
+
+  release-linux-musl-arm64:
+    if: github.repository_owner == 'appthreat'
+    concurrency: release-linux-musl-arm64
+    runs-on: ubuntu-22.04-arm
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: oras-project/setup-oras@38de303aac69abb66f3e6255b7198bff35f323e3  # v2.0.0
+      - run: |
+          wget https://github.com/upx/upx/releases/download/v5.0.1/upx-5.0.1-arm64_linux.tar.xz
+          tar -xvf upx-5.0.1-arm64_linux.tar.xz
+          chmod +x upx-5.0.1-arm64_linux/upx
+          sudo cp upx-5.0.1-arm64_linux/upx /usr/local/bin/
+          bash ci/native-image-musl.sh --arch arm64 --output target/graalvm-native-image/atom-linux-musl-arm64
+          /usr/local/bin/upx -9 --lzma target/graalvm-native-image/atom-linux-musl-arm64
+          docker run --rm -v "$(pwd):/workspace" -w /workspace alpine:3.22 /bin/sh -c "target/graalvm-native-image/atom-linux-musl-arm64 --help"
+          sha512sum target/graalvm-native-image/atom-linux-musl-arm64 > target/graalvm-native-image/atom-linux-musl-arm64.sha512
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload atom to ghcr
+        run: |
+          cd target/graalvm-native-image
+          echo $GITHUB_TOKEN | oras login ghcr.io -u $GITHUB_USERNAME --password-stdin
+          oras push ghcr.io/appthreat/atom-linux-musl-arm64:v2 \
+            --artifact-type application/vnd.oras.config.v1+json \
+            ./atom-linux-musl-arm64:application/vnd.appthreat.atom.layer.v1+tar \
+            ./atom-linux-musl-arm64.sha512:application/vnd.appthreat.atom.layer.v1+tar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
+        with:
+          files: |
+            target/graalvm-native-image/atom-linux-musl-arm64
+            target/graalvm-native-image/atom-linux-musl-arm64.sha512

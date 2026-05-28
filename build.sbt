@@ -144,13 +144,14 @@ credentials +=
     )
 
 // Mandrel-based builds are released under version 2 of the GNU General Public License with the “Classpath” Exception - https://github.com/graalvm/mandrel/blob/default/LICENSE
+val libcOptions = if (sys.env.getOrElse("ATOM_GRAALVM_LIBC", "glibc") == "musl") Seq("--libc=musl") else Seq.empty
 graalVMNativeImageOptions := Seq(
   "-H:+UnlockExperimentalVMOptions",
   "-R:MaximumHeapSizePercent=90", // Reduce for more predictable and deterministic slicing
   "--gc=epsilon",
   "--initialize-at-build-time=io.appthreat.*",
   "--no-fallback"
-)
+) ++ libcOptions
 
 // Requires Oracle Enterprise License to use G1 and pgo
 // graalVMNativeImageOptions := Seq("-H:+UnlockExperimentalVMOptions", "-H:-UseCompressedReferences", "-march=native", "--enable-preview", "--gc=G1", "--initialize-at-build-time=io.appthreat.*", "--no-fallback")
