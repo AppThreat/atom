@@ -78,10 +78,7 @@ lazy val excludedNS = Seq(
     "org.json4s",
     "org.glassfish.jaxb",
     "io.spray.spray-json",
-    // Bytecode manipulation not used by atom at runtime
-    "org.javassist.javassist",
     "org.reflections.reflections",
-    // Scala XML module not used by atom at runtime
     "org.scala-lang.modules.scala-xml"
 )
 
