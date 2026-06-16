@@ -34,6 +34,19 @@ object ReachableSlicing:
   private val CRYPTO_ALGORITHM_TAG = "crypto-algorithm"
   private val PURL_PREFIX          = "pkg.*"
 
+  // JVM/Android privacy egress: sensitive data on the device flowing out to known
+  // trackers, adware and internet-facing services (cloud, AI/LLM, social, ...), or
+  // into a local/on-device AI model (on-device-ai).
+  private val SENSITIVE_SOURCE_TAG = "(sensitive-data|pii|phi-.*|pci-.*)"
+  private val EGRESS_SINK_TAG      = "(service-egress|on-device-ai|tracker|adware)"
+
+  // JVM/Android remote ingress: content fetched from a remote service onto the device
+  // (download / read response body) reaching a device-side sink (file write, code
+  // execution, deserialization, reflection, framework output, sql).
+  private val INGRESS_SOURCE_TAG = "service-ingress"
+  private val INGRESS_SINK_TAG =
+      "(file-io|code-execution|reflection|serialization|sql|framework-output)"
+
   private val JVM_BASED_LANGUAGES =
       Set(Languages.JAVA, Languages.JAVASRC, "JAR", "JIMPLE", "ANDROID", "APK", "DEX")
   private val DYNAMIC_LANGUAGES =
@@ -60,9 +73,16 @@ object ReachableSlicing:
     chunkSize: Int = DEFAULT_CHUNK_SIZE
   ): Unit =
     val language = atom.metaData.language.head
+    // The various collectors overlap (e.g. a default-tag flow may also be a privacy flow), so the
+    // same path can be produced more than once. Deduplicate paths by their node-id signature, and
+    // also drop paths that are a contiguous sub-sequence of an already-seen (longer) path sharing
+    // the same source and sink, which removes near-duplicate partial flows.
+    val seenSignatures = scala.collection.mutable.HashSet.empty[String]
+    val seenEndpoints  = scala.collection.mutable.HashSet.empty[String]
     val flowIterator = collectFlowSlices(atom, config, language)
         .iterator
         .flatten
+        .filter(isUniqueFlow(_, seenSignatures, seenEndpoints))
         .map(toSlice)
 
     val chunkedIterator = flowIterator.grouped(chunkSize).zipWithIndex
@@ -109,8 +129,80 @@ object ReachableSlicing:
       sinkTagRegex
     )
 
-    basicFlows ++ defaultFlows ++ cryptoFlows ++ languageFlows
+    val privacyFlows = collectJvmDataPrivacyFlows(atom, language)
+    val ingressFlows = collectJvmRemoteIngressFlows(atom, language)
+
+    basicFlows ++ defaultFlows ++ cryptoFlows ++ languageFlows ++ privacyFlows ++ ingressFlows
   end collectFlowSlices
+
+  /** Collects flows where sensitive/PII data on the device reaches a data-egress sink (trackers,
+    * adware, or internet-facing service SDKs). Only runs for JVM/Android frontends, where the
+    * [[io.appthreat.x2cpg.passes.taggers.PiiTagsPass]], `TrackersTagsPass` and
+    * `AndroidServicesTagsPass` produce the relevant tags.
+    */
+  private def collectJvmDataPrivacyFlows(
+    atom: Cpg,
+    language: String
+  ): Iterator[Iterator[Path]] =
+    if !JVM_BASED_LANGUAGES.contains(language) then return Iterator.empty
+
+    def sensitiveLiterals    = atom.tag.name(SENSITIVE_SOURCE_TAG).literal
+    def sensitiveIdentifiers = atom.tag.name(SENSITIVE_SOURCE_TAG).identifier
+    def sensitiveParameters  = atom.tag.name(SENSITIVE_SOURCE_TAG).parameter
+
+    def fromSensitive(sinks: Traversal[CfgNode]) =
+        sinks.reachableByFlows(sensitiveLiterals, sensitiveIdentifiers, sensitiveParameters)
+
+    Iterator(
+      fromSensitive(atom.tag.name(EGRESS_SINK_TAG).call),
+      fromSensitive(atom.tag.name(EGRESS_SINK_TAG).call.argument.isIdentifier),
+      fromSensitive(atom.tag.name(EGRESS_SINK_TAG).call.argument.isLiteral),
+      fromSensitive(atom.tag.name(EGRESS_SINK_TAG).parameter)
+    )
+  end collectJvmDataPrivacyFlows
+
+  /** Collects ingress flows where remote content fetched onto the device (tagged `service-ingress`
+    * by the `AndroidServicesTagsPass` on HTTP/cloud data-receiving calls) reaches a device-side
+    * sink: file write, code execution, deserialization, reflection, framework output or SQL. This
+    * models remote-content -> device flows (download / fetch), the inverse of the device -> egress
+    * privacy flows. Only runs for JVM/Android frontends.
+    */
+  private def collectJvmRemoteIngressFlows(
+    atom: Cpg,
+    language: String
+  ): Iterator[Iterator[Path]] =
+    if !JVM_BASED_LANGUAGES.contains(language) then return Iterator.empty
+
+    def ingressSources = atom.tag.name(INGRESS_SOURCE_TAG).call
+
+    def toDeviceSink(sinks: Traversal[CfgNode]) = sinks.reachableByFlows(ingressSources)
+
+    Iterator(
+      toDeviceSink(atom.tag.name(INGRESS_SINK_TAG).call),
+      toDeviceSink(atom.tag.name(INGRESS_SINK_TAG).call.argument.isIdentifier),
+      toDeviceSink(atom.tag.name(INGRESS_SINK_TAG).parameter)
+    )
+
+  /** Returns true if the path is worth keeping. Drops:
+    *   - exact duplicates (same node-id sequence), which arise because collectors overlap, and
+    *   - same-endpoint, same-length variants (typically SSA/operator noise around an identical
+    *     source -> sink flow), keeping the first one seen.
+    *
+    * Paths of differing length between the same endpoints are retained as distinct flows.
+    */
+  private def isUniqueFlow(
+    path: Path,
+    seenSignatures: scala.collection.mutable.HashSet[String],
+    seenEndpoints: scala.collection.mutable.HashSet[String]
+  ): Boolean =
+    val elems = path.elements
+    if elems.isEmpty then false
+    else
+      val signature = elems.map(_.id()).mkString("-")
+      if !seenSignatures.add(signature) then false
+      else
+        val endpointKey = s"${elems.head.id()}->${elems.last.id()}#${elems.size}"
+        seenEndpoints.add(endpointKey)
 
   private def collectBasicFlows(
     atom: Cpg,
