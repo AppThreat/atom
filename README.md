@@ -25,7 +25,7 @@ and more.
 - H (C/C++ Header and pre-processed .i files alone)
 - Java (Requires compilation)
 - Jar
-- Android APK (Requires Android SDK. Set the environment variable `ANDROID_HOME` or use the container image.)
+- Android APK and split bundles (.apkm, .apks, .xapk). Requires Android SDK. Set the environment variable `ANDROID_HOME` or use the container image.
 - JavaScript
 - Flow
 - TypeScript
@@ -148,6 +148,21 @@ atom -o app.atom -l jar <jar file>
 export ANDROID_HOME=<path to android sdk>
 atom -o app.atom -l apk <apk file>
 ```
+
+Split bundles are also supported. A `.apkm`, `.apks`, or `.xapk` file is unpacked automatically and
+the apks that carry dalvik bytecode are analysed.
+
+```shell
+export ANDROID_HOME=<path to android sdk>
+atom -o app.atom -l apk <apkm file>
+```
+
+When slicing an Android apk, atom runs the chen Android tagger passes over the code property graph.
+These passes attach semantic tags to the flows in a reachable slice, including personally
+identifiable information such as `pii-email` and `pii-device-id`, regulated data such as `pci-dss`,
+`gdpr`, and `phi-medical`, secrets, third party trackers tagged as `tracker`, and network direction
+tagged as `service-egress`, `service-ingress`, and `on-device-ai`. atom-tools consumes these tags to
+attribute reachable services and to enrich the CycloneDX SBOM produced by blint.
 
 ### Create reachables slice for a java project.
 
