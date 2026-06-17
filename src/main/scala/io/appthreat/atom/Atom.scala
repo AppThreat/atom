@@ -31,7 +31,14 @@ import io.appthreat.pysrc2cpg.{
 import io.appthreat.ruby2atom.{Ruby2Atom, Config as RubyConfig}
 import io.appthreat.x2cpg.passes.base.AstLinkerPass
 import io.appthreat.x2cpg.passes.frontend.XTypeRecoveryConfig
-import io.appthreat.x2cpg.passes.taggers.{CdxPass, ChennaiTagsPass, EasyTagsPass}
+import io.appthreat.x2cpg.passes.taggers.{
+    AndroidServicesTagsPass,
+    CdxPass,
+    ChennaiTagsPass,
+    EasyTagsPass,
+    PiiTagsPass,
+    TrackersTagsPass
+}
 import io.appthreat.x2cpg.utils.ExternalCommand
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
 import io.shiftleft.codepropertygraph.generated.{Cpg, Languages}
@@ -52,6 +59,9 @@ object Atom:
   val DEFAULT_MAX_DEFS: Int         = 2000
   val FRAMEWORK_INPUT_TAG: String   = "framework-input"
   val FRAMEWORK_OUTPUT_TAG: String  = "framework-output"
+  // java, jar and jimple frontends (jimple covers Android apk/dex output)
+  val JVM_FRONTENDS: Set[String] =
+      Set(Languages.JAVA, Languages.JAVASRC, "JAR", "JIMPLE", "ANDROID", "APK", "DEX")
   val DEFAULT_SOURCE_TAGS: Seq[String] =
       Seq(
         FRAMEWORK_INPUT_TAG,
@@ -59,7 +69,12 @@ object Atom:
         "cli-source",
         "driver-source",
         "framework",
-        "event"
+        "event",
+        // sensitive data residing on the device (JVM/Android taggers)
+        "sensitive-data",
+        "pii",
+        // remote content fetched onto the device (download / read response body)
+        "service-ingress"
       )
   val DEFAULT_SINK_TAGS: Seq[String] =
       Seq(
@@ -81,7 +96,13 @@ object Atom:
         "mail",
         "framework",
         "api",
-        "pkg.*"
+        "pkg.*",
+        // device-data egress sinks (JVM/Android taggers)
+        "service-egress",
+        // sensitive data reaching a local/on-device AI model is privacy relevant too
+        "on-device-ai",
+        "tracker",
+        "adware"
       )
   private val COMMON_IGNORE_REGEX = ".*(docs|example|samples|mocks|Documentation|demos).*"
   private val JAVA_IGNORE_REGEX   = ".*(target|build)/(generated|intermediates|outputs|tmp).*"
@@ -970,6 +991,7 @@ object Atom:
               new CdxPass(atom).createAndApply()
               new EasyTagsPass(atom).createAndApply()
               new ChennaiTagsPass(atom).createAndApply()
+              applyJvmTaggers(atom)
               Right(())
             catch
               case npe: NullPointerException
@@ -983,7 +1005,19 @@ object Atom:
                   )
         case _ =>
             new EasyTagsPass(atom).createAndApply()
+            applyJvmTaggers(atom)
             Right(())
+
+  /** JVM/Android-focused taggers (java, jar, jimple frontends): PII / sensitive data, known
+    * trackers & adware SDKs, and device-data egress to internet-facing services. Each pass guards
+    * its own scope, but we additionally gate here so the work is skipped for other languages.
+    */
+  private def applyJvmTaggers(atom: Cpg): Unit =
+    val language = atom.metaData.language.headOption.getOrElse("")
+    if JVM_FRONTENDS.contains(language) then
+      new PiiTagsPass(atom).createAndApply()
+      new TrackersTagsPass(atom).createAndApply()
+      new AndroidServicesTagsPass(atom).createAndApply()
 
   private def needsDataFlowEnhancement(config: AtomConfig): Boolean =
       !config.reuseAtom && (config.dataDeps ||
