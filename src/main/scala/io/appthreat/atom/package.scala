@@ -15,6 +15,7 @@ package object atom:
     var dataDeps: Boolean                 = false
     var removeAtom: Boolean               = false
     var maxNumDef: Int                    = DEFAULT_MAX_DEFS
+    var useFluxEngine: Boolean            = false
     var exportAtom: Boolean               = false
     var reuseAtom: Boolean                = false
     var exportDir: String                 = DEFAULT_EXPORT_DIR
@@ -55,6 +56,10 @@ package object atom:
 
     def withMaxNumDef(x: Int): AtomConfig =
       this.maxNumDef = x
+      this
+
+    def withUseFluxEngine(x: Boolean): AtomConfig =
+      this.useFluxEngine = x
       this
 
     def withFrontendArgs(args: Map[String, String]): AtomConfig =

@@ -69,7 +69,8 @@ package object slicing:
     mustEndAtExternalMethod: Boolean = true,
     excludeOperatorCalls: Boolean = true,
     sliceDepth: Int = 7,
-    sliceNodesLimit: Int = 200
+    sliceNodesLimit: Int = 200,
+    useFluxEngine: Boolean = false
   ) extends BaseConfig
 
   case class UsagesConfig(
@@ -83,7 +84,8 @@ package object slicing:
     sourceTag: Seq[String],
     sinkTag: Seq[String],
     sliceDepth: Int,
-    includeCryptoFlows: Boolean
+    includeCryptoFlows: Boolean,
+    useFluxEngine: Boolean = false
   ) extends BaseConfig
 
   /** Adds extensions to modify a method traversal based on config options

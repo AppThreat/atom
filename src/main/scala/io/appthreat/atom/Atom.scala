@@ -327,6 +327,15 @@ object Atom:
             if x <= 0 then failure("`max-num-def` must be an integer larger than 0")
             else success
         )
+    opt[Unit]("flux")
+        .text(
+          "use the experimental Flux low-allocation data-flow engine - defaults to `false`"
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withUseFluxEngine(true)
+              case _                  => c
+        )
     arg[String]("input")
         .optional()
         .text("source file or directory")
@@ -648,7 +657,8 @@ object Atom:
               config.sinkPatternFilter,
               config.excludeOperatorCalls,
               config.mustEndAtExternalMethod,
-              config.sliceDepth
+              config.sliceDepth,
+              useFluxEngine = config.useFluxEngine
             )
         case config: AtomUsagesConfig =>
             UsagesConfig(
@@ -662,7 +672,8 @@ object Atom:
               config.sourceTag,
               config.sinkTag,
               config.sliceDepth,
-              config.includeCryptoFlows
+              config.includeCryptoFlows,
+              useFluxEngine = config.useFluxEngine
             )
         case _ => x
       ).withInputPath(x.inputPath)
@@ -673,7 +684,7 @@ object Atom:
           .withMethodAnnotationFilter(x.methodAnnotationFilter)
 
   private def loadFromOdb(filename: String): Try[Cpg] =
-    val odbConfig = overflowdb.Config.withoutOverflow().withStorageLocation(filename)
+    val odbConfig = overflowdb.Config.withDefaults().withStorageLocation(filename)
         .withHeapPercentageThreshold(90)
     val config = CpgLoaderConfig().withOverflowConfig(odbConfig).doNotCreateIndexesOnLoad
     try
@@ -984,9 +995,17 @@ object Atom:
   private def enhanceCpg(config: AtomConfig, atom: Cpg): Either[String, Unit] =
       config match
         case x: AtomConfig if needsDataFlowEnhancement(x) =>
-            println("Generating data-flow dependencies from atom. Please wait ...")
+            if x.useFluxEngine then
+              println(
+                "Generating data-flow dependencies from atom using the Flux engine. Please wait ..."
+              )
+            else
+              println("Generating data-flow dependencies from atom. Please wait ...")
             try
-              new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
+              new OssDataFlow(new OssDataFlowOptions(
+                maxNumberOfDefinitions = x.maxNumDef,
+                useFluxEngine = x.useFluxEngine
+              ))
                   .run(new LayerCreatorContext(atom))
               new CdxPass(atom).createAndApply()
               new EasyTagsPass(atom).createAndApply()
@@ -1003,6 +1022,7 @@ object Atom:
                   Left(
                     s"Failed to enhance CPG: ${ex.getMessage} ${ex.getStackTrace.take(40).mkString("\n")}"
                   )
+            end try
         case _ =>
             new EasyTagsPass(atom).createAndApply()
             applyJvmTaggers(atom)

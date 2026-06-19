@@ -18,9 +18,11 @@ import io.circe.syntax.*
 
 object ReachableSlicing:
 
-  implicit val semantics: Semantics      = DefaultSemantics()
-  private val engineConfig: EngineConfig = EngineConfig()
-  implicit val context: EngineContext    = EngineContext(semantics, engineConfig)
+  implicit val semantics: Semantics = DefaultSemantics()
+  // Reassigned per run from the slice config so `--flux` (ReachablesConfig.useFluxEngine) opts the
+  // backward query engine into Flux mode (shared cross-sink summary cache). Reachable slicing runs
+  // one project at a time, so a run-scoped var is safe.
+  implicit var context: EngineContext = EngineContext(semantics, EngineConfig())
 
   private val API_TAG              = "api"
   private val FRAMEWORK_TAG        = "framework"
@@ -73,6 +75,7 @@ object ReachableSlicing:
     chunkSize: Int = DEFAULT_CHUNK_SIZE
   ): Unit =
     val language = atom.metaData.language.head
+    context = EngineContext(semantics, EngineConfig(useFluxEngine = config.useFluxEngine))
     // The various collectors overlap (e.g. a default-tag flow may also be a privacy flow), so the
     // same path can be produced more than once. Deduplicate paths by their node-id signature, and
     // also drop paths that are a contiguous sub-sequence of an already-seen (longer) path sharing

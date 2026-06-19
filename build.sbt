@@ -3,7 +3,7 @@ ThisBuild / organization := "io.appthreat"
 ThisBuild / version      := "3.0.0"
 ThisBuild / scalaVersion := "3.8.4"
 
-val chenVersion = "2.5.24"
+val chenVersion = "3.0.0"
 
 lazy val atom = Projects.atom
 resolvers += "Google Maven" at "https://maven.google.com/"
@@ -43,16 +43,16 @@ Compile / doc / scalacOptions ++= Seq("-doc-title", "atom apidocs", "-doc-versio
 ThisBuild / scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
   "--release",
-  "21"
+  "23"
 )
 
 ThisBuild / compile / javacOptions ++= Seq(
   "-Xlint",
-  "--release=21"
+  "--release=23"
 ) ++ {
     // fail early if users with JDK11 try to run this
     val javaVersion = sys.props("java.specification.version").toFloat
-    assert(javaVersion.toInt >= 21, s"this build requires JDK21+ - you're using $javaVersion")
+    assert(javaVersion.toInt >= 23, s"this build requires JDK23+ - you're using $javaVersion")
     Nil
 }
 

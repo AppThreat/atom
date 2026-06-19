@@ -13,7 +13,8 @@ object OssDataFlow:
 
 class OssDataFlowOptions(
   var maxNumberOfDefinitions: Int = 2000,
-  var extraFlows: List[FlowSemantic] = List.empty[FlowSemantic]
+  var extraFlows: List[FlowSemantic] = List.empty[FlowSemantic],
+  var useFluxEngine: Boolean = false
 ) extends LayerCreatorOptions {}
 
 class OssDataFlow(opts: OssDataFlowOptions)(implicit
@@ -24,8 +25,9 @@ class OssDataFlow(opts: OssDataFlowOptions)(implicit
   override val description: String = OssDataFlow.description
 
   override def create(context: LayerCreatorContext, storeUndoInfo: Boolean): Unit =
-    val cpg                 = context.cpg
-    val enhancementExecList = Iterator(new DataDepsPass(cpg, opts.maxNumberOfDefinitions))
+    val cpg = context.cpg
+    val enhancementExecList =
+        Iterator(new DataDepsPass(cpg, opts.maxNumberOfDefinitions, opts.useFluxEngine))
     enhancementExecList.zipWithIndex.foreach { case (pass, index) =>
         runPass(pass, context, storeUndoInfo, index)
     }
