@@ -112,6 +112,7 @@ Usage: atom [parsedeps|data-flow|usages|reachables] [options] [input]
   --method-annotation-filter <value>
                            filters in slices that go through methods with specific annotations on the methods. Uses regex.
   --max-num-def <value>    maximum number of definitions in per-method data flow calculation - defaults to 2000
+  --legacy-dataflow        use the classic data-flow engine and disable mini-graph fragment caching. By default atom uses the faster, lower-allocation Flux engine with fragment caching enabled.
 Command: parsedeps
 Extract dependencies from the build file and imports
 Command: data-flow [options]
@@ -130,6 +131,18 @@ Extract reachable data-flow slices based on automated framework tags
   --include-crypto         includes crypto library flows - defaults to false.
   --help                   display this help message
 ```
+
+## Data-flow engine
+
+atom computes data dependencies with the **Flux** engine by default — a low-allocation,
+reaching-definitions solver that produces the same `REACHING_DEF` edges as the classic engine while
+using far less memory and GC time on large (e.g. bundled/transpiled JavaScript) methods. Per-file
+mini-graph (fragment) AST caching is also enabled by default, so unchanged files are restored from a
+`.chen` cache instead of being re-parsed.
+
+Pass `--legacy-dataflow` to fall back to the classic engine and disable fragment caching (useful for
+A/B comparisons or troubleshooting). Caching can also be controlled independently via the
+`-Dchen.cache.disabled=true` system property.
 
 ## Sample Invocations
 
