@@ -25,7 +25,7 @@ jobs:
           persist-credentials: false
       - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af  # v1.313.0
         with:
-          ruby-version: '4.0.0'
+          ruby-version: '4.0.5'
           bundler-cache: false
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
         with:
@@ -86,6 +86,9 @@ jobs:
         run: |
           cd chen
           sbt publishLocal
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
       - run: |
           sbt scalafmtCheck test stage createDistribution
           cd wrapper/nodejs

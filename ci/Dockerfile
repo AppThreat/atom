@@ -4,18 +4,18 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.authors="Team AppThreat <cloud@appthreat.com>" \
       org.opencontainers.image.source="https://github.com/appthreat/atom" \
       org.opencontainers.image.url="https://github.com/appthreat/atom" \
-      org.opencontainers.image.version="2.5.x" \
+      org.opencontainers.image.version="3.0.x" \
       org.opencontainers.image.vendor="appthreat" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="atom" \
       org.opencontainers.image.description="Container image for AppThreat atom" \
       org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -o /app/app.atom -l java /app"
 
-ARG JAVA_VERSION=23.0.2-tem
-ARG MAVEN_VERSION=3.9.10
-ARG SCALA_VERSION=3.7.4
-ARG SBT_VERSION=1.11.7
-ARG RUBY_VERSION=4.0.1
+ARG JAVA_VERSION=26.0.1-tem
+ARG MAVEN_VERSION=3.9.16
+ARG SCALA_VERSION=3.8.4
+ARG SBT_VERSION=1.12.12
+ARG RUBY_VERSION=4.0.5
 
 ENV MAVEN_VERSION=$MAVEN_VERSION \
     MAVEN_HOME="/opt/maven/${MAVEN_VERSION}" \

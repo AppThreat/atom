@@ -49,7 +49,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af  # v1.313.0
       with:
-        ruby-version: '4.0.0'
+        ruby-version: '4.0.5'
         bundler-cache: false
     - name: Prepare 4.0.0 version
       run: |
@@ -85,7 +85,7 @@ jobs:
           atom --help
       - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af  # v1.313.0
         with:
-          ruby-version: '4.0.0'
+          ruby-version: '4.0.5'
           bundler-cache: false
       - name: Check rbastgen 4.0.0
         run: |

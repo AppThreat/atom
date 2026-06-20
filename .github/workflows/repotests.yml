@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - release/3.x
   workflow_dispatch:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -16,7 +17,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, windows-latest]
-        java-version: ['21', '25']
+        java-version: ['23', '25', '26']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
@@ -131,7 +132,7 @@ jobs:
           python-version: '3.12'
       - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af  # v1.313.0
         with:
-          ruby-version: '4.0.0'
+          ruby-version: '4.0.5'
           bundler-cache: false
         if: runner.os != 'Windows'
       - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af  # v1.313.0
@@ -146,6 +147,9 @@ jobs:
         run: |
           cd chen
           sbt publishLocal
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
       - run: |
           sbt stage createDistribution
           python -m pip install atom-tools

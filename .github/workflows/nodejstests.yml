@@ -13,9 +13,9 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
-        java-version: ['21', '25']
-        node-version: ['20.x', '25.x']
-        ruby: ["4.0.0"]
+        java-version: ['25']
+        node-version: ['24.x', '26.x']
+        ruby: ["4.0.5"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
@@ -112,6 +112,9 @@ jobs:
         run: |
           cd chen
           sbt publishLocal
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
       - name: atom node tests
         run: |
           sbt stage createDistribution
@@ -214,6 +217,9 @@ jobs:
         run: |
           cd chen
           sbt publishLocal
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
       - name: build
         shell: pwsh
         run: |

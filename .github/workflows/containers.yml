@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - release/3.x
     tags:
       - 'v*'
   workflow_dispatch:
@@ -73,6 +74,13 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Clone chen
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+        with:
+          repository: 'appthreat/chen'
+          ref: 'release/3.x'
+          path: 'chen'
+          persist-credentials: false
       - name: Set up JDK
         uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287  # v5.3.0
         with:
@@ -100,6 +108,13 @@ jobs:
             ~/.coursier
           key: ${{ runner.os }}-sbt-${{ hashfiles('**/build.sbt') }}
           lookup-only: true
+      - name: Build and publish chen locally
+        run: |
+          cd chen
+          sbt publishLocal
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
       - run: |
           sbt stage createDistribution
         env:
