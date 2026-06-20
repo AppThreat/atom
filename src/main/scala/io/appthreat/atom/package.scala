@@ -15,7 +15,10 @@ package object atom:
     var dataDeps: Boolean                 = false
     var removeAtom: Boolean               = false
     var maxNumDef: Int                    = DEFAULT_MAX_DEFS
-    var useFluxEngine: Boolean            = false
+    // Flux data-flow engine and mini-graph fragment caching are the defaults; `--legacy-dataflow`
+    // opts back into the classic engine (and disables fragment caching).
+    var useFluxEngine: Boolean            = true
+    var cacheFragments: Boolean           = true
     var exportAtom: Boolean               = false
     var reuseAtom: Boolean                = false
     var exportDir: String                 = DEFAULT_EXPORT_DIR
@@ -60,6 +63,10 @@ package object atom:
 
     def withUseFluxEngine(x: Boolean): AtomConfig =
       this.useFluxEngine = x
+      this
+
+    def withCacheFragments(x: Boolean): AtomConfig =
+      this.cacheFragments = x
       this
 
     def withFrontendArgs(args: Map[String, String]): AtomConfig =

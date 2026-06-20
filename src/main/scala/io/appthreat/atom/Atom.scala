@@ -327,14 +327,16 @@ object Atom:
             if x <= 0 then failure("`max-num-def` must be an integer larger than 0")
             else success
         )
-    opt[Unit]("flux")
+    opt[Unit]("legacy-dataflow")
         .text(
-          "use the experimental Flux low-allocation data-flow engine - defaults to `false`"
+          "use the classic data-flow engine and disable mini-graph fragment caching. By default " +
+              "atom uses the faster, lower-allocation Flux engine with fragment caching enabled."
         )
         .action((_, c) =>
             c match
-              case config: AtomConfig => config.withUseFluxEngine(true)
-              case _                  => c
+              case config: AtomConfig =>
+                  config.withUseFluxEngine(false).withCacheFragments(false)
+              case _ => c
         )
     arg[String]("input")
         .optional()
@@ -699,6 +701,10 @@ object Atom:
   private def generateForLanguage(language: String, config: AtomConfig): Either[String, String] =
     val outputAtomFile = config.outputAtomFile.pathAsString
     val onlyAstCache   = extractArgBoolean(config, "only-ast-cache", default = false)
+    // Mini-graph fragment AST caching has its own opt-in (`--cache-fragments`), decoupled from
+    // the `--flux` data-flow engine so each improvement can be evaluated independently.
+    if config.cacheFragments then
+      io.appthreat.x2cpg.passes.frontend.CacheControl.enableFragments()
 
     getOrCreateAtom(language, config, outputAtomFile) match
       case Failure(exception) =>
@@ -714,6 +720,7 @@ object Atom:
               _ <- generateSlice(config, ag)
               _ <- closeCpg(ag)
             yield "Atom generation successful"
+  end generateForLanguage
 
   private def getOrCreateAtom(
     language: String,
@@ -856,9 +863,10 @@ object Atom:
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
         .withFullResolver(true)
-    val finalConfig = ignoredFilesRegexFromEnv("CHEN_JIMPLE_IGNORE_DIRS") match
+    val finalConfig = (ignoredFilesRegexFromEnv("CHEN_JIMPLE_IGNORE_DIRS") match
       case Some(regex) => baseConfig.withIgnoredFilesRegex(regex)
       case None        => baseConfig
+    )
     new Jimple2Cpg().createCpgWithOverlays(finalConfig)
 
   private def createJavaSrc2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
@@ -929,9 +937,10 @@ object Atom:
         then
           Seq("CHEN_JAVASCRIPT_IGNORE_DIRS", "CHEN_JS_IGNORE_DIRS", "CHEN_TYPESCRIPT_IGNORE_DIRS")
         else Seq("CHEN_JAVASCRIPT_IGNORE_DIRS", "CHEN_JS_IGNORE_DIRS")
-    val finalConfig = ignoredFilesRegexFromEnv(jsIgnoreDirEnvVars*) match
+    val finalConfig = (ignoredFilesRegexFromEnv(jsIgnoreDirEnvVars*) match
       case Some(regex) => astGenConfig.withIgnoredFilesRegex(regex)
       case None        => astGenConfig
+    )
     new JsSrc2Cpg()
         .createCpgWithOverlays(finalConfig)
         .map { ag =>
@@ -1019,9 +1028,19 @@ object Atom:
                   Left(s"CPG appears to be corrupted with broken references. " +
                       s"Try removing the atom file and regenerating it. Error: ${npe.getMessage}")
               case ex: Exception =>
-                  Left(
-                    s"Failed to enhance CPG: ${ex.getMessage} ${ex.getStackTrace.take(40).mkString("\n")}"
-                  )
+                  // Walk the full cause chain: OrderedParallelCpgPass wraps the real task
+                  // exception as a cause, so printing only `ex` hides the actual failure.
+                  val sb = new StringBuilder
+                  var cur: Throwable = ex
+                  var depth          = 0
+                  while cur != null && depth < 10 do
+                    sb.append(if depth == 0 then "" else "\nCaused by: ")
+                    sb.append(s"${cur.getClass.getName}: ${cur.getMessage}\n")
+                    sb.append(cur.getStackTrace.take(40).mkString("\n"))
+                    sb.append("\n")
+                    cur = cur.getCause
+                    depth += 1
+                  Left(s"Failed to enhance CPG: ${sb.toString}")
             end try
         case _ =>
             new EasyTagsPass(atom).createAndApply()

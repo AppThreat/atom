@@ -19,9 +19,9 @@ import io.circe.syntax.*
 object ReachableSlicing:
 
   implicit val semantics: Semantics = DefaultSemantics()
-  // Reassigned per run from the slice config so `--flux` (ReachablesConfig.useFluxEngine) opts the
-  // backward query engine into Flux mode (shared cross-sink summary cache). Reachable slicing runs
-  // one project at a time, so a run-scoped var is safe.
+  // Reassigned per run from the slice config (ReachablesConfig.useFluxEngine, default true; flipped
+  // off by `--legacy-dataflow`) so the backward query engine matches the chosen engine. Reachable
+  // slicing runs one project at a time, so a run-scoped var is safe.
   implicit var context: EngineContext = EngineContext(semantics, EngineConfig())
 
   private val API_TAG              = "api"
