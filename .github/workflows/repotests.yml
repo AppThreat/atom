@@ -200,8 +200,8 @@ jobs:
 
           ./atom.sh --remove-atom -o /tmp/play-scala-slick-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-slick-example
           ls -lh $GITHUB_WORKSPACE/repotests/play-samples/play-scala-slick-example
-          ./atom.sh --remove-atom -o /tmp/play-scala-rest-api-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example
-          ./atom.sh usages --extract-endpoints --remove-atom -o /tmp/play-scala-rest-api-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example --slice-outfile /tmp/scala-rest.usages.json
+          ./atom.sh -o /tmp/play-scala-rest-api-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example
+          ./atom.sh usages --extract-endpoints --reuse-atom -o /tmp/play-scala-rest-api-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example --slice-outfile /tmp/scala-rest.usages.json
           ls -lh $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example
           ./atom.sh --remove-atom -o /tmp/play-scala-grpc-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-grpc-example
           ls -lh $GITHUB_WORKSPACE/repotests/play-samples/play-scala-grpc-example

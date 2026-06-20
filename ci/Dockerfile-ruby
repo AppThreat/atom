@@ -14,7 +14,7 @@ LABEL maintainer="appthreat" \
 ARG RUBY_VERSION=4.0.5
 
 ENV RUBY_VERSION=$RUBY_VERSION \
-    PATH=/opt/bin:/opt/vendor/bin:${PATH}:/usr/local/bin/:/root/.local/bin:/root/.rbenv/bin:/root/.rbenv/versions/4.0.0/bin:
+    PATH=/opt/bin:/opt/vendor/bin:${PATH}:/usr/local/bin/:/root/.local/bin:/root/.rbenv/bin:/root/.rbenv/versions/4.0.5/bin:
 
 RUN microdnf install -y gcc git-core make  \
         wget bash glibc-common glibc-all-langpacks \
@@ -40,13 +40,13 @@ COPY --from=builder /root/.rbenv /root/.rbenv
 ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -XX:MinRAMPercentage=30 -XX:MaxRAMPercentage=90" \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING="utf-8" \
-    PATH=/opt/bin:${PATH}:/usr/local/bin/:/root/.local/bin:/root/.rbenv/bin:/root/.rbenv/versions/4.0.0/bin:
+    PATH=/opt/bin:${PATH}:/usr/local/bin/:/root/.local/bin:/root/.rbenv/bin:/root/.rbenv/versions/4.0.5/bin:
 WORKDIR /opt
 COPY ./target/atom.zip .
 COPY ./wrapper .
 
 RUN set -e; \
-    microdnf install -y unzip nodejs python3 python3-devel python3-pip java-21-openjdk-headless gcc git-core make \
+    microdnf install -y unzip nodejs python3 python3-devel python3-pip java-25-openjdk-headless gcc git-core make \
     && unzip -q atom.zip \
     && java --version \
     && python3 --version \
