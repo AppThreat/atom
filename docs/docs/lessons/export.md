@@ -1,39 +1,44 @@
-# Lesson 7: Graph Exportation Scopes and Formats
+# Lesson 7: Graph Export Scopes and Formats (`export`)
 
 ### Learning Objective
 
-Export either the full CPG or individual method subgraphs into standard serialization formats for visual analysis or machine learning pipelines.
+Export the full CPG, or individual method subgraphs, into standard serialization formats for visualization, graph databases, or machine-learning pipelines.
 
 ### Pre-requisites
 
-To follow this lesson, ensure the following software is installed on your system:
-
-- **JDK 23+**: Standard Java SE Development Kit.
-- **SBT 1.10+**: For compiling and running Atom.
-- **Pre-compiled Atom File**: An existing `app.atom` file.
-- **Visualization Tools**: Visualizers like Gephi (GEXF), Cytoscape, or Graphviz (DOT) to inspect the exported structures.
-- **Python Utilities (Optional)**: Libraries such as NetworkX or PyTorch Geometric if processing GNN or GraphML files.
+- **JDK 23+** and a built `atom`.
+- **A pre-compiled `app.atom`**.
+- **Optional viewers**: Gephi (GEXF), Cytoscape, Graphviz (DOT); NetworkX / PyTorch Geometric for GraphML/GNN.
 
 ### Conceptual Background
 
-To integrate with third-party visualization tools, graph databases, or neural network engines, the atom graph can be exported. Supported formats include DOT, GraphML, GEXF, GraphSON, Neo4j CSV, and GNN (Graph Neural Network input format).
+The atom graph can be serialised for third-party tools. Export delegates to `overflowdb2`'s format exporters via [`runExport`](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/GraphCommands.scala).
 
-Exportation supports two scopes:
+**Supported formats** (`supportedFormats`):
 
-- **whole**: Exports the entire CPG as a single unified graph.
-- **methods**: Iterates over all internal methods and exports a separate file for each method subgraph, representing its AST, CFG, and DDG.
+| `--format` | Exporter           | Use case                |
+| ---------- | ------------------ | ----------------------- |
+| `dot`      | `DotExporter`      | Graphviz visualisation  |
+| `graphml`  | `GraphMLExporter`  | yEd, NetworkX           |
+| `gexf`     | `GexfExporter`     | Gephi                   |
+| `graphson` | `GraphSONExporter` | TinkerPop/Gremlin       |
+| `neo4jcsv` | `Neo4jCsvExporter` | Neo4j bulk import       |
+| `gnn`      | `GnnExporter`      | JSON tensors for GNN ML |
 
-The underlying export logic delegates to `overflowdb2` format exporters.
+**Supported scopes** (`supportedScopes`):
+
+- `whole` — the entire CPG as a single graph.
+- `methods` — one file per internal method (its AST, CFG, DDG subgraph).
 
 ### Real Commands
 
-Export the entire CPG as a GraphML file:
+Export the whole CPG as GraphML:
 
 ```bash
 ./atom.sh export -l java -o app.atom --format graphml --scope whole --out export_output/
 ```
 
-Export individual method subgraphs in DOT format:
+Export per-method DOT subgraphs:
 
 ```bash
 ./atom.sh export -l java -o app.atom --format dot --scope methods --out methods_output/
@@ -41,25 +46,24 @@ Export individual method subgraphs in DOT format:
 
 ### Code Example
 
-The export routing is handled by [runExport](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/GraphCommands.scala) in [GraphCommands.scala](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/GraphCommands.scala):
+The real routing in [GraphCommands.scala](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/GraphCommands.scala):
 
 ```scala
-def runExport(cpg: Cpg, config: AtomExportConfig): Either[String, String] = {
+def runExport(cpg: Cpg, config: AtomExportConfig): Either[String, String] =
   val format = config.exportFormat.toLowerCase
   val scope  = config.scope.toLowerCase
-  if (!supportedFormats.contains(format)) {
-    Left(s"Unsupported export format '$format'")
-  } else {
+  if !supportedFormats.contains(format) then
+    Left(s"Unsupported export format '$format'. Supported: ${supportedFormats.toSeq.sorted.mkString(", ")}")
+  else if !supportedScopes.contains(scope) then
+    Left(s"Unsupported export scope '$scope'. Supported: ${supportedScopes.toSeq.sorted.mkString(", ")}")
+  else
     val outDir = File(config.exportDir).createDirectoryIfNotExists(createParents = true)
-    exporterFor(format) match {
-      case None => Left(s"No exporter available for format '$format'")
+    exporterFor(format) match
+      case None           => Left(s"No exporter available for format '$format'")
       case Some(exporter) =>
-          scope match {
+          scope match
             case "whole"   => exportWhole(cpg, exporter, outDir)
             case "methods" => exportMethods(cpg, exporter, format, outDir)
-            case other     => Left(s"Unsupported export scope '$other'")
-          }
-    }
-  }
-}
 ```
+
+`exporterFor` resolves the format to an `overflowdb.formats.*` exporter (e.g. `overflowdb.formats.gnn.GnnExporter` for `gnn`). For large graphs prefer `--scope methods` with `dot` for legible per-method diagrams, or `neo4jcsv`/`graphson` to load the whole graph into a database for interactive querying.

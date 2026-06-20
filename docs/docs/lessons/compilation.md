@@ -2,53 +2,62 @@
 
 ### Learning Objective
 
-Understand how language frontends defined in the [chen repository](https://github.com/AppThreat/chen) ingest source code and compile it into an OverflowDB-backed Code Property Graph (CPG) stored as an atom file.
+Understand how `atom` drives the language frontends from the [chen repository](https://github.com/AppThreat/chen) to ingest source code (or bytecode) and compile it into an `overflowdb2`-backed Code Property Graph (CPG) persisted as an atom file.
 
 ### Pre-requisites
 
-To follow this lesson, ensure the following software is installed on your system:
+- **JDK 23+**: OpenJDK, Temurin, or GraalVM.
+- **SBT 1.10+**: Used to build atom (`sbt stage`).
+- **Node.js 20+** and **@appthreat/atom-parsetools** (`npm install -g @appthreat/atom-parsetools`): provides the `astgen`/`rbastgen` binaries for JS/TS/Ruby.
+- **C/C++ toolchain** (`clang++`/`g++`, `make`): only when parsing C/C++.
+- **Local clone of [atom](https://github.com/AppThreat/atom)** built with `sbt stage` — produces `atom.sh`.
 
-- **JDK 23+**: Standard Java SE Development Kit (OpenJDK, Temurin, or GraalVM).
-- **SBT (Scala Build Tool) 1.10+**: Used to compile the atom command-line utility.
-- **Node.js 20+**: Required for JavaScript and TypeScript parsing.
-- **NPM package @appthreat/atom-parsetools**: Must be installed globally (`npm install -g @appthreat/atom-parsetools`).
-- **Python 3.10+**: Required for python AST generation dependencies.
-- **C++ Compiler**: `clang++` or `g++` along with `make` (if parsing C/C++ projects).
-- **Local clone of Atom**: Clone the [atom repository](https://github.com/AppThreat/atom) and compile it using the command `sbt stage`.
+> Python does **not** need an external AST generator: `pysrc2cpg` parses in-process. See the chen lessons for frontend internals.
 
 ### Conceptual Background
 
-The atom engine coordinates code parsing by invoking language-specific frontends from the `chen` repository. These frontends process raw code (or bytecode) and emit a graph representation using the `cpg2` schema definition. The persistent graph is stored using `overflowdb2`, which manages disk overflow when handling large program graphs.
+`atom` is a thin orchestration layer over the chen frontends. It selects a frontend by language, builds the structural graph (AST + local CFG), runs the frontend's overlay and post-processing passes (type recovery, call linking), and writes the result as an atom file using the `cpg2` schema and `overflowdb2` storage.
 
-The compilation process is managed by [Atom.scala](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/Atom.scala). The core orchestration function is [createNewAtom](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/Atom.scala), which matches the target input language and calls the respective frontend:
+The orchestration lives in [Atom.scala](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/Atom.scala). `generateForLanguage` normalises the `-l` value and dispatches to `createNewAtom`, which matches the language to a frontend:
 
-- **C/C++**: Handled by the `c2cpg` frontend.
-- **Java Source**: Handled by the `javasrc2cpg` frontend.
-- **Java Bytecode/Android APK**: Handled by the `jimple2cpg` frontend.
-- **JavaScript/TypeScript**: Handled by the `jssrc2cpg` frontend.
-- **Python**: Handled by the `pysrc2cpg` frontend.
-- **PHP**: Handled by the `php2atom` frontend.
-- **Ruby**: Handled by the `ruby2atom` frontend.
+| `-l` values                                             | Frontend       | Notes                           |
+| ------------------------------------------------------- | -------------- | ------------------------------- |
+| `c`, `cpp`, `c++`, `newc` (+ `h`, `hpp`, `i`)           | `c2cpg`        | header-only inputs use `C2Atom` |
+| `java`, `javasrc`                                       | `javasrc2cpg`  | delombok + dependency fetch     |
+| `jar`, `jimple`, `android`, `apk`, `dex`                | `jimple2cpg`   | Soot Jimple IR                  |
+| `scala`, `tasty`, `sbt`                                 | (jimple-based) |                                 |
+| `jssrc`, `javascript`, `js`, `ts`, `typescript`, `flow` | `jssrc2cpg`    | astgen                          |
+| `python`, `py`                                          | `pysrc2cpg`    | native parser                   |
+| `php`                                                   | `php2atom`     | requires local `php`            |
+| `ruby`, `rb`, `jruby`                                   | `ruby2atom`    | rbastgen                        |
 
-During this compilation phase, AST (Abstract Syntax Tree) nodes are generated, local Control Flow Graph (CFG) edges are established, and type hints are resolved.
+After the frontend builds the CPG, `atom` enhances it with the data-flow overlay and the semantic taggers (Lesson 3) and, depending on the subcommand, slices/exports it (Lessons 4–8).
 
 ### Real Commands
 
-Compile a Python project to produce an `app.atom` graph:
+Compile a Python project to `app.atom`:
 
 ```bash
 ./atom.sh -l python -o app.atom /path/to/python/project
 ```
 
-Compile a C++ project passing custom definitions and include paths:
+Compile a C++ project with custom defines and include paths via `--frontend-args` (comma-separated `key=value`):
 
 ```bash
-./atom.sh -l cpp -o app.atom --frontend-args "defines=DEBUG,includes=/usr/local/include" /path/to/cpp/project
+./atom.sh -l cpp -o app.atom \
+  --frontend-args "defines=DEBUG,includes=/usr/local/include" \
+  /path/to/cpp/project
+```
+
+Reuse an already-generated atom (skip frontend parsing) for a slicing run:
+
+```bash
+./atom.sh data-flow -l java -o app.atom --reuse-atom --slice-outfile dataflow.json /path/to/project
 ```
 
 ### Code Example
 
-The logic to map input files to the compiler frontends is defined in the [createNewAtom](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/Atom.scala) method:
+The language-to-frontend mapping in [Atom.scala](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/Atom.scala) `createNewAtom`:
 
 ```scala
 private def createNewAtom(
@@ -56,15 +65,24 @@ private def createNewAtom(
   config: AtomConfig,
   outputAtomFile: String
 ): Try[Cpg] =
-  language match {
+  language match
+    case "H" | "HPP" | "I" =>
+        createC2Atom(config, outputAtomFile)
     case Languages.C | Languages.NEWC | "CPP" | "C++" =>
         createC2Cpg(config, outputAtomFile)
+    case "JAR" | "JIMPLE" | "ANDROID" | "APK" | "DEX" =>
+        createJimple2Cpg(config, outputAtomFile)
     case Languages.JAVA | Languages.JAVASRC =>
         createJavaSrc2Cpg(config, outputAtomFile)
-    case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" =>
+    case Languages.JSSRC | Languages.JAVASCRIPT | "JS" | "TS" | "TYPESCRIPT" | "FLOW" =>
         createJsSrc2Cpg(config, outputAtomFile)
     case Languages.PYTHONSRC | Languages.PYTHON | "PY" =>
         createPythonCpg(config, outputAtomFile)
-    // Additional language match cases handled dynamically
-  }
+    case Languages.PHP =>
+        createPhpCpg(config, outputAtomFile)
+    case Languages.RUBYSRC | "RUBY" | "RB" | "JRUBY" =>
+        createRubyCpg(config, outputAtomFile)
+    // ...
 ```
+
+Each `createXxxCpg` helper sets sensible defaults (e.g. `fetchDependencies=true` and `delombokMode=types-only` for Java) and calls the frontend's `createCpgWithOverlays`. See the chen lessons for each frontend's config and pass pipeline.

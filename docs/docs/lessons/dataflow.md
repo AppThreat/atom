@@ -1,56 +1,70 @@
-# Lesson 5: Backward Data-Flow Slicing
+# Lesson 5: Backward Data-Flow Slicing (`data-flow`)
 
 ### Learning Objective
 
-Execute backwards intraprocedural data-flow slicing from external boundaries to identify source inputs influencing dangerous sinks.
+Execute backward, intraprocedural data-flow slicing from external API boundaries to discover the source inputs that influence dangerous sinks.
 
 ### Pre-requisites
 
-To follow this lesson, ensure the following software is installed on your system:
-
-- **JDK 23+**: Standard Java SE Development Kit.
-- **SBT 1.10+**: For compiling and running Atom.
-- **Pre-compiled Atom File**: An existing `app.atom` file.
-- **Tuning Parameters**: A configured definition limit for reaching definitions, typically set via `--max-num-def 2000`.
+- **JDK 23+** and a built `atom`.
+- **A target project** (or pre-built `app.atom`).
+- **Tuning**: the reaching-definition cap, set via `--max-num-def` (default 2000).
 
 ### Conceptual Background
 
-Intraprocedural data-flow slicing tracks variable state backwards using Reaching Definitions and Data Dependence Graph (DDG) edges. Sinks are selected based on external API boundaries (methods defined outside the compiled project). Slicing starts at the arguments of these sinks and traverses the `ddgIn` edges backwards.
+Data-flow slicing walks variable state **backwards** over the Data Dependence Graph (DDG / `REACHING_DEF` edges produced during enrichment). Sinks are selected as the arguments of **external** calls (methods defined outside the compiled project) — these are the boundaries where tainted data leaves the program. From each sink the slicer repeats `_.ddgIn` up to `--slice-depth`, collecting the reachable nodes and the edges between them.
 
-The [DataFlowSlicing](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/slicing/DataFlowSlicing.scala) class manages this traversal up to a configured `--slice-depth`.
+[`DataFlowSlicing`](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/slicing/DataFlowSlicing.scala) runs one `TrackDataFlowTask` per candidate sink on a thread pool. Behaviour is controlled by `DataFlowConfig`:
+
+```scala
+case class DataFlowConfig(
+  sinkPatternFilter: Option[String] = None,   // --sink-filter regex on the sink code
+  mustEndAtExternalMethod: Boolean = true,
+  excludeOperatorCalls: Boolean = true,        // drop <operator>.* noise
+  sliceDepth: Int = 7,                         // --slice-depth: max DDG hops
+  sliceNodesLimit: Int = 200,
+  useFluxEngine: Boolean = true                // low-allocation reaching-def engine
+) extends BaseConfig
+```
+
+The result is a `DataFlowSlice(nodes: Set[SliceNode], edges: Set[SliceEdge])` serialised to JSON.
 
 ### Real Commands
 
-Generate backward data-flow slices for a Java project up to a depth of 5, targeting only sinks matching the regex `.*exec.*`:
+Backward data-flow slices for a Java project, depth 5, only sinks matching `.*exec.*`:
 
 ```bash
-./atom.sh data-flow -l java -o app.atom --slice-outfile dataflow.json --slice-depth 5 --sink-filter ".*exec.*" /path/to/java/project
+./atom.sh data-flow -l java -o app.atom --slice-outfile dataflow.json \
+  --slice-depth 5 --sink-filter ".*exec.*" /path/to/java/project
 ```
 
 ### Code Example
 
-Refer to the [calculateDataFlowSlice](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/slicing/DataFlowSlicing.scala) method in [DataFlowSlicing.scala](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/slicing/DataFlowSlicing.scala):
+The real traversal in [DataFlowSlicing.scala](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/slicing/DataFlowSlicing.scala):
 
 ```scala
-def calculateDataFlowSlice(atom: Cpg, config: DataFlowConfig): Option[DataFlowSlice] = {
+def calculateDataFlowSlice(atom: Cpg, config: DataFlowConfig): Option[DataFlowSlice] =
   language = atom.metaData.language.headOption
   excludeOperatorCalls.set(config.excludeOperatorCalls)
 
-  val dataFlowSlice = (config.fileFilter match {
+  (config.fileFilter match
     case Some(fileRegex) => atom.call.where(_.file.name(fileRegex))
     case None            => atom.call
-  })
-  .where(c => c.callee.isExternal)
-  .flatMap {
-      // Excludes operator calls and internal lambdas based on settings
+  )
+    .where(c => c.callee.isExternal)
+    .flatMap {
       case c if excludeOperatorCalls.get() && c.name.startsWith("<operator") => None
-      case c => Some(c)
-  }
-  .map(c => exec.submit(new TrackDataFlowTask(config, c)))
-  .flatMap(TimedGet)
-  .reduceOption { (a, b) => DataFlowSlice(a.nodes ++ b.nodes, a.edges ++ b.edges) }
-
-  nodeCache.clear()
-  dataFlowSlice
-}
+      case c                                                                 => Some(c)
+    }
+    .map(c => exec.submit(new TrackDataFlowTask(config, c)))
+    .flatMap(TimedGet)
+    .reduceOption((a, b) => DataFlowSlice(a.nodes ++ b.nodes, a.edges ++ b.edges))
 ```
+
+Inside `TrackDataFlowTask`, the backward walk itself is:
+
+```scala
+val sliceNodes = sinks.repeat(_.ddgIn)(using _.maxDepth(config.sliceDepth).emit).dedup.l
+```
+
+`TimedGet` bounds each task so one pathological method cannot stall the whole slice. Unlike _reachables_ (Lesson 6), this slice is **intraprocedural** — it does not cross method boundaries.

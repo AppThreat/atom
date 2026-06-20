@@ -1,73 +1,82 @@
-# Lesson 8: Graph Algorithmic Analysis
+# Lesson 8: Graph Algorithmic Analysis (`algorithms`)
 
 ### Learning Objective
 
-Apply graph-theoretic algorithms (strongly connected components, topological sorting, dominators, PageRank centrality, and shortest paths) over CPG structures.
+Apply graph-theoretic algorithms — strongly connected components, topological sort, dominators, PageRank centrality, and call paths — directly over the compiled atom.
 
 ### Pre-requisites
 
-To follow this lesson, ensure the following software is installed on your system:
-
-- **JDK 23+**: Standard Java SE Development Kit.
-- **SBT 1.10+**: For compiling and running Atom.
-- **Pre-compiled Atom File**: An existing `app.atom` file.
-- **JSON Processing Utilities**: Tools like `jq` to analyze and query the output JSON file.
+- **JDK 23+** and a built `atom`.
+- **A pre-compiled `app.atom`**.
+- **`jq`** (optional) to query the JSON output.
 
 ### Conceptual Background
 
-The `algorithms` command applies graph algorithms directly on the compiled atom graph:
+The `algorithms` command runs algorithms over the **call graph** (method nodes linked by `CALL` edges) or, for dominators, over each method's CFG. Routing is in [`runAlgorithms`](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/GraphCommands.scala) and the supported set is `scc`, `toposort`, `dominators`, `paths`, `centrality`:
 
-- **Strongly Connected Components (SCC)**: Detects clusters of mutually recursive methods in the call graph.
-- **Topological Sort**: Computes a callee-before-caller ordering. When recursion exists, it collapses recursive components into single nodes to create an acyclic representation before sorting.
-- **Centrality**: Runs PageRank and In-Degree metrics on the call graph to rank critical methods.
-- **Dominators**: Computes the immediate dominator tree over the control flow graph of each method.
-- **Paths**: Evaluates control/data-flow paths between two target method nodes up to a maximum depth.
+- **scc** — strongly connected components: clusters of mutually recursive methods.
+- **toposort** — callee-before-caller ordering; recursive components are collapsed into single nodes to form an acyclic condensation before sorting. This is the same ordering the flow-summary computer uses (see chen Lesson 15).
+- **dominators** — per-method immediate-dominator tree over `CFG` out-edges (`node.dominatorTree(...)`).
+- **paths** — call paths between the first method matching `--source` and the first matching `--target`, up to `--max-depth` (default 10).
+- **centrality** — PageRank (`nodes.pageRank(callees)`) plus in-degree centrality, ranking methods by influence.
 
-The results are written as JSON to the configured output file.
+Results are written as JSON to `--slice-outfile`.
 
 ### Real Commands
 
-Analyze the call graph to locate strongly connected components (mutual recursion):
+Locate mutually recursive method clusters:
 
 ```bash
 ./atom.sh algorithms -l python -o app.atom --type scc --slice-outfile scc_results.json
 ```
 
-Rank the methods in a codebase based on PageRank centrality:
+Rank methods by PageRank centrality:
 
 ```bash
 ./atom.sh algorithms -l python -o app.atom --type centrality --slice-outfile centrality_ranks.json
 ```
 
-Trace paths from method `authenticate` to `db_query` up to depth 8:
+Trace paths from `authenticate` to `db_query` up to depth 8:
 
 ```bash
-./atom.sh algorithms -l python -o app.atom --type paths --source ".*authenticate.*" --target ".*db_query.*" --max-depth 8 --slice-outfile paths_traced.json
+./atom.sh algorithms -l python -o app.atom --type paths \
+  --source ".*authenticate.*" --target ".*db_query.*" --max-depth 8 \
+  --slice-outfile paths_traced.json
+```
+
+A `centrality` result looks like:
+
+```json
+{
+  "ranking": [
+    { "method": "app.router.dispatch:...", "pageRank": 0.18, "inDegree": 42 },
+    { "method": "app.auth.verify:...", "pageRank": 0.09, "inDegree": 17 }
+  ]
+}
 ```
 
 ### Code Example
 
-The execution of the algorithms is routed through [runAlgorithms](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/GraphCommands.scala) in [GraphCommands.scala](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/GraphCommands.scala):
+The real dispatch in [GraphCommands.scala](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/GraphCommands.scala):
 
 ```scala
-def runAlgorithms(cpg: Cpg, config: AtomAlgorithmsConfig): Either[String, String] = {
+def runAlgorithms(cpg: Cpg, config: AtomAlgorithmsConfig): Either[String, String] =
   val algo = config.algoType.toLowerCase
-  if (!supportedAlgorithms.contains(algo)) {
-    Left(s"Unsupported algorithm '$algo'")
-  } else {
-    val resultJson = algo match {
+  if !supportedAlgorithms.contains(algo) then
+    Left(s"Unsupported algorithm '$algo'. Supported: ${supportedAlgorithms.toSeq.sorted.mkString(", ")}")
+  else
+    val resultJson = algo match
       case "scc"        => Right(sccReport(cpg))
       case "toposort"   => toposortReport(cpg)
       case "centrality" => Right(centralityReport(cpg))
       case "dominators" => Right(dominatorsReport(cpg))
       case "paths"      => pathsReport(cpg, config)
-    }
     resultJson.map { json =>
       val outFile = File(config.outputSliceFile.pathAsString)
-          .createFileIfNotExists(createParents = true)
-          .write(json.spaces2)
+        .createFileIfNotExists(createParents = true)
+        .write(json.spaces2)
       s"Algorithm '$algo' result written to ${outFile.pathAsString}"
     }
-  }
-}
 ```
+
+`toposort` and `paths` return `Either` (they can fail, e.g. when a source/target regex matches no method), whereas `scc`, `centrality`, and `dominators` always produce a report.
