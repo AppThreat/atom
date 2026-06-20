@@ -7,6 +7,7 @@ import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
 import overflowdb.PropertyKey
 
+import java.io.{BufferedWriter, FileWriter}
 import java.util.regex.Pattern
 import scala.collection.concurrent.TrieMap
 
@@ -116,6 +117,8 @@ package object slicing:
     def toJson: String
 
     def toJsonPretty: String
+
+    def toJsonFile(outFile: File): Unit = outFile.write(toJson)
 
   /** A data-flow slice vector for a given backwards intraprocedural path.
     *
@@ -744,6 +747,24 @@ package object slicing:
     def toJson: String = this.asJson.noSpaces
 
     def toJsonPretty: String = this.asJson.spaces2
+
+    override def toJsonFile(outFile: File): Unit =
+      val writer = new BufferedWriter(new FileWriter(outFile.toJava))
+      try
+        writer.write("""{"objectSlices":[""")
+        objectSlices.zipWithIndex.foreach { case (slice, i) =>
+            if i > 0 then writer.write(",")
+            writer.write(slice.asJson.noSpaces)
+        }
+        writer.write("""],"userDefinedTypes":[""")
+        userDefinedTypes.zipWithIndex.foreach { case (udt, i) =>
+            if i > 0 then writer.write(",")
+            writer.write(udt.asJson.noSpaces)
+        }
+        writer.write("]}")
+      finally
+        writer.close()
+  end ProgramUsageSlice
 
   implicit val decodeProgramUsageSlice: Decoder[ProgramUsageSlice] =
       (c: HCursor) =>

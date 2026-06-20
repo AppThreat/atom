@@ -659,7 +659,11 @@ object Atom:
     println("Slicing the atom for usages. This might take a few minutes ...")
     runChennaiTags(config, ag)
     val slice = calculateUsagesSlice(ag, config)
-    saveSlice(config.outputSliceFile, slice.map(_.toJson))
+    slice.foreach { s =>
+      val outFile = config.outputSliceFile.createFileIfNotExists()
+      s.toJsonFile(outFile)
+      println(s"Slices have been successfully written to ${outFile.pathAsString}")
+    }
     handleEndpointExtraction(config, usagesConfig)
     Right("Usages slice generated successfully")
 
