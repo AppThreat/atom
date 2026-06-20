@@ -91,7 +91,7 @@ which phpastgen
 ## CLI Usage
 
 ```
-Usage: atom [parsedeps|data-flow|usages|reachables] [options] [input]
+Usage: atom [parsedeps|data-flow|usages|reachables|export|algorithms] [options] [input]
 
   input                    source file or directory
   -o, --output <value>     output filename. Default app.⚛ or app.atom in windows
@@ -113,6 +113,8 @@ Usage: atom [parsedeps|data-flow|usages|reachables] [options] [input]
                            filters in slices that go through methods with specific annotations on the methods. Uses regex.
   --max-num-def <value>    maximum number of definitions in per-method data flow calculation - defaults to 2000
   --legacy-dataflow        use the classic data-flow engine and disable mini-graph fragment caching. By default atom uses the faster, lower-allocation Flux engine with fragment caching enabled.
+  --summaries              build per-method flow summaries and let the reachables engine prune provably empty cross-call work. Summaries are cached next to the atom. Defaults to `false`.
+  --validation-config <value>  path to a JSON file declaring validators/sanitisers (chennai.json schema). Reachable flows passing through a declared sanitiser are dropped for its categories.
 Command: parsedeps
 Extract dependencies from the build file and imports
 Command: data-flow [options]
@@ -129,7 +131,62 @@ Extract reachable data-flow slices based on automated framework tags
   --source-tag <value>     source tag - defaults to framework-input. Comma-separated values allowed.
   --sink-tag <value>       sink tag - defaults to framework-output. Comma-separated values allowed.
   --include-crypto         includes crypto library flows - defaults to false.
+Command: export [options]
+Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)
+  --format <value>         export format: dot, graphml, gexf, graphson, neo4jcsv or gnn
+  --scope <value>          export scope: whole or methods. Default: whole
+  --out <value>            output directory. Default: atom-exports
+Command: algorithms [options]
+Run a graph algorithm over the atom and write the result as JSON
+  --type <value>           algorithm: scc, toposort, dominators, paths or centrality
+  --source <value>         source method full-name pattern for the paths algorithm. Uses regex.
+  --target <value>         target method full-name pattern for the paths algorithm. Uses regex.
+  --max-depth <value>      maximum path depth for the paths algorithm
+  --config <value>         path to a JSON config file for the export and algorithms commands
   --help                   display this help message
+```
+
+## Export and algorithms commands
+
+The `export` and `algorithms` commands work on an `.atom` file. If the file given with `-o` already
+exists it is reused; otherwise atom builds it from the input first, so there is no separate build
+step to remember.
+
+`export` writes the graph in one of several formats. Use `--scope whole` for the entire atom or
+`--scope methods` to write one file per method (every format except neo4jcsv supports the per-method
+scope). The `gnn` format writes parallel id, label and edge arrays as JSON for machine-learning
+pipelines.
+
+```
+atom export -l python --format graphml --scope whole -o app.atom --out exports app.py
+atom export -l python --format gnn --scope methods -o app.atom --out gnn-out app.py
+```
+
+`algorithms` runs a graph algorithm and writes the result to the slice output file as JSON:
+
+- `centrality` ranks methods in the call graph by PageRank and in-degree.
+- `scc` reports strongly connected components, which flags recursion in the call graph.
+- `toposort` returns a callee-before-caller ordering of methods. Recursive methods are grouped into
+  stages (each flagged as recursive) so the ordering works even when the call graph has cycles.
+- `dominators` writes the control-flow dominator tree of each method.
+- `paths` finds paths between a source and target method selected by regular expression.
+
+```
+atom algorithms -l python --type centrality -o app.atom -s centrality.json app.py
+atom algorithms -l python --type paths --source '.*main$' --target '.*helper$' -o app.atom -s paths.json app.py
+```
+
+Verbose or repeatable parameters can be supplied with `--config <file>`, a JSON file. Command-line
+flags override values from the file. For example, an algorithms config file:
+
+```json
+{
+  "type": "paths",
+  "source": ".*main$",
+  "target": ".*helper$",
+  "maxDepth": 20,
+  "out": "paths.json"
+}
 ```
 
 ## Data-flow engine
@@ -143,6 +200,64 @@ mini-graph (fragment) AST caching is also enabled by default, so unchanged files
 Pass `--legacy-dataflow` to fall back to the classic engine and disable fragment caching (useful for
 A/B comparisons or troubleshooting). Caching can also be controlled independently via the
 `-Dchen.cache.disabled=true` system property.
+
+## Method flow summaries
+
+The `reachables` command accepts `--summaries`, which builds a context-independent flow summary for
+each method before running the backward query. A summary records which parameters of a method reach
+its return value or its output parameters. The reachables engine uses these summaries to skip
+cross-call work that provably carries no taint, for example exploring an argument that the callee
+never writes. The pruning only removes empty work, so the reported flows are the same as without the
+flag.
+
+Summaries are written to a `flowsummary-<fingerprint>.json` file next to the atom and reused on an
+unchanged re-run; the fingerprint changes when any method body changes. The summary cache, like the
+other caches, can be turned off with `-Dchen.cache.disabled=true`.
+
+```shell
+atom reachables --summaries -o app.atom -s reachables.json -l java .
+```
+
+## Validators and sanitisers
+
+Reachable flows that pass through a genuine validation or sanitisation routine are usually not real
+findings. You can declare such routines in a JSON file and pass it with `--validation-config`. atom
+tags every call to a declared method as a sanitiser and drops reachable flows that pass through one,
+scoped to the sink categories the sanitiser covers.
+
+The file uses the same schema as `chennai.json`. `sanitizers` and `validators` are treated
+identically; `categories` is optional and, when omitted, the sanitiser covers every flow:
+
+```json
+{
+  "sanitizers": [
+    {
+      "name": "owasp-encode",
+      "methods": ["org\\.owasp\\.encoder\\.Encode\\..*"],
+      "categories": ["http"]
+    },
+    {
+      "name": "sql-escape",
+      "methods": [".*escapeSql.*"],
+      "categories": ["sql"]
+    }
+  ],
+  "validators": [{ "name": "bean-validation", "methods": [".*\\.validate"] }]
+}
+```
+
+`methods` entries are matched against each call's method full name (treated as a regular expression
+when they contain regex characters, otherwise as an exact match). `categories` are matched against
+the tags on a flow's sink, so an HTML encoder declared for `http` does not suppress an SQL-injection
+flow.
+
+```shell
+atom reachables --validation-config validators.json -o app.atom -s reachables.json -l java .
+```
+
+The declarations can also be embedded in the project's `chennai.json` instead of passed on the
+command line. For programmatic use, the dataflow engine exposes `passesThrough` /
+`doesNotPassThrough` on a flow iterator, taking a simple node predicate.
 
 ## Sample Invocations
 

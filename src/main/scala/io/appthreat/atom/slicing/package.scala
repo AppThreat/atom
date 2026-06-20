@@ -85,7 +85,8 @@ package object slicing:
     sinkTag: Seq[String],
     sliceDepth: Int,
     includeCryptoFlows: Boolean,
-    useFluxEngine: Boolean = true
+    useFluxEngine: Boolean = true,
+    useSummaries: Boolean = false
   ) extends BaseConfig
 
   /** Adds extensions to modify a method traversal based on config options

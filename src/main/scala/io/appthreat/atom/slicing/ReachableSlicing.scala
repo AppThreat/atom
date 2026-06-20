@@ -5,6 +5,7 @@ import io.appthreat.atom.Atom.{DEFAULT_SINK_TAGS, DEFAULT_SOURCE_TAGS, FRAMEWORK
 import io.appthreat.dataflowengineoss.DefaultSemantics
 import io.appthreat.dataflowengineoss.language.*
 import io.appthreat.dataflowengineoss.queryengine.{EngineConfig, EngineContext}
+import io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryComputer
 import io.appthreat.dataflowengineoss.semanticsloader.Semantics
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.Languages
@@ -75,16 +76,34 @@ object ReachableSlicing:
     chunkSize: Int = DEFAULT_CHUNK_SIZE
   ): Unit =
     val language = atom.metaData.language.head
-    context = EngineContext(semantics, EngineConfig(useFluxEngine = config.useFluxEngine))
+    // Build method flow summaries up front when requested, so the backward query engine can prune
+    // cross-call tasks that provably carry no taint. Summaries are cached next to the atom output.
+    val summaries =
+        if config.useSummaries then
+          val cacheDir = Option(new JFile(outputBasePath).getAbsoluteFile.getParent).getOrElse(".")
+          FlowSummaryComputer.loadOrCompute(atom, cacheDir, semantics)
+        else Map.empty
+    context = EngineContext(
+      semantics,
+      EngineConfig(
+        useFluxEngine = config.useFluxEngine,
+        useSummaries = config.useSummaries,
+        summaries = summaries
+      )
+    )
     // The various collectors overlap (e.g. a default-tag flow may also be a privacy flow), so the
     // same path can be produced more than once. Deduplicate paths by their node-id signature, and
     // also drop paths that are a contiguous sub-sequence of an already-seen (longer) path sharing
     // the same source and sink, which removes near-duplicate partial flows.
     val seenSignatures = scala.collection.mutable.HashSet.empty[String]
     val seenEndpoints  = scala.collection.mutable.HashSet.empty[String]
+    // Calls tagged as sanitisers/validators (by ChennaiTagsPass) and the sink categories each
+    // covers. A flow that passes through such a call is dropped for the matching categories.
+    val sanitizerCalls = collectSanitizerCalls(atom)
     val flowIterator = collectFlowSlices(atom, config, language)
         .iterator
         .flatten
+        .filterNot(isSanitized(_, sanitizerCalls))
         .filter(isUniqueFlow(_, seenSignatures, seenEndpoints))
         .map(toSlice)
 
@@ -206,6 +225,53 @@ object ReachableSlicing:
       else
         val endpointKey = s"${elems.head.id()}->${elems.last.id()}#${elems.size}"
         seenEndpoints.add(endpointKey)
+
+  private val SANITIZER_TAG             = "sanitizer"
+  private val SANITIZER_CATEGORY_PREFIX = "sanitizer-"
+
+  /** Call sites tagged as sanitisers/validators, mapped to the sink categories each one covers (an
+    * empty set means it covers every category).
+    */
+  private def collectSanitizerCalls(atom: Cpg): Map[Long, Set[String]] =
+      atom.call.where(_.tag.name(SANITIZER_TAG)).map { call =>
+        val categories = call.tag.name.l.collect {
+            case name if name.startsWith(SANITIZER_CATEGORY_PREFIX) =>
+                name.stripPrefix(SANITIZER_CATEGORY_PREFIX)
+        }.toSet
+        call.id() -> categories
+      }.toMap
+
+  /** True if the flow passes through a sanitiser whose categories cover the flow's sink. A flow is
+    * sanitised when it touches a sanitiser call (or an argument of one) that either covers every
+    * category or shares a category with the flow's sink.
+    */
+  private def isSanitized(path: Path, sanitizerCalls: Map[Long, Set[String]]): Boolean =
+      if sanitizerCalls.isEmpty then false
+      else
+        val sinkCategories = flowSinkCategories(path)
+        path.elements.exists { element =>
+            (element.id() :: enclosingCallId(element).toList).exists { id =>
+                sanitizerCalls.get(id).exists { categories =>
+                    categories.isEmpty || categories.exists(sinkCategories.contains)
+                }
+            }
+        }
+
+  private def enclosingCallId(node: AstNode): Option[Long] =
+      node match
+        case expr: Expression => expr.inCall.headOption.map(_.id())
+        case _                => None
+
+  /** The categories of a flow's sink, taken from the tags on the last path element and its
+    * enclosing call.
+    */
+  private def flowSinkCategories(path: Path): Set[String] =
+      path.elements.lastOption.toList.flatMap { sink =>
+        val callTags = sink match
+          case expr: Expression => expr.inCall.tag.name.l
+          case _                => Nil
+        sink.tag.name.l ++ callTags
+      }.toSet
 
   private def collectBasicFlows(
     atom: Cpg,

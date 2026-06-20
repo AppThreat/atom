@@ -298,6 +298,33 @@ object Atom:
               case config: AtomConfig => config.withExportFormat(x)
               case _                  => c
         )
+    opt[Unit]("summaries")
+        .text(
+          "build per-method flow summaries and let the reachables engine prune provably empty " +
+              "cross-call work. Summaries are cached next to the atom. Defaults to `false`."
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withUseSummaries(true)
+              case _                  => c
+        )
+    opt[String]("config")
+        .text("path to a JSON config file for the export and algorithms commands")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withConfigFile(Option(File(x)))
+              case _                  => c
+        )
+    opt[String]("validation-config")
+        .text(
+          "path to a JSON file declaring validators/sanitisers (chennai.json schema). Reachable " +
+              "flows passing through a declared sanitiser are dropped for its categories."
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withValidationConfigFile(Option(File(x)))
+              case _                  => c
+        )
     opt[String]("file-filter")
         .text(s"the name of the source file to generate slices from. Uses regex.")
         .action((x, c) => c.withFileFilter(Option(x)))
@@ -439,6 +466,65 @@ object Atom:
                     case _                       => c
               )
         )
+    cmd("export")
+        .text("Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)")
+        .action((_, _) => AtomExportConfig().withDataDependencies(true))
+        .children(
+          opt[String]("format")
+              .text("export format: dot, graphml, gexf, graphson, neo4jcsv or gnn")
+              .action((x, c) =>
+                  c match
+                    case c: AtomExportConfig => c.withExportFormat(x).asInstanceOf[AtomExportConfig]
+                    case _                   => c
+              ),
+          opt[String]("scope")
+              .text("export scope: whole or methods. Default: whole")
+              .action((x, c) =>
+                  c match
+                    case c: AtomExportConfig => c.withScope(x)
+                    case _                   => c
+              ),
+          opt[String]("out")
+              .text(s"output directory. Default: $DEFAULT_EXPORT_DIR")
+              .action((x, c) =>
+                  c match
+                    case c: AtomExportConfig => c.withExportDir(x).asInstanceOf[AtomExportConfig]
+                    case _                   => c
+              )
+        )
+    cmd("algorithms")
+        .text("Run a graph algorithm over the atom and write the result as JSON")
+        .action((_, _) => AtomAlgorithmsConfig().withDataDependencies(true))
+        .children(
+          opt[String]("type")
+              .text("algorithm: scc, toposort, dominators, paths or centrality")
+              .action((x, c) =>
+                  c match
+                    case c: AtomAlgorithmsConfig => c.withAlgoType(x)
+                    case _                       => c
+              ),
+          opt[String]("source")
+              .text("source method full-name pattern for the paths algorithm. Uses regex.")
+              .action((x, c) =>
+                  c match
+                    case c: AtomAlgorithmsConfig => c.withSourceSelector(Option(x))
+                    case _                       => c
+              ),
+          opt[String]("target")
+              .text("target method full-name pattern for the paths algorithm. Uses regex.")
+              .action((x, c) =>
+                  c match
+                    case c: AtomAlgorithmsConfig => c.withTargetSelector(Option(x))
+                    case _                       => c
+              ),
+          opt[Int]("max-depth")
+              .text("maximum path depth for the paths algorithm")
+              .action((x, c) =>
+                  c match
+                    case c: AtomAlgorithmsConfig => c.withMaxDepth(x)
+                    case _                       => c
+              )
+        )
     help("help").text("display this help message")
 
   private def extractArgSet(config: AtomConfig, key: String): Set[String] =
@@ -494,6 +580,10 @@ object Atom:
   private def generateSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
       try
         migrateAtomConfigToSliceConfig(config) match
+          case e: AtomExportConfig =>
+              runGraphExport(e, ag)
+          case a: AtomAlgorithmsConfig =>
+              runGraphAlgorithms(a, ag)
           case x: AtomConfig if config.exportAtom =>
               exportAtom(config, ag, x)
           case _: DataFlowConfig =>
@@ -510,6 +600,18 @@ object Atom:
       catch
         case err: Throwable =>
             Left(s"${err.toString}\n${err.getStackTrace.take(20).mkString("\n")}")
+
+  private def runGraphExport(config: AtomExportConfig, ag: Cpg): Either[String, String] =
+      AtomConfigFile(config).flatMap {
+          case e: AtomExportConfig => GraphCommands.runExport(ag, e)
+          case _                   => Left("Invalid configuration for export")
+      }
+
+  private def runGraphAlgorithms(config: AtomAlgorithmsConfig, ag: Cpg): Either[String, String] =
+      AtomConfigFile(config).flatMap {
+          case a: AtomAlgorithmsConfig => GraphCommands.runAlgorithms(ag, a)
+          case _                       => Left("Invalid configuration for algorithms")
+      }
 
   private def exportAtom(
     config: AtomConfig,
@@ -555,7 +657,7 @@ object Atom:
     usagesConfig: UsagesConfig
   ): Either[String, String] =
     println("Slicing the atom for usages. This might take a few minutes ...")
-    new ChennaiTagsPass(ag).createAndApply()
+    runChennaiTags(config, ag)
     val slice = calculateUsagesSlice(ag, config)
     saveSlice(config.outputSliceFile, slice.map(_.toJson))
     handleEndpointExtraction(config, usagesConfig)
@@ -675,7 +777,8 @@ object Atom:
               config.sinkTag,
               config.sliceDepth,
               config.includeCryptoFlows,
-              useFluxEngine = config.useFluxEngine
+              useFluxEngine = config.useFluxEngine,
+              useSummaries = config.useSummaries
             )
         case _ => x
       ).withInputPath(x.inputPath)
@@ -705,8 +808,18 @@ object Atom:
     // the `--flux` data-flow engine so each improvement can be evaluated independently.
     if config.cacheFragments then
       io.appthreat.x2cpg.passes.frontend.CacheControl.enableFragments()
+    // Enable the method-flow-summary cache so summaries persist next to the atom and are reused on
+    // an unchanged re-run.
+    if config.useSummaries then
+      io.appthreat.x2cpg.passes.frontend.CacheControl.enable(
+        io.appthreat.x2cpg.passes.frontend.CacheControl.Summary
+      )
 
-    getOrCreateAtom(language, config, outputAtomFile) match
+    // Reuse-or-build: load the existing atom when one is present and the command allows it,
+    // otherwise build a fresh atom from the input. New graph-level commands (export, algorithms)
+    // share this path so they never require a manual pre-build step.
+    val reusing = shouldReuseExistingAtom(config, outputAtomFile)
+    getOrCreateAtom(language, config, outputAtomFile, reusing) match
       case Failure(exception) =>
           Left(exception.getStackTrace.take(20).mkString("\n"))
       case Success(ag) =>
@@ -716,7 +829,7 @@ object Atom:
             Right("AST cache generated successfully. Skipped CPG enhancement and slicing.")
           else
             for
-              _ <- enhanceCpg(config, ag)
+              _ <- enhanceCpg(config, ag, reusing)
               _ <- generateSlice(config, ag)
               _ <- closeCpg(ag)
             yield "Atom generation successful"
@@ -725,16 +838,17 @@ object Atom:
   private def getOrCreateAtom(
     language: String,
     config: AtomConfig,
-    outputAtomFile: String
+    outputAtomFile: String,
+    reusing: Boolean
   ): Try[Cpg] =
-      config match
-        case x: AtomConfig if shouldReuseExistingAtom(x, outputAtomFile) =>
-            loadExistingAtom(outputAtomFile)
-        case _ =>
-            createNewAtom(language, config, outputAtomFile)
+      if reusing then loadExistingAtom(outputAtomFile)
+      else createNewAtom(language, config, outputAtomFile)
 
   private def shouldReuseExistingAtom(config: AtomConfig, outputAtomFile: String): Boolean =
-      (config.isInstanceOf[AtomUsagesConfig] || config.exportAtom || config.reuseAtom) &&
+      (config.isInstanceOf[AtomUsagesConfig] ||
+          config.isInstanceOf[AtomExportConfig] ||
+          config.isInstanceOf[AtomAlgorithmsConfig] ||
+          config.exportAtom || config.reuseAtom) &&
           File(outputAtomFile).exists
 
   private def loadExistingAtom(outputAtomFile: String): Try[Cpg] =
@@ -1001,9 +1115,17 @@ object Atom:
           ag
       }
 
-  private def enhanceCpg(config: AtomConfig, atom: Cpg): Either[String, Unit] =
+  /** Run the framework/route tagger, feeding it the optional validators/sanitisers config so calls
+    * to declared sanitisers are tagged for later flow filtering.
+    */
+  private def runChennaiTags(config: AtomConfig, atom: Cpg): Unit =
+    val externalConfig =
+        config.validationConfigFile.filter(_.exists).map(_.contentAsString)
+    new ChennaiTagsPass(atom, externalConfig).createAndApply()
+
+  private def enhanceCpg(config: AtomConfig, atom: Cpg, reusing: Boolean): Either[String, Unit] =
       config match
-        case x: AtomConfig if needsDataFlowEnhancement(x) =>
+        case x: AtomConfig if needsDataFlowEnhancement(x, reusing) =>
             if x.useFluxEngine then
               println(
                 "Generating data-flow dependencies from atom using the Flux engine. Please wait ..."
@@ -1018,7 +1140,7 @@ object Atom:
                   .run(new LayerCreatorContext(atom))
               new CdxPass(atom).createAndApply()
               new EasyTagsPass(atom).createAndApply()
-              new ChennaiTagsPass(atom).createAndApply()
+              runChennaiTags(x, atom)
               applyJvmTaggers(atom)
               Right(())
             catch
@@ -1028,19 +1150,14 @@ object Atom:
                   Left(s"CPG appears to be corrupted with broken references. " +
                       s"Try removing the atom file and regenerating it. Error: ${npe.getMessage}")
               case ex: Exception =>
-                  // Walk the full cause chain: OrderedParallelCpgPass wraps the real task
-                  // exception as a cause, so printing only `ex` hides the actual failure.
-                  val sb = new StringBuilder
-                  var cur: Throwable = ex
-                  var depth          = 0
-                  while cur != null && depth < 10 do
-                    sb.append(if depth == 0 then "" else "\nCaused by: ")
-                    sb.append(s"${cur.getClass.getName}: ${cur.getMessage}\n")
-                    sb.append(cur.getStackTrace.take(40).mkString("\n"))
-                    sb.append("\n")
-                    cur = cur.getCause
-                    depth += 1
-                  Left(s"Failed to enhance CPG: ${sb.toString}")
+                  // Report the root cause: parallel passes wrap the real failure as a cause, so
+                  // surfacing the deepest message is more useful than the generic wrapper.
+                  var rootCause: Throwable = ex
+                  while rootCause.getCause != null && rootCause.getCause != rootCause do
+                    rootCause = rootCause.getCause
+                  Left(
+                    s"Failed to enhance CPG: ${rootCause.getClass.getName}: ${rootCause.getMessage}"
+                  )
             end try
         case _ =>
             new EasyTagsPass(atom).createAndApply()
@@ -1058,10 +1175,12 @@ object Atom:
       new TrackersTagsPass(atom).createAndApply()
       new AndroidServicesTagsPass(atom).createAndApply()
 
-  private def needsDataFlowEnhancement(config: AtomConfig): Boolean =
-      !config.reuseAtom && (config.dataDeps ||
+  private def needsDataFlowEnhancement(config: AtomConfig, reusing: Boolean): Boolean =
+      !reusing && !config.reuseAtom && (config.dataDeps ||
           config.isInstanceOf[AtomDataFlowConfig] ||
-          config.isInstanceOf[AtomReachablesConfig])
+          config.isInstanceOf[AtomReachablesConfig] ||
+          config.isInstanceOf[AtomExportConfig] ||
+          config.isInstanceOf[AtomAlgorithmsConfig])
 
   private def closeCpg(cpg: Cpg): Either[String, Unit] =
       try

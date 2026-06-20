@@ -51,13 +51,13 @@ Extract reachable data-flow slices based on automated framework tags
 | Variable                                | Description                                                                                                                                                |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **CHEN_IGNORE_DIRS**                    | Comma-separated list of directories to ignore for every language frontend.                                                                                 |
-| **CHEN_IGNORE_TEST_DIRS**               | Set to true to ignore common test directories (`test`, `tests`, `mocks`) for every language frontend.                                                     |
-| **CHEN_C_IGNORE_DIRS**                  | Comma-separated list of additional directories to ignore for the C/C++ and header frontends.                                                              |
+| **CHEN_IGNORE_TEST_DIRS**               | Set to true to ignore common test directories (`test`, `tests`, `mocks`) for every language frontend.                                                      |
+| **CHEN_C_IGNORE_DIRS**                  | Comma-separated list of additional directories to ignore for the C/C++ and header frontends.                                                               |
 | **CHEN_CPP_IGNORE_DIRS**                | Comma-separated list of additional directories to ignore for the C++ frontend.                                                                             |
 | **CHEN_JAVA_IGNORE_DIRS**               | Comma-separated list of additional directories to ignore for the Java source frontend.                                                                     |
-| **CHEN_JIMPLE_IGNORE_DIRS**             | Comma-separated list of directories to ignore for the Jimple/JAR/Android/APK/DEX frontend.                                                                |
+| **CHEN_JIMPLE_IGNORE_DIRS**             | Comma-separated list of directories to ignore for the Jimple/JAR/Android/APK/DEX frontend.                                                                 |
 | **CHEN_SCALA_IGNORE_DIRS**              | Comma-separated list of directories to ignore for the Scala frontend.                                                                                      |
-| **CHEN_JAVASCRIPT_IGNORE_DIRS**         | Comma-separated list of directories to ignore for the JavaScript, TypeScript, and Flow frontend.                                                          |
+| **CHEN_JAVASCRIPT_IGNORE_DIRS**         | Comma-separated list of directories to ignore for the JavaScript, TypeScript, and Flow frontend.                                                           |
 | **CHEN_JS_IGNORE_DIRS**                 | Alias for JavaScript, TypeScript, and Flow ignored directories.                                                                                            |
 | **CHEN_TYPESCRIPT_IGNORE_DIRS**         | Alias for TypeScript and Flow ignored directories.                                                                                                         |
 | **CHEN_PYTHON_IGNORE_DIRS**             | Comma-separated list of directories to ignore for Python. If unset, Atom uses Python's default ignored directories.                                        |
