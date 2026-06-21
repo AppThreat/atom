@@ -133,9 +133,9 @@ jobs:
       - run: |
           npm install -g @cyclonedx/cdxgen --omit=optional
           cdxgen -t python --deep -o $GITHUB_WORKSPACE/repotests/DjanGoat/bom.json $GITHUB_WORKSPACE/repotests/DjanGoat
+          # Reachables runs the Flux engine by default, which builds method flow summaries and uses
+          # them for summary-guided pruning (cached next to the atom). `--legacy-dataflow` opts out.
           ./atom.sh reachables -o /tmp/DjanGoat.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/DjanGoat.reachables.json
-          # Reachables with method flow summaries enabled (summary-guided pruning, cached next to the atom).
-          ./atom.sh reachables --summaries -o /tmp/DjanGoat.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/DjanGoat.reachables.summaries.json
           # Reachables with a validators/sanitisers config: flows through declared sanitisers are dropped.
           ./atom.sh reachables --validation-config $GITHUB_WORKSPACE/test/fixtures/validators.json -o /tmp/DjanGoat.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/DjanGoat.reachables.sanitised.json
           ./atom.sh usages -o /tmp/DjanGoat.atom -l python $GITHUB_WORKSPACE/repotests/DjanGoat -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/DjanGoat.usages.json

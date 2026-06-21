@@ -16,12 +16,12 @@ package object atom:
     var removeAtom: Boolean  = false
     var maxNumDef: Int       = DEFAULT_MAX_DEFS
     // Flux data-flow engine and mini-graph fragment caching are the defaults; `--legacy-dataflow`
-    // opts back into the classic engine (and disables fragment caching).
-    var useFluxEngine: Boolean  = true
-    var cacheFragments: Boolean = true
-    // Opt-in method flow summaries (`--summaries`): build per-method summaries and let the
-    // reachables query engine prune provably empty cross-call work. Off by default.
-    var useSummaries: Boolean             = false
+    // opts back into the classic engine (and disables fragment caching). Method flow summaries are
+    // part of the Flux bundle: when the Flux engine is on, summaries are built and the reachables
+    // query engine uses them to prune provably empty cross-call work (so `useSummaries` follows
+    // `useFluxEngine` and has no separate flag).
+    var useFluxEngine: Boolean            = true
+    var cacheFragments: Boolean           = true
     var exportAtom: Boolean               = false
     var reuseAtom: Boolean                = false
     var exportDir: String                 = DEFAULT_EXPORT_DIR
@@ -76,10 +76,6 @@ package object atom:
 
     def withCacheFragments(x: Boolean): AtomConfig =
       this.cacheFragments = x
-      this
-
-    def withUseSummaries(x: Boolean): AtomConfig =
-      this.useSummaries = x
       this
 
     def withFrontendArgs(args: Map[String, String]): AtomConfig =

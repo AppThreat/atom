@@ -70,8 +70,7 @@ package object slicing:
     mustEndAtExternalMethod: Boolean = true,
     excludeOperatorCalls: Boolean = true,
     sliceDepth: Int = 7,
-    sliceNodesLimit: Int = 200,
-    useFluxEngine: Boolean = true
+    sliceNodesLimit: Int = 200
   ) extends BaseConfig
 
   case class UsagesConfig(
@@ -86,7 +85,6 @@ package object slicing:
     sinkTag: Seq[String],
     sliceDepth: Int,
     includeCryptoFlows: Boolean,
-    useFluxEngine: Boolean = true,
     useSummaries: Boolean = false
   ) extends BaseConfig
 

@@ -112,8 +112,7 @@ Usage: atom [parsedeps|data-flow|usages|reachables|export|algorithms] [options] 
   --method-annotation-filter <value>
                            filters in slices that go through methods with specific annotations on the methods. Uses regex.
   --max-num-def <value>    maximum number of definitions in per-method data flow calculation - defaults to 2000
-  --legacy-dataflow        use the classic data-flow engine and disable mini-graph fragment caching. By default atom uses the faster, lower-allocation Flux engine with fragment caching enabled.
-  --summaries              build per-method flow summaries and let the reachables engine prune provably empty cross-call work. Summaries are cached next to the atom. Defaults to `false`.
+  --legacy-dataflow        use the classic data-flow engine and disable mini-graph fragment caching and method flow summaries. By default atom uses the faster, lower-allocation Flux engine with fragment caching and summary-guided pruning enabled.
   --validation-config <value>  path to a JSON file declaring validators/sanitisers (chennai.json schema). Reachable flows passing through a declared sanitiser are dropped for its categories.
 Command: parsedeps
 Extract dependencies from the build file and imports
@@ -191,8 +190,8 @@ flags override values from the file. For example, an algorithms config file:
 
 ## Data-flow engine
 
-atom computes data dependencies with the **Flux** engine by default — a low-allocation,
-reaching-definitions solver that produces the same `REACHING_DEF` edges as the classic engine while
+atom computes data dependencies with the **Flux** engine (_Flow-Lattice Update eXecutor_) by default
+— a low-allocation, reaching-definitions solver that produces the same `REACHING_DEF` edges as the classic engine while
 using far less memory and GC time on large (e.g. bundled/transpiled JavaScript) methods. Per-file
 mini-graph (fragment) AST caching is also enabled by default, so unchanged files are restored from a
 `.chen` cache instead of being re-parsed.
@@ -201,21 +200,45 @@ Pass `--legacy-dataflow` to fall back to the classic engine and disable fragment
 A/B comparisons or troubleshooting). Caching can also be controlled independently via the
 `-Dchen.cache.disabled=true` system property.
 
+### Storage compression (`-Dodb.storage.compression`)
+
+On large codebases the graph overflows the heap and unused nodes are spilled to disk; the spill/save
+path runs on a single thread, so the compressor it uses can dominate generation and slicing time.
+Choose it with a system property (no rebuild needed):
+
+```
+atom ... -Dodb.storage.compression=none|lzf|deflate
+```
+
+- `deflate` (**default**) — slowest but produces the smallest `.atom`; the default because atom file size matters most on large codebases.
+- `lzf` — fast compression; best for large graphs that overflow the heap, where DEFLATE dominates generation/slicing time.
+- `none` — no compression; fastest spill, largest `.atom`.
+
+The compressor is recorded per chunk, so atoms written with any mode remain readable under any other
+(an `lzf` atom loads fine under the `deflate` default). Giving the JVM more heap (`-Xmx`) also
+reduces spilling — the cheapest win is to not overflow at all.
+
 ## Method flow summaries
 
-The `reachables` command accepts `--summaries`, which builds a context-independent flow summary for
-each method before running the backward query. A summary records which parameters of a method reach
-its return value or its output parameters. The reachables engine uses these summaries to skip
-cross-call work that provably carries no taint, for example exploring an argument that the callee
-never writes. The pruning only removes empty work, so the reported flows are the same as without the
-flag.
+The `reachables` command builds a context-independent flow summary for each method before running the
+backward query. A summary records which parameters of a method reach its return value or its output
+parameters. The reachables engine uses these summaries to skip cross-call work that provably carries
+no taint, for example exploring an argument that the callee never writes, or descending into a callee
+whose return value can carry no taint. The pruning only removes empty work, so the reported flows are
+identical to a run without summaries.
 
-Summaries are written to a `flowsummary-<fingerprint>.json` file next to the atom and reused on an
-unchanged re-run; the fingerprint changes when any method body changes. The summary cache, like the
-other caches, can be turned off with `-Dchen.cache.disabled=true`.
+Method flow summaries are part of the default Flux bundle — there is no separate flag. They are
+enabled whenever the Flux engine is used (the default) and turned off only by `--legacy-dataflow`,
+which also reverts to the classic data-flow engine.
+
+Summaries are persisted in two ways: as CPG-native `flow-summary` tags on each `METHOD` node (so they
+serialize with the atom and are reused for free when the atom is reused/cached), and as a
+`flowsummary-<fingerprint>.json` sidecar next to the atom for runs that do not carry the tags. The
+fingerprint changes when any method body changes. The summary caches, like the other caches, can be
+turned off with `-Dchen.cache.disabled=true`.
 
 ```shell
-atom reachables --summaries -o app.atom -s reachables.json -l java .
+atom reachables -o app.atom -s reachables.json -l java .
 ```
 
 ## Validators and sanitisers

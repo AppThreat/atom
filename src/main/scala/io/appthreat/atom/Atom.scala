@@ -298,16 +298,6 @@ object Atom:
               case config: AtomConfig => config.withExportFormat(x)
               case _                  => c
         )
-    opt[Unit]("summaries")
-        .text(
-          "build per-method flow summaries and let the reachables engine prune provably empty " +
-              "cross-call work. Summaries are cached next to the atom. Defaults to `false`."
-        )
-        .action((_, c) =>
-            c match
-              case config: AtomConfig => config.withUseSummaries(true)
-              case _                  => c
-        )
     opt[String]("config")
         .text("path to a JSON config file for the export and algorithms commands")
         .action((x, c) =>
@@ -765,8 +755,7 @@ object Atom:
               config.sinkPatternFilter,
               config.excludeOperatorCalls,
               config.mustEndAtExternalMethod,
-              config.sliceDepth,
-              useFluxEngine = config.useFluxEngine
+              config.sliceDepth
             )
         case config: AtomUsagesConfig =>
             UsagesConfig(
@@ -781,8 +770,8 @@ object Atom:
               config.sinkTag,
               config.sliceDepth,
               config.includeCryptoFlows,
-              useFluxEngine = config.useFluxEngine,
-              useSummaries = config.useSummaries
+              // Summaries are part of the Flux bundle (no separate flag): on when Flux is on.
+              useSummaries = config.useFluxEngine
             )
         case _ => x
       ).withInputPath(x.inputPath)
@@ -813,8 +802,8 @@ object Atom:
     if config.cacheFragments then
       io.appthreat.x2cpg.passes.frontend.CacheControl.enableFragments()
     // Enable the method-flow-summary cache so summaries persist next to the atom and are reused on
-    // an unchanged re-run.
-    if config.useSummaries then
+    // an unchanged re-run. Summaries are part of the Flux bundle, so this follows `useFluxEngine`.
+    if config.useFluxEngine then
       io.appthreat.x2cpg.passes.frontend.CacheControl.enable(
         io.appthreat.x2cpg.passes.frontend.CacheControl.Summary
       )
@@ -1142,6 +1131,17 @@ object Atom:
                 useFluxEngine = x.useFluxEngine
               ))
                   .run(new LayerCreatorContext(atom))
+              // Persist per-method flow summaries (CHEN3 §5 / G-5) as CPG-native `flow-summary`
+              // tags so they serialize with the atom and the reachables engine can be primed
+              // without recomputation. Part of the Flux bundle.
+              if x.useFluxEngine then
+                val summaries =
+                    io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryComputer
+                        .computeAll(atom, io.appthreat.dataflowengineoss.DefaultSemantics())
+                new io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryTagsPass(
+                  atom,
+                  summaries
+                ).createAndApply()
               new CdxPass(atom).createAndApply()
               new EasyTagsPass(atom).createAndApply()
               runChennaiTags(x, atom)

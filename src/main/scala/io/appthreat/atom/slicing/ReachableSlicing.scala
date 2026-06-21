@@ -5,7 +5,7 @@ import io.appthreat.atom.Atom.{DEFAULT_SINK_TAGS, DEFAULT_SOURCE_TAGS, FRAMEWORK
 import io.appthreat.dataflowengineoss.DefaultSemantics
 import io.appthreat.dataflowengineoss.language.*
 import io.appthreat.dataflowengineoss.queryengine.{EngineConfig, EngineContext}
-import io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryComputer
+import io.appthreat.dataflowengineoss.queryengine.summaries.{FlowSummaryComputer, FlowSummaryTags}
 import io.appthreat.dataflowengineoss.semanticsloader.Semantics
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.Languages
@@ -20,9 +20,10 @@ import io.circe.syntax.*
 object ReachableSlicing:
 
   implicit val semantics: Semantics = DefaultSemantics()
-  // Reassigned per run from the slice config (ReachablesConfig.useFluxEngine, default true; flipped
-  // off by `--legacy-dataflow`) so the backward query engine matches the chosen engine. Reachable
-  // slicing runs one project at a time, so a run-scoped var is safe.
+  // Reassigned per run to carry the method flow summaries computed for this atom (the backward query
+  // engine uses them to prune provably empty cross-call work). The reaching-def engine choice (Flux
+  // vs classic) is made earlier at enhancement time, not here. Reachable slicing runs one project at
+  // a time, so a run-scoped var is safe.
   implicit var context: EngineContext = EngineContext(semantics, EngineConfig())
 
   private val API_TAG              = "api"
@@ -77,16 +78,21 @@ object ReachableSlicing:
   ): Unit =
     val language = atom.metaData.language.head
     // Build method flow summaries up front when requested, so the backward query engine can prune
-    // cross-call tasks that provably carry no taint. Summaries are cached next to the atom output.
+    // cross-call tasks that provably carry no taint. Prefer the `flow-summary` tags already embedded
+    // in the atom (written during enhancement, so they survive a reused/cached atom); only fall back
+    // to computing/loading from the JSON sidecar when the atom carries no tags.
     val summaries =
         if config.useSummaries then
-          val cacheDir = Option(new JFile(outputBasePath).getAbsoluteFile.getParent).getOrElse(".")
-          FlowSummaryComputer.loadOrCompute(atom, cacheDir, semantics)
+          val tagged = FlowSummaryTags.fromCpg(atom)
+          if tagged.nonEmpty then tagged
+          else
+            val cacheDir =
+                Option(new JFile(outputBasePath).getAbsoluteFile.getParent).getOrElse(".")
+            FlowSummaryComputer.loadOrCompute(atom, cacheDir, semantics)
         else Map.empty
     context = EngineContext(
       semantics,
       EngineConfig(
-        useFluxEngine = config.useFluxEngine,
         useSummaries = config.useSummaries,
         summaries = summaries
       )
