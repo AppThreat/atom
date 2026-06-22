@@ -547,7 +547,7 @@ object Atom:
               println(s"Failure: $errMsg")
             System.exit(1)
 
-  private def run(args: Array[String]): Either[String, String] =
+  private[atom] def run(args: Array[String]): Either[String, String] =
     val parserArgs = args.toList
     parseConfig(parserArgs) match
       case Right(config: AtomConfig) => run(config, config.language)
@@ -650,7 +650,7 @@ object Atom:
     runChennaiTags(config, ag)
     val slice = calculateUsagesSlice(ag, config)
     slice.foreach { s =>
-      val outFile = config.outputSliceFile.createFileIfNotExists()
+      val outFile = config.outputSliceFile.createFileIfNotExists(createParents = true)
       s.toJsonFile(outFile)
       println(s"Slices have been successfully written to ${outFile.pathAsString}")
     }
@@ -742,7 +742,7 @@ object Atom:
       programSlice.foreach { slice =>
         val finalOutputPath =
             File(outFile.pathAsString)
-                .createFileIfNotExists()
+                .createFileIfNotExists(createParents = true)
                 .write(slice)
                 .pathAsString
         println(s"Slices have been successfully written to $finalOutputPath")
@@ -795,6 +795,10 @@ object Atom:
       generateForLanguage(language.toUpperCase(Locale.ROOT), config)
 
   private def generateForLanguage(language: String, config: AtomConfig): Either[String, String] =
+    Option(config.outputAtomFile.parent).foreach(_.createDirectoryIfNotExists(createParents = true))
+    Option(config.outputSliceFile.parent).foreach(_.createDirectoryIfNotExists(createParents =
+        true
+    ))
     val outputAtomFile = config.outputAtomFile.pathAsString
     val onlyAstCache   = extractArgBoolean(config, "only-ast-cache", default = false)
     // Mini-graph fragment AST caching has its own opt-in (`--cache-fragments`), decoupled from

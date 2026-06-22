@@ -76,6 +76,8 @@ object ReachableSlicing:
     outputBasePath: String,
     chunkSize: Int = DEFAULT_CHUNK_SIZE
   ): Unit =
+    val baseFile = File(outputBasePath)
+    Option(baseFile.parent).foreach(_.createDirectoryIfNotExists(createParents = true))
     val language = atom.metaData.language.head
     // Build method flow summaries up front when requested, so the backward query engine can prune
     // cross-call tasks that provably carry no taint. Prefer the `flow-summary` tags already embedded

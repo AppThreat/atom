@@ -139,5 +139,31 @@ class GraphCommandsTests extends PySrc2CpgFixture(withOssDataflow = false):
           val config = AtomAlgorithmsConfig().withAlgoType("bogus")
           GraphCommands.runAlgorithms(cpg, config).isLeft shouldBe true
       }
+
+      "automatically create nested directories for output atom and slice files" in {
+          val testNestedDir = File("target/test-nested-output-dir")
+          if (testNestedDir.exists) testNestedDir.delete(true)
+          testNestedDir.exists shouldBe false
+
+          val outputAtom = testNestedDir / "sub" / "dir" / "app.atom"
+          val outputSlice = testNestedDir / "sub" / "dir" / "slices.json"
+
+          val args = Array(
+            "data-flow",
+            "-l", "python",
+            "-o", outputAtom.pathAsString,
+            "-s", outputSlice.pathAsString,
+            "test/fixtures/sample-py"
+          )
+
+          val result = Atom.run(args)
+          result.isRight shouldBe true
+          outputAtom.exists shouldBe true
+          outputSlice.exists shouldBe true
+
+          // Cleanup
+          testNestedDir.delete(true)
+          testNestedDir.exists shouldBe false
+      }
   }
 end GraphCommandsTests
