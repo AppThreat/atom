@@ -248,7 +248,7 @@ object Atom:
         )
     opt[Map[String, String]]("frontend-args")
         .text(
-          "Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,enable-ast-cache=true,only-ast-cache=true"
+          "Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,only-ast-cache=true"
         )
         .action((x, c) =>
             c match
@@ -922,9 +922,9 @@ object Atom:
     val extraIncludes = extractArgSet(config, "includes") ++ extractArgSet(config, "include-paths")
     val cppStandard   = extractArgString(config, "cpp-standard")
     val onlyAstCache  = extractArgBoolean(config, "only-ast-cache", default = false)
-    val enableAstCache =
-        extractArgBoolean(config, "enable-ast-cache", default = false) || onlyAstCache
-    val defaultCacheDir = (config.inputPath / "ast_out").pathAsString
+    // AST caching is on by default; disable globally with -Dchen.cache.disabled.ast=true.
+    val enableAstCache  = true
+    val defaultCacheDir = (config.inputPath / ".chen").pathAsString
     val cacheDir        = extractArgString(config, "ast-cache-dir", default = defaultCacheDir)
     val baseConfig = CConfig(
       includeComments = false,
@@ -961,9 +961,9 @@ object Atom:
     val includeTrivialExpressions =
         extractArgBoolean(config, "include-trivial-expressions", default = false)
     val onlyAstCache = extractArgBoolean(config, "only-ast-cache", default = false)
-    val enableAstCache =
-        extractArgBoolean(config, "enable-ast-cache", default = false) || onlyAstCache
-    val defaultCacheDir = (config.inputPath / "ast_out").pathAsString
+    // AST caching is on by default; disable globally with -Dchen.cache.disabled.ast=true.
+    val enableAstCache  = true
+    val defaultCacheDir = (config.inputPath / ".chen").pathAsString
     val cacheDir        = extractArgString(config, "ast-cache-dir", default = defaultCacheDir)
     val cIgnoreDirEnvVars =
         if config.language.equalsIgnoreCase("CPP") || config.language.equalsIgnoreCase("C++") then
