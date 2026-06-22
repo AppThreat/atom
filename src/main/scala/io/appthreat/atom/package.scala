@@ -114,7 +114,8 @@ package object atom:
     sourceTag: Seq[String] = DEFAULT_SOURCE_TAGS,
     sinkTag: Seq[String] = DEFAULT_SINK_TAGS,
     sliceDepth: Int = DEFAULT_SLICE_DEPTH,
-    includeCryptoFlows: Boolean = false
+    includeCryptoFlows: Boolean = false,
+    profile: String = "generic"
   ) extends AtomConfig
 
   /** Export the whole atom, or a per-method subgraph of it, to one of the supported graph formats.

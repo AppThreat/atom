@@ -85,8 +85,57 @@ package object slicing:
     sinkTag: Seq[String],
     sliceDepth: Int,
     includeCryptoFlows: Boolean,
-    useSummaries: Boolean = false
+    useSummaries: Boolean = false,
+    profile: ReachabilityProfile = ReachabilityProfile.Generic
   ) extends BaseConfig
+
+  /** A named, language-agnostic post-filter applied to reachable flows to cut false positives.
+    *
+    * A profile is purely tag-driven so it works for every frontend:
+    *   - `neutralizerTags`: a flow that passes through a call (or a call to a method) carrying any
+    *     of these tags is dropped. This covers validators, sanitisers, encoders and
+    *     declassification barriers such as ORM reads (`db-read`).
+    *   - `sourceTagsOverride`: when set, restricts the source tags considered, e.g. to web-facing
+    *     inputs only, so CLI/driver sources don't flood an application-security review.
+    *
+    * Profiles are additive over the existing sanitiser handling; the default `Generic` profile
+    * changes nothing.
+    */
+  case class ReachabilityProfile(
+    name: String,
+    description: String,
+    neutralizerTags: Set[String] = Set.empty,
+    sourceTagsOverride: Option[Seq[String]] = None
+  )
+
+  object ReachabilityProfile:
+    val Generic: ReachabilityProfile =
+        ReachabilityProfile("generic", "No additional filtering (default).")
+
+    /** Application-security review: keep web/remote-facing sources, and treat validation,
+      * sanitisation, encoding and ORM reads as flow barriers.
+      */
+    val AppSec: ReachabilityProfile = ReachabilityProfile(
+      "appsec",
+      "Web app review: drop flows neutralised by validation/sanitisation/encoding or ORM reads, and consider only web-facing sources.",
+      neutralizerTags =
+          Set("validation", "sanitization", "sanitizer", "encode", "db-read"),
+      sourceTagsOverride = Some(Seq(
+        "framework-input",
+        "framework-route",
+        "framework",
+        "service-ingress"
+      ))
+    )
+
+    private val all: Map[String, ReachabilityProfile] =
+        Seq(Generic, AppSec).map(p => p.name -> p).toMap
+
+    def byName(name: String): Option[ReachabilityProfile] =
+        all.get(name.trim.toLowerCase)
+
+    def names: Seq[String] = all.keys.toSeq.sorted
+  end ReachabilityProfile
 
   /** Adds extensions to modify a method traversal based on config options
     */

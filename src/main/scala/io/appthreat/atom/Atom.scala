@@ -91,6 +91,7 @@ object Atom:
         "reflection",
         "concurrent",
         "serialization",
+        "unsafe-deserialization",
         "regex",
         "cron",
         "mail",
@@ -454,6 +455,15 @@ object Atom:
                   c match
                     case c: AtomReachablesConfig => c.copy(includeCryptoFlows = true)
                     case _                       => c
+              ),
+          opt[String]("profile")
+              .text(
+                s"reduce false positives with a flow-filtering profile: ${ReachabilityProfile.names.mkString(", ")}. Defaults to generic (no extra filtering)."
+              )
+              .action((x, c) =>
+                  c match
+                    case c: AtomReachablesConfig => c.copy(profile = x)
+                    case _                       => c
               )
         )
     cmd("export")
@@ -765,13 +775,29 @@ object Atom:
               config.extractEndpoints
             )
         case config: AtomReachablesConfig =>
+            val profile = ReachabilityProfile.byName(config.profile).getOrElse {
+                if config.profile.trim.nonEmpty &&
+                  !config.profile.equalsIgnoreCase(ReachabilityProfile.Generic.name)
+                then
+                  System.err.println(
+                    s"Unknown reachables profile '${config.profile}'. Using 'generic'. Available: ${ReachabilityProfile.names.mkString(", ")}"
+                  )
+                ReachabilityProfile.Generic
+            }
+            // A profile may restrict sources (e.g. to web-facing inputs), but an explicit
+            // --source-tag always wins.
+            val effectiveSourceTag =
+                profile.sourceTagsOverride match
+                  case Some(tags) if config.sourceTag == DEFAULT_SOURCE_TAGS => tags
+                  case _                                                     => config.sourceTag
             ReachablesConfig(
-              config.sourceTag,
+              effectiveSourceTag,
               config.sinkTag,
               config.sliceDepth,
               config.includeCryptoFlows,
               // Summaries are part of the Flux bundle (no separate flag): on when Flux is on.
-              useSummaries = config.useFluxEngine
+              useSummaries = config.useFluxEngine,
+              profile = profile
             )
         case _ => x
       ).withInputPath(x.inputPath)

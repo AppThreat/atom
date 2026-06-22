@@ -49,7 +49,7 @@ object ReachableSlicing:
   // execution, deserialization, reflection, framework output, sql).
   private val INGRESS_SOURCE_TAG = "service-ingress"
   private val INGRESS_SINK_TAG =
-      "(file-io|code-execution|reflection|serialization|sql|framework-output)"
+      "(file-io|code-execution|reflection|serialization|unsafe-deserialization|sql|framework-output)"
 
   private val JVM_BASED_LANGUAGES =
       Set(Languages.JAVA, Languages.JAVASRC, "JAR", "JIMPLE", "ANDROID", "APK", "DEX")
@@ -108,10 +108,16 @@ object ReachableSlicing:
     // Calls tagged as sanitisers/validators (by ChennaiTagsPass) and the sink categories each
     // covers. A flow that passes through such a call is dropped for the matching categories.
     val sanitizerCalls = collectSanitizerCalls(atom)
+    // Profile-driven neutraliser barriers (validators, sanitisers, encoders, ORM reads). A flow that
+    // passes through any of these node ids is dropped. Empty for the default `generic` profile.
+    val neutralizerNodeIds = collectNeutralizerNodeIds(atom, config.profile.neutralizerTags)
     val flowIterator = collectFlowSlices(atom, config, language)
         .iterator
         .flatten
         .filterNot(isSanitized(_, sanitizerCalls))
+        .filterNot(passesThroughNeutralizer(_, neutralizerNodeIds))
+        .filterNot(isMetaClassAdapterFlow)
+        .filterNot(endsAtNonSink)
         .filter(isUniqueFlow(_, seenSignatures, seenEndpoints))
         .map(toSlice)
 
@@ -233,6 +239,88 @@ object ReachableSlicing:
       else
         val endpointKey = s"${elems.head.id()}->${elems.last.id()}#${elems.size}"
         seenEndpoints.add(endpointKey)
+
+  /** Collects the ids of nodes that act as profile neutraliser barriers: calls carrying any of the
+    * profile's tags, calls to methods carrying them, and the parameters/identifiers/returns of such
+    * methods. Language-agnostic - it relies purely on tags emitted by the taggers.
+    */
+  private def collectNeutralizerNodeIds(atom: Cpg, tags: Set[String]): Set[Long] =
+      if tags.isEmpty then Set.empty
+      else
+        val tagRegex      = s"(${tags.mkString("|")})"
+        val taggedCalls   = atom.tag.name(tagRegex).call.id.l
+        val taggedMethods = atom.tag.name(tagRegex).method
+        val callsToTagged = taggedMethods.callIn(using NoResolve).id.l
+        val taggedParams  = atom.tag.name(tagRegex).parameter.id.l
+        val taggedIdents  = atom.tag.name(tagRegex).identifier.id.l
+        (taggedCalls ++ callsToTagged ++ taggedParams ++ taggedIdents).toSet
+
+  /** True if the flow passes through a neutraliser barrier (the node itself, or the call enclosing
+    * it). Used to drop flows that are validated/sanitised/encoded, or declassified via an ORM read,
+    * under a profile such as `appsec`.
+    */
+  private def passesThroughNeutralizer(path: Path, neutralizerNodeIds: Set[Long]): Boolean =
+      neutralizerNodeIds.nonEmpty &&
+          path.elements.exists { element =>
+              neutralizerNodeIds.contains(element.id()) ||
+              enclosingCallId(element).exists(neutralizerNodeIds.contains)
+          }
+
+  /** True if the flow originates in a synthetic `<metaClassAdapter>` method. Such flows duplicate
+    * the real method's flow (the frontend emits both), so dropping the adapter variant removes the
+    * duplicate while keeping the genuine flow.
+    */
+  // Builtins, iterator/string/type helpers that are never security sinks but leak into flows via
+  // the broad framework-output / dynamic call-in tagging. Language-agnostic; matched on the
+  // terminal sink's call name. A flow ending in one of these carries no signal.
+  private val NON_SINK_NAMES = Set(
+    "__next__",
+    "__iter__",
+    "__len__",
+    "__getitem__",
+    "next",
+    "iter",
+    "len",
+    "isinstance",
+    "issubclass",
+    "hasattr",
+    "strip",
+    "lstrip",
+    "rstrip",
+    "lower",
+    "upper",
+    "title",
+    "capitalize",
+    "split",
+    "rsplit",
+    "splitlines",
+    "join",
+    "b64encode",
+    "hexdigest",
+    "repr",
+    "print"
+  )
+
+  /** True if the flow terminates at a benign non-sink (an iterator/string/type builtin). The sink
+    * is the last path element; we check its call name (or the call enclosing it).
+    */
+  private def endsAtNonSink(path: Path): Boolean =
+      path.elements.lastOption.exists { last =>
+        val name = last match
+          case c: Call       => c.name
+          case e: Expression => e.inCall.headOption.map(_.name).getOrElse("")
+          case _             => ""
+        NON_SINK_NAMES.contains(name)
+      }
+
+  private def isMetaClassAdapterFlow(path: Path): Boolean =
+      path.elements.headOption.exists { head =>
+        val methodName = head match
+          case expr: Expression     => expr.method.name
+          case p: MethodParameterIn => p.method.name
+          case _                    => ""
+        methodName.contains("metaClassAdapter")
+      }
 
   private val SANITIZER_TAG             = "sanitizer"
   private val SANITIZER_CATEGORY_PREFIX = "sanitizer-"
@@ -613,12 +701,20 @@ object ReachableSlicing:
             (None, purls)
           else
             val resolvedCallee = c.callee(using NoResolve).headOption
-            val (finalTags, finalPurls) =
-                if tags.isEmpty && resolvedCallee.exists(_.isExternal) && !c.methodFullName
-                      .startsWith("new ")
-                then
+            val externalCallee =
+                resolvedCallee.exists(_.isExternal) && !c.methodFullName.startsWith("new ")
+            val (finalTags, resolvedPurls) =
+                if tags.isEmpty && externalCallee then
                   resolveTagsAndPurls(c, resolvedCallee)
                 else (tags, purls)
+            // G9: an external library call may carry its package URL on the resolved callee method
+            // even when the call site itself already has other tags. Surface it so reachable flows
+            // can be tied back to dependency CVEs.
+            val calleePurls =
+                if externalCallee then
+                  resolvedCallee.toList.flatMap(_.tag.name.l).filter(_.startsWith("pkg:")).toSet
+                else Set.empty[String]
+            val finalPurls = resolvedPurls ++ calleePurls
 
             val isExternal =
                 resolvedCallee.exists(_.isExternal) && !c.methodFullName.startsWith("new ")

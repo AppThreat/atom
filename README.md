@@ -130,6 +130,7 @@ Extract reachable data-flow slices based on automated framework tags
   --source-tag <value>     source tag - defaults to framework-input. Comma-separated values allowed.
   --sink-tag <value>       sink tag - defaults to framework-output. Comma-separated values allowed.
   --include-crypto         includes crypto library flows - defaults to false.
+  --profile <value>        reduce false positives with a flow-filtering profile: appsec, generic. Defaults to generic (no extra filtering).
 Command: export [options]
 Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)
   --format <value>         export format: dot, graphml, gexf, graphson, neo4jcsv or gnn
@@ -281,6 +282,36 @@ atom reachables --validation-config validators.json -o app.atom -s reachables.js
 The declarations can also be embedded in the project's `chennai.json` instead of passed on the
 command line. For programmatic use, the dataflow engine exposes `passesThrough` /
 `doesNotPassThrough` on a flow iterator, taking a simple node predicate.
+
+## Reachability profiles
+
+The default reachables run is deliberately broad: it reports every flow from a tagged source to a
+tagged sink. For a focused review you can apply a profile with `--profile`, which post-filters the
+flows in a generic, tag-driven way that works across all languages.
+
+```shell
+atom reachables --profile appsec -o app.atom -s reachables.json -l python .
+```
+
+Profiles do two things:
+
+- **Neutraliser barriers** — a flow that passes through a call (or a call to a method) carrying a
+  neutraliser tag is dropped. This builds on the validator/sanitiser handling above and adds
+  declassification barriers such as ORM reads.
+- **Source restriction** — a profile may narrow the source tags considered. An explicit
+  `--source-tag` always overrides this.
+
+| Profile             | Behaviour                                                                                                                                                                                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `generic` (default) | No additional filtering.                                                                                                                                                                                                                                                       |
+| `appsec`            | Web/API review. Drops flows neutralised by `validation`, `sanitization`, `sanitizer`, `encode` or `db-read` (ORM reads), and restricts sources to web-facing inputs (`framework-input`, `framework-route`, `framework`, `service-ingress`) — i.e. excludes CLI/driver sources. |
+
+The `db-read` barrier is what removes the bulk of object-identity false positives: when a request only
+supplies the primary key to an ORM accessor (e.g. `get_object_or_404`), the value read back is stored
+data, not live request input, so flows that merely pass through such a read are pruned.
+
+Profiles are extensible. A profile is a `ReachabilityProfile` (name, neutraliser tags, optional source
+override) registered in `io.appthreat.atom.slicing` — add an entry to the registry to define your own.
 
 ## Sample Invocations
 
