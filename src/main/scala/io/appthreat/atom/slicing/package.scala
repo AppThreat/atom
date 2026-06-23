@@ -557,6 +557,19 @@ package object slicing:
               annotation.columnNumber.map(_.intValue()),
               label = annotation.label
             )
+        case x: Method =>
+            // A method definition with no call-sites and no annotations in this CPG (e.g. a
+            // top-level function or an entry-point only reachable from outside the analysed
+            // source).  Represent it as a CallDef so the slice carries a typed, labelled entry
+            // rather than falling through to an UnknownDef with label UNKNOWN and type ANY.
+            CallDef(
+              x.name,
+              x.methodReturn.typeFullName,
+              Option(x.fullName),
+              isExternal,
+              lineNumber,
+              columnNumber
+            )
         case x: AstNode =>
             var methodDecl = x.code.takeWhile(_ != ')')
             if methodDecl.contains("(") && !methodDecl.endsWith(")") then
