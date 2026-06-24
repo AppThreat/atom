@@ -24,13 +24,6 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Clone chen
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
-        with:
-          repository: 'appthreat/chen'
-          ref: 'release/3.x'
-          path: 'chen'
-          persist-credentials: false
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
         with:
           repository: 'ShiftLeftSecurity/shiftleft-java-example'
@@ -143,13 +136,6 @@ jobs:
       - name: Install sbt
         run: brew install sbt
         if: runner.os == 'macOS'
-      - name: Build and publish chen locally
-        run: |
-          cd chen
-          sbt publishLocal
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_USERNAME: ${{ github.actor }}
       - run: |
           sbt stage createDistribution
           python -m pip install atom-tools

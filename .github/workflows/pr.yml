@@ -16,13 +16,6 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Clone chen
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
-        with:
-          repository: 'appthreat/chen'
-          ref: 'release/3.x'
-          path: 'chen'
-          persist-credentials: false
       - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af  # v1.313.0
         with:
           ruby-version: '4.0.5'
@@ -82,13 +75,6 @@ jobs:
       - uses: coursier/setup-action@fd1707a76b027efdfb66ca79318b4d29b72e5a02  # v3.0.0
         with:
           apps: scala3 scalac
-      - name: Build and publish chen locally
-        run: |
-          cd chen
-          sbt publishLocal
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_USERNAME: ${{ github.actor }}
       - run: |
           sbt scalafmtCheck test stage createDistribution
           cd wrapper/nodejs
