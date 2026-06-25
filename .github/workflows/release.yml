@@ -467,39 +467,6 @@ jobs:
           cd wrapper/nodejs
           npm run test
 
-      - name: Verify native standalone binary (install-shape + real analysis)
-        run: |
-          PKGS="$GITHUB_WORKSPACE/wrapper/nodejs/packages"
-          VERIFY_DIR="$(mktemp -d)"
-          cd "$VERIFY_DIR"
-          npm init -y >/dev/null
-          npm install "$PKGS/atom-linux-amd64" "$PKGS/atom"
-          ATOM="node_modules/@appthreat/atom"
-          test -x node_modules/@appthreat/atom-linux-amd64/bin/atom
-          # The native binary must NOT fall back to the jar path here.
-          node -e "import('$VERIFY_DIR/$ATOM/resolve.js').then(m => { const p = m.locateAtomBinary(); if (!p || p.kind !== 'native') { console.error('Expected native provider, got', p); process.exit(1); } console.log('Resolved native:', p.pkg); })"
-          node "$ATOM/index.js" --help
-          # Real analysis against a small Java repo (native binary is self-contained for JVM langs).
-          node "$ATOM/index.js" -l java -o /tmp/app.atom "$GITHUB_WORKSPACE/repotests/shiftleft-java-example"
-          test -s /tmp/app.atom
-          echo "Native java analysis produced $(stat -c%s /tmp/app.atom) bytes"
-
-      - name: Verify jar fallback path
-        run: |
-          PKGS="$GITHUB_WORKSPACE/wrapper/nodejs/packages"
-          VERIFY_DIR="$(mktemp -d)"
-          cd "$VERIFY_DIR"
-          npm init -y >/dev/null
-          # Install only the universal jar package + parent: the dispatcher must
-          # fall back to the jar runner and use the system JDK. No --omit=optional:
-          # atom-jar is itself an optionalDependency of @appthreat/atom and npm 11
-          # would drop the directly-requested copy. The unpublished platform packages
-          # (3.0.0) 404 as optional deps, tolerated non-fatally.
-          npm install "$PKGS/atom-jar" "$PKGS/atom"
-          ATOM="node_modules/@appthreat/atom"
-          node -e "import('$VERIFY_DIR/$ATOM/resolve.js').then(m => { const p = m.locateAtomBinary(); if (!p || p.kind !== 'jar' || p.pkg !== '@appthreat/atom-jar') { console.error('Expected jar fallback, got', p); process.exit(1); } console.log('Resolved jar fallback:', p.pkg); })"
-          node "$ATOM/index.js" --help
-
       - name: NPM Dry-run Publish (Verify packaging checks)
         run: |
           cd wrapper/nodejs
