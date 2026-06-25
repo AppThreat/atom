@@ -1,0 +1,28 @@
+{
+  "name": "@appthreat/atom-linux-arm64-musl",
+  "version": "3.0.0",
+  "description": "Linux arm64 (musl) JAR fallback package for @appthreat/atom",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AppThreat/atom.git"
+  },
+  "author": "Team AppThreat <cloud@appthreat.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AppThreat/atom/issues"
+  },
+  "homepage": "https://github.com/AppThreat/atom#readme",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "libc": [
+    "musl"
+  ],
+  "files": [
+    "plugins/"
+  ]
+}

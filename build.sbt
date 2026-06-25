@@ -143,12 +143,18 @@ credentials +=
       sys.env.getOrElse("GITHUB_TOKEN", "N/A")
     )
 
-// Mandrel-based builds are released under version 2 of the GNU General Public License with the “Classpath” Exception - https://github.com/graalvm/mandrel/blob/default/LICENSE
+// GraalVM CE builds are released under version 2 of the GNU General Public License with the "Classpath" Exception (GPLv2+CPE)
 val libcOptions = if (sys.env.getOrElse("ATOM_GRAALVM_LIBC", "glibc") == "musl") Seq("--libc=musl") else Seq.empty
+val niOpt = sys.env.getOrElse("ATOM_NI_OPT", "-O2")
+val niMarch = sys.env.getOrElse("ATOM_NI_MARCH", "compatibility")
+val niGc = sys.env.getOrElse("ATOM_NI_GC", "serial")
 graalVMNativeImageOptions := Seq(
   "-H:+UnlockExperimentalVMOptions",
   "-R:MaximumHeapSizePercent=90", // Reduce for more predictable and deterministic slicing
-  "--gc=epsilon",
+  s"--gc=$niGc",
+  "-H:+CompactingOldGen",         // Mark-and-compact for the old generation to reduce memory fragmentation
+  niOpt,
+  s"-march=$niMarch",
   "--initialize-at-build-time=io.appthreat.*",
   "--no-fallback"
 ) ++ libcOptions
