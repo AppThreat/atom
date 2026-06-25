@@ -1,0 +1,48 @@
+{
+  "name": "@appthreat/atom",
+  "version": "3.0.0",
+  "description": "Create atom (⚛) representation for your application, packages and libraries",
+  "exports": "./index.js",
+  "type": "module",
+  "bin": {
+    "atom": "./index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AppThreat/atom.git"
+  },
+  "keywords": [
+    "code",
+    "analysis",
+    "threat",
+    "sbom",
+    "supply",
+    "chain"
+  ],
+  "author": "Team AppThreat <cloud@appthreat.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AppThreat/atom/issues"
+  },
+  "homepage": "https://github.com/AppThreat/atom#readme",
+  "files": [
+    "index.js",
+    "resolve.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "optionalDependencies": {
+    "@appthreat/atom-linux-amd64": "3.0.0",
+    "@appthreat/atom-linux-arm64": "3.0.0",
+    "@appthreat/atom-darwin-arm64": "3.0.0",
+    "@appthreat/atom-linux-amd64-musl": "3.0.0",
+    "@appthreat/atom-windows-amd64": "3.0.0",
+    "@appthreat/atom-darwin-amd64": "3.0.0",
+    "@appthreat/atom-windows-arm64": "3.0.0",
+    "@appthreat/atom-linux-arm64-musl": "3.0.0",
+    "@appthreat/atom-jar": "3.0.0"
+  }
+}

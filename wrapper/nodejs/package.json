@@ -1,50 +1,15 @@
 {
-  "name": "@appthreat/atom",
-  "version": "3.0.0",
-  "description": "Create atom (⚛) representation for your application, packages and libraries",
-  "exports": "./index.js",
+  "name": "atom-monorepo",
+  "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "pretty": "prettier --write *.js --trailing-comma=none",
-    "lint": "eslint *.mjs *.js"
-  },
-  "dependencies": {
-    "@appthreat/atom-common": "^1.1.0"
+    "lint": "eslint packages/atom/*.js",
+    "test": "node --test test/**/*.test.js"
   },
   "devDependencies": {
     "eslint": "8.57.0"
-  },
-  "bin": {
-    "atom": "index.js"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AppThreat/atom.git"
-  },
-  "keywords": [
-    "code",
-    "analysis",
-    "threat",
-    "sbom",
-    "supply",
-    "chain"
-  ],
-  "author": "Team AppThreat <cloud@appthreat.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/AppThreat/atom/issues"
-  },
-  "homepage": "https://github.com/AppThreat/atom#readme",
-  "files": [
-    "*.js",
-    "plugins/",
-    "LICENSE"
-  ],
-  "packageManager": "npm",
-  "overrides": {
-    "glob": "^11.0.2"
   }
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Trace the atom executable using Graal native-image-agent to produce an optimized native binary
+# Trace the atom executable using Graal native-image-agent to collect reachability metadata
 #
 # bash ci/trace-native-image.sh java <file path>
 # bash ci/trace-native-image.sh js <file path>

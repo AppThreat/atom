@@ -10,7 +10,14 @@ bin
 project/metals.sbt
 project/project/
 .vscode/
+# Generated/staged payloads — assembled by build.sh / scripts/assemble.mjs, never committed
 wrapper/nodejs/plugins/
+wrapper/nodejs/downloaded-binaries/
+wrapper/nodejs/packages/atom-jar/plugins/
+wrapper/nodejs/packages/atom-darwin-amd64/plugins/
+wrapper/nodejs/packages/atom-windows-arm64/plugins/
+wrapper/nodejs/packages/atom-linux-arm64-musl/plugins/
+wrapper/nodejs/packages/atom-*/bin/
 atom.zip
 atom.zip.sha512
 node_modules/

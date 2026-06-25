@@ -18,7 +18,7 @@ jobs:
         ruby: ["4.0.5"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           persist-credentials: false
       - name: Use Node.js ${{ matrix.node-version }}
@@ -26,48 +26,48 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           package-manager-cache: false
-      - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af  # v1.313.0
+      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74  # v1.314.0
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'ShiftLeftSecurity/shiftleft-java-example'
           path: 'repotests/shiftleft-java-example'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'juice-shop/juice-shop'
           path: 'repotests/juice-shop'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'ShiftLeftSecurity/shiftleft-ts-example'
           path: 'repotests/shiftleft-ts-example'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'libexpat/libexpat'
           path: 'repotests/libexpat'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'HooliCorp/DjanGoat'
           path: 'repotests/DjanGoat'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'bionomia/bionomia'
           path: 'repotests/bionomia'
           ref: '5ada8b5f4a5f68561a7195e2badc2f744dc4676e'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'OWASP/railsgoat'
           path: 'repotests/railsgoat'
           ref: 'c1e8ff1e3b24a1c48fcfc9fbee0f65dc296b49d9'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'playframework/play-samples'
           path: 'repotests/play-samples'
@@ -90,7 +90,7 @@ jobs:
           php-version: "8.3"
           tools: composer:v2
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
         with:
           python-version: '3.12'
       - name: Install sbt
@@ -107,7 +107,10 @@ jobs:
           python -m pip install atom-tools
           cd wrapper/nodejs
           bash build.sh
-          sudo npm install -g .
+          # Install the parent dispatcher + universal jar package. --omit=optional
+          # skips the not-yet-published native platform packages so the dispatcher
+          # exercises the jar fallback path against the runner's JDK.
+          sudo npm install -g --omit=optional ./packages/atom-jar ./packages/atom
           sudo npm install -g @appthreat/atom-parsetools
           atom --help
           astgen --version
@@ -127,7 +130,7 @@ jobs:
       - name: atom parse tools checks
         run: |
           cd wrapper/nodejs
-          sudo npm install -g .
+          sudo npm install -g --omit=optional ./packages/atom-jar ./packages/atom
           sudo npm install -g @appthreat/atom-parsetools
           astgen --help
           rbastgen --help
@@ -139,7 +142,7 @@ jobs:
         java-version: ['21', '25']
         node-version: ['25.x']
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           persist-credentials: false
       - name: Use Node.js ${{ matrix.node-version }}
@@ -148,35 +151,35 @@ jobs:
           node-version: ${{ matrix.node-version }}
           package-manager-cache: false
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
         with:
           python-version: '3.12'
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'ShiftLeftSecurity/shiftleft-java-example'
           path: 'repotests/shiftleft-java-example'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'juice-shop/juice-shop'
           path: 'repotests/juice-shop'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'ShiftLeftSecurity/shiftleft-ts-example'
           path: 'repotests/shiftleft-ts-example'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'libexpat/libexpat'
           path: 'repotests/libexpat'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'HooliCorp/DjanGoat'
           path: 'repotests/DjanGoat'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'playframework/play-samples'
           path: 'repotests/play-samples'
@@ -198,12 +201,10 @@ jobs:
           sbt stage createDistribution
           python -m pip install atom-tools
           cd wrapper\\nodejs
-          copy ..\..\target\atom.zip plugins\
-          Expand-Archive -Path ..\..\target\atom.zip -DestinationPath plugins\ -Force
-          Remove-Item -Force plugins\atom.zip
-          php --php-ini php.ini composer.phar require nikic/php-parser:4.18.0 --ignore-platform-reqs --optimize-autoloader
-          npm install
-          npm install -g .
+          .\build.ps1
+          # Windows arm64 is a jar-fallback combo; windows amd64 native is built only
+          # in the release workflow. Install the parent + universal jar package here.
+          npm install -g --omit=optional .\packages\atom-jar .\packages\atom
           npm install -g @appthreat/atom-parsetools
           get-command atom
           get-command astgen

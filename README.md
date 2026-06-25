@@ -29,41 +29,16 @@ and more.
 - JavaScript
 - Flow
 - TypeScript
-- Python (Supports 3.x to 3.13)
+- Python (Supports 3.x to 3.14)
 - PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.4 with limited support for PHP 5.x)
 - Ruby (Requires Ruby 4.0.x. Supports Ruby 1.8 - 4.0.x syntax)
 - Scala (WIP)
 
 ## Installation
 
-atom comprises a scala core with a Node.js wrapper module. It is currently distributed as a npm package.
+atom comprises a scala core with a Node.js wrapper module. It is currently distributed as standalone binaries and as a npm package.
 
-```shell
-npm install -g @appthreat/atom @appthreat/atom-parsetools
-atom --help
-```
-
-Install cdxgen npm package to generate a Software Bill-of-Materials (SBOM) which is required for reachables slicing.
-
-```shell
-npm install -g @cyclonedx/cdxgen --omit=optional
-```
-
-## container usage
-
-```shell
-docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom --help
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom --help
-```
-
-Example for java project.
-
-```shell
-docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
-```
-
-## atom native-image (Advanced users only)
+## atom native-image
 
 atom is available as a native image built using graalvm community edition.
 
@@ -86,6 +61,33 @@ NOTE: Commands such as astgen, rbastgen, phpastgen, etc. are not bundled into th
 npm install -g @appthreat/atom-parsetools
 which astgen
 which phpastgen
+```
+
+## npm-based installation
+
+```shell
+npm install -g @appthreat/atom @appthreat/atom-parsetools --ignore-scripts
+atom --help
+```
+
+Install cdxgen npm package to generate a Software Bill-of-Materials (SBOM) which is required for reachables slicing.
+
+```shell
+npm install -g @cyclonedx/cdxgen --omit=optional --ignore-scripts
+```
+
+## container usage
+
+```shell
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom --help
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom --help
+```
+
+Example for java project.
+
+```shell
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
 ```
 
 ## CLI Usage
