@@ -69,15 +69,14 @@ RUN zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl 
 ENV LC_ALL=en_US.UTF-8 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
-COPY ./target/atom.zip .
-COPY ./wrapper .
-RUN unzip -q atom.zip \
-    && source /root/.nvm/nvm.sh \
+COPY ./target/atom.zip target/atom.zip
+COPY ./wrapper wrapper
+RUN source /root/.nvm/nvm.sh \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
-    && cd /opt/nodejs && npm install --omit=dev && bash build.sh && npm install -g . && npm install -g @appthreat/atom-parsetools && cd /opt \
-    && rm -rf atom.zip composer.json composer.lock composer-setup.php /usr/local/bin/atom \
+    && cd /opt/wrapper/nodejs && ls -h /opt/target && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar @appthreat/atom-parsetools && cd /opt \
+    && rm -rf target composer.json composer.lock composer-setup.php \
     && java --version \
-    && /opt/bin/atom --help \
+    && /usr/local/bin/atom --help \
     && which astgen \
     && which phpastgen \
     && which rbastgen \
@@ -86,4 +85,4 @@ RUN unzip -q atom.zip \
 
 WORKDIR /app
 
-CMD ["/opt/bin/atom"]
+CMD ["/usr/local/bin/atom"]

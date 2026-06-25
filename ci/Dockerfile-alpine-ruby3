@@ -14,25 +14,24 @@ LABEL maintainer="appthreat" \
 ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:/usr/local/bin/:
 
 WORKDIR /opt
-COPY ./target/atom.zip .
-COPY ./wrapper .
+COPY ./target/atom.zip target/atom.zip
+COPY ./wrapper wrapper
 RUN apk update && apk add --no-cache git build-base ruby-dev bash nodejs npm ruby ruby-bundler openjdk25 python3 python3-dev py3-pip \
-    && npm install -g corepack \
+    && npm install -g corepack @appthreat/atom-parsetools \
     && node -v \
     && npm -v \
-    && unzip -q atom.zip \
-    && cd /opt/nodejs && npm install --omit=dev && npm install -g . && npm install -g @appthreat/atom-parsetools && cd /opt \
+    && cd /opt/wrapper/nodejs && ls -h /opt/target && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar && cd /opt \
     && python3 -m pip install atom-tools>=0.8.2 --break-system-packages \
     && java --version \
     && npm uninstall -g corepack \
     && apk del npm python3-dev py3-pip build-base git ruby-dev \
-    && atom --help \
+    && /usr/local/bin/atom --help \
     && which astgen \
     && which phpastgen \
     && which rbastgen \
     && rbastgen --help \
-    && rm -rf /var/cache/apk/*
+    && rm -rf target /var/cache/apk/*
 
 WORKDIR /app
 
-CMD ["/opt/bin/atom"]
+CMD ["/usr/local/bin/atom"]

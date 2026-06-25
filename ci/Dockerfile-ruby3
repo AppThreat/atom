@@ -42,20 +42,19 @@ ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -XX:MinRAMPercentage=30 -XX:MaxRAMP
     PYTHONIOENCODING="utf-8" \
     PATH=/opt/bin:${PATH}:/usr/local/bin/:/root/.local/bin:/root/.rbenv/bin:/root/.rbenv/versions/3.4.8/bin:
 WORKDIR /opt
-COPY ./target/atom.zip .
-COPY ./wrapper .
+COPY ./target/atom.zip target/atom.zip
+COPY ./wrapper wrapper
 
 RUN set -e; \
     microdnf install -y unzip nodejs python3 python3-devel python3-pip java-25-openjdk-headless gcc git-core make \
-    && unzip -q atom.zip \
     && java --version \
     && python3 --version \
     && node --version \
     && python3 -m pip install --upgrade pip atom-tools>=0.8.2 \
     && atom-tools --version && atom-tools --help \
-    && cd /opt/nodejs && npm install --omit=dev && npm install -g . && npm install -g @appthreat/atom-parsetools && cd /opt \
-    && rm -rf atom.zip \
-    && /opt/bin/atom --help \
+    && cd /opt/wrapper/nodejs && ls -h /opt/target && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar @appthreat/atom-parsetools && cd /opt \
+    && rm -rf targert \
+    && /usr/local/bin/atom --help \
     && microdnf remove -y unzip gcc git-core make \
     && ruby --version \
     && rbastgen --help \
@@ -63,4 +62,4 @@ RUN set -e; \
 
 WORKDIR /app
 
-CMD ["/opt/bin/atom"]
+CMD ["/usr/local/bin/atom"]

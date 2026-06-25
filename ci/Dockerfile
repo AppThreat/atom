@@ -64,7 +64,6 @@ RUN set -e; \
     && sdk install maven $MAVEN_VERSION \
     && sdk install scala $SCALA_VERSION \
     && sdk install sbt $SBT_VERSION \
-    && sdk offline enable \
     && mv /root/.sdkman/candidates/* /opt/ \
     && rm -rf /root/.sdkman \
     && java --version \
@@ -98,24 +97,25 @@ RUN set -e; \
     && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && php composer-setup.php \
     && mv composer.phar /usr/local/bin/composer \
     && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.lock \
-    && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.json
-
-ENV LC_ALL=en_US.UTF-8 \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8
-COPY ./target/atom.zip .
-COPY ./wrapper .
-RUN unzip -q atom.zip \
+    && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.json \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
-    && cd /opt/nodejs && npm install --omit=dev && bash build.sh && npm install -g . && npm install -g @appthreat/atom-parsetools && cd /opt \
-    && rm -rf atom.zip composer.json composer.lock composer-setup.php /usr/local/bin/atom \
-    && /opt/bin/atom --help \
+    && rm composer.json composer.lock composer-setup.php \
+    && npm install -g @appthreat/atom-parsetools \
     && which astgen \
     && which phpastgen \
     && which rbastgen \
     && rbastgen --help \
     && microdnf clean all
 
+ENV LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8
+COPY ./target/atom.zip target/atom.zip
+COPY ./wrapper wrapper
+RUN cd /opt/wrapper/nodejs && ls -h /opt/target && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar && cd /opt \
+    && rm -rf target \
+    && /usr/local/bin/atom --help
+
 WORKDIR /app
 
-CMD ["/opt/bin/atom"]
+CMD ["/usr/local/bin/atom"]
