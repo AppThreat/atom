@@ -2029,7 +2029,12 @@
       "allDeclaredFields": true
     },
     {
-      "type": "java.lang.Long"
+      "type": "java.lang.Long",
+      "fields": [
+        {
+          "name": "TYPE"
+        }
+      ]
     },
     {
       "type": "java.lang.Math"
@@ -2114,7 +2119,30 @@
       "type": "java.lang.RuntimeException"
     },
     {
-      "type": "java.lang.String"
+      "type": "java.lang.Short",
+      "fields": [
+        {
+          "name": "TYPE"
+        }
+      ]
+    },
+    {
+      "type": "java.lang.String",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "lastIndexOf",
+          "parameterTypes": [
+            "int"
+          ]
+        },
+        {
+          "name": "substring",
+          "parameterTypes": [
+            "int"
+          ]
+        }
+      ]
     },
     {
       "type": "java.lang.StringBuilder"
@@ -2159,6 +2187,14 @@
       "allDeclaredFields": true
     },
     {
+      "type": "java.lang.Void",
+      "fields": [
+        {
+          "name": "TYPE"
+        }
+      ]
+    },
+    {
       "type": "java.lang.annotation.Annotation",
       "methods": [
         {
@@ -2186,6 +2222,17 @@
         {
           "name": "releaseFence",
           "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.management.MemoryUsage",
+      "methods": [
+        {
+          "name": "from",
+          "parameterTypes": [
+            "javax.management.openmbean.CompositeData"
+          ]
         }
       ]
     },
@@ -2221,6 +2268,12 @@
     },
     {
       "type": "java.lang.reflect.Type"
+    },
+    {
+      "type": "java.math.BigDecimal"
+    },
+    {
+      "type": "java.math.BigInteger"
     },
     {
       "type": "java.net.InetAddress"
