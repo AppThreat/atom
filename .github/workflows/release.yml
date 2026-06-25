@@ -31,7 +31,7 @@ jobs:
       - name: Set up JDK
         uses: graalvm/setup-graalvm@6f3fa030c4b8f77c1f554a860f593a654538fa38  # v1.5.6
         with:
-          distribution: 'mandrel'
+          distribution: 'graalvm-community'
           java-version: '25'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -82,7 +82,7 @@ jobs:
       - name: Set up JDK
         uses: graalvm/setup-graalvm@6f3fa030c4b8f77c1f554a860f593a654538fa38  # v1.5.6
         with:
-          distribution: 'mandrel'
+          distribution: 'graalvm-community'
           java-version: '25'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -124,7 +124,7 @@ jobs:
       - name: Set up JDK
         uses: graalvm/setup-graalvm@6f3fa030c4b8f77c1f554a860f593a654538fa38  # v1.5.6
         with:
-          distribution: 'mandrel'
+          distribution: 'graalvm-community'
           java-version: '25'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -206,7 +206,7 @@ jobs:
       - name: Set up JDK
         uses: graalvm/setup-graalvm@6f3fa030c4b8f77c1f554a860f593a654538fa38  # v1.5.6
         with:
-          distribution: 'mandrel'
+          distribution: 'graalvm-community'
           java-version: '25'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -270,7 +270,7 @@ jobs:
       - name: Set up JDK
         uses: graalvm/setup-graalvm@6f3fa030c4b8f77c1f554a860f593a654538fa38  # v1.5.6
         with:
-          distribution: 'mandrel'
+          distribution: 'graalvm-community'
           java-version: '25'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -364,7 +364,7 @@ jobs:
 
 
   release-linux-musl-arm64:
-    if: false
+    if: github.repository_owner == 'appthreat'
     concurrency: release-linux-musl-arm64
     runs-on: ubuntu-22.04-arm
     permissions:
@@ -409,7 +409,7 @@ jobs:
   npm-publish:
     name: Publish NPM Packages
     runs-on: ubuntu-24.04
-    needs: [release-win, release, release-arm64, release-mac, release-linux-musl-amd64]
+    needs: [release-win, release, release-arm64, release-mac, release-linux-musl-amd64, release-linux-musl-arm64]
     permissions:
       contents: read
       packages: write
