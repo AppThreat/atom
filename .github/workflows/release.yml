@@ -436,24 +436,22 @@ jobs:
           distribution: 'temurin'
           java-version: '23'
       - uses: sbt/setup-sbt@3afe9cf056c5d139bfc46579af1192d77a2f0821  # v1.4.0
-
-      - name: Build SBT Distribution
+      - name: Install deps
         run: |
           sudo apt update -y
-          sudo apt install -y zlib1g php-zip tree
-          GITHUB_TOKEN=dummy sbt stage createDistribution
-          
+          sudo apt install -y zlib1g php-zip
       - name: Assemble JAR packages
         run: |
+          sbt stage createDistribution
           cd wrapper/nodejs
           # Unzips target/atom.zip and stamps the universal jar + jar-fallback packages.
           bash build.sh
-
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Download Native Binaries
         uses: actions/download-artifact@v4
         with:
           path: wrapper/nodejs/downloaded-binaries
-
       - name: Assemble native packages
         run: |
           cd wrapper/nodejs

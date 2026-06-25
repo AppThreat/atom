@@ -143,11 +143,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
-          cd wrapper/nodejs
-          bash build.sh
-          npm install -g .
-          npm install -g @appthreat/atom-parsetools
-          cd ../..
+          npm install -g --omit=optional @appthreat/atom-parsetools
           ./atom.sh --remove-atom -o /tmp/java.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/juice.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/ts.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml -x --export-dir ts_gml_exports
@@ -197,13 +193,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
-          cd wrapper/nodejs
-          copy ..\..\target\atom.zip plugins\
-          Expand-Archive -Path ..\..\target\atom.zip -DestinationPath plugins\ -Force
-          Remove-Item -Force plugins\atom.zip
-          npm install -g .
-          npm install -g @appthreat/atom-parsetools
-          cd ../..
+          npm install -g --omit=optional @appthreat/atom-parsetools
           .\atom.bat usages --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\juice-shop\\jshop.atom -l js $env:GITHUB_WORKSPACE\\repotests\\juice-shop --slice-outfile $env:GITHUB_WORKSPACE\\repotests\\juice-shop\\jshop.usages.json
           .\atom.bat usages --extract-endpoints --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\py3.atom -l python $env:GITHUB_WORKSPACE\\repotests\\DjanGoat --slice-outfile $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\py.usages.json
         if: runner.os == 'Windows'
