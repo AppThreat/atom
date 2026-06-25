@@ -5,7 +5,7 @@ import { dirname, join, delimiter } from "node:path";
 import { readFileSync, realpathSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { locateAtomBinary } from "./resolve.js";
+import { locateAtomBinary, describeAtomSearch } from "./resolve.js";
 
 const isWin = _platform() === "win32";
 const dirName = dirname(fileURLToPath(import.meta.url));
@@ -52,6 +52,23 @@ export const executeAtom = (atomArgs) => {
   if (!provider) {
     console.error("Error: The '@appthreat/atom' package was not installed correctly or is unsupported on this platform.");
     console.error("Please verify your installation and make sure optional dependencies are not blocked.");
+    // Dump the full resolution search so installation issues are diagnosable from
+    // CI logs without needing to re-run with ATOM_DEBUG.
+    try {
+      const diag = describeAtomSearch();
+      console.error(
+        `\n[atom] resolution diagnostics:\n` +
+        `  dispatcher dir: ${diag.selfDir}\n` +
+        `  platform=${diag.platform} arch=${diag.arch} libc=${diag.libc}\n` +
+        `  preferred package: ${diag.preferredPkg}\n` +
+        `  paths checked (${diag.attempts.length}):`
+      );
+      for (const a of diag.attempts) {
+        console.error(`    [${a.exists ? "found" : "missing"}] (${a.pkg}, ${a.kind}) ${a.path}`);
+      }
+    } catch (e) {
+      console.error(`[atom] failed to produce diagnostics: ${e?.message || e}`);
+    }
     process.exit(1);
   }
 
