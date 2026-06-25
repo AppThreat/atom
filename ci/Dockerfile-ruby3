@@ -50,9 +50,9 @@ RUN set -e; \
     && java --version \
     && python3 --version \
     && node --version \
-    && python3 -m pip install --upgrade pip atom-tools>=0.8.2 \
+    && python3 -m pip install --upgrade pip atom-tools \
     && atom-tools --version && atom-tools --help \
-    && cd /opt/wrapper/nodejs && ls -h /opt/target && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar @appthreat/atom-parsetools && cd /opt \
+    && cd /opt/wrapper/nodejs && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar @appthreat/atom-parsetools && cd /opt \
     && rm -rf targert \
     && /usr/local/bin/atom --help \
     && microdnf remove -y unzip gcc git-core make \

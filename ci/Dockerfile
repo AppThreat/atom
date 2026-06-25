@@ -82,7 +82,7 @@ RUN set -e; \
     && rm -rf /root/.rbenv/cache $RUBY_BUILD_BUILD_PATH \
     && python3 --version \
     && node --version \
-    && python3 -m pip install --upgrade pip atom-tools>=0.8.2 \
+    && python3 -m pip install --upgrade pip atom-tools \
     && atom-tools --version && atom-tools --help \
     && mkdir -p ${ANDROID_HOME}/cmdline-tools \
     && curl -L https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -o ${ANDROID_HOME}/cmdline-tools/android_tools.zip \
@@ -112,7 +112,7 @@ ENV LC_ALL=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
 COPY ./target/atom.zip target/atom.zip
 COPY ./wrapper wrapper
-RUN cd /opt/wrapper/nodejs && ls -h /opt/target && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar && cd /opt \
+RUN cd /opt/wrapper/nodejs && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar && cd /opt \
     && rm -rf target \
     && /usr/local/bin/atom --help
 

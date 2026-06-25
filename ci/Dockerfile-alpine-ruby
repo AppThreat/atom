@@ -20,8 +20,8 @@ RUN apk update && apk add --no-cache git build-base ruby-dev bash nodejs npm rub
     && npm install -g corepack @appthreat/atom-parsetools \
     && node -v \
     && npm -v \
-    && cd /opt/wrapper/nodejs && ls -h /opt/target && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar && cd /opt \
-    && python3 -m pip install atom-tools>=0.8.2 --break-system-packages \
+    && cd /opt/wrapper/nodejs && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar && cd /opt \
+    && python3 -m pip install atom-tools --break-system-packages \
     && java --version \
     && npm uninstall -g corepack \
     && apk del npm python3-dev py3-pip build-base git ruby-dev \

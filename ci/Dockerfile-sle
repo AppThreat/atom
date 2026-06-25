@@ -49,7 +49,7 @@ RUN zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl 
     && ruby --version \
     && which ruby \
     && rm -rf /root/.rbenv/cache $RUBY_BUILD_BUILD_PATH \
-    && python3 -m pip install --upgrade pip atom-tools>=0.8.2 \
+    && python3 -m pip install --upgrade pip atom-tools \
     && atom-tools --version && atom-tools --help \
     && mkdir -p ${ANDROID_HOME}/cmdline-tools \
     && curl -L https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -o ${ANDROID_HOME}/cmdline-tools/android_tools.zip \
@@ -64,19 +64,20 @@ RUN zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl 
     && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && php composer-setup.php \
     && mv composer.phar /usr/local/bin/composer \
     && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.lock \
-    && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.json
+    && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.json \
+    && composer update --no-progress --prefer-dist --ignore-platform-reqs \
+    && rm composer.json composer.lock composer-setup.php
 
 ENV LC_ALL=en_US.UTF-8 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
 COPY ./target/atom.zip target/atom.zip
 COPY ./wrapper wrapper
-RUN source /root/.nvm/nvm.sh \
-    && composer update --no-progress --prefer-dist --ignore-platform-reqs \
-    && cd /opt/wrapper/nodejs && ls -h /opt/target && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar @appthreat/atom-parsetools && cd /opt \
-    && rm -rf target composer.json composer.lock composer-setup.php \
+RUN cd /opt/wrapper/nodejs && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar @appthreat/atom-parsetools && cd /opt \
+    && rm -rf target \
     && java --version \
-    && /usr/local/bin/atom --help \
+    && ls -alh /opt/ \
+    && atom --help \
     && which astgen \
     && which phpastgen \
     && which rbastgen \
@@ -85,4 +86,4 @@ RUN source /root/.nvm/nvm.sh \
 
 WORKDIR /app
 
-CMD ["/usr/local/bin/atom"]
+CMD ["atom"]
