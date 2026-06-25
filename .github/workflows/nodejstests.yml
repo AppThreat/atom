@@ -107,7 +107,7 @@ jobs:
           python -m pip install atom-tools
           cd wrapper/nodejs
           bash build.sh
-          sudo npm install -g --omit=optional ./packages/atom-jar ./packages/atom @appthreat/atom-parsetools
+          sudo npm install -g ./packages/atom-jar ./packages/atom @appthreat/atom-parsetools
           atom --help
           astgen --version
           rbastgen --help
@@ -126,7 +126,7 @@ jobs:
       - name: atom parse tools checks
         run: |
           cd wrapper/nodejs
-          sudo npm install -g --omit=optional ./packages/atom-jar ./packages/atom @appthreat/atom-parsetools
+          sudo npm install -g ./packages/atom-jar ./packages/atom @appthreat/atom-parsetools
           astgen --help
           rbastgen --help
           which scalasem
@@ -197,7 +197,7 @@ jobs:
           python -m pip install atom-tools
           cd wrapper\\nodejs
           .\build.ps1
-          npm install -g --omit=optional .\packages\atom-jar .\packages\atom @appthreat/atom-parsetools
+          npm install -g .\packages\atom-jar .\packages\atom @appthreat/atom-parsetools
           get-command atom
           get-command astgen
           get-command phpastgen

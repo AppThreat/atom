@@ -473,10 +473,7 @@ jobs:
           VERIFY_DIR="$(mktemp -d)"
           cd "$VERIFY_DIR"
           npm init -y >/dev/null
-          # Install the parent dispatcher + only the host-native platform package
-          # (linux-amd64 glibc), with no other optional deps, to mirror a real
-          # consumer install and confirm the dispatcher resolves the native binary.
-          npm install --omit=optional "$PKGS/atom-linux-amd64" "$PKGS/atom"
+          npm install "$PKGS/atom-linux-amd64" "$PKGS/atom"
           ATOM="node_modules/@appthreat/atom"
           test -x node_modules/@appthreat/atom-linux-amd64/bin/atom
           # The native binary must NOT fall back to the jar path here.
@@ -494,8 +491,11 @@ jobs:
           cd "$VERIFY_DIR"
           npm init -y >/dev/null
           # Install only the universal jar package + parent: the dispatcher must
-          # fall back to the jar runner and use the system JDK.
-          npm install --omit=optional "$PKGS/atom-jar" "$PKGS/atom"
+          # fall back to the jar runner and use the system JDK. No --omit=optional:
+          # atom-jar is itself an optionalDependency of @appthreat/atom and npm 11
+          # would drop the directly-requested copy. The unpublished platform packages
+          # (3.0.0) 404 as optional deps, tolerated non-fatally.
+          npm install "$PKGS/atom-jar" "$PKGS/atom"
           ATOM="node_modules/@appthreat/atom"
           node -e "import('$VERIFY_DIR/$ATOM/resolve.js').then(m => { const p = m.locateAtomBinary(); if (!p || p.kind !== 'jar' || p.pkg !== '@appthreat/atom-jar') { console.error('Expected jar fallback, got', p); process.exit(1); } console.log('Resolved jar fallback:', p.pkg); })"
           node "$ATOM/index.js" --help
