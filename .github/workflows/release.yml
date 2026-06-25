@@ -364,7 +364,7 @@ jobs:
 
 
   release-linux-musl-arm64:
-    if: github.repository_owner == 'appthreat'
+    if: false  # GraalVM CE muslib container image is amd64-only; musl arm64 is not supported
     concurrency: release-linux-musl-arm64
     runs-on: ubuntu-22.04-arm
     permissions:
@@ -409,7 +409,7 @@ jobs:
   npm-publish:
     name: Publish NPM Packages
     runs-on: ubuntu-24.04
-    needs: [release-win, release, release-arm64, release-mac, release-linux-musl-amd64, release-linux-musl-arm64]
+    needs: [release-win, release, release-arm64, release-mac, release-linux-musl-amd64]
     permissions:
       contents: read
       packages: write
