@@ -179,8 +179,46 @@ function candidatePackageDirs(pkgName) {
   return [...new Set(dirs)];
 }
 
+/**
+ * Enumerate every path the locator would inspect for the current runtime, noting
+ * which exist. Used both for the optional ATOM_DEBUG trace and for the diagnostic
+ * dump the dispatcher prints when no provider can be found.
+ *
+ * @returns {{selfDir: string, platform: string, arch: string, libc: string|undefined,
+ *   preferredPkg: string, attempts: {pkg: string, kind: string, path: string, exists: boolean}[]}}
+ */
+export function describeAtomSearch(opts = {}) {
+  const { preferredPkg, platform, arch, libc } = resolveAtomProvider(opts);
+  const packagesToTry = [preferredPkg];
+  if (preferredPkg !== "@appthreat/atom-jar") {
+    packagesToTry.push("@appthreat/atom-jar");
+  }
+  const attempts = [];
+  for (const pkg of packagesToTry) {
+    const isNative = NATIVE_PACKAGES.has(pkg);
+    for (const pkgDir of candidatePackageDirs(pkg)) {
+      const checkPath = isNative
+        ? join(pkgDir, "bin", platform === "win32" ? "atom.exe" : "atom")
+        : join(pkgDir, "plugins");
+      attempts.push({
+        pkg,
+        kind: isNative ? "native" : "jar",
+        path: checkPath,
+        exists: fs.existsSync(checkPath)
+      });
+    }
+  }
+  return { selfDir: SELF_DIR, platform, arch, libc, preferredPkg, attempts };
+}
+
 export function locateAtomBinary(opts = {}) {
+  const debug = !!process.env.ATOM_DEBUG;
   const { preferredPkg, platform } = resolveAtomProvider(opts);
+
+  if (debug) {
+    console.error(`[atom] resolver self dir: ${SELF_DIR}`);
+    console.error(`[atom] platform=${platform} preferred=${preferredPkg}`);
+  }
 
   // Build a list of package fallbacks to search: the preferred platform package
   // first, then the universal jar package.
@@ -195,6 +233,9 @@ export function locateAtomBinary(opts = {}) {
       if (isNative) {
         const exeName = platform === "win32" ? "atom.exe" : "atom";
         const binaryPath = join(pkgDir, "bin", exeName);
+        if (debug) {
+          console.error(`[atom] check native ${binaryPath} -> ${fs.existsSync(binaryPath)}`);
+        }
         if (fs.existsSync(binaryPath)) {
           return {
             kind: "native",
@@ -205,6 +246,9 @@ export function locateAtomBinary(opts = {}) {
         }
       } else {
         const pluginsDir = join(pkgDir, "plugins");
+        if (debug) {
+          console.error(`[atom] check jar ${pluginsDir} -> ${fs.existsSync(pluginsDir)}`);
+        }
         if (fs.existsSync(pluginsDir)) {
           return {
             kind: "jar",
