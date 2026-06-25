@@ -1,10 +1,9 @@
-import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { dirname, join, sep } from "node:path";
 import fs from "node:fs";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-const require = createRequire(import.meta.url);
+const SELF_DIR = dirname(fileURLToPath(import.meta.url));
 
 const NATIVE_PACKAGES = new Set([
   "@appthreat/atom-linux-amd64",
@@ -112,23 +111,87 @@ export function resolveAtomProvider(opts = {}) {
   };
 }
 
+// Read the parent @appthreat/atom version so we can construct pnpm virtual-store
+// directory names (e.g. .pnpm/@appthreat+atom-jar@<version>/...).
+function readSelfVersion() {
+  try {
+    const pj = JSON.parse(fs.readFileSync(join(SELF_DIR, "package.json"), "utf8"));
+    return pj.version;
+  } catch (e) {
+    return undefined;
+  }
+}
+
+/**
+ * Build the list of directories where a sibling @appthreat sub-package may live,
+ * derived purely from this module's own location (no require.resolve, which has
+ * historically behaved inconsistently across Node versions and package managers).
+ *
+ * This mirrors the strategy cdxgen uses in lib/helpers/plugins.js: tokenize our
+ * own __dirname, then construct candidate paths for the common layouts:
+ *   - npm flat node_modules (sub-package is a scoped sibling under node_modules)
+ *   - global installs (.../lib/node_modules/@appthreat/<pkg>)
+ *   - the parent's own nested node_modules (pnpm symlinks a package's own deps here)
+ *   - pnpm virtual store (.../node_modules/.pnpm/@appthreat+<pkg>@<ver>/node_modules/...)
+ *
+ * @param {string} pkgName e.g. "@appthreat/atom-jar"
+ * @returns {string[]} candidate package directories, de-duplicated, in priority order
+ */
+function candidatePackageDirs(pkgName) {
+  const folder = pkgName.split("/")[1]; // e.g. "atom-jar"
+  const version = readSelfVersion();
+  const parts = SELF_DIR.split(sep);
+  const dirs = [];
+
+  // 1) The parent may carry the sub-package in its own nested node_modules
+  //    (npm nested installs, and pnpm symlinks a package's deps next to it).
+  dirs.push(join(SELF_DIR, "node_modules", "@appthreat", folder));
+
+  // 2) Walk every node_modules segment present in our own path, from the
+  //    deepest outward, and look for the scoped sibling under each. Covers npm
+  //    flat layout, global installs, and pnpm's per-package private store.
+  for (let i = parts.length - 1; i >= 0; i--) {
+    if (parts[i] === "node_modules") {
+      const root = parts.slice(0, i + 1).join(sep) || sep;
+      dirs.push(join(root, "@appthreat", folder));
+
+      // 3) pnpm virtual store hanging off this node_modules root.
+      if (version) {
+        dirs.push(
+          join(root, ".pnpm", `@appthreat+${folder}@${version}`, "node_modules", "@appthreat", folder)
+        );
+      }
+    }
+  }
+
+  // 4) When our own dir already lives inside a .pnpm virtual store, the sibling
+  //    package has its own .pnpm entry next to ours.
+  const pnpmMarker = `${sep}.pnpm${sep}`;
+  const pnpmIdx = SELF_DIR.indexOf(pnpmMarker);
+  if (pnpmIdx !== -1 && version) {
+    const base = SELF_DIR.slice(0, pnpmIdx);
+    dirs.push(
+      join(base, ".pnpm", `@appthreat+${folder}@${version}`, "node_modules", "@appthreat", folder)
+    );
+  }
+
+  // De-duplicate while preserving order.
+  return [...new Set(dirs)];
+}
+
 export function locateAtomBinary(opts = {}) {
   const { preferredPkg, platform } = resolveAtomProvider(opts);
-  
-  // Build a list of package fallbacks to search.
+
+  // Build a list of package fallbacks to search: the preferred platform package
+  // first, then the universal jar package.
   const packagesToTry = [preferredPkg];
   if (preferredPkg !== "@appthreat/atom-jar") {
     packagesToTry.push("@appthreat/atom-jar");
   }
 
-  const dirName = dirname(fileURLToPath(import.meta.url));
-
   for (const pkg of packagesToTry) {
-    try {
-      const pkgJsonPath = require.resolve(`${pkg}/package.json`, { paths: [dirName] });
-      const pkgDir = dirname(pkgJsonPath);
-      const isNative = NATIVE_PACKAGES.has(pkg);
-      
+    const isNative = NATIVE_PACKAGES.has(pkg);
+    for (const pkgDir of candidatePackageDirs(pkg)) {
       if (isNative) {
         const exeName = platform === "win32" ? "atom.exe" : "atom";
         const binaryPath = join(pkgDir, "bin", exeName);
@@ -151,8 +214,6 @@ export function locateAtomBinary(opts = {}) {
           };
         }
       }
-    } catch (e) {
-      // Package not installed or resolve failed, try next
     }
   }
 
