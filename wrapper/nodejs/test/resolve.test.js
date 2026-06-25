@@ -179,3 +179,39 @@ test("locateAtomBinary across package-manager layouts", async () => {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+// `npm install -g <localdir>` installs the bin as a shim under <prefix>/bin while
+// the dispatcher's index.js may execute from a source checkout that has no
+// node_modules to walk. The sibling sub-packages live under the global prefix,
+// reachable via process.argv[1] (<prefix>/bin/atom -> <prefix>/lib/node_modules).
+test("locateAtomBinary finds global install via argv[1] prefix", async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "atom-global-"));
+  const savedArgv1 = process.argv[1];
+  try {
+    // Dispatcher runs from a dev checkout (no node_modules).
+    const srcDir = path.join(tmp, "checkout", "wrapper", "nodejs", "packages", "atom");
+    fs.mkdirSync(srcDir, { recursive: true });
+    fs.copyFileSync(RESOLVE_SRC, path.join(srcDir, "resolve.js"));
+    fs.writeFileSync(path.join(srcDir, "package.json"), '{"version":"3.0.0"}\n');
+
+    // Global prefix with the bin shim and the jar package under lib/node_modules.
+    const prefix = path.join(tmp, "usr", "local");
+    fs.mkdirSync(path.join(prefix, "bin"), { recursive: true });
+    fs.writeFileSync(path.join(prefix, "bin", "atom"), "#!/usr/bin/env node\n");
+    fs.mkdirSync(
+      path.join(prefix, "lib", "node_modules", "@appthreat", "atom-jar", "plugins"),
+      { recursive: true }
+    );
+
+    process.argv[1] = path.join(prefix, "bin", "atom");
+    const mod = await import(
+      `file://${path.join(srcDir, "resolve.js")}?case=global-${Math.random()}`
+    );
+    const r = mod.locateAtomBinary({ platform: "linux", arch: "x64", libc: "glibc" });
+    assert.equal(r?.kind, "jar");
+    assert.equal(r?.pkg, "@appthreat/atom-jar");
+  } finally {
+    process.argv[1] = savedArgv1;
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});

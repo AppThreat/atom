@@ -123,21 +123,95 @@ function readSelfVersion() {
 }
 
 /**
+ * Cheap (no subprocess) guesses at the global node_modules root(s) used by a
+ * `npm install -g` / `pnpm add -g`. This matters when the dispatcher executes
+ * from a symlinked bin (the common `-g` case): import.meta.url then resolves to
+ * the package's real location, which may be a dev checkout with no node_modules
+ * to walk, while the sibling sub-packages live under the global prefix.
+ */
+function staticGlobalRoots() {
+  const roots = new Set();
+  const env = process.env;
+
+  // Explicit override (also honored by cdxgen).
+  if (env.GLOBAL_NODE_MODULES_PATH) {
+    roots.add(env.GLOBAL_NODE_MODULES_PATH);
+  }
+  const prefix = env.npm_config_prefix || env.PREFIX;
+  if (prefix) {
+    roots.add(join(prefix, "lib", "node_modules")); // posix prefix layout
+    roots.add(join(prefix, "node_modules")); // windows prefix layout
+  }
+
+  // The path used to launch this process: for a global install the bin shim
+  // lives at <prefix>/bin/atom (posix) or <prefix>/atom.cmd (windows), so the
+  // global node_modules is a fixed hop away — even when the resolved index.js
+  // sits elsewhere (e.g. a symlinked dev checkout).
+  const launch = process.argv[1];
+  if (launch) {
+    const binDir = dirname(launch);
+    roots.add(join(binDir, "..", "lib", "node_modules")); // <prefix>/bin -> <prefix>/lib/node_modules
+    roots.add(join(binDir, "node_modules")); // <prefix>/atom.cmd -> <prefix>/node_modules
+  }
+
+  // The node executable's own prefix (nvm/setup-node hosted toolcache, etc).
+  try {
+    const execDir = dirname(process.execPath);
+    roots.add(join(execDir, "..", "lib", "node_modules"));
+    roots.add(join(execDir, "node_modules"));
+  } catch (e) {
+    // ignore
+  }
+
+  return [...roots];
+}
+
+let _queriedGlobalRoots;
+/**
+ * Last-resort global root discovery by asking the package managers directly.
+ * Spawns `npm root -g` / `pnpm root -g`; memoized so it runs at most once.
+ */
+function queriedGlobalRoots() {
+  if (_queriedGlobalRoots) {
+    return _queriedGlobalRoots;
+  }
+  const roots = new Set();
+  for (const cmd of ["npm root -g", "pnpm root -g"]) {
+    try {
+      const out = execSync(cmd, {
+        stdio: ["ignore", "pipe", "ignore"],
+        encoding: "utf8"
+      }).trim();
+      if (out) {
+        roots.add(out);
+      }
+    } catch (e) {
+      // package manager missing or errored; ignore
+    }
+  }
+  _queriedGlobalRoots = [...roots];
+  return _queriedGlobalRoots;
+}
+
+/**
  * Build the list of directories where a sibling @appthreat sub-package may live,
- * derived purely from this module's own location (no require.resolve, which has
- * historically behaved inconsistently across Node versions and package managers).
+ * derived purely from path math (no require.resolve, which has historically
+ * behaved inconsistently across Node versions and package managers).
  *
  * This mirrors the strategy cdxgen uses in lib/helpers/plugins.js: tokenize our
- * own __dirname, then construct candidate paths for the common layouts:
+ * own __dirname, derive global prefixes, then construct candidate paths for the
+ * common layouts:
  *   - npm flat node_modules (sub-package is a scoped sibling under node_modules)
- *   - global installs (.../lib/node_modules/@appthreat/<pkg>)
  *   - the parent's own nested node_modules (pnpm symlinks a package's own deps here)
  *   - pnpm virtual store (.../node_modules/.pnpm/@appthreat+<pkg>@<ver>/node_modules/...)
+ *   - global installs (.../lib/node_modules/@appthreat/<pkg>), including the
+ *     symlinked-bin case where the dispatcher runs from a dev checkout
  *
  * @param {string} pkgName e.g. "@appthreat/atom-jar"
+ * @param {{includeQueriedGlobals?: boolean}} [searchOpts]
  * @returns {string[]} candidate package directories, de-duplicated, in priority order
  */
-function candidatePackageDirs(pkgName) {
+function candidatePackageDirs(pkgName, searchOpts = {}) {
   const folder = pkgName.split("/")[1]; // e.g. "atom-jar"
   const version = readSelfVersion();
   const parts = SELF_DIR.split(sep);
@@ -149,7 +223,7 @@ function candidatePackageDirs(pkgName) {
 
   // 2) Walk every node_modules segment present in our own path, from the
   //    deepest outward, and look for the scoped sibling under each. Covers npm
-  //    flat layout, global installs, and pnpm's per-package private store.
+  //    flat layout, local installs, and pnpm's per-package private store.
   for (let i = parts.length - 1; i >= 0; i--) {
     if (parts[i] === "node_modules") {
       const root = parts.slice(0, i + 1).join(sep) || sep;
@@ -175,6 +249,21 @@ function candidatePackageDirs(pkgName) {
     );
   }
 
+  // 5) Global install roots (cheap heuristics), then optionally the
+  //    package-manager-reported roots as a last resort.
+  const globalRoots = staticGlobalRoots();
+  if (searchOpts.includeQueriedGlobals) {
+    globalRoots.push(...queriedGlobalRoots());
+  }
+  for (const root of globalRoots) {
+    dirs.push(join(root, "@appthreat", folder));
+    if (version) {
+      dirs.push(
+        join(root, ".pnpm", `@appthreat+${folder}@${version}`, "node_modules", "@appthreat", folder)
+      );
+    }
+  }
+
   // De-duplicate while preserving order.
   return [...new Set(dirs)];
 }
@@ -196,7 +285,9 @@ export function describeAtomSearch(opts = {}) {
   const attempts = [];
   for (const pkg of packagesToTry) {
     const isNative = NATIVE_PACKAGES.has(pkg);
-    for (const pkgDir of candidatePackageDirs(pkg)) {
+    // Include the package-manager-queried global roots so the diagnostics show
+    // the complete search surface.
+    for (const pkgDir of candidatePackageDirs(pkg, { includeQueriedGlobals: true })) {
       const checkPath = isNative
         ? join(pkgDir, "bin", platform === "win32" ? "atom.exe" : "atom")
         : join(pkgDir, "plugins");
@@ -227,35 +318,37 @@ export function locateAtomBinary(opts = {}) {
     packagesToTry.push("@appthreat/atom-jar");
   }
 
-  for (const pkg of packagesToTry) {
+  const tryPackage = (pkg, pkgDir) => {
     const isNative = NATIVE_PACKAGES.has(pkg);
-    for (const pkgDir of candidatePackageDirs(pkg)) {
-      if (isNative) {
-        const exeName = platform === "win32" ? "atom.exe" : "atom";
-        const binaryPath = join(pkgDir, "bin", exeName);
-        if (debug) {
-          console.error(`[atom] check native ${binaryPath} -> ${fs.existsSync(binaryPath)}`);
-        }
-        if (fs.existsSync(binaryPath)) {
-          return {
-            kind: "native",
-            pkg,
-            binPath: binaryPath,
-            pluginsDir: null
-          };
-        }
-      } else {
-        const pluginsDir = join(pkgDir, "plugins");
-        if (debug) {
-          console.error(`[atom] check jar ${pluginsDir} -> ${fs.existsSync(pluginsDir)}`);
-        }
-        if (fs.existsSync(pluginsDir)) {
-          return {
-            kind: "jar",
-            pkg,
-            binPath: null,
-            pluginsDir
-          };
+    if (isNative) {
+      const exeName = platform === "win32" ? "atom.exe" : "atom";
+      const binaryPath = join(pkgDir, "bin", exeName);
+      if (debug) {
+        console.error(`[atom] check native ${binaryPath} -> ${fs.existsSync(binaryPath)}`);
+      }
+      if (fs.existsSync(binaryPath)) {
+        return { kind: "native", pkg, binPath: binaryPath, pluginsDir: null };
+      }
+    } else {
+      const pluginsDir = join(pkgDir, "plugins");
+      if (debug) {
+        console.error(`[atom] check jar ${pluginsDir} -> ${fs.existsSync(pluginsDir)}`);
+      }
+      if (fs.existsSync(pluginsDir)) {
+        return { kind: "jar", pkg, binPath: null, pluginsDir };
+      }
+    }
+    return null;
+  };
+
+  // Pass 1: cheap candidates (path math + env/argv/exec heuristics, no subprocess).
+  // Pass 2: only if nothing matched, ask the package managers for the global root.
+  for (const includeQueriedGlobals of [false, true]) {
+    for (const pkg of packagesToTry) {
+      for (const pkgDir of candidatePackageDirs(pkg, { includeQueriedGlobals })) {
+        const found = tryPackage(pkg, pkgDir);
+        if (found) {
+          return found;
         }
       }
     }
