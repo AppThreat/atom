@@ -5,7 +5,7 @@
   "exports": "./index.js",
   "type": "module",
   "bin": {
-    "atom": "./index.js"
+    "atom": "index.js"
   },
   "engines": {
     "node": ">=18"
