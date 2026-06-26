@@ -1,6 +1,6 @@
 {
   "name": "@appthreat/atom-linux-amd64-musl",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Linux x64 (musl) native binary for @appthreat/atom",
   "type": "module",
   "repository": {
