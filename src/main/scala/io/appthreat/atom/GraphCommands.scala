@@ -9,6 +9,14 @@ import overflowdb.formats.Exporter
 import overflowdb.{Edge, Node}
 import io.circe.Json
 import io.circe.syntax.EncoderOps
+import overflowdb.algorithm.{
+    GetParents,
+    LowestCommonAncestors,
+    DependencySequencer,
+    UnionFind,
+    HeapWalker,
+    ContextSensitivePathFinder
+}
 
 import java.nio.file.Paths
 import scala.jdk.CollectionConverters.*
@@ -22,8 +30,19 @@ object GraphCommands:
 
   private val supportedFormats =
       Set("dot", "graphml", "gexf", "graphson", "neo4jcsv", "gnn")
-  private val supportedScopes     = Set("whole", "methods")
-  private val supportedAlgorithms = Set("scc", "toposort", "dominators", "paths", "centrality")
+  private val supportedScopes = Set("whole", "methods")
+  private val supportedAlgorithms = Set(
+    "scc",
+    "toposort",
+    "dominators",
+    "paths",
+    "centrality",
+    "lowest-common-ancestors",
+    "dependency-sequencer",
+    "union-find",
+    "heap-walker",
+    "context-sensitive-paths"
+  )
 
   /** Export the atom to one of the supported graph formats. */
   def runExport(cpg: Cpg, config: AtomExportConfig): Either[String, String] =
@@ -90,18 +109,24 @@ object GraphCommands:
       )
     else
       val resultJson = algo match
-        case "scc"        => Right(sccReport(cpg))
-        case "toposort"   => toposortReport(cpg)
-        case "centrality" => Right(centralityReport(cpg))
-        case "dominators" => Right(dominatorsReport(cpg))
-        case "paths"      => pathsReport(cpg, config)
-        case other        => Left(s"Unsupported algorithm '$other'")
+        case "scc"                     => Right(sccReport(cpg))
+        case "toposort"                => toposortReport(cpg)
+        case "centrality"              => Right(centralityReport(cpg))
+        case "dominators"              => Right(dominatorsReport(cpg))
+        case "paths"                   => pathsReport(cpg, config)
+        case "lowest-common-ancestors" => lowestCommonAncestorsReport(cpg, config)
+        case "dependency-sequencer"    => dependencySequencerReport(cpg)
+        case "union-find"              => Right(unionFindReport(cpg))
+        case "heap-walker"             => heapWalkerReport(cpg, config)
+        case "context-sensitive-paths" => contextSensitivePathsReport(cpg, config)
+        case other                     => Left(s"Unsupported algorithm '$other'")
       resultJson.map { json =>
         val outFile = File(config.outputSliceFile.pathAsString)
             .createFileIfNotExists(createParents = true)
             .write(json.spaces2)
         s"Algorithm '$algo' result written to ${outFile.pathAsString}"
       }
+    end if
   end runAlgorithms
 
   // The call graph: a method points at the methods it directly calls.
@@ -252,6 +277,234 @@ object GraphCommands:
         case _ =>
             Left(
               "The 'paths' algorithm needs a source and target selector. Provide them via the config " +
+                  "file (source, target) or rerun with matching method patterns."
+            )
+
+  private def lowestCommonAncestorsReport(
+    cpg: Cpg,
+    config: AtomAlgorithmsConfig
+  ): Either[String, Json] =
+      config.sourceSelector match
+        case Some(srcPat) =>
+            val matched = cpg.method.fullName(srcPat).l
+            if matched.isEmpty then
+              Left(s"No methods matched the source selector '$srcPat'")
+            else
+              implicit val getParents: GetParents[Node] = new GetParents[Node]:
+                override def apply(node: Node): Set[Node] =
+                    node match
+                      case m: Method =>
+                          m.caller(using NoResolve).toSeq.map(_.asInstanceOf[Node]).toSet
+                      case _ => Set.empty
+              val nodesSet = matched.map(_.asInstanceOf[Node]).toSet
+              val lcas     = LowestCommonAncestors(nodesSet)
+              Right(
+                Json.obj(
+                  "matchedMethods" -> matched.map(_.fullName).sorted.asJson,
+                  "lowestCommonAncestors" -> lcas.toSeq.map {
+                      case m: Method => m.fullName
+                      case n         => s"Node(id=${n.id()})"
+                  }.sorted.asJson
+                )
+              )
+            end if
+        case None =>
+            Left(
+              "The 'lowest-common-ancestors' algorithm needs a source selector matching the methods to find LCAs for."
+            )
+
+  private def dependencySequencerReport(cpg: Cpg): Either[String, Json] =
+      Try {
+          val names      = methodNamesById(cpg)
+          val nodes      = methodNodes(cpg)
+          val components = nodes.stronglyConnectedComponents(callees)
+
+          val componentOfNode = scala.collection.mutable.HashMap.empty[Long, Int]
+          components.zipWithIndex.foreach { case (component, index) =>
+              component.foreach(node => componentOfNode(node.id()) = index)
+          }
+          val selfRecursive =
+              nodes.filter(n => callees(n).exists(_.id() == n.id())).map(_.id()).toSet
+
+          val size       = components.size
+          val successors = Array.fill(size)(scala.collection.mutable.Set.empty[Int])
+          nodes.foreach { node =>
+            val from = componentOfNode(node.id())
+            callees(node).foreach { callee =>
+                componentOfNode.get(callee.id()).foreach { to =>
+                    if to != from && !successors(from).contains(to) then
+                      successors(from) += to
+                }
+            }
+          }
+
+          implicit val getParents: GetParents[Int] = (index: Int) => successors(index).toSet
+
+          val stages = DependencySequencer((0 until size).toSet)
+
+          val stagesJson = stages.map { stage =>
+              stage.toSeq.sorted.map { index =>
+                val component   = components(index)
+                val memberIds   = component.map(_.id())
+                val isRecursive = component.size > 1 || memberIds.exists(selfRecursive.contains)
+                Json.obj(
+                  "methods"   -> component.toSeq.flatMap(n => names.get(n.id())).sorted.asJson,
+                  "recursive" -> Json.fromBoolean(isRecursive)
+                )
+              }.asJson
+          }
+
+          Json.obj(
+            "stages"     -> stagesJson.asJson,
+            "stageCount" -> Json.fromInt(stages.size)
+          )
+      } match
+        case Success(json) => Right(json)
+        case Failure(ex)   => Left(s"Dependency sequencing failed: ${ex.getMessage}")
+
+  private def unionFindReport(cpg: Cpg): Json =
+    val names = methodNamesById(cpg)
+    val nodes = methodNodes(cpg)
+    val uf    = new UnionFind(nodes.size)
+    nodes.foreach(n => uf.makeSet(n.id()))
+    nodes.foreach { node =>
+        callees(node).foreach { callee =>
+            uf.union(node.id(), callee.id())
+        }
+    }
+    val groups = nodes.groupBy(n => uf.find(n.id()))
+    val componentsJson = groups.values.toSeq.map { component =>
+        component.flatMap(n => names.get(n.id())).sorted.asJson
+    }.sortBy(_.hcursor.as[Seq[String]].toOption.flatMap(_.headOption).getOrElse(""))
+    Json.obj(
+      "componentCount" -> Json.fromInt(groups.size),
+      "components"     -> componentsJson.asJson
+    )
+
+  private def heapWalkerReport(cpg: Cpg, config: AtomAlgorithmsConfig): Either[String, Json] =
+      config.sourceSelector match
+        case Some(srcPat) =>
+            val source = cpg.method.fullName(srcPat).headOption
+            source match
+              case Some(s) =>
+                  val walker  = HeapWalker.forNode(s.asInstanceOf[Node], "AST")
+                  val visited = scala.collection.mutable.ArrayBuffer.empty[Json]
+                  while walker.hasNext do
+                    val nextNode = walker.next()
+                    visited += Json.obj(
+                      "id"    -> Json.fromLong(nextNode.id()),
+                      "label" -> nextNode.label().asJson,
+                      "code"  -> nextNode.property("CODE", "").asJson
+                    )
+                  Right(
+                    Json.obj(
+                      "method"  -> s.fullName.asJson,
+                      "astWalk" -> visited.asJson
+                    )
+                  )
+              case None => Left(s"No method matched the source selector '$srcPat'")
+        case None =>
+            Left("The 'heap-walker' algorithm needs a source selector matching the root method.")
+
+  private def contextSensitivePathsReport(
+    cpg: Cpg,
+    config: AtomAlgorithmsConfig
+  ): Either[String, Json] =
+      (config.sourceSelector, config.targetSelector) match
+        case (Some(srcPat), Some(tgtPat)) =>
+            val source = cpg.method.fullName(srcPat).headOption
+            val target = cpg.method.fullName(tgtPat).headOption
+            (source, target) match
+              case (Some(s), Some(t)) =>
+                  val depth = if config.maxDepth > 0 then config.maxDepth else 10
+                  val getEdges: java.util.function.Function[
+                    Node,
+                    java.util.Iterator[ContextSensitivePathFinder.ContextEdge]
+                  ] = (n: Node) =>
+                    val list = new java.util.ArrayList[ContextSensitivePathFinder.ContextEdge]()
+                    n match
+                      case m: Method =>
+                          m.call.foreach { c =>
+                              list.add(new ContextSensitivePathFinder.ContextEdge(
+                                c.asInstanceOf[Node],
+                                ContextSensitivePathFinder.ContextEdge.Type.NEUTRAL,
+                                0
+                              ))
+                          }
+                          list.add(new ContextSensitivePathFinder.ContextEdge(
+                            m.methodReturn.asInstanceOf[Node],
+                            ContextSensitivePathFinder.ContextEdge.Type.NEUTRAL,
+                            0
+                          ))
+                      case c: io.shiftleft.codepropertygraph.generated.nodes.Call =>
+                          c.out("CALL").asScala.foreach { callee =>
+                              list.add(new ContextSensitivePathFinder.ContextEdge(
+                                callee,
+                                ContextSensitivePathFinder.ContextEdge.Type.OPEN,
+                                c.id()
+                              ))
+                          }
+                          list.add(new ContextSensitivePathFinder.ContextEdge(
+                            c.method.asInstanceOf[Node],
+                            ContextSensitivePathFinder.ContextEdge.Type.NEUTRAL,
+                            0
+                          ))
+                      case mr: io.shiftleft.codepropertygraph.generated.nodes.MethodReturn =>
+                          mr.method.caller(using NoResolve).foreach { callerMethod =>
+                              callerMethod.call.filter(c =>
+                                  c.out("CALL").asScala.exists(_.id() == mr.method.id())
+                              ).foreach { callNode =>
+                                  list.add(new ContextSensitivePathFinder.ContextEdge(
+                                    callNode.asInstanceOf[Node],
+                                    ContextSensitivePathFinder.ContextEdge.Type.CLOSE,
+                                    callNode.id()
+                                  ))
+                              }
+                          }
+                      case _ =>
+                    end match
+                    list.iterator()
+
+                  val pathOpt = ContextSensitivePathFinder.findPath(
+                    s.asInstanceOf[Node],
+                    t.asInstanceOf[Node],
+                    getEdges,
+                    depth
+                  )
+                  if pathOpt.isPresent then
+                    val pathNodes = pathOpt.get().nodes.asScala
+                    val jsonPath = pathNodes.map { n =>
+                        Json.obj(
+                          "id"    -> Json.fromLong(n.id()),
+                          "label" -> n.label().asJson,
+                          "name" -> (n match
+                            case m: Method => m.fullName.asJson
+                            case _         => n.property("NAME", s"Node(id=${n.id()})").asJson
+                          )
+                        )
+                    }.asJson
+                    Right(
+                      Json.obj(
+                        "source" -> s.fullName.asJson,
+                        "target" -> t.fullName.asJson,
+                        "path"   -> jsonPath
+                      )
+                    )
+                  else
+                    Right(
+                      Json.obj(
+                        "source" -> s.fullName.asJson,
+                        "target" -> t.fullName.asJson,
+                        "path"   -> Json.arr()
+                      )
+                    )
+                  end if
+              case (None, _) => Left(s"No method matched the source selector '$srcPat'")
+              case (_, None) => Left(s"No method matched the target selector '$tgtPat'")
+            end match
+        case _ =>
+            Left(
+              "The 'context-sensitive-paths' algorithm needs a source and target selector. Provide them via the config " +
                   "file (source, target) or rerun with matching method patterns."
             )
 

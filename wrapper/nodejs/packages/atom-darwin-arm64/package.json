@@ -1,6 +1,6 @@
 {
   "name": "@appthreat/atom-darwin-arm64",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Darwin arm64 native binary for @appthreat/atom",
   "type": "module",
   "repository": {

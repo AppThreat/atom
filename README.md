@@ -140,7 +140,7 @@ Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)
   --out <value>            output directory. Default: atom-exports
 Command: algorithms [options]
 Run a graph algorithm over the atom and write the result as JSON
-  --type <value>           algorithm: scc, toposort, dominators, paths or centrality
+  --type <value>           algorithm: scc, toposort, dominators, paths, centrality, lowest-common-ancestors, dependency-sequencer, union-find, heap-walker, or context-sensitive-paths
   --source <value>         source method full-name pattern for the paths algorithm. Uses regex.
   --target <value>         target method full-name pattern for the paths algorithm. Uses regex.
   --max-depth <value>      maximum path depth for the paths algorithm
@@ -172,6 +172,11 @@ atom export -l python --format gnn --scope methods -o app.atom --out gnn-out app
   stages (each flagged as recursive) so the ordering works even when the call graph has cycles.
 - `dominators` writes the control-flow dominator tree of each method.
 - `paths` finds paths between a source and target method selected by regular expression.
+- `lowest-common-ancestors` finds the lowest common callers of methods matching `--source`. Use case: locating common routing dispatchers or entry gates in security audits.
+- `dependency-sequencer` sequences method call dependencies into parallelizable execution stages. Use case: parallelizing inter-procedural summary calculations.
+- `union-find` groups methods into independent connected components of the call graph. Use case: discovering isolated modules/codebases for refactoring or microservice separation.
+- `heap-walker` traverses the AST of a method matching `--source` in stack-safe DFS order. Use case: memory-safe control flow and structure analysis on deep or generated ASTs.
+- `context-sensitive-paths` finds call-stack matching paths from `--source` to `--target`. Use case: precise data-flow/reachability tracing without false paths across call sites.
 
 ```
 atom algorithms -l python --type centrality -o app.atom -s centrality.json app.py
