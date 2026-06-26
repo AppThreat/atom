@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - release/3.x
   workflow_dispatch:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -15,83 +16,83 @@ jobs:
   jvm-testing:
     strategy:
       matrix:
-        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, windows-latest]
-        java-version: ['21', '25']
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-latest, windows-latest]
+        java-version: ['23', '25', '26']
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'ShiftLeftSecurity/shiftleft-java-example'
           path: 'repotests/shiftleft-java-example'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'rodbate/bouncycastle-examples'
           path: 'repotests/bouncycastle-examples'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'juice-shop/juice-shop'
           path: 'repotests/juice-shop'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'ShiftLeftSecurity/shiftleft-ts-example'
           path: 'repotests/shiftleft-ts-example'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'libexpat/libexpat'
           path: 'repotests/libexpat'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'HooliCorp/java-sec-code'
           path: 'repotests/java-sec-code'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'HooliCorp/DjanGoat'
           path: 'repotests/DjanGoat'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'DefectDojo/django-DefectDojo'
           path: 'repotests/django-DefectDojo'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'nodejs/node'
           path: 'repotests/nodejs'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'awsdocs/aws-doc-sdk-examples'
           path: 'repotests/aws-doc-sdk-examples'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'bionomia/bionomia'
           path: 'repotests/bionomia'
           ref: '5ada8b5f4a5f68561a7195e2badc2f744dc4676e'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'OWASP/railsgoat'
           path: 'repotests/railsgoat'
           ref: 'c1e8ff1e3b24a1c48fcfc9fbee0f65dc296b49d9'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'playframework/play-samples'
           path: 'repotests/play-samples'
           ref: '0dccba17856e89dbb5e457ab760efb14cc691395'
           persist-credentials: false
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: 'aboutcode-org/dejacode'
           path: 'repotests/dejacode'
@@ -99,7 +100,7 @@ jobs:
           persist-credentials: false
       - uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d  # v8.1.1
       - name: Set up JDK
-        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287  # v5.3.0
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520  # v5.4.0
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
@@ -119,15 +120,15 @@ jobs:
           php-version: "8.3"
           tools: composer:v2
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
         with:
           python-version: '3.12'
-      - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af  # v1.313.0
+      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74  # v1.314.0
         with:
-          ruby-version: '4.0.0'
+          ruby-version: '4.0.5'
           bundler-cache: false
         if: runner.os != 'Windows'
-      - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af  # v1.313.0
+      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74  # v1.314.0
         with:
           ruby-version: '3.4.8'
           bundler-cache: false
@@ -142,11 +143,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
-          cd wrapper/nodejs
-          bash build.sh
-          npm install -g .
-          npm install -g @appthreat/atom-parsetools
-          cd ../..
+          npm install -g --omit=optional @appthreat/atom-parsetools
           ./atom.sh --remove-atom -o /tmp/java.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/juice.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/ts.atom -l js $GITHUB_WORKSPACE/repotests/shiftleft-ts-example -Dlog4j.configurationFile=log4j2.xml -x --export-dir ts_gml_exports
@@ -185,8 +182,8 @@ jobs:
 
           ./atom.sh --remove-atom -o /tmp/play-scala-slick-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-slick-example
           ls -lh $GITHUB_WORKSPACE/repotests/play-samples/play-scala-slick-example
-          ./atom.sh --remove-atom -o /tmp/play-scala-rest-api-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example
-          ./atom.sh usages --extract-endpoints --remove-atom -o /tmp/play-scala-rest-api-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example --slice-outfile /tmp/scala-rest.usages.json
+          ./atom.sh -o /tmp/play-scala-rest-api-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example
+          ./atom.sh usages --extract-endpoints --reuse-atom -o /tmp/play-scala-rest-api-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example --slice-outfile /tmp/scala-rest.usages.json
           ls -lh $GITHUB_WORKSPACE/repotests/play-samples/play-scala-rest-api-example
           ./atom.sh --remove-atom -o /tmp/play-scala-grpc-example.atom -l scala $GITHUB_WORKSPACE/repotests/play-samples/play-scala-grpc-example
           ls -lh $GITHUB_WORKSPACE/repotests/play-samples/play-scala-grpc-example
@@ -196,13 +193,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
-          cd wrapper/nodejs
-          copy ..\..\target\atom.zip plugins\
-          Expand-Archive -Path ..\..\target\atom.zip -DestinationPath plugins\ -Force
-          Remove-Item -Force plugins\atom.zip
-          npm install -g .
-          npm install -g @appthreat/atom-parsetools
-          cd ../..
+          npm install -g --omit=optional @appthreat/atom-parsetools
           .\atom.bat usages --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\juice-shop\\jshop.atom -l js $env:GITHUB_WORKSPACE\\repotests\\juice-shop --slice-outfile $env:GITHUB_WORKSPACE\\repotests\\juice-shop\\jshop.usages.json
           .\atom.bat usages --extract-endpoints --remove-atom -o $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\py3.atom -l python $env:GITHUB_WORKSPACE\\repotests\\DjanGoat --slice-outfile $env:GITHUB_WORKSPACE\\repotests\\DjanGoat\\py.usages.json
         if: runner.os == 'Windows'

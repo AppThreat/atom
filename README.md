@@ -29,41 +29,16 @@ and more.
 - JavaScript
 - Flow
 - TypeScript
-- Python (Supports 3.x to 3.13)
+- Python (Supports 3.x to 3.14)
 - PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.4 with limited support for PHP 5.x)
 - Ruby (Requires Ruby 4.0.x. Supports Ruby 1.8 - 4.0.x syntax)
 - Scala (WIP)
 
 ## Installation
 
-atom comprises a scala core with a Node.js wrapper module. It is currently distributed as a npm package.
+atom comprises a scala core with a Node.js wrapper module. It is currently distributed as standalone binaries and as a npm package.
 
-```shell
-npm install -g @appthreat/atom @appthreat/atom-parsetools
-atom --help
-```
-
-Install cdxgen npm package to generate a Software Bill-of-Materials (SBOM) which is required for reachables slicing.
-
-```shell
-npm install -g @cyclonedx/cdxgen --omit=optional
-```
-
-## container usage
-
-```shell
-docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom --help
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom --help
-```
-
-Example for java project.
-
-```shell
-docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
-```
-
-## atom native-image (Advanced users only)
+## atom native-image
 
 atom is available as a native image built using graalvm community edition.
 
@@ -88,10 +63,37 @@ which astgen
 which phpastgen
 ```
 
+## npm-based installation
+
+```shell
+npm install -g @appthreat/atom @appthreat/atom-parsetools --ignore-scripts
+atom --help
+```
+
+Install cdxgen npm package to generate a Software Bill-of-Materials (SBOM) which is required for reachables slicing.
+
+```shell
+npm install -g @cyclonedx/cdxgen --omit=optional --ignore-scripts
+```
+
+## container usage
+
+```shell
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom --help
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom --help
+```
+
+Example for java project.
+
+```shell
+docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
+# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
+```
+
 ## CLI Usage
 
 ```
-Usage: atom [parsedeps|data-flow|usages|reachables] [options] [input]
+Usage: atom [parsedeps|data-flow|usages|reachables|export|algorithms] [options] [input]
 
   input                    source file or directory
   -o, --output <value>     output filename. Default app.⚛ or app.atom in windows
@@ -112,6 +114,8 @@ Usage: atom [parsedeps|data-flow|usages|reachables] [options] [input]
   --method-annotation-filter <value>
                            filters in slices that go through methods with specific annotations on the methods. Uses regex.
   --max-num-def <value>    maximum number of definitions in per-method data flow calculation - defaults to 2000
+  --legacy-dataflow        use the classic data-flow engine and disable mini-graph fragment caching and method flow summaries. By default atom uses the faster, lower-allocation Flux engine with fragment caching and summary-guided pruning enabled.
+  --validation-config <value>  path to a JSON file declaring validators/sanitisers (chennai.json schema). Reachable flows passing through a declared sanitiser are dropped for its categories.
 Command: parsedeps
 Extract dependencies from the build file and imports
 Command: data-flow [options]
@@ -128,8 +132,188 @@ Extract reachable data-flow slices based on automated framework tags
   --source-tag <value>     source tag - defaults to framework-input. Comma-separated values allowed.
   --sink-tag <value>       sink tag - defaults to framework-output. Comma-separated values allowed.
   --include-crypto         includes crypto library flows - defaults to false.
+  --profile <value>        reduce false positives with a flow-filtering profile: appsec, generic. Defaults to generic (no extra filtering).
+Command: export [options]
+Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)
+  --format <value>         export format: dot, graphml, gexf, graphson, neo4jcsv or gnn
+  --scope <value>          export scope: whole or methods. Default: whole
+  --out <value>            output directory. Default: atom-exports
+Command: algorithms [options]
+Run a graph algorithm over the atom and write the result as JSON
+  --type <value>           algorithm: scc, toposort, dominators, paths or centrality
+  --source <value>         source method full-name pattern for the paths algorithm. Uses regex.
+  --target <value>         target method full-name pattern for the paths algorithm. Uses regex.
+  --max-depth <value>      maximum path depth for the paths algorithm
+  --config <value>         path to a JSON config file for the export and algorithms commands
   --help                   display this help message
 ```
+
+## Export and algorithms commands
+
+The `export` and `algorithms` commands work on an `.atom` file. If the file given with `-o` already
+exists it is reused; otherwise atom builds it from the input first, so there is no separate build
+step to remember.
+
+`export` writes the graph in one of several formats. Use `--scope whole` for the entire atom or
+`--scope methods` to write one file per method (every format except neo4jcsv supports the per-method
+scope). The `gnn` format writes parallel id, label and edge arrays as JSON for machine-learning
+pipelines.
+
+```
+atom export -l python --format graphml --scope whole -o app.atom --out exports app.py
+atom export -l python --format gnn --scope methods -o app.atom --out gnn-out app.py
+```
+
+`algorithms` runs a graph algorithm and writes the result to the slice output file as JSON:
+
+- `centrality` ranks methods in the call graph by PageRank and in-degree.
+- `scc` reports strongly connected components, which flags recursion in the call graph.
+- `toposort` returns a callee-before-caller ordering of methods. Recursive methods are grouped into
+  stages (each flagged as recursive) so the ordering works even when the call graph has cycles.
+- `dominators` writes the control-flow dominator tree of each method.
+- `paths` finds paths between a source and target method selected by regular expression.
+
+```
+atom algorithms -l python --type centrality -o app.atom -s centrality.json app.py
+atom algorithms -l python --type paths --source '.*main$' --target '.*helper$' -o app.atom -s paths.json app.py
+```
+
+Verbose or repeatable parameters can be supplied with `--config <file>`, a JSON file. Command-line
+flags override values from the file. For example, an algorithms config file:
+
+```json
+{
+  "type": "paths",
+  "source": ".*main$",
+  "target": ".*helper$",
+  "maxDepth": 20,
+  "out": "paths.json"
+}
+```
+
+## Data-flow engine
+
+atom computes data dependencies with the **Flux** engine (_Flow-Lattice Update eXecutor_) by default
+— a low-allocation, reaching-definitions solver that produces the same `REACHING_DEF` edges as the classic engine while
+using far less memory and GC time on large (e.g. bundled/transpiled JavaScript) methods. Per-file
+mini-graph (fragment) AST caching is also enabled by default, so unchanged files are restored from a
+`.chen` cache instead of being re-parsed.
+
+Pass `--legacy-dataflow` to fall back to the classic engine and disable fragment caching (useful for
+A/B comparisons or troubleshooting). Caching can also be controlled independently via the
+`-Dchen.cache.disabled=true` system property.
+
+### Storage compression (`-Dodb.storage.compression`)
+
+On large codebases the graph overflows the heap and unused nodes are spilled to disk; the spill/save
+path runs on a single thread, so the compressor it uses can dominate generation and slicing time.
+Choose it with a system property (no rebuild needed):
+
+```
+atom ... -Dodb.storage.compression=none|lzf|deflate
+```
+
+- `deflate` (**default**) — slowest but produces the smallest `.atom`; the default because atom file size matters most on large codebases.
+- `lzf` — fast compression; best for large graphs that overflow the heap, where DEFLATE dominates generation/slicing time.
+- `none` — no compression; fastest spill, largest `.atom`.
+
+The compressor is recorded per chunk, so atoms written with any mode remain readable under any other
+(an `lzf` atom loads fine under the `deflate` default). Giving the JVM more heap (`-Xmx`) also
+reduces spilling — the cheapest win is to not overflow at all.
+
+## Method flow summaries
+
+The `reachables` command builds a context-independent flow summary for each method before running the
+backward query. A summary records which parameters of a method reach its return value or its output
+parameters. The reachables engine uses these summaries to skip cross-call work that provably carries
+no taint, for example exploring an argument that the callee never writes, or descending into a callee
+whose return value can carry no taint. The pruning only removes empty work, so the reported flows are
+identical to a run without summaries.
+
+Method flow summaries are part of the default Flux bundle — there is no separate flag. They are
+enabled whenever the Flux engine is used (the default) and turned off only by `--legacy-dataflow`,
+which also reverts to the classic data-flow engine.
+
+Summaries are persisted in two ways: as CPG-native `flow-summary` tags on each `METHOD` node (so they
+serialize with the atom and are reused for free when the atom is reused/cached), and as a
+`flowsummary-<fingerprint>.json` sidecar next to the atom for runs that do not carry the tags. The
+fingerprint changes when any method body changes. The summary caches, like the other caches, can be
+turned off with `-Dchen.cache.disabled=true`.
+
+```shell
+atom reachables -o app.atom -s reachables.json -l java .
+```
+
+## Validators and sanitisers
+
+Reachable flows that pass through a genuine validation or sanitisation routine are usually not real
+findings. You can declare such routines in a JSON file and pass it with `--validation-config`. atom
+tags every call to a declared method as a sanitiser and drops reachable flows that pass through one,
+scoped to the sink categories the sanitiser covers.
+
+The file uses the same schema as `chennai.json`. `sanitizers` and `validators` are treated
+identically; `categories` is optional and, when omitted, the sanitiser covers every flow:
+
+```json
+{
+  "sanitizers": [
+    {
+      "name": "owasp-encode",
+      "methods": ["org\\.owasp\\.encoder\\.Encode\\..*"],
+      "categories": ["http"]
+    },
+    {
+      "name": "sql-escape",
+      "methods": [".*escapeSql.*"],
+      "categories": ["sql"]
+    }
+  ],
+  "validators": [{ "name": "bean-validation", "methods": [".*\\.validate"] }]
+}
+```
+
+`methods` entries are matched against each call's method full name (treated as a regular expression
+when they contain regex characters, otherwise as an exact match). `categories` are matched against
+the tags on a flow's sink, so an HTML encoder declared for `http` does not suppress an SQL-injection
+flow.
+
+```shell
+atom reachables --validation-config validators.json -o app.atom -s reachables.json -l java .
+```
+
+The declarations can also be embedded in the project's `chennai.json` instead of passed on the
+command line. For programmatic use, the dataflow engine exposes `passesThrough` /
+`doesNotPassThrough` on a flow iterator, taking a simple node predicate.
+
+## Reachability profiles
+
+The default reachables run is deliberately broad: it reports every flow from a tagged source to a
+tagged sink. For a focused review you can apply a profile with `--profile`, which post-filters the
+flows in a generic, tag-driven way that works across all languages.
+
+```shell
+atom reachables --profile appsec -o app.atom -s reachables.json -l python .
+```
+
+Profiles do two things:
+
+- **Neutraliser barriers** — a flow that passes through a call (or a call to a method) carrying a
+  neutraliser tag is dropped. This builds on the validator/sanitiser handling above and adds
+  declassification barriers such as ORM reads.
+- **Source restriction** — a profile may narrow the source tags considered. An explicit
+  `--source-tag` always overrides this.
+
+| Profile             | Behaviour                                                                                                                                                                                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `generic` (default) | No additional filtering.                                                                                                                                                                                                                                                       |
+| `appsec`            | Web/API review. Drops flows neutralised by `validation`, `sanitization`, `sanitizer`, `encode` or `db-read` (ORM reads), and restricts sources to web-facing inputs (`framework-input`, `framework-route`, `framework`, `service-ingress`) — i.e. excludes CLI/driver sources. |
+
+The `db-read` barrier is what removes the bulk of object-identity false positives: when a request only
+supplies the primary key to an ORM accessor (e.g. `get_object_or_404`), the value read back is stored
+data, not live request input, so flows that merely pass through such a read are pruned.
+
+Profiles are extensible. A profile is a `ReachabilityProfile` (name, neutraliser tags, optional source
+override) registered in `io.appthreat.atom.slicing` — add an entry to the registry to define your own.
 
 ## Sample Invocations
 

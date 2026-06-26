@@ -1,0 +1,9 @@
+{
+  "sanitizers": [
+    { "name": "shlex-quote", "methods": [".*shlex.*quote.*"], "categories": ["code-execution"] },
+    { "name": "html-escape", "methods": [".*escape.*", ".*sanitize.*"], "categories": ["http", "framework-output"] }
+  ],
+  "validators": [
+    { "name": "django-validators", "methods": [".*validators.*validate.*"] }
+  ]
+}

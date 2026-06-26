@@ -91,6 +91,7 @@ object Atom:
         "reflection",
         "concurrent",
         "serialization",
+        "unsafe-deserialization",
         "regex",
         "cron",
         "mail",
@@ -247,7 +248,7 @@ object Atom:
         )
     opt[Map[String, String]]("frontend-args")
         .text(
-          "Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,enable-ast-cache=true,only-ast-cache=true"
+          "Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,only-ast-cache=true"
         )
         .action((x, c) =>
             c match
@@ -298,6 +299,23 @@ object Atom:
               case config: AtomConfig => config.withExportFormat(x)
               case _                  => c
         )
+    opt[String]("config")
+        .text("path to a JSON config file for the export and algorithms commands")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withConfigFile(Option(File(x)))
+              case _                  => c
+        )
+    opt[String]("validation-config")
+        .text(
+          "path to a JSON file declaring validators/sanitisers (chennai.json schema). Reachable " +
+              "flows passing through a declared sanitiser are dropped for its categories."
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withValidationConfigFile(Option(File(x)))
+              case _                  => c
+        )
     opt[String]("file-filter")
         .text(s"the name of the source file to generate slices from. Uses regex.")
         .action((x, c) => c.withFileFilter(Option(x)))
@@ -326,6 +344,17 @@ object Atom:
         .validate(x =>
             if x <= 0 then failure("`max-num-def` must be an integer larger than 0")
             else success
+        )
+    opt[Unit]("legacy-dataflow")
+        .text(
+          "use the classic data-flow engine and disable mini-graph fragment caching. By default " +
+              "atom uses the faster, lower-allocation Flux engine with fragment caching enabled."
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig =>
+                  config.withUseFluxEngine(false).withCacheFragments(false)
+              case _ => c
         )
     arg[String]("input")
         .optional()
@@ -426,6 +455,74 @@ object Atom:
                   c match
                     case c: AtomReachablesConfig => c.copy(includeCryptoFlows = true)
                     case _                       => c
+              ),
+          opt[String]("profile")
+              .text(
+                s"reduce false positives with a flow-filtering profile: ${ReachabilityProfile.names.mkString(", ")}. Defaults to generic (no extra filtering)."
+              )
+              .action((x, c) =>
+                  c match
+                    case c: AtomReachablesConfig => c.copy(profile = x)
+                    case _                       => c
+              )
+        )
+    cmd("export")
+        .text("Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)")
+        .action((_, _) => AtomExportConfig().withDataDependencies(true))
+        .children(
+          opt[String]("format")
+              .text("export format: dot, graphml, gexf, graphson, neo4jcsv or gnn")
+              .action((x, c) =>
+                  c match
+                    case c: AtomExportConfig => c.withExportFormat(x).asInstanceOf[AtomExportConfig]
+                    case _                   => c
+              ),
+          opt[String]("scope")
+              .text("export scope: whole or methods. Default: whole")
+              .action((x, c) =>
+                  c match
+                    case c: AtomExportConfig => c.withScope(x)
+                    case _                   => c
+              ),
+          opt[String]("out")
+              .text(s"output directory. Default: $DEFAULT_EXPORT_DIR")
+              .action((x, c) =>
+                  c match
+                    case c: AtomExportConfig => c.withExportDir(x).asInstanceOf[AtomExportConfig]
+                    case _                   => c
+              )
+        )
+    cmd("algorithms")
+        .text("Run a graph algorithm over the atom and write the result as JSON")
+        .action((_, _) => AtomAlgorithmsConfig().withDataDependencies(true))
+        .children(
+          opt[String]("type")
+              .text("algorithm: scc, toposort, dominators, paths or centrality")
+              .action((x, c) =>
+                  c match
+                    case c: AtomAlgorithmsConfig => c.withAlgoType(x)
+                    case _                       => c
+              ),
+          opt[String]("source")
+              .text("source method full-name pattern for the paths algorithm. Uses regex.")
+              .action((x, c) =>
+                  c match
+                    case c: AtomAlgorithmsConfig => c.withSourceSelector(Option(x))
+                    case _                       => c
+              ),
+          opt[String]("target")
+              .text("target method full-name pattern for the paths algorithm. Uses regex.")
+              .action((x, c) =>
+                  c match
+                    case c: AtomAlgorithmsConfig => c.withTargetSelector(Option(x))
+                    case _                       => c
+              ),
+          opt[Int]("max-depth")
+              .text("maximum path depth for the paths algorithm")
+              .action((x, c) =>
+                  c match
+                    case c: AtomAlgorithmsConfig => c.withMaxDepth(x)
+                    case _                       => c
               )
         )
     help("help").text("display this help message")
@@ -460,7 +557,7 @@ object Atom:
               println(s"Failure: $errMsg")
             System.exit(1)
 
-  private def run(args: Array[String]): Either[String, String] =
+  private[atom] def run(args: Array[String]): Either[String, String] =
     val parserArgs = args.toList
     parseConfig(parserArgs) match
       case Right(config: AtomConfig) => run(config, config.language)
@@ -483,6 +580,10 @@ object Atom:
   private def generateSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
       try
         migrateAtomConfigToSliceConfig(config) match
+          case e: AtomExportConfig =>
+              runGraphExport(e, ag)
+          case a: AtomAlgorithmsConfig =>
+              runGraphAlgorithms(a, ag)
           case x: AtomConfig if config.exportAtom =>
               exportAtom(config, ag, x)
           case _: DataFlowConfig =>
@@ -499,6 +600,18 @@ object Atom:
       catch
         case err: Throwable =>
             Left(s"${err.toString}\n${err.getStackTrace.take(20).mkString("\n")}")
+
+  private def runGraphExport(config: AtomExportConfig, ag: Cpg): Either[String, String] =
+      AtomConfigFile(config).flatMap {
+          case e: AtomExportConfig => GraphCommands.runExport(ag, e)
+          case _                   => Left("Invalid configuration for export")
+      }
+
+  private def runGraphAlgorithms(config: AtomAlgorithmsConfig, ag: Cpg): Either[String, String] =
+      AtomConfigFile(config).flatMap {
+          case a: AtomAlgorithmsConfig => GraphCommands.runAlgorithms(ag, a)
+          case _                       => Left("Invalid configuration for algorithms")
+      }
 
   private def exportAtom(
     config: AtomConfig,
@@ -544,9 +657,13 @@ object Atom:
     usagesConfig: UsagesConfig
   ): Either[String, String] =
     println("Slicing the atom for usages. This might take a few minutes ...")
-    new ChennaiTagsPass(ag).createAndApply()
+    runChennaiTags(config, ag)
     val slice = calculateUsagesSlice(ag, config)
-    saveSlice(config.outputSliceFile, slice.map(_.toJson))
+    slice.foreach { s =>
+      val outFile = config.outputSliceFile.createFileIfNotExists(createParents = true)
+      s.toJsonFile(outFile)
+      println(s"Slices have been successfully written to ${outFile.pathAsString}")
+    }
     handleEndpointExtraction(config, usagesConfig)
     Right("Usages slice generated successfully")
 
@@ -635,7 +752,7 @@ object Atom:
       programSlice.foreach { slice =>
         val finalOutputPath =
             File(outFile.pathAsString)
-                .createFileIfNotExists()
+                .createFileIfNotExists(createParents = true)
                 .write(slice)
                 .pathAsString
         println(s"Slices have been successfully written to $finalOutputPath")
@@ -658,11 +775,29 @@ object Atom:
               config.extractEndpoints
             )
         case config: AtomReachablesConfig =>
+            val profile = ReachabilityProfile.byName(config.profile).getOrElse {
+                if config.profile.trim.nonEmpty &&
+                  !config.profile.equalsIgnoreCase(ReachabilityProfile.Generic.name)
+                then
+                  System.err.println(
+                    s"Unknown reachables profile '${config.profile}'. Using 'generic'. Available: ${ReachabilityProfile.names.mkString(", ")}"
+                  )
+                ReachabilityProfile.Generic
+            }
+            // A profile may restrict sources (e.g. to web-facing inputs), but an explicit
+            // --source-tag always wins.
+            val effectiveSourceTag =
+                profile.sourceTagsOverride match
+                  case Some(tags) if config.sourceTag == DEFAULT_SOURCE_TAGS => tags
+                  case _                                                     => config.sourceTag
             ReachablesConfig(
-              config.sourceTag,
+              effectiveSourceTag,
               config.sinkTag,
               config.sliceDepth,
-              config.includeCryptoFlows
+              config.includeCryptoFlows,
+              // Summaries are part of the Flux bundle (no separate flag): on when Flux is on.
+              useSummaries = config.useFluxEngine,
+              profile = profile
             )
         case _ => x
       ).withInputPath(x.inputPath)
@@ -673,7 +808,7 @@ object Atom:
           .withMethodAnnotationFilter(x.methodAnnotationFilter)
 
   private def loadFromOdb(filename: String): Try[Cpg] =
-    val odbConfig = overflowdb.Config.withoutOverflow().withStorageLocation(filename)
+    val odbConfig = overflowdb.Config.withDefaults().withStorageLocation(filename)
         .withHeapPercentageThreshold(90)
     val config = CpgLoaderConfig().withOverflowConfig(odbConfig).doNotCreateIndexesOnLoad
     try
@@ -686,10 +821,28 @@ object Atom:
       generateForLanguage(language.toUpperCase(Locale.ROOT), config)
 
   private def generateForLanguage(language: String, config: AtomConfig): Either[String, String] =
+    Option(config.outputAtomFile.parent).foreach(_.createDirectoryIfNotExists(createParents = true))
+    Option(config.outputSliceFile.parent).foreach(_.createDirectoryIfNotExists(createParents =
+        true
+    ))
     val outputAtomFile = config.outputAtomFile.pathAsString
     val onlyAstCache   = extractArgBoolean(config, "only-ast-cache", default = false)
+    // Mini-graph fragment AST caching has its own opt-in (`--cache-fragments`), decoupled from
+    // the `--flux` data-flow engine so each improvement can be evaluated independently.
+    if config.cacheFragments then
+      io.appthreat.x2cpg.passes.frontend.CacheControl.enableFragments()
+    // Enable the method-flow-summary cache so summaries persist next to the atom and are reused on
+    // an unchanged re-run. Summaries are part of the Flux bundle, so this follows `useFluxEngine`.
+    if config.useFluxEngine then
+      io.appthreat.x2cpg.passes.frontend.CacheControl.enable(
+        io.appthreat.x2cpg.passes.frontend.CacheControl.Summary
+      )
 
-    getOrCreateAtom(language, config, outputAtomFile) match
+    // Reuse-or-build: load the existing atom when one is present and the command allows it,
+    // otherwise build a fresh atom from the input. New graph-level commands (export, algorithms)
+    // share this path so they never require a manual pre-build step.
+    val reusing = shouldReuseExistingAtom(config, outputAtomFile)
+    getOrCreateAtom(language, config, outputAtomFile, reusing) match
       case Failure(exception) =>
           Left(exception.getStackTrace.take(20).mkString("\n"))
       case Success(ag) =>
@@ -699,24 +852,26 @@ object Atom:
             Right("AST cache generated successfully. Skipped CPG enhancement and slicing.")
           else
             for
-              _ <- enhanceCpg(config, ag)
+              _ <- enhanceCpg(config, ag, reusing)
               _ <- generateSlice(config, ag)
               _ <- closeCpg(ag)
             yield "Atom generation successful"
+  end generateForLanguage
 
   private def getOrCreateAtom(
     language: String,
     config: AtomConfig,
-    outputAtomFile: String
+    outputAtomFile: String,
+    reusing: Boolean
   ): Try[Cpg] =
-      config match
-        case x: AtomConfig if shouldReuseExistingAtom(x, outputAtomFile) =>
-            loadExistingAtom(outputAtomFile)
-        case _ =>
-            createNewAtom(language, config, outputAtomFile)
+      if reusing then loadExistingAtom(outputAtomFile)
+      else createNewAtom(language, config, outputAtomFile)
 
   private def shouldReuseExistingAtom(config: AtomConfig, outputAtomFile: String): Boolean =
-      (config.isInstanceOf[AtomUsagesConfig] || config.exportAtom || config.reuseAtom) &&
+      (config.isInstanceOf[AtomUsagesConfig] ||
+          config.isInstanceOf[AtomExportConfig] ||
+          config.isInstanceOf[AtomAlgorithmsConfig] ||
+          config.exportAtom || config.reuseAtom) &&
           File(outputAtomFile).exists
 
   private def loadExistingAtom(outputAtomFile: String): Try[Cpg] =
@@ -767,9 +922,9 @@ object Atom:
     val extraIncludes = extractArgSet(config, "includes") ++ extractArgSet(config, "include-paths")
     val cppStandard   = extractArgString(config, "cpp-standard")
     val onlyAstCache  = extractArgBoolean(config, "only-ast-cache", default = false)
-    val enableAstCache =
-        extractArgBoolean(config, "enable-ast-cache", default = false) || onlyAstCache
-    val defaultCacheDir = (config.inputPath / "ast_out").pathAsString
+    // AST caching is on by default; disable globally with -Dchen.cache.disabled.ast=true.
+    val enableAstCache  = true
+    val defaultCacheDir = (config.inputPath / ".chen").pathAsString
     val cacheDir        = extractArgString(config, "ast-cache-dir", default = defaultCacheDir)
     val baseConfig = CConfig(
       includeComments = false,
@@ -806,9 +961,9 @@ object Atom:
     val includeTrivialExpressions =
         extractArgBoolean(config, "include-trivial-expressions", default = false)
     val onlyAstCache = extractArgBoolean(config, "only-ast-cache", default = false)
-    val enableAstCache =
-        extractArgBoolean(config, "enable-ast-cache", default = false) || onlyAstCache
-    val defaultCacheDir = (config.inputPath / "ast_out").pathAsString
+    // AST caching is on by default; disable globally with -Dchen.cache.disabled.ast=true.
+    val enableAstCache  = true
+    val defaultCacheDir = (config.inputPath / ".chen").pathAsString
     val cacheDir        = extractArgString(config, "ast-cache-dir", default = defaultCacheDir)
     val cIgnoreDirEnvVars =
         if config.language.equalsIgnoreCase("CPP") || config.language.equalsIgnoreCase("C++") then
@@ -845,9 +1000,10 @@ object Atom:
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
         .withFullResolver(true)
-    val finalConfig = ignoredFilesRegexFromEnv("CHEN_JIMPLE_IGNORE_DIRS") match
+    val finalConfig = (ignoredFilesRegexFromEnv("CHEN_JIMPLE_IGNORE_DIRS") match
       case Some(regex) => baseConfig.withIgnoredFilesRegex(regex)
       case None        => baseConfig
+    )
     new Jimple2Cpg().createCpgWithOverlays(finalConfig)
 
   private def createJavaSrc2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
@@ -918,9 +1074,10 @@ object Atom:
         then
           Seq("CHEN_JAVASCRIPT_IGNORE_DIRS", "CHEN_JS_IGNORE_DIRS", "CHEN_TYPESCRIPT_IGNORE_DIRS")
         else Seq("CHEN_JAVASCRIPT_IGNORE_DIRS", "CHEN_JS_IGNORE_DIRS")
-    val finalConfig = ignoredFilesRegexFromEnv(jsIgnoreDirEnvVars*) match
+    val finalConfig = (ignoredFilesRegexFromEnv(jsIgnoreDirEnvVars*) match
       case Some(regex) => astGenConfig.withIgnoredFilesRegex(regex)
       case None        => astGenConfig
+    )
     new JsSrc2Cpg()
         .createCpgWithOverlays(finalConfig)
         .map { ag =>
@@ -981,16 +1138,43 @@ object Atom:
           ag
       }
 
-  private def enhanceCpg(config: AtomConfig, atom: Cpg): Either[String, Unit] =
+  /** Run the framework/route tagger, feeding it the optional validators/sanitisers config so calls
+    * to declared sanitisers are tagged for later flow filtering.
+    */
+  private def runChennaiTags(config: AtomConfig, atom: Cpg): Unit =
+    val externalConfig =
+        config.validationConfigFile.filter(_.exists).map(_.contentAsString)
+    new ChennaiTagsPass(atom, externalConfig).createAndApply()
+
+  private def enhanceCpg(config: AtomConfig, atom: Cpg, reusing: Boolean): Either[String, Unit] =
       config match
-        case x: AtomConfig if needsDataFlowEnhancement(x) =>
-            println("Generating data-flow dependencies from atom. Please wait ...")
+        case x: AtomConfig if needsDataFlowEnhancement(x, reusing) =>
+            if x.useFluxEngine then
+              println(
+                "Generating data-flow dependencies from atom using the Flux engine. Please wait ..."
+              )
+            else
+              println("Generating data-flow dependencies from atom. Please wait ...")
             try
-              new OssDataFlow(new OssDataFlowOptions(maxNumberOfDefinitions = x.maxNumDef))
+              new OssDataFlow(new OssDataFlowOptions(
+                maxNumberOfDefinitions = x.maxNumDef,
+                useFluxEngine = x.useFluxEngine
+              ))
                   .run(new LayerCreatorContext(atom))
+              // Persist per-method flow summaries (CHEN3 §5 / G-5) as CPG-native `flow-summary`
+              // tags so they serialize with the atom and the reachables engine can be primed
+              // without recomputation. Part of the Flux bundle.
+              if x.useFluxEngine then
+                val summaries =
+                    io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryComputer
+                        .computeAll(atom, io.appthreat.dataflowengineoss.DefaultSemantics())
+                new io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryTagsPass(
+                  atom,
+                  summaries
+                ).createAndApply()
               new CdxPass(atom).createAndApply()
               new EasyTagsPass(atom).createAndApply()
-              new ChennaiTagsPass(atom).createAndApply()
+              runChennaiTags(x, atom)
               applyJvmTaggers(atom)
               Right(())
             catch
@@ -1000,9 +1184,15 @@ object Atom:
                   Left(s"CPG appears to be corrupted with broken references. " +
                       s"Try removing the atom file and regenerating it. Error: ${npe.getMessage}")
               case ex: Exception =>
+                  // Report the root cause: parallel passes wrap the real failure as a cause, so
+                  // surfacing the deepest message is more useful than the generic wrapper.
+                  var rootCause: Throwable = ex
+                  while rootCause.getCause != null && rootCause.getCause != rootCause do
+                    rootCause = rootCause.getCause
                   Left(
-                    s"Failed to enhance CPG: ${ex.getMessage} ${ex.getStackTrace.take(40).mkString("\n")}"
+                    s"Failed to enhance CPG: ${rootCause.getClass.getName}: ${rootCause.getMessage}"
                   )
+            end try
         case _ =>
             new EasyTagsPass(atom).createAndApply()
             applyJvmTaggers(atom)
@@ -1019,10 +1209,12 @@ object Atom:
       new TrackersTagsPass(atom).createAndApply()
       new AndroidServicesTagsPass(atom).createAndApply()
 
-  private def needsDataFlowEnhancement(config: AtomConfig): Boolean =
-      !config.reuseAtom && (config.dataDeps ||
+  private def needsDataFlowEnhancement(config: AtomConfig, reusing: Boolean): Boolean =
+      !reusing && !config.reuseAtom && (config.dataDeps ||
           config.isInstanceOf[AtomDataFlowConfig] ||
-          config.isInstanceOf[AtomReachablesConfig])
+          config.isInstanceOf[AtomReachablesConfig] ||
+          config.isInstanceOf[AtomExportConfig] ||
+          config.isInstanceOf[AtomAlgorithmsConfig])
 
   private def closeCpg(cpg: Cpg): Either[String, Unit] =
       try

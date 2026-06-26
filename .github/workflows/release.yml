@@ -3,6 +3,7 @@ on:
   push:
     tags:
       - 'v*'
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,18 +20,18 @@ jobs:
       contents: write
       packages: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af  # v1.313.0
+      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74  # v1.314.0
         with:
-          ruby-version: '4.0.0'
+          ruby-version: '4.0.5'
           bundler-cache: false
       - name: Set up JDK
-        uses: graalvm/setup-graalvm@809afe62741147990fbf405045cd15e61bffedfe  # v1.5.5
+        uses: graalvm/setup-graalvm@6f3fa030c4b8f77c1f554a860f593a654538fa38  # v1.5.6
         with:
-          distribution: 'mandrel'
+          distribution: 'graalvm-community'
           java-version: '25'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -48,13 +49,19 @@ jobs:
           (Get-FileHash -Algorithm SHA512 .\atom.exe).hash | Out-File -FilePath .\atom.exe.sha512
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload native binary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: atom-windows-amd64
+          path: target/graalvm-native-image/atom.exe
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b  # v3.0.1
         with:
           files: |
             target/graalvm-native-image/atom.exe
             target/graalvm-native-image/atom.exe.sha512
+
 
   release-win-arm64:
     if: false
@@ -64,18 +71,18 @@ jobs:
       contents: write
       packages: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af  # v1.313.0
+      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74  # v1.314.0
         with:
-          ruby-version: '4.0.0'
+          ruby-version: '4.0.5'
           bundler-cache: false
       - name: Set up JDK
-        uses: graalvm/setup-graalvm@809afe62741147990fbf405045cd15e61bffedfe  # v1.5.5
+        uses: graalvm/setup-graalvm@6f3fa030c4b8f77c1f554a860f593a654538fa38  # v1.5.6
         with:
-          distribution: 'mandrel'
+          distribution: 'graalvm-community'
           java-version: '25'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -96,7 +103,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b  # v3.0.1
         with:
           files: |
             target/graalvm-native-image/atom-arm64.exe
@@ -110,14 +117,14 @@ jobs:
       contents: write
       packages: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Set up JDK
-        uses: graalvm/setup-graalvm@809afe62741147990fbf405045cd15e61bffedfe  # v1.5.5
+        uses: graalvm/setup-graalvm@6f3fa030c4b8f77c1f554a860f593a654538fa38  # v1.5.6
         with:
-          distribution: 'mandrel'
+          distribution: 'graalvm-community'
           java-version: '25'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -167,9 +174,14 @@ jobs:
           cdxgen -t sbt -o bom.json . -p --no-recurse
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload native binary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: atom-linux-amd64
+          path: target/graalvm-native-image/atom-amd64
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b  # v3.0.1
         with:
           files: |
             bom.json
@@ -177,6 +189,7 @@ jobs:
             target/atom.zip.sha512
             target/graalvm-native-image/atom-amd64
             target/graalvm-native-image/atom-amd64.sha512
+
 
   release-arm64:
     if: github.repository_owner == 'appthreat'
@@ -186,14 +199,14 @@ jobs:
       contents: write
       packages: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Set up JDK
-        uses: graalvm/setup-graalvm@809afe62741147990fbf405045cd15e61bffedfe  # v1.5.5
+        uses: graalvm/setup-graalvm@6f3fa030c4b8f77c1f554a860f593a654538fa38  # v1.5.6
         with:
-          distribution: 'mandrel'
+          distribution: 'graalvm-community'
           java-version: '25'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -228,13 +241,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_USERNAME: ${{ github.actor }}
+      - name: Upload native binary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: atom-linux-arm64
+          path: target/graalvm-native-image/atom-arm64
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b  # v3.0.1
         with:
           files: |
             target/graalvm-native-image/atom-arm64
             target/graalvm-native-image/atom-arm64.sha512
+
 
   release-mac:
     if: github.repository_owner == 'appthreat'
@@ -244,14 +263,14 @@ jobs:
       contents: write
       packages: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Set up JDK
-        uses: graalvm/setup-graalvm@809afe62741147990fbf405045cd15e61bffedfe  # v1.5.5
+        uses: graalvm/setup-graalvm@6f3fa030c4b8f77c1f554a860f593a654538fa38  # v1.5.6
         with:
-          distribution: 'mandrel'
+          distribution: 'graalvm-community'
           java-version: '25'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -281,13 +300,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_USERNAME: ${{ github.actor }}
+      - name: Upload native binary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: atom-darwin-arm64
+          path: target/graalvm-native-image/atom-darwin-arm64
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b  # v3.0.1
         with:
           files: |
             target/graalvm-native-image/atom-darwin-arm64
             target/graalvm-native-image/atom-darwin-arm64.sha512
+
 
   release-linux-musl-amd64:
     if: github.repository_owner == 'appthreat'
@@ -297,7 +322,7 @@ jobs:
       contents: write
       packages: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -324,23 +349,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_USERNAME: ${{ github.actor }}
+      - name: Upload native binary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: atom-linux-amd64-musl
+          path: target/graalvm-native-image/atom-linux-musl-amd64
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b  # v3.0.1
         with:
           files: |
             target/graalvm-native-image/atom-linux-musl-amd64
             target/graalvm-native-image/atom-linux-musl-amd64.sha512
 
+
   release-linux-musl-arm64:
-    if: false
+    if: false  # GraalVM CE muslib container image is amd64-only; musl arm64 is not supported
     concurrency: release-linux-musl-arm64
     runs-on: ubuntu-22.04-arm
     permissions:
       contents: write
       packages: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -369,8 +400,123 @@ jobs:
           GITHUB_USERNAME: ${{ github.actor }}
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b  # v3.0.1
         with:
           files: |
             target/graalvm-native-image/atom-linux-musl-arm64
             target/graalvm-native-image/atom-linux-musl-arm64.sha512
+
+  npm-publish:
+    name: Publish NPM Packages
+    runs-on: ubuntu-24.04
+    needs: [release-win, release, release-arm64, release-mac, release-linux-musl-amd64]
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          repository: 'ShiftLeftSecurity/shiftleft-java-example'
+          path: 'repotests/shiftleft-java-example'
+          persist-credentials: false
+      - name: Use Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
+        with:
+          node-version: '25.x'
+          package-manager-cache: false
+          scope: '@appthreat'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Set up JDK
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520  # v5.4.0
+        with:
+          distribution: 'temurin'
+          java-version: '23'
+      - uses: sbt/setup-sbt@3afe9cf056c5d139bfc46579af1192d77a2f0821  # v1.4.0
+      - name: Install deps
+        run: |
+          sudo apt update -y
+          sudo apt install -y zlib1g php-zip
+      - name: Assemble JAR packages
+        run: |
+          sbt stage createDistribution
+          cd wrapper/nodejs
+          # Unzips target/atom.zip and stamps the universal jar + jar-fallback packages.
+          bash build.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download Native Binaries
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          path: wrapper/nodejs/downloaded-binaries
+      - name: Assemble native packages
+        run: |
+          cd wrapper/nodejs
+          # Assemble native packages using downloaded per-arch binaries
+          node scripts/assemble.mjs @appthreat/atom-linux-amd64 downloaded-binaries/atom-linux-amd64/atom-amd64
+          node scripts/assemble.mjs @appthreat/atom-linux-arm64 downloaded-binaries/atom-linux-arm64/atom-arm64
+          node scripts/assemble.mjs @appthreat/atom-linux-amd64-musl downloaded-binaries/atom-linux-amd64-musl/atom-linux-musl-amd64
+          node scripts/assemble.mjs @appthreat/atom-darwin-arm64 downloaded-binaries/atom-darwin-arm64/atom-darwin-arm64
+          node scripts/assemble.mjs @appthreat/atom-windows-amd64 downloaded-binaries/atom-windows-amd64/atom.exe
+          
+      - name: Run unit tests
+        run: |
+          cd wrapper/nodejs
+          npm run test
+
+      - name: NPM Dry-run Publish (Verify packaging checks)
+        run: |
+          cd wrapper/nodejs
+          for dir in packages/atom-jar packages/atom-linux-amd64 packages/atom-linux-arm64 packages/atom-linux-amd64-musl packages/atom-darwin-arm64 packages/atom-windows-amd64 packages/atom-darwin-amd64 packages/atom-windows-arm64 packages/atom-linux-arm64-musl packages/atom; do
+            echo "Dry-run publishing $dir..."
+            (cd "$dir" && npm publish --dry-run)
+          done
+          
+      - name: Publish all Packages (Sub-packages first, parent last)
+        run: |
+          cd wrapper/nodejs
+          
+          for dir in packages/atom-jar packages/atom-linux-amd64 packages/atom-linux-arm64 packages/atom-linux-amd64-musl packages/atom-darwin-arm64 packages/atom-windows-amd64 packages/atom-darwin-amd64 packages/atom-windows-arm64 packages/atom-linux-arm64-musl; do
+            echo "Publishing $dir..."
+            (cd "$dir" && npm publish --provenance --access=public)
+          done
+          
+          echo "Publishing parent @appthreat/atom..."
+          (cd packages/atom && npm publish --provenance --access=public)
+        if: startsWith(github.ref, 'refs/tags/')
+
+  npm-release-tests:
+    name: Post-publish smoke test
+    runs-on: ${{ matrix.os }}
+    needs: npm-publish
+    if: startsWith(github.ref, 'refs/tags/')
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, windows-latest]
+    permissions:
+      contents: read
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
+        with:
+          node-version: '25.x'
+          package-manager-cache: false
+      - name: Set up JDK
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520  # v5.4.0
+        with:
+          distribution: 'temurin'
+          java-version: '23'
+      - name: Install atom from npm and verify
+        shell: bash
+        run: |
+          # Allow a short window for registry propagation of the freshly published tag.
+          sleep 30
+          npm install -g @appthreat/atom @appthreat/atom-parsetools
+          atom --help
+          astgen --version
+          rbastgen --help
+

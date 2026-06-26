@@ -54,6 +54,20 @@ const sidebars: SidebarsConfig = {
         }
       ],
     },
+    {
+      type: 'category',
+      label: 'Lessons',
+      items: [
+        'lessons/compilation',
+        'lessons/dependencies',
+        'lessons/enrichment',
+        'lessons/usages',
+        'lessons/dataflow',
+        'lessons/reachability',
+        'lessons/export',
+        'lessons/algorithms'
+      ]
+    },
     'slicing'
   ],
 };

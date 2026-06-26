@@ -1,0 +1,7 @@
+{
+  "type": "paths",
+  "source": ".*main$",
+  "target": ".*helper$",
+  "maxDepth": 20,
+  "out": "/tmp/atom-paths.json"
+}

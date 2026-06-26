@@ -1,185 +1,10 @@
 {
   "reflection": [
     {
-      "type": "[B"
-    },
-    {
-      "type": "[J"
-    },
-    {
-      "type": "[Lbetter.files.File;"
-    },
-    {
-      "type": "[Lcom.github.javaparser.ast.CompilationUnit;"
-    },
-    {
-      "type": "[Lio.appthreat.php2atom.passes.KnownFunction;"
-    },
-    {
-      "type": "[Lio.appthreat.ruby2atom.astcreation.AstCreator;"
-    },
-    {
-      "type": "[Lio.appthreat.x2cpg.Ast;"
-    },
-    {
-      "type": "[Lio.circe.Json$JNumber;"
-    },
-    {
-      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.AstNode;"
-    },
-    {
-      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.Call;"
-    },
-    {
-      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.CfgNode;"
-    },
-    {
-      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.ClosureBinding;"
-    },
-    {
-      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.Import;"
-    },
-    {
-      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.Method;"
-    },
-    {
-      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.NamespaceBlock;"
-    },
-    {
-      "type": "[Lio.shiftleft.codepropertygraph.generated.nodes.TypeDecl;"
-    },
-    {
-      "type": "[Lio.shiftleft.semanticcpg.accesspath.AccessElement;"
-    },
-    {
-      "type": "[Ljava.lang.Integer;"
-    },
-    {
-      "type": "[Ljava.lang.Object;"
-    },
-    {
-      "type": "[Ljava.lang.String;"
-    },
-    {
-      "type": "[Ljava.nio.file.FileVisitOption;"
-    },
-    {
-      "type": "[Ljava.nio.file.LinkOption;"
-    },
-    {
-      "type": "[Ljava.nio.file.OpenOption;"
-    },
-    {
-      "type": "[Ljava.nio.file.attribute.FileAttribute;"
-    },
-    {
-      "type": {
-        "proxy": [
-          "org.osgi.service.cm.SynchronousConfigurationListener"
-        ]
-      }
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTArrayModifier;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTAttribute;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTAttributeSpecifier;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTDeclaration;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTDeclarator;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTExpression;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTInitializerClause;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTName;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTNode;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTNodeLocation;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTParameterDeclaration;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTPointerOperator;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTStatement;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IASTToken;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IBinding;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.IField;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.c.ICASTCompositeTypeSpecifier;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.c.ICASTDesignator;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPASTNameSpecifier;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPASTParameterDeclaration;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPASTTemplateParameter;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPClassTemplatePartialSpecialization;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPField;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPFunction;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPMethod;"
-    },
-    {
-      "type": "[Lorg.eclipse.cdt.core.dom.ast.cpp.ICPPTemplateParameter;"
-    },
-    {
-      "type": "[Lscala.Function0;"
-    },
-    {
-      "type": "[Lscala.Tuple2;"
-    },
-    {
-      "type": "[Lsun.security.pkcs.SignerInfo;"
-    },
-    {
-      "type": "[[Ljava.lang.Object;"
-    },
-    {
-      "type": "[[Lorg.eclipse.cdt.core.dom.ast.IASTNode;"
-    },
-    {
-      "type": "[[[Ljava.lang.Object;"
-    },
-    {
-      "type": "[[[[Ljava.lang.Object;"
-    },
-    {
       "type": "android.os.Build$VERSION"
+    },
+    {
+      "type": "better.files.File[]"
     },
     {
       "type": "better.files.package$",
@@ -188,6 +13,9 @@
           "name": "0bitmap$1"
         }
       ]
+    },
+    {
+      "type": "byte[]"
     },
     {
       "type": "cats.Later",
@@ -213,6 +41,9 @@
     {
       "type": "com.github.javaparser.ast.CompilationUnit",
       "allDeclaredFields": true
+    },
+    {
+      "type": "com.github.javaparser.ast.CompilationUnit[]"
     },
     {
       "type": "com.github.javaparser.ast.PackageDeclaration",
@@ -356,7 +187,13 @@
     },
     {
       "type": "com.github.javaparser.ast.type.PrimitiveType",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "getType",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.github.javaparser.ast.type.ReferenceType",
@@ -364,7 +201,13 @@
     },
     {
       "type": "com.github.javaparser.ast.type.Type",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "getAnnotations",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.github.javaparser.ast.type.TypeParameter",
@@ -389,6 +232,37 @@
     {
       "type": "com.github.javaparser.ast.type.WildcardType",
       "allDeclaredFields": true
+    },
+    {
+      "type": "com.sun.management.GcInfo",
+      "fields": [
+        {
+          "name": "builder"
+        },
+        {
+          "name": "extAttributes"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.Atom",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "main",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.atom.Atom$",
+      "fields": [
+        {
+          "name": "androidJarPath$lzy1"
+        }
+      ]
     },
     {
       "type": "io.appthreat.atom.passes.RecoverForJavaScriptFile",
@@ -640,6 +514,9 @@
       "fields": [
         {
           "name": "io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"
+        },
+        {
+          "name": "typeDeclsInUnitByName$lzy1"
         }
       ]
     },
@@ -1461,6 +1338,9 @@
       ]
     },
     {
+      "type": "io.appthreat.php2atom.passes.KnownFunction[]"
+    },
+    {
       "type": "io.appthreat.php2atom.passes.LocalCreationPass",
       "fields": [
         {
@@ -1496,10 +1376,27 @@
       ]
     },
     {
+      "type": "io.appthreat.ruby2atom.astcreation.AstCreator[]"
+    },
+    {
       "type": "io.appthreat.ruby2atom.parser.RubyJsonHelpers$MetaData$",
       "fields": [
         {
           "name": "derived$ReadWriter$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.x2cpg.Ast[]"
+    },
+    {
+      "type": "io.appthreat.x2cpg.passes.callgraph.DynamicCallLinker",
+      "fields": [
+        {
+          "name": "methodMap$lzy1"
+        },
+        {
+          "name": "typeMap$lzy1"
         }
       ]
     },
@@ -1519,6 +1416,41 @@
         },
         {
           "name": "isFirstIteration$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.x2cpg.passes.taggers.AndroidServicesTagsPass$",
+      "fields": [
+        {
+          "name": "Services$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.x2cpg.passes.taggers.AndroidServicesTagsPass$Matcher[]"
+    },
+    {
+      "type": "io.appthreat.x2cpg.passes.taggers.TrackersTagsPass",
+      "fields": [
+        {
+          "name": "activeGroups$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.x2cpg.passes.taggers.TrackersTagsPass$",
+      "fields": [
+        {
+          "name": "Trackers$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.x2cpg.passes.taggers.TrackersTagsPass$Tracker",
+      "fields": [
+        {
+          "name": "matchRegex$lzy1"
         }
       ]
     },
@@ -1701,6 +1633,9 @@
       ]
     },
     {
+      "type": "io.circe.Json$JNumber[]"
+    },
+    {
       "type": "io.circe.JsonDecimal",
       "fields": [
         {
@@ -1765,6 +1700,18 @@
       ]
     },
     {
+      "type": "io.shiftleft.codepropertygraph.generated.nodes.AstNode[]"
+    },
+    {
+      "type": "io.shiftleft.codepropertygraph.generated.nodes.Call[]"
+    },
+    {
+      "type": "io.shiftleft.codepropertygraph.generated.nodes.CfgNode[]"
+    },
+    {
+      "type": "io.shiftleft.codepropertygraph.generated.nodes.ClosureBinding[]"
+    },
+    {
       "type": "io.shiftleft.codepropertygraph.generated.nodes.Factories$",
       "fields": [
         {
@@ -1776,6 +1723,51 @@
       ]
     },
     {
+      "type": "io.shiftleft.codepropertygraph.generated.nodes.Import[]"
+    },
+    {
+      "type": "io.shiftleft.codepropertygraph.generated.nodes.Method[]"
+    },
+    {
+      "type": "io.shiftleft.codepropertygraph.generated.nodes.NamespaceBlock[]"
+    },
+    {
+      "type": "io.shiftleft.codepropertygraph.generated.nodes.TypeDecl[]"
+    },
+    {
+      "type": "io.shiftleft.passes.ConcurrentWriterCpgPass",
+      "fields": [
+        {
+          "name": "cpuOptimizedExecutionContext$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.shiftleft.passes.IntervalKeyPool",
+      "fields": [
+        {
+          "name": "cur$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.shiftleft.passes.OrderedParallelCpgPass",
+      "fields": [
+        {
+          "name": "cpuOptimizedExecutionContext$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.shiftleft.semanticcpg.accesspath.AccessElement[]"
+    },
+    {
+      "type": "java.awt.image.BufferedImage"
+    },
+    {
+      "type": "java.io"
+    },
+    {
       "type": "java.io.BufferedReader"
     },
     {
@@ -1785,11 +1777,17 @@
       "type": "java.io.ByteArrayOutputStream"
     },
     {
+      "type": "java.io.Class"
+    },
+    {
       "type": "java.io.Closeable",
       "allDeclaredFields": true
     },
     {
       "type": "java.io.DataInput"
+    },
+    {
+      "type": "java.io.Exception"
     },
     {
       "type": "java.io.File",
@@ -1845,10 +1843,22 @@
       "allDeclaredFields": true
     },
     {
+      "type": "java.io.String"
+    },
+    {
+      "type": "java.io.StringBuilder"
+    },
+    {
       "type": "java.io.StringReader"
     },
     {
       "type": "java.io.StringWriter"
+    },
+    {
+      "type": "java.io.System"
+    },
+    {
+      "type": "java.io.URL"
     },
     {
       "type": "java.io.UnsupportedEncodingException"
@@ -1886,10 +1896,35 @@
     },
     {
       "type": "java.lang.Boolean",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "getBoolean",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Byte",
+      "fields": [
+        {
+          "name": "TYPE"
+        }
+      ]
     },
     {
       "type": "java.lang.CharSequence"
+    },
+    {
+      "type": "java.lang.Character",
+      "fields": [
+        {
+          "name": "TYPE"
+        }
+      ]
     },
     {
       "type": "java.lang.Class",
@@ -1926,10 +1961,18 @@
       "allDeclaredFields": true
     },
     {
+      "type": "java.lang.Configs"
+    },
+    {
       "type": "java.lang.Diff"
     },
     {
-      "type": "java.lang.Double"
+      "type": "java.lang.Double",
+      "fields": [
+        {
+          "name": "TYPE"
+        }
+      ]
     },
     {
       "type": "java.lang.Enum",
@@ -1944,6 +1987,17 @@
     },
     {
       "type": "java.lang.ExternalText"
+    },
+    {
+      "type": "java.lang.FILTER_PATTERN"
+    },
+    {
+      "type": "java.lang.Float",
+      "fields": [
+        {
+          "name": "TYPE"
+        }
+      ]
     },
     {
       "type": "java.lang.IllegalAccessException"
@@ -1965,6 +2019,9 @@
       "allDeclaredFields": true
     },
     {
+      "type": "java.lang.Integer[]"
+    },
+    {
       "type": "java.lang.InterruptedException"
     },
     {
@@ -1972,13 +2029,44 @@
       "allDeclaredFields": true
     },
     {
-      "type": "java.lang.Long"
+      "type": "java.lang.Long",
+      "fields": [
+        {
+          "name": "TYPE"
+        }
+      ]
     },
     {
       "type": "java.lang.Math"
     },
     {
-      "type": "java.lang.Module"
+      "type": "java.lang.Module",
+      "methods": [
+        {
+          "name": "getName",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPackages",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.ModuleLayer",
+      "methods": [
+        {
+          "name": "boot",
+          "parameterTypes": []
+        },
+        {
+          "name": "modules",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.NICK"
     },
     {
       "type": "java.lang.NoSuchMethodException"
@@ -1997,6 +2085,30 @@
       "allDeclaredFields": true
     },
     {
+      "type": "java.lang.Object[]"
+    },
+    {
+      "type": "java.lang.Object[][]"
+    },
+    {
+      "type": "java.lang.Object[][][]"
+    },
+    {
+      "type": "java.lang.Object[][][][]"
+    },
+    {
+      "type": "java.lang.Process"
+    },
+    {
+      "type": "java.lang.ProcessBuilder"
+    },
+    {
+      "type": "java.lang.Readable"
+    },
+    {
+      "type": "java.lang.ReflectiveOperationException"
+    },
+    {
       "type": "java.lang.Runnable",
       "allDeclaredFields": true
     },
@@ -2007,14 +2119,59 @@
       "type": "java.lang.RuntimeException"
     },
     {
-      "type": "java.lang.String"
+      "type": "java.lang.Short",
+      "fields": [
+        {
+          "name": "TYPE"
+        }
+      ]
+    },
+    {
+      "type": "java.lang.String",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "lastIndexOf",
+          "parameterTypes": [
+            "int"
+          ]
+        },
+        {
+          "name": "substring",
+          "parameterTypes": [
+            "int"
+          ]
+        }
+      ]
     },
     {
       "type": "java.lang.StringBuilder"
     },
     {
+      "type": "java.lang.String[]"
+    },
+    {
+      "type": "java.lang.Suffix"
+    },
+    {
       "type": "java.lang.System",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "getProperty",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setProperty",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.lang.String"
+          ]
+        }
+      ]
     },
     {
       "type": "java.lang.T"
@@ -2028,6 +2185,14 @@
     {
       "type": "java.lang.Throwable",
       "allDeclaredFields": true
+    },
+    {
+      "type": "java.lang.Void",
+      "fields": [
+        {
+          "name": "TYPE"
+        }
+      ]
     },
     {
       "type": "java.lang.annotation.Annotation",
@@ -2061,6 +2226,17 @@
       ]
     },
     {
+      "type": "java.lang.management.MemoryUsage",
+      "methods": [
+        {
+          "name": "from",
+          "parameterTypes": [
+            "javax.management.openmbean.CompositeData"
+          ]
+        }
+      ]
+    },
+    {
       "type": "java.lang.reflect.AccessibleObject"
     },
     {
@@ -2073,7 +2249,13 @@
       "type": "java.lang.reflect.Executable"
     },
     {
+      "type": "java.lang.reflect.Field"
+    },
+    {
       "type": "java.lang.reflect.GenericDeclaration"
+    },
+    {
+      "type": "java.lang.reflect.InvocationHandler"
     },
     {
       "type": "java.lang.reflect.InvocationTargetException"
@@ -2088,7 +2270,16 @@
       "type": "java.lang.reflect.Type"
     },
     {
+      "type": "java.math.BigDecimal"
+    },
+    {
+      "type": "java.math.BigInteger"
+    },
+    {
       "type": "java.net.InetAddress"
+    },
+    {
+      "type": "java.net.Integer"
     },
     {
       "type": "java.net.MalformedURLException"
@@ -2097,7 +2288,16 @@
       "type": "java.net.NoRouteToHostException"
     },
     {
+      "type": "java.net.Object"
+    },
+    {
+      "type": "java.net.RuntimeException"
+    },
+    {
       "type": "java.net.SocketTimeoutException"
+    },
+    {
+      "type": "java.net.String"
     },
     {
       "type": "java.net.URI"
@@ -2132,7 +2332,16 @@
       "type": "java.nio.charset.StandardCharsets.UTF_8"
     },
     {
+      "type": "java.nio.file.FileVisitOption[]"
+    },
+    {
       "type": "java.nio.file.Files"
+    },
+    {
+      "type": "java.nio.file.LinkOption[]"
+    },
+    {
+      "type": "java.nio.file.OpenOption[]"
     },
     {
       "type": "java.nio.file.Path"
@@ -2146,6 +2355,33 @@
     },
     {
       "type": "java.nio.file.Watchable"
+    },
+    {
+      "type": "java.nio.file.attribute.FileAttribute[]"
+    },
+    {
+      "type": "java.rmi.Remote"
+    },
+    {
+      "type": "java.rmi.RemoteException"
+    },
+    {
+      "type": "java.rmi.registry.LocateRegistry"
+    },
+    {
+      "type": "java.rmi.registry.Registry"
+    },
+    {
+      "type": "java.rmi.server.RemoteObject"
+    },
+    {
+      "type": "java.rmi.server.RemoteServer"
+    },
+    {
+      "type": "java.rmi.server.UnicastRemoteObject"
+    },
+    {
+      "type": "java.security"
     },
     {
       "type": "java.security.CodeSource"
@@ -2187,10 +2423,22 @@
       "type": "java.security.interfaces.RSAPublicKey"
     },
     {
+      "type": "java.sql"
+    },
+    {
+      "type": "java.sql.Class"
+    },
+    {
+      "type": "java.sql.ClassNotFoundException"
+    },
+    {
       "type": "java.sql.Connection"
     },
     {
       "type": "java.sql.Date"
+    },
+    {
+      "type": "java.sql.Integer"
     },
     {
       "type": "java.sql.PreparedStatement"
@@ -2203,6 +2451,15 @@
     },
     {
       "type": "java.sql.Statement"
+    },
+    {
+      "type": "java.sql.String"
+    },
+    {
+      "type": "java.sql.StringBuilder"
+    },
+    {
+      "type": "java.sql.System"
     },
     {
       "type": "java.sql.Wrapper"
@@ -2282,6 +2539,9 @@
       "type": "java.time.zone.ZoneRules"
     },
     {
+      "type": "java.util"
+    },
+    {
       "type": "java.util.AbstractCollection"
     },
     {
@@ -2316,6 +2576,9 @@
       "allDeclaredFields": true
     },
     {
+      "type": "java.util.Class"
+    },
+    {
       "type": "java.util.Collection"
     },
     {
@@ -2323,6 +2586,9 @@
     },
     {
       "type": "java.util.Comparator"
+    },
+    {
+      "type": "java.util.Configs"
     },
     {
       "type": "java.util.Date"
@@ -2339,6 +2605,9 @@
     {
       "type": "java.util.EventListener",
       "allDeclaredFields": true
+    },
+    {
+      "type": "java.util.Exception"
     },
     {
       "type": "java.util.HashMap"
@@ -2401,6 +2670,9 @@
       ]
     },
     {
+      "type": "java.util.Process"
+    },
+    {
       "type": "java.util.Properties"
     },
     {
@@ -2413,6 +2685,9 @@
       "type": "java.util.RandomAccess"
     },
     {
+      "type": "java.util.Runtime"
+    },
+    {
       "type": "java.util.Scanner"
     },
     {
@@ -2420,6 +2695,18 @@
     },
     {
       "type": "java.util.Set"
+    },
+    {
+      "type": "java.util.String"
+    },
+    {
+      "type": "java.util.StringBuilder"
+    },
+    {
+      "type": "java.util.System"
+    },
+    {
+      "type": "java.util.Thread"
     },
     {
       "type": "java.util.TimeZone"
@@ -2438,6 +2725,18 @@
     },
     {
       "type": "java.util.UUID"
+    },
+    {
+      "type": "java.util.aClass"
+    },
+    {
+      "type": "java.util.backdoorFilter"
+    },
+    {
+      "type": "java.util.bufferedReader"
+    },
+    {
+      "type": "java.util.concurrent"
     },
     {
       "type": "java.util.concurrent.AbstractExecutorService"
@@ -2462,6 +2761,9 @@
     },
     {
       "type": "java.util.concurrent.CountDownLatch"
+    },
+    {
+      "type": "java.util.concurrent.Exception"
     },
     {
       "type": "java.util.concurrent.ExecutionException"
@@ -2491,6 +2793,12 @@
     },
     {
       "type": "java.util.concurrent.LinkedBlockingQueue"
+    },
+    {
+      "type": "java.util.concurrent.String"
+    },
+    {
+      "type": "java.util.concurrent.StringBuilder"
     },
     {
       "type": "java.util.concurrent.ThreadFactory"
@@ -2575,6 +2883,15 @@
       "allDeclaredFields": true
     },
     {
+      "type": "java.util.servletRequest"
+    },
+    {
+      "type": "java.util.servletResponse"
+    },
+    {
+      "type": "java.util.standardContext"
+    },
+    {
       "type": "java.util.stream.BaseStream"
     },
     {
@@ -2585,6 +2902,12 @@
     },
     {
       "type": "java.util.stream.Stream"
+    },
+    {
+      "type": "java.util.stringBuilder"
+    },
+    {
+      "type": "java.util.webappClassLoaderBase"
     },
     {
       "type": "java.util.zip.DeflaterInputStream"
@@ -2603,6 +2926,21 @@
     },
     {
       "type": "javax.crypto.SecretKey"
+    },
+    {
+      "type": "javax.imageio.ImageIO"
+    },
+    {
+      "type": "javax.management.MBeanRegistration"
+    },
+    {
+      "type": "javax.management.NotificationBroadcaster"
+    },
+    {
+      "type": "javax.management.NotificationEmitter"
+    },
+    {
+      "type": "javax.management.ObjectName"
     },
     {
       "type": "javax.naming.AuthenticationException",
@@ -2636,6 +2974,18 @@
       "type": "javax.net.ssl.SSLSocketFactory"
     },
     {
+      "type": "javax.script.Bindings"
+    },
+    {
+      "type": "javax.script.ScriptContext"
+    },
+    {
+      "type": "javax.script.ScriptEngine"
+    },
+    {
+      "type": "javax.script.ScriptEngineManager"
+    },
+    {
       "type": "javax.security.auth.x500.X500Principal",
       "fields": [
         {
@@ -2652,6 +3002,147 @@
       ]
     },
     {
+      "type": "javax.servlet"
+    },
+    {
+      "type": "javax.servlet.Class"
+    },
+    {
+      "type": "javax.servlet.Configs"
+    },
+    {
+      "type": "javax.servlet.Exception"
+    },
+    {
+      "type": "javax.servlet.Map"
+    },
+    {
+      "type": "javax.servlet.Process"
+    },
+    {
+      "type": "javax.servlet.Runtime"
+    },
+    {
+      "type": "javax.servlet.String"
+    },
+    {
+      "type": "javax.servlet.StringBuilder"
+    },
+    {
+      "type": "javax.servlet.System"
+    },
+    {
+      "type": "javax.servlet.Thread"
+    },
+    {
+      "type": "javax.servlet.aClass"
+    },
+    {
+      "type": "javax.servlet.backdoorFilter"
+    },
+    {
+      "type": "javax.servlet.bufferedReader"
+    },
+    {
+      "type": "javax.servlet.constructor"
+    },
+    {
+      "type": "javax.servlet.e"
+    },
+    {
+      "type": "javax.servlet.filterChain"
+    },
+    {
+      "type": "javax.servlet.filterConfigs"
+    },
+    {
+      "type": "javax.servlet.filterDef"
+    },
+    {
+      "type": "javax.servlet.filterMap"
+    },
+    {
+      "type": "javax.servlet.java"
+    },
+    {
+      "type": "javax.servlet.java.io"
+    },
+    {
+      "type": "javax.servlet.java.io.BufferedReader"
+    },
+    {
+      "type": "javax.servlet.java.io.InputStreamReader"
+    },
+    {
+      "type": "javax.servlet.logger"
+    },
+    {
+      "type": "javax.servlet.matcher"
+    },
+    {
+      "type": "javax.servlet.process"
+    },
+    {
+      "type": "javax.servlet.request"
+    },
+    {
+      "type": "javax.servlet.response"
+    },
+    {
+      "type": "javax.servlet.servletRequest"
+    },
+    {
+      "type": "javax.servlet.servletResponse"
+    },
+    {
+      "type": "javax.servlet.standardContext"
+    },
+    {
+      "type": "javax.servlet.stringBuilder"
+    },
+    {
+      "type": "javax.servlet.webappClassLoaderBase"
+    },
+    {
+      "type": "javax.websocket"
+    },
+    {
+      "type": "javax.websocket.Exception"
+    },
+    {
+      "type": "javax.websocket.Process"
+    },
+    {
+      "type": "javax.websocket.Runtime"
+    },
+    {
+      "type": "javax.websocket.String"
+    },
+    {
+      "type": "javax.websocket.StringBuilder"
+    },
+    {
+      "type": "javax.websocket.System"
+    },
+    {
+      "type": "javax.websocket.Throwable"
+    },
+    {
+      "type": "javax.websocket.exception"
+    },
+    {
+      "type": "javax.websocket.inputStream"
+    },
+    {
+      "type": "javax.websocket.process"
+    },
+    {
+      "type": "javax.websocket.session"
+    },
+    {
+      "type": "javax.websocket.stringBuilder"
+    },
+    {
       "type": "javax.xml"
     },
     {
@@ -2659,6 +3150,90 @@
     },
     {
       "type": "jdk.internal.misc.Unsafe"
+    },
+    {
+      "type": "long[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTArrayModifier[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTAttributeSpecifier[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTAttribute[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTDeclaration[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTDeclarator[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTExpression[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTInitializerClause[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTName[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTNodeLocation[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTNode[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTNode[][]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTParameterDeclaration[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTPointerOperator[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTStatement[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IASTToken[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IBinding[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.IField[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.c.ICASTCompositeTypeSpecifier[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.c.ICASTDesignator[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.cpp.ICPPASTNameSpecifier[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.cpp.ICPPASTParameterDeclaration[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.cpp.ICPPASTTemplateParameter[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.cpp.ICPPClassTemplatePartialSpecialization[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.cpp.ICPPField[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.cpp.ICPPFunction[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.cpp.ICPPMethod[]"
+    },
+    {
+      "type": "org.eclipse.cdt.core.dom.ast.cpp.ICPPTemplateParameter[]"
     },
     {
       "type": "org.eclipse.core.internal.runtime.Messages",
@@ -2730,7 +3305,62 @@
       "type": "org.h2.store.fs.FilePathZip"
     },
     {
+      "type": "org.h2.store.fs.async.FilePathAsync"
+    },
+    {
+      "type": "org.h2.store.fs.mem.FilePathMem"
+    },
+    {
+      "type": "org.h2.store.fs.mem.FilePathMemLZF"
+    },
+    {
+      "type": "org.h2.store.fs.niomapped.FilePathNioMapped"
+    },
+    {
+      "type": "org.h2.store.fs.niomem.FilePathNioMem"
+    },
+    {
+      "type": "org.h2.store.fs.niomem.FilePathNioMemLZF"
+    },
+    {
+      "type": "org.h2.store.fs.retry.FilePathRetryOnInterrupt"
+    },
+    {
+      "type": "org.h2.store.fs.split.FilePathSplit"
+    },
+    {
+      "type": "org.h2.store.fs.zip.FilePathZip"
+    },
+    {
       "type": "org.slf4j.nop.NOPServiceProvider"
+    },
+    {
+      "type": "scala.Enumeration",
+      "fields": [
+        {
+          "name": "ValueOrdering$lzy1"
+        },
+        {
+          "name": "ValueSet$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.Enumeration$ValueSet",
+      "fields": [
+        {
+          "name": "byName$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.Function0[]"
+    },
+    {
+      "type": "scala.Tuple2[]"
+    },
+    {
+      "type": "scala.Tuple3[]"
     },
     {
       "type": "scala.collection.concurrent.CNodeBase",
@@ -2765,6 +3395,17 @@
       ]
     },
     {
+      "type": "scala.collection.immutable.ArraySeq$",
+      "fields": [
+        {
+          "name": "emptyImpl$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.collection.immutable.Seq[]"
+    },
+    {
       "type": "scala.collection.parallel.ForkJoinTasks$",
       "fields": [
         {
@@ -2790,10 +3431,123 @@
       ]
     },
     {
+      "type": "scala.concurrent.ExecutionContext$",
+      "fields": [
+        {
+          "name": "global$lzy1"
+        },
+        {
+          "name": "opportunistic$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.io.BufferedSource",
+      "fields": [
+        {
+          "name": "charReader$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.io.Codec$",
+      "fields": [
+        {
+          "name": "fallbackSystemCodec$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.io.Source",
+      "fields": [
+        {
+          "name": "NoPositioner$lzy1"
+        },
+        {
+          "name": "RelaxedPosition$lzy1"
+        },
+        {
+          "name": "RelaxedPositioner$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.math.BigDecimal$",
+      "fields": [
+        {
+          "name": "cache$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.sys.process.Process$",
+      "fields": [
+        {
+          "name": "Future$lzy1"
+        },
+        {
+          "name": "Spawn$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.util.Properties$",
+      "fields": [
+        {
+          "name": "consoleIsTerminal$lzy1"
+        },
+        {
+          "name": "isAvian$lzy1"
+        },
+        {
+          "name": "isLinux$lzy1"
+        },
+        {
+          "name": "isMac$lzy1"
+        },
+        {
+          "name": "isWin$lzy1"
+        },
+        {
+          "name": "scalaProps$lzy1"
+        }
+      ]
+    },
+    {
       "type": "scopt.OptionParser",
       "fields": [
         {
           "name": "0bitmap$1"
+        }
+      ]
+    },
+    {
+      "type": "sun.management.VMManagementImpl",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "compTimeMonitoringSupport"
+        },
+        {
+          "name": "currentThreadCpuTimeSupport"
+        },
+        {
+          "name": "objectMonitorUsageSupport"
+        },
+        {
+          "name": "otherThreadCpuTimeSupport"
+        },
+        {
+          "name": "remoteDiagnosticCommandsSupport"
+        },
+        {
+          "name": "synchronizerUsageSupport"
+        },
+        {
+          "name": "threadAllocatedMemorySupport"
+        },
+        {
+          "name": "threadContentionMonitoringSupport"
         }
       ]
     },
@@ -2804,6 +3558,9 @@
           "name": "theUnsafe"
         }
       ]
+    },
+    {
+      "type": "sun.security.pkcs.SignerInfo[]"
     },
     {
       "type": "sun.security.provider.NativePRNG",
@@ -2998,6 +3755,12 @@
       ]
     },
     {
+      "type": "sun.text.resources.cldr.FormatData"
+    },
+    {
+      "type": "sun.text.resources.cldr.FormatData_en"
+    },
+    {
       "type": "upickle.default$",
       "fields": [
         {
@@ -3039,65 +3802,13 @@
           "name": "hasFlattenOnMap$lzy1"
         }
       ]
-    }
-  ],
-  "jni": [
-    {
-      "type": "io.appthreat.atom.Atom",
-      "methods": [
-        {
-          "name": "main",
-          "parameterTypes": [
-            "java.lang.String[]"
-          ]
-        }
-      ]
     },
     {
-      "type": "java.lang.Boolean",
-      "methods": [
-        {
-          "name": "getBoolean",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "java.lang.String",
-      "methods": [
-        {
-          "name": "lastIndexOf",
-          "parameterTypes": [
-            "int"
-          ]
-        },
-        {
-          "name": "substring",
-          "parameterTypes": [
-            "int"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "java.lang.System",
-      "methods": [
-        {
-          "name": "getProperty",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "setProperty",
-          "parameterTypes": [
-            "java.lang.String",
-            "java.lang.String"
-          ]
-        }
-      ]
+      "type": {
+        "proxy": [
+          "org.osgi.service.cm.SynchronousConfigurationListener"
+        ]
+      }
     }
   ]
 }

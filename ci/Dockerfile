@@ -4,18 +4,18 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.authors="Team AppThreat <cloud@appthreat.com>" \
       org.opencontainers.image.source="https://github.com/appthreat/atom" \
       org.opencontainers.image.url="https://github.com/appthreat/atom" \
-      org.opencontainers.image.version="2.5.x" \
+      org.opencontainers.image.version="3.0.x" \
       org.opencontainers.image.vendor="appthreat" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="atom" \
       org.opencontainers.image.description="Container image for AppThreat atom" \
       org.opencontainers.docker.cmd="docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -it ghcr.io/appthreat/atom atom -o /app/app.atom -l java /app"
 
-ARG JAVA_VERSION=23.0.2-tem
-ARG MAVEN_VERSION=3.9.10
-ARG SCALA_VERSION=3.7.4
-ARG SBT_VERSION=1.11.7
-ARG RUBY_VERSION=4.0.0
+ARG JAVA_VERSION=26.0.1-tem
+ARG MAVEN_VERSION=3.9.16
+ARG SCALA_VERSION=3.8.4
+ARG SBT_VERSION=1.12.12
+ARG RUBY_VERSION=4.0.5
 
 ENV MAVEN_VERSION=$MAVEN_VERSION \
     MAVEN_HOME="/opt/maven/${MAVEN_VERSION}" \
@@ -34,7 +34,7 @@ ENV MAVEN_VERSION=$MAVEN_VERSION \
     COMPOSER_ALLOW_SUPERUSER=1 \
     RUBY_VERSION=$RUBY_VERSION
 
-ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:${SBT_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/4.0.0/bin:
+ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${SCALA_HOME}/bin:${SBT_HOME}/bin:/usr/local/bin/:/root/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:/root/.rbenv/bin:/root/.rbenv/versions/4.0.5/bin:
 
 WORKDIR /opt
 
@@ -64,7 +64,6 @@ RUN set -e; \
     && sdk install maven $MAVEN_VERSION \
     && sdk install scala $SCALA_VERSION \
     && sdk install sbt $SBT_VERSION \
-    && sdk offline enable \
     && mv /root/.sdkman/candidates/* /opt/ \
     && rm -rf /root/.sdkman \
     && java --version \
@@ -83,7 +82,7 @@ RUN set -e; \
     && rm -rf /root/.rbenv/cache $RUBY_BUILD_BUILD_PATH \
     && python3 --version \
     && node --version \
-    && python3 -m pip install --upgrade pip atom-tools>=0.8.2 \
+    && python3 -m pip install --upgrade pip atom-tools \
     && atom-tools --version && atom-tools --help \
     && mkdir -p ${ANDROID_HOME}/cmdline-tools \
     && curl -L https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -o ${ANDROID_HOME}/cmdline-tools/android_tools.zip \
@@ -98,24 +97,25 @@ RUN set -e; \
     && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && php composer-setup.php \
     && mv composer.phar /usr/local/bin/composer \
     && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.lock \
-    && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.json
-
-ENV LC_ALL=en_US.UTF-8 \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8
-COPY ./target/atom.zip .
-COPY ./wrapper .
-RUN unzip -q atom.zip \
+    && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.json \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
-    && cd /opt/nodejs && npm install --omit=dev && bash build.sh && npm install -g . && npm install -g @appthreat/atom-parsetools && cd /opt \
-    && rm -rf atom.zip composer.json composer.lock composer-setup.php /usr/local/bin/atom \
-    && /opt/bin/atom --help \
+    && rm composer.json composer.lock composer-setup.php \
+    && npm install -g @appthreat/atom-parsetools \
     && which astgen \
     && which phpastgen \
     && which rbastgen \
     && rbastgen --help \
     && microdnf clean all
 
+ENV LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8
+COPY ./target/atom.zip target/atom.zip
+COPY ./wrapper wrapper
+RUN cd /opt/wrapper/nodejs && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar && cd /opt \
+    && rm -rf target \
+    && /usr/local/bin/atom --help
+
 WORKDIR /app
 
-CMD ["/opt/bin/atom"]
+CMD ["/usr/local/bin/atom"]

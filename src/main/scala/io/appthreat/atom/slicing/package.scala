@@ -7,6 +7,7 @@ import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
 import overflowdb.PropertyKey
 
+import java.io.{BufferedWriter, FileWriter}
 import java.util.regex.Pattern
 import scala.collection.concurrent.TrieMap
 
@@ -83,8 +84,58 @@ package object slicing:
     sourceTag: Seq[String],
     sinkTag: Seq[String],
     sliceDepth: Int,
-    includeCryptoFlows: Boolean
+    includeCryptoFlows: Boolean,
+    useSummaries: Boolean = false,
+    profile: ReachabilityProfile = ReachabilityProfile.Generic
   ) extends BaseConfig
+
+  /** A named, language-agnostic post-filter applied to reachable flows to cut false positives.
+    *
+    * A profile is purely tag-driven so it works for every frontend:
+    *   - `neutralizerTags`: a flow that passes through a call (or a call to a method) carrying any
+    *     of these tags is dropped. This covers validators, sanitisers, encoders and
+    *     declassification barriers such as ORM reads (`db-read`).
+    *   - `sourceTagsOverride`: when set, restricts the source tags considered, e.g. to web-facing
+    *     inputs only, so CLI/driver sources don't flood an application-security review.
+    *
+    * Profiles are additive over the existing sanitiser handling; the default `Generic` profile
+    * changes nothing.
+    */
+  case class ReachabilityProfile(
+    name: String,
+    description: String,
+    neutralizerTags: Set[String] = Set.empty,
+    sourceTagsOverride: Option[Seq[String]] = None
+  )
+
+  object ReachabilityProfile:
+    val Generic: ReachabilityProfile =
+        ReachabilityProfile("generic", "No additional filtering (default).")
+
+    /** Application-security review: keep web/remote-facing sources, and treat validation,
+      * sanitisation, encoding and ORM reads as flow barriers.
+      */
+    val AppSec: ReachabilityProfile = ReachabilityProfile(
+      "appsec",
+      "Web app review: drop flows neutralised by validation/sanitisation/encoding or ORM reads, and consider only web-facing sources.",
+      neutralizerTags =
+          Set("validation", "sanitization", "sanitizer", "encode", "db-read"),
+      sourceTagsOverride = Some(Seq(
+        "framework-input",
+        "framework-route",
+        "framework",
+        "service-ingress"
+      ))
+    )
+
+    private val all: Map[String, ReachabilityProfile] =
+        Seq(Generic, AppSec).map(p => p.name -> p).toMap
+
+    def byName(name: String): Option[ReachabilityProfile] =
+        all.get(name.trim.toLowerCase)
+
+    def names: Seq[String] = all.keys.toSeq.sorted
+  end ReachabilityProfile
 
   /** Adds extensions to modify a method traversal based on config options
     */
@@ -113,6 +164,8 @@ package object slicing:
     def toJson: String
 
     def toJsonPretty: String
+
+    def toJsonFile(outFile: File): Unit = outFile.write(toJson)
 
   /** A data-flow slice vector for a given backwards intraprocedural path.
     *
@@ -504,6 +557,19 @@ package object slicing:
               annotation.columnNumber.map(_.intValue()),
               label = annotation.label
             )
+        case x: Method =>
+            // A method definition with no call-sites and no annotations in this CPG (e.g. a
+            // top-level function or an entry-point only reachable from outside the analysed
+            // source).  Represent it as a CallDef so the slice carries a typed, labelled entry
+            // rather than falling through to an UnknownDef with label UNKNOWN and type ANY.
+            CallDef(
+              x.name,
+              x.methodReturn.typeFullName,
+              Option(x.fullName),
+              isExternal,
+              lineNumber,
+              columnNumber
+            )
         case x: AstNode =>
             var methodDecl = x.code.takeWhile(_ != ')')
             if methodDecl.contains("(") && !methodDecl.endsWith(")") then
@@ -741,6 +807,24 @@ package object slicing:
     def toJson: String = this.asJson.noSpaces
 
     def toJsonPretty: String = this.asJson.spaces2
+
+    override def toJsonFile(outFile: File): Unit =
+      val writer = new BufferedWriter(new FileWriter(outFile.toJava))
+      try
+        writer.write("""{"objectSlices":[""")
+        objectSlices.zipWithIndex.foreach { case (slice, i) =>
+            if i > 0 then writer.write(",")
+            writer.write(slice.asJson.noSpaces)
+        }
+        writer.write("""],"userDefinedTypes":[""")
+        userDefinedTypes.zipWithIndex.foreach { case (udt, i) =>
+            if i > 0 then writer.write(",")
+            writer.write(udt.asJson.noSpaces)
+        }
+        writer.write("]}")
+      finally
+        writer.close()
+  end ProgramUsageSlice
 
   implicit val decodeProgramUsageSlice: Decoder[ProgramUsageSlice] =
       (c: HCursor) =>

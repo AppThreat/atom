@@ -8,9 +8,18 @@ import io.shiftleft.semanticcpg.language.*
 import io.shiftleft.passes.OrderedParallelCpgPass
 import scala.collection.mutable
 
-/** A pass that calculates reaching definitions ("data dependencies") based on ReachingDefPass
+/** A pass that calculates reaching definitions ("data dependencies").
+  *
+  * @param useFluxEngine
+  *   when true, use the low-allocation "Flux" reaching-def solver ([[FluxSolver]]) instead of the
+  *   classic [[DataFlowSolver]]. Both produce identical REACHING_DEF edges; Flux trades far less
+  *   allocation/GC pressure on large methods. Defaults to false (classic engine).
   */
-class DataDepsPass(atom: Cpg, maxNumberOfDefinitions: Int = 2000)(implicit s: Semantics)
+class DataDepsPass(
+  atom: Cpg,
+  maxNumberOfDefinitions: Int = 2000,
+  useFluxEngine: Boolean = false
+)(implicit s: Semantics)
     extends OrderedParallelCpgPass[Method](atom):
 
   // If there are any regex method full names, load them early
@@ -23,7 +32,9 @@ class DataDepsPass(atom: Cpg, maxNumberOfDefinitions: Int = 2000)(implicit s: Se
     if shouldBailOut(method, problem) then
       return
 
-    val solution     = new DataFlowSolver().calculateMopSolutionForwards(problem)
+    val solution =
+        if useFluxEngine then new FluxSolver().calculateMopSolutionForwards(problem)
+        else new DataFlowSolver().calculateMopSolutionForwards(problem)
     val ddgGenerator = new DdgGenerator(s)
     ddgGenerator.addReachingDefEdges(dstGraph, method, problem, solution)
 

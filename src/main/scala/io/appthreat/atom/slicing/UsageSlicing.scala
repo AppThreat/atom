@@ -397,17 +397,23 @@ object UsageSlicing:
   end createMethodUsageSlice
 
   private def importsAsSlices(atom: Cpg): List[MethodUsageSlice] =
-      atom.imports.l.map(i =>
-          createSlice(
-            i.importedEntity.getOrElse(""),
-            i.importedAs.getOrElse(""),
-            i.file.map(_.name).headOption.getOrElse(""),
-            if i.code.nonEmpty then i.code.replaceFirst("^use", "").trim else "",
-            Set.empty,
-            i.lineNumber,
-            i.columnNumber
+      // Deduplicate by (importedEntity, importedAs): in multi-TU languages (e.g. C/C++) the same
+      // header can be included once per translation unit, flooding the output with hundreds of
+      // identical import slices.  A single representative entry per unique import identity is kept.
+      atom.imports
+          .distinctBy(i => (i.importedEntity.getOrElse(""), i.importedAs.getOrElse("")))
+          .l
+          .map(i =>
+              createSlice(
+                i.importedEntity.getOrElse(""),
+                i.importedAs.getOrElse(""),
+                i.file.map(_.name).headOption.getOrElse(""),
+                if i.code.nonEmpty then i.code.replaceFirst("^use", "").trim else "",
+                Set.empty,
+                i.lineNumber,
+                i.columnNumber
+              )
           )
-      )
 
   private def unusedTypeDeclAsSlices(atom: Cpg): List[MethodUsageSlice] =
       atom.typeDecl.annotation.filter(_.method.isEmpty).l.map(a =>
@@ -575,15 +581,22 @@ object UsageSlicing:
             t.fullName,
             t.member.map(m => DefComponent.fromNode(m, null)).collect { case x: LocalDef => x }.l,
             t.method.filterNot(_.name.startsWith("<clinit>")).map(m =>
-                ObservedCall(
-                  m.name,
-                  Option(m.fullName),
-                  m.parameter.map(_.typeFullName).toList,
-                  m.methodReturn.typeFullName,
-                  Option(m.isExternal),
-                  m.lineNumber.map(_.intValue()),
-                  m.columnNumber.map(_.intValue())
-                )
+              // For constructors the method return type in the CPG is `void` (or ANY) but the
+              // meaningful type is the enclosing class.  Use the TypeDecl fullName instead so
+              // that `returnType` carries a useful type name rather than `void`.
+              val isConstructor = m.name == t.name
+              val returnType =
+                  if isConstructor then t.fullName
+                  else m.methodReturn.typeFullName
+              ObservedCall(
+                m.name,
+                Option(m.fullName),
+                m.parameter.map(_.typeFullName).toList,
+                returnType,
+                Option(m.isExternal),
+                m.lineNumber.map(_.intValue()),
+                m.columnNumber.map(_.intValue())
+              )
             ).l,
             t.filename,
             t.lineNumber.map(_.intValue()),

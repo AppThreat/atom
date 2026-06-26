@@ -10,16 +10,29 @@ package object atom:
   trait AtomConfig extends BaseConfig:
     this.inputPath = File(".")
     this.outputSliceFile = File(DEFAULT_SLICE_OUT_FILE)
-    var outputAtomFile: File              = File(DEFAULT_ATOM_OUT_FILE)
-    var language: String                  = ""
-    var dataDeps: Boolean                 = false
-    var removeAtom: Boolean               = false
-    var maxNumDef: Int                    = DEFAULT_MAX_DEFS
+    var outputAtomFile: File = File(DEFAULT_ATOM_OUT_FILE)
+    var language: String     = ""
+    var dataDeps: Boolean    = false
+    var removeAtom: Boolean  = false
+    var maxNumDef: Int       = DEFAULT_MAX_DEFS
+    // Flux data-flow engine and mini-graph fragment caching are the defaults; `--legacy-dataflow`
+    // opts back into the classic engine (and disables fragment caching). Method flow summaries are
+    // part of the Flux bundle: when the Flux engine is on, summaries are built and the reachables
+    // query engine uses them to prune provably empty cross-call work (so `useSummaries` follows
+    // `useFluxEngine` and has no separate flag).
+    var useFluxEngine: Boolean            = true
+    var cacheFragments: Boolean           = true
     var exportAtom: Boolean               = false
     var reuseAtom: Boolean                = false
     var exportDir: String                 = DEFAULT_EXPORT_DIR
     var exportFormat: String              = DEFAULT_EXPORT_FORMAT
     var frontendArgs: Map[String, String] = Map.empty
+    // Optional config file (JSON) for the verbose, repeatable parameters of the graph-level
+    // commands. CLI flags always take precedence over values read from this file.
+    var configFile: Option[File] = None
+    // Optional validators/sanitisers config (the chennai.json schema). Calls to the declared
+    // methods are tagged as sanitisers so reachable flows passing through them can be dropped.
+    var validationConfigFile: Option[File] = None
 
     def withOutputAtomFile(x: File): AtomConfig =
       this.outputAtomFile = x
@@ -57,8 +70,24 @@ package object atom:
       this.maxNumDef = x
       this
 
+    def withUseFluxEngine(x: Boolean): AtomConfig =
+      this.useFluxEngine = x
+      this
+
+    def withCacheFragments(x: Boolean): AtomConfig =
+      this.cacheFragments = x
+      this
+
     def withFrontendArgs(args: Map[String, String]): AtomConfig =
       this.frontendArgs = args
+      this
+
+    def withConfigFile(x: Option[File]): AtomConfig =
+      this.configFile = x
+      this
+
+    def withValidationConfigFile(x: Option[File]): AtomConfig =
+      this.validationConfigFile = x
       this
 
   end AtomConfig
@@ -85,8 +114,48 @@ package object atom:
     sourceTag: Seq[String] = DEFAULT_SOURCE_TAGS,
     sinkTag: Seq[String] = DEFAULT_SINK_TAGS,
     sliceDepth: Int = DEFAULT_SLICE_DEPTH,
-    includeCryptoFlows: Boolean = false
+    includeCryptoFlows: Boolean = false,
+    profile: String = "generic"
   ) extends AtomConfig
+
+  /** Export the whole atom, or a per-method subgraph of it, to one of the supported graph formats.
+    * `scope` is either "whole" or "methods". The output format is taken from `exportFormat` and the
+    * destination directory from `exportDir`.
+    */
+  case class AtomExportConfig() extends AtomConfig:
+    var scope: String = "whole"
+
+    def withScope(x: String): AtomExportConfig =
+      this.scope = x
+      this
+
+  /** Run a graph algorithm over the atom and write the result as JSON. `algoType` selects the
+    * algorithm (scc, toposort, dominators, paths, centrality). The path-finding algorithm uses
+    * `sourceSelector`/`targetSelector` (regular expressions matched against method full names) and
+    * an optional `maxDepth`.
+    */
+  case class AtomAlgorithmsConfig() extends AtomConfig:
+    var algoType: String               = "centrality"
+    var sourceSelector: Option[String] = None
+    var targetSelector: Option[String] = None
+    var maxDepth: Int                  = -1
+
+    def withAlgoType(x: String): AtomAlgorithmsConfig =
+      this.algoType = x
+      this
+
+    def withSourceSelector(x: Option[String]): AtomAlgorithmsConfig =
+      this.sourceSelector = x
+      this
+
+    def withTargetSelector(x: Option[String]): AtomAlgorithmsConfig =
+      this.targetSelector = x
+      this
+
+    def withMaxDepth(x: Int): AtomAlgorithmsConfig =
+      this.maxDepth = x
+      this
+  end AtomAlgorithmsConfig
 
   import io.appthreat.atom.slicing.*
   import io.circe.generic.auto.*

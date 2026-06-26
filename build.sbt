@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "2.5.6"
+ThisBuild / version      := "3.0.0"
 ThisBuild / scalaVersion := "3.8.4"
 
-val chenVersion = "2.5.24"
+val chenVersion = "3.0.0"
 
 lazy val atom = Projects.atom
 resolvers += "Google Maven" at "https://maven.google.com/"
@@ -43,16 +43,16 @@ Compile / doc / scalacOptions ++= Seq("-doc-title", "atom apidocs", "-doc-versio
 ThisBuild / scalacOptions ++= Seq(
   "-deprecation", // Emit warning and location for usages of deprecated APIs.
   "--release",
-  "21"
+  "23"
 )
 
 ThisBuild / compile / javacOptions ++= Seq(
   "-Xlint",
-  "--release=21"
+  "--release=23"
 ) ++ {
     // fail early if users with JDK11 try to run this
     val javaVersion = sys.props("java.specification.version").toFloat
-    assert(javaVersion.toInt >= 21, s"this build requires JDK21+ - you're using $javaVersion")
+    assert(javaVersion.toInt >= 23, s"this build requires JDK23+ - you're using $javaVersion")
     Nil
 }
 
@@ -143,12 +143,18 @@ credentials +=
       sys.env.getOrElse("GITHUB_TOKEN", "N/A")
     )
 
-// Mandrel-based builds are released under version 2 of the GNU General Public License with the “Classpath” Exception - https://github.com/graalvm/mandrel/blob/default/LICENSE
+// GraalVM CE builds are released under version 2 of the GNU General Public License with the "Classpath" Exception (GPLv2+CPE)
 val libcOptions = if (sys.env.getOrElse("ATOM_GRAALVM_LIBC", "glibc") == "musl") Seq("--libc=musl") else Seq.empty
+val niOpt = sys.env.getOrElse("ATOM_NI_OPT", "-O2")
+val niMarch = sys.env.getOrElse("ATOM_NI_MARCH", "compatibility")
+val niGc = sys.env.getOrElse("ATOM_NI_GC", "serial")
 graalVMNativeImageOptions := Seq(
   "-H:+UnlockExperimentalVMOptions",
   "-R:MaximumHeapSizePercent=90", // Reduce for more predictable and deterministic slicing
-  "--gc=epsilon",
+  s"--gc=$niGc",
+  "-H:+CompactingOldGen",         // Mark-and-compact for the old generation to reduce memory fragmentation
+  niOpt,
+  s"-march=$niMarch",
   "--initialize-at-build-time=io.appthreat.*",
   "--no-fallback"
 ) ++ libcOptions
