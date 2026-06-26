@@ -140,6 +140,75 @@ class GraphCommandsTests extends PySrc2CpgFixture(withOssDataflow = false):
           GraphCommands.runAlgorithms(cpg, config).isLeft shouldBe true
       }
 
+      "find lowest common ancestors of methods" in {
+          val cpg = code(recursiveCode)
+          File.usingTemporaryDirectory("atom-algo-lca") { dir =>
+            val out    = dir / "lca.json"
+            val config = AtomAlgorithmsConfig().withAlgoType("lowest-common-ancestors").withSourceSelector(Some(".*(ping|pong)"))
+            config.withOutputSliceFile(out)
+            GraphCommands.runAlgorithms(cpg, config).isRight shouldBe true
+            val content = out.contentAsString
+            content should include("matchedMethods")
+            content should include("lowestCommonAncestors")
+          }
+      }
+
+      "sequence dependencies using DependencySequencer" in {
+          val cpg = code(recursiveCode)
+          File.usingTemporaryDirectory("atom-algo-seq") { dir =>
+            val out    = dir / "sequencer.json"
+            val config = AtomAlgorithmsConfig().withAlgoType("dependency-sequencer")
+            config.withOutputSliceFile(out)
+            GraphCommands.runAlgorithms(cpg, config).isRight shouldBe true
+            val content = out.contentAsString
+            content should include("stages")
+            content should include("stageCount")
+          }
+      }
+
+      "group methods into components using UnionFind" in {
+          val cpg = code(sampleCode)
+          File.usingTemporaryDirectory("atom-algo-uf") { dir =>
+            val out    = dir / "unionfind.json"
+            val config = AtomAlgorithmsConfig().withAlgoType("union-find")
+            config.withOutputSliceFile(out)
+            GraphCommands.runAlgorithms(cpg, config).isRight shouldBe true
+            val content = out.contentAsString
+            content should include("components")
+            content should include("componentCount")
+          }
+      }
+
+      "traverse AST using HeapWalker" in {
+          val cpg = code(sampleCode)
+          File.usingTemporaryDirectory("atom-algo-hw") { dir =>
+            val out    = dir / "heapwalker.json"
+            val config = AtomAlgorithmsConfig().withAlgoType("heap-walker").withSourceSelector(Some(".*main"))
+            config.withOutputSliceFile(out)
+            GraphCommands.runAlgorithms(cpg, config).isRight shouldBe true
+            val content = out.contentAsString
+            content should include("method")
+            content should include("astWalk")
+          }
+      }
+
+      "find context-sensitive paths" in {
+          val cpg = code(sampleCode)
+          File.usingTemporaryDirectory("atom-algo-csp") { dir =>
+            val out    = dir / "csp.json"
+            val config = AtomAlgorithmsConfig()
+              .withAlgoType("context-sensitive-paths")
+              .withSourceSelector(Some(".*main"))
+              .withTargetSelector(Some(".*helper"))
+            config.withOutputSliceFile(out)
+            GraphCommands.runAlgorithms(cpg, config).isRight shouldBe true
+            val content = out.contentAsString
+            content should include("source")
+            content should include("target")
+            content should include("path")
+          }
+      }
+
       "automatically create nested directories for output atom and slice files" in {
           val testNestedDir = File("target/test-nested-output-dir")
           if (testNestedDir.exists) testNestedDir.delete(true)

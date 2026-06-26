@@ -130,9 +130,10 @@ package object atom:
       this
 
   /** Run a graph algorithm over the atom and write the result as JSON. `algoType` selects the
-    * algorithm (scc, toposort, dominators, paths, centrality). The path-finding algorithm uses
-    * `sourceSelector`/`targetSelector` (regular expressions matched against method full names) and
-    * an optional `maxDepth`.
+    * algorithm (scc, toposort, dominators, paths, centrality, lowest-common-ancestors,
+    * dependency-sequencer, union-find, heap-walker, context-sensitive-paths). The path-finding and
+    * traversing algorithms use `sourceSelector`/`targetSelector` (regular expressions matched
+    * against method full names) and an optional `maxDepth`.
     */
   case class AtomAlgorithmsConfig() extends AtomConfig:
     var algoType: String               = "centrality"

@@ -497,7 +497,9 @@ object Atom:
         .action((_, _) => AtomAlgorithmsConfig().withDataDependencies(true))
         .children(
           opt[String]("type")
-              .text("algorithm: scc, toposort, dominators, paths or centrality")
+              .text(
+                "algorithm: scc, toposort, dominators, paths, centrality, lowest-common-ancestors, dependency-sequencer, union-find, heap-walker, or context-sensitive-paths"
+              )
               .action((x, c) =>
                   c match
                     case c: AtomAlgorithmsConfig => c.withAlgoType(x)

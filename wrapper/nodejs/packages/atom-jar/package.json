@@ -1,6 +1,6 @@
 {
   "name": "@appthreat/atom-jar",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Universal JAR fallback package for @appthreat/atom",
   "type": "module",
   "repository": {

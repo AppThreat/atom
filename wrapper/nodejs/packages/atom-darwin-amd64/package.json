@@ -1,6 +1,6 @@
 {
   "name": "@appthreat/atom-darwin-amd64",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Darwin x64 JAR fallback package for @appthreat/atom",
   "type": "module",
   "repository": {
