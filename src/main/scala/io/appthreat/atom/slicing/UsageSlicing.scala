@@ -70,7 +70,17 @@ object UsageSlicing:
         case param: MethodParameterIn if !param.name.matches("(this|self)") => param
     }.flatMap(param => paramAnnotationSlices(param, typeMap))
 
-    (mainSlices ++ annotationSlices)
+    val httpStatusMethods = filteredDecls.flatMap {
+        case p: MethodParameterIn => Some(p.method)
+        case l: Local             => l.method.headOption
+        case m: Method            => Some(m)
+        case _                    => None
+    }.toSet
+
+    val statusSlices =
+        httpStatusMethods.toList.flatMap(m => httpStatusFieldAccessSlices(m, typeMap))
+
+    (mainSlices ++ annotationSlices ++ statusSlices)
         .groupBy { case (method, _) => method }
         .view
         .filterKeys(m => !isExcludedMethod(m))
@@ -142,6 +152,33 @@ object UsageSlicing:
         )
       }.toList
   end paramAnnotationSlices
+
+  private def httpStatusFieldAccessSlices(
+    method: Method,
+    typeMap: Map[String, String]
+  ): List[(Method, ObjectUsageSlice)] =
+      method.call
+          .nameExact(Operators.fieldAccess)
+          .methodFullName(".*HttpStatus.*")
+          .flatMap { call =>
+              call.argument.collectFirst { case fi: FieldIdentifier =>
+                  val statusDef = CallDef(
+                    fi.canonicalName,
+                    "org.springframework.http.HttpStatus",
+                    Option(s"org.springframework.http.HttpStatus.${fi.canonicalName}"),
+                    Some(true),
+                    call.lineNumber.map(_.intValue()),
+                    call.columnNumber.map(_.intValue())
+                  )
+                  method -> ObjectUsageSlice(
+                    targetObj = statusDef,
+                    definedBy = Some(statusDef),
+                    invokedCalls = List.empty,
+                    argToCalls = List.empty
+                  )
+              }
+          }.toList
+  end httpStatusFieldAccessSlices
 
   private def createMethodObjectUsageSlice(
     m: Method,
