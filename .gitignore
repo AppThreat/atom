@@ -178,3 +178,13 @@ devenv.local.nix
 .pre-commit-config.yaml
 local.properties
 
+wrapper/nodejs/node_modules/
+wrapper/nodejs/packages/atom-jar/
+wrapper/nodejs/packages/atom-linux-amd64/
+wrapper/nodejs/packages/atom-linux-arm64/
+wrapper/nodejs/packages/atom-linux-amd64-musl/
+wrapper/nodejs/packages/atom-linux-arm64-musl/
+wrapper/nodejs/packages/atom-darwin-arm64/
+wrapper/nodejs/packages/atom-darwin-amd64/
+wrapper/nodejs/packages/atom-windows-amd64/
+wrapper/nodejs/packages/atom-windows-arm64/

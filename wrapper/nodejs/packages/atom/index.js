@@ -136,19 +136,7 @@ export const executeAtom = (atomArgs) => {
   }
 };
 
-let isMain = false;
 if (process.argv[1]) {
-  try {
-    const mainPath = realpathSync(process.argv[1]);
-    const thisPath = realpathSync(fileURLToPath(import.meta.url));
-    const parentIndex = realpathSync(join(dirName, "../../index.js"));
-    isMain = mainPath === thisPath || mainPath === parentIndex;
-  } catch (e) {
-    // Ignore realpathSync errors
-  }
-}
-
-if (isMain) {
   const argv = process.argv.slice(2);
   executeAtom(argv);
 }
