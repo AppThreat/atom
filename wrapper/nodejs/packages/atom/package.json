@@ -1,6 +1,6 @@
 {
   "name": "@appthreat/atom",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Create atom (⚛) representation for your application, packages and libraries",
   "exports": "./index.js",
   "type": "module",
@@ -35,13 +35,13 @@
     "LICENSE"
   ],
   "optionalDependencies": {
-    "@appthreat/atom-linux-amd64": "3.0.3",
-    "@appthreat/atom-linux-arm64": "3.0.3",
-    "@appthreat/atom-darwin-arm64": "3.0.3",
-    "@appthreat/atom-linux-amd64-musl": "3.0.3",
-    "@appthreat/atom-windows-amd64": "3.0.3",
-    "@appthreat/atom-darwin-amd64": "3.0.3",
-    "@appthreat/atom-windows-arm64": "3.0.3",
-    "@appthreat/atom-linux-arm64-musl": "3.0.3"
+    "@appthreat/atom-linux-amd64": "3.0.4",
+    "@appthreat/atom-linux-arm64": "3.0.4",
+    "@appthreat/atom-darwin-arm64": "3.0.4",
+    "@appthreat/atom-linux-amd64-musl": "3.0.4",
+    "@appthreat/atom-windows-amd64": "3.0.4",
+    "@appthreat/atom-darwin-amd64": "3.0.4",
+    "@appthreat/atom-windows-arm64": "3.0.4",
+    "@appthreat/atom-linux-arm64-musl": "3.0.4"
   }
 }
