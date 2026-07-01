@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "3.0.3"
+ThisBuild / version      := "3.0.4"
 ThisBuild / scalaVersion := "3.8.4"
 
-val chenVersion = "3.0.0"
+val chenVersion = "3.0.1"
 
 lazy val atom = Projects.atom
 resolvers += "Google Maven" at "https://maven.google.com/"
