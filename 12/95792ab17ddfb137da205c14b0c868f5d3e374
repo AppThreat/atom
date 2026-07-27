@@ -1,0 +1,26 @@
+src/test/scala/io/appthreat/atom/AtomConfigLoaderTests.scala
+  s_2e263e398cb845::t_4faccdb2b5d275 5,9,32,38,40-46,48,74-75,86,88-89,99-104,116-117,125-130,132-133,139-140
+docs/docs/cli.md
+  s_2e263e398cb845::t_0a9350e442dc4c 239,243-244,246,248,252-269
+  s_2e263e398cb845::t_221e8a7d714678 93
+src/test/scala/io/appthreat/atom/GraphCommandsTests.scala
+  s_2e263e398cb845::t_8d1d275da96c40 128
+src/main/scala/io/appthreat/atom/AtomConfigLoader.scala
+  s_2e263e398cb845::t_dabfea35456af5 5,7,16-19,21-26,30-31,49,67-71,73-74,78-79,81,83,85,88-89,93-102,104,107-117,119,121,123,125,127,129,131,133-135,137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1295792ab17ddfb137da205c14b0c868f5d3e374",
+  "prompts": {},
+  "sessions": {
+    "s_2e263e398cb845": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_05b47a4e9ffemog1l5tmEYB7ez",
+        "model": "glm-5.2"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
