@@ -2,10 +2,11 @@ package io.appthreat.atom
 
 import better.files.File
 import io.appthreat.atom.frontends.FrontendArgsApplier
+import io.circe.parser
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 
-/** Unit tests for [[AtomConfigLoader]]: HOCON discovery, frontend-arg merging and the CLI-over-file
+/** Unit tests for [[AtomConfigLoader]]: JSON discovery, frontend-arg merging and the CLI-over-file
   * precedence. Each test writes a throwaway config file under a temporary directory.
   */
 class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
@@ -28,22 +29,23 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
 
   test("an explicit missing config file is reported as an error"):
     File.usingTemporaryDirectory("atom-loader") { dir =>
-      val missing = dir / "nope.conf"
+      val missing = dir / "nope.json"
       val config  = configAt(dir, "java")
       config.withConfigFile(Some(missing))
       AtomConfigLoader(config).isLeft shouldBe true
     }
 
-  test("atom.conf is auto-discovered in the input root"):
+  test("atom.json is auto-discovered in the input root"):
     File.usingTemporaryDirectory("atom-loader") { dir =>
-      (dir / "atom.conf").write(
-        """frontend {
-            |  no-dummyTypes = true
-            |  java {
-            |    delombok-mode = "run-delombok"
+      (dir / "atom.json").write(
+        """{
+            |  "frontend": {
+            |    "no-dummyTypes": true,
+            |    "java": {
+            |      "delombok-mode": "run-delombok"
+            |    }
             |  }
-            |}
-            |""".stripMargin
+            |}""".stripMargin
       )
       val config = configAt(dir, "java")
       AtomConfigLoader(config) shouldBe Right(config)
@@ -69,8 +71,8 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
 
   test("CLI-supplied frontend args win over the file"):
     File.usingTemporaryDirectory("atom-loader") { dir =>
-      (dir / "atom.conf").write(
-        """frontend { no-dummyTypes = true, type-prop-iterations = 9 }""".stripMargin
+      (dir / "atom.json").write(
+        """{ "frontend": { "no-dummyTypes": true, "type-prop-iterations": 9 } }""".stripMargin
       )
       val config = configAt(dir, "python")
       config.withFrontendArg("no-dummyTypes", "false")
@@ -81,10 +83,10 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
       config.frontendArgs("type-prop-iterations") shouldBe "9"
     }
 
-  test("lists in HOCON are flattened to CSV frontend args"):
+  test("arrays in the file are flattened to CSV frontend args"):
     File.usingTemporaryDirectory("atom-loader") { dir =>
-      (dir / "atom.conf").write(
-        """frontend { exclude = ["target/", "node_modules/"] }""".stripMargin
+      (dir / "atom.json").write(
+        """{ "frontend": { "exclude": ["target/", "node_modules/"] } }""".stripMargin
       )
       val config = configAt(dir, "js")
       AtomConfigLoader(config) shouldBe Right(config)
@@ -94,10 +96,12 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
 
   test("universal and per-language sections both apply, per-language wins on conflict"):
     File.usingTemporaryDirectory("atom-loader") { dir =>
-      (dir / "atom.conf").write(
-        """frontend {
-            |  type-prop-iterations = 2
-            |  python { type-prop-iterations = 4 }
+      (dir / "atom.json").write(
+        """{
+            |  "frontend": {
+            |    "type-prop-iterations": 2,
+            |    "python": { "type-prop-iterations": 4 }
+            |  }
             |}""".stripMargin
       )
       val config = configAt(dir, "python")
@@ -109,8 +113,8 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
     File.usingTemporaryDirectory("atom-loader") { dir =>
       val dotAtom = dir / ".atom"
       dotAtom.createDirectories()
-      (dotAtom / "config.conf").write(
-        """frontend { no-dummyTypes = true }""".stripMargin
+      (dotAtom / "config.json").write(
+        """{ "frontend": { "no-dummyTypes": true } }""".stripMargin
       )
       val config = configAt(dir, "ruby")
       AtomConfigLoader(config) shouldBe Right(config)
@@ -118,20 +122,22 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
     }
 
   test("frontendArgsFromConfig is usable directly without a full config"):
-    val hocon = com.typesafe.config.ConfigFactory.parseString(
-      """frontend {
-          |  exclude = "build"
-          |  java { jdk-path = "/opt/jdk" }
+    val json = parser.parse(
+      """{
+          |  "frontend": {
+          |    "exclude": "build",
+          |    "java": { "jdk-path": "/opt/jdk" }
+          |  }
           |}""".stripMargin
-    )
-    val args = AtomConfigLoader.frontendArgsFromConfig(hocon, "java")
+    ).toOption.get
+    val args = AtomConfigLoader.frontendArgsFromConfig(json, "java")
     args("exclude") shouldBe "build"
     args("jdk-path") shouldBe "/opt/jdk"
 
   test("merged file args flow through the applier end to end"):
     File.usingTemporaryDirectory("atom-loader") { dir =>
-      (dir / "atom.conf").write(
-        """frontend { cpp-standard = "c++20", defines = ["A", "B"] }""".stripMargin
+      (dir / "atom.json").write(
+        """{ "frontend": { "cpp-standard": "c++20", "defines": ["A", "B"] } }""".stripMargin
       )
       val config = configAt(dir, "cpp")
       AtomConfigLoader(config) shouldBe Right(config)

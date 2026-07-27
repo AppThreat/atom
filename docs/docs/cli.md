@@ -90,7 +90,7 @@ frontend. There are three complementary ways to do this, in increasing order of 
 1. **`--frontend-args`** — a comma-separated list of `key=value` pairs, applied to every frontend.
 2. **First-class flags** — a curated set of named options (e.g. `--cpp-standard`, `--delombok-mode`)
    that are easier to discover via `--help` and tab-completion.
-3. **A configuration file** — a HOCON `atom.conf` checked into the project root for repeatable,
+3. **A configuration file** — a JSON `atom.json` checked into the project root for repeatable,
    team-wide settings.
 
 All three feed the same channel, so the precedence is simple: a value supplied on the command line
@@ -236,37 +236,37 @@ java -jar atom.jar -l java --delombok-mode run-delombok --jdk-path /opt/jdk17 ./
 
 ## Configuration file
 
-For repeatable, project-level settings, drop a HOCON (or JSON) file next to the source tree. atom
+For repeatable, project-level settings, drop a JSON file next to the source tree. atom
 discovers it automatically — no flag required. Discovery order (first match wins):
 
 1. an explicit `--config <path>`;
-2. `atom.conf` or `atom.json` at the root of the analysed input;
-3. `.atom/config.conf` (or `atom.conf`/`atom.json`) under that root;
+2. `atom.json` at the root of the analysed input;
+3. `.atom/config.json` (or `atom.json`) under that root;
 4. the path in the `ATOM_CONFIG_FILE` environment variable;
-5. `~/.config/atom/config.conf` for user-wide defaults.
+5. `~/.config/atom/config.json` for user-wide defaults.
 
-The `[frontend]` section holds universal knobs and an optional `[frontend.<language>]` sub-section
+The `frontend` object holds universal knobs and an optional `frontend.<language>` sub-object
 for language-specific knobs. Both are flattened into `--frontend-args`, so the file is just another
 source. Command-line flags always override the file.
 
-```hocon
-# atom.conf
-frontend {
-  exclude          = ["target/", "node_modules/"]
-  no-dummy-types   = false
-  type-prop-iterations = 2
-
-  java {
-    delombok-mode = "run-delombok"
-    jdk-path      = "/opt/jdk17"
-  }
-  python {
-    venv-dir       = ".venv"
-    ignore-paths   = ["build/", "dist/"]
-  }
-  c {
-    cpp-standard = "c++17"
-    defines      = ["DEBUG"]
+```json
+{
+  "frontend": {
+    "exclude": ["target/", "node_modules/"],
+    "no-dummy-types": false,
+    "type-prop-iterations": 2,
+    "java": {
+      "delombok-mode": "run-delombok",
+      "jdk-path": "/opt/jdk17"
+    },
+    "python": {
+      "venv-dir": ".venv",
+      "ignore-paths": ["build/", "dist/"]
+    },
+    "c": {
+      "cpp-standard": "c++17",
+      "defines": ["DEBUG"]
+    }
   }
 }
 ```

@@ -125,7 +125,7 @@ class GraphCommandsTests extends PySrc2CpgFixture(withOssDataflow = false):
             val config = AtomAlgorithmsConfig()
             config.withOutputSliceFile(out)
             config.withConfigFile(Some(fixture))
-            AtomConfigFile(config) match
+            AtomConfigLoader(config) match
               case Right(c: AtomAlgorithmsConfig) =>
                   c.algoType shouldBe "paths"
                   GraphCommands.runAlgorithms(cpg, c).isRight shouldBe true
