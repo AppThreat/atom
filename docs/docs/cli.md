@@ -84,11 +84,31 @@ Extract reachable data-flow slices based on automated framework tags
 
 ## Advanced Configuration
 
-For complex projects, specifically those written in C or C++, you may need to pass granular configuration options to the underlying language frontend. You can achieve this using the `--frontend-args` flag.
+For complex projects you may need to pass granular configuration options to the underlying language
+frontend. There are three complementary ways to do this, in increasing order of declarativeness:
 
-This flag accepts a comma-separated list of key-value pairs in the format `key=value`.
+1. **`--frontend-args`** — a comma-separated list of `key=value` pairs, applied to every frontend.
+2. **First-class flags** — a curated set of named options (e.g. `--cpp-standard`, `--delombok-mode`)
+   that are easier to discover via `--help` and tab-completion.
+3. **A configuration file** — a HOCON `atom.conf` checked into the project root for repeatable,
+   team-wide settings.
 
-### Usage
+All three feed the same channel, so the precedence is simple: a value supplied on the command line
+always wins over the file, which wins over the built-in default.
+
+### Discovering keys: `--frontend-args-keys`
+
+The set of supported keys differs per language. To list the keys (and their types/defaults) for the
+selected language, pass `--frontend-args-keys`:
+
+```bash
+java -jar atom.jar -l java --frontend-args-keys
+```
+
+### `--frontend-args`
+
+This flag accepts a comma-separated list of key-value pairs in the format `key=value`. Keys not
+relevant to the selected language are ignored.
 
 ```bash
 --frontend-args key1=value1,key2=value2,key3=value3
@@ -166,6 +186,94 @@ java -jar atom.jar \
   --input ./src \
   --frontend-args enable-ast-cache=true,ast-cache-dir=/tmp/cache
 ```
+
+---
+
+## First-class frontend flags
+
+The most common frontend knobs are exposed as real CLI flags so they show up in `--help` and accept
+typed values. They populate the same channel as `--frontend-args`, so a flag is just a friendlier
+spelling of the equivalent key.
+
+### Universal (every language)
+
+| Flag                       | Type   | Description                                              |
+| :------------------------- | :----- | :------------------------------------------------------- |
+| `--exclude <csv>`          | csv    | Files/folders to exclude (relative to input or absolute).|
+| `--exclude-regex <re>`     | string | Regex of file paths to exclude.                          |
+| `--no-ast-cache`           | flag   | Disable the on-disk AST cache for this run.              |
+| `--cache-dir <dir>`        | string | Directory for the AST cache (default: `<input>/.chen`).  |
+| `--schema-check`           | flag   | Enable early schema validation during AST creation.      |
+| `--no-dummy-types`         | flag   | Disable placeholder dummy types during type propagation. |
+| `--type-prop-iterations N` | int    | Maximum type-propagation iterations.                     |
+| `--cache <mode>`           | enum   | Cache mode: `all` \| `none` \| `no-ast` \| `no-cpg` \| `no-astgen` \| `no-summary`. |
+
+### Per-language
+
+| Flag                         | Languages       | Description                                            |
+| :--------------------------- | :-------------- | :----------------------------------------------------- |
+| `--cpp-standard <std>`       | C/C++           | C++ standard, e.g. `c++17`, `c++20`.                   |
+| `--define NAME`              | C/C++ (repeat)  | Preprocessor define.                                   |
+| `--include-path <dir>`       | C/C++ (repeat)  | Header include path.                                   |
+| `--delombok-mode <m>`        | Java            | `no-delombok` \| `default` \| `types-only` \| `run-delombok`. |
+| `--jdk-path <path>`          | Java            | JDK used to resolve builtin Java types.                |
+| `--fetch-deps`               | Java            | Fetch dependency jars for type information.            |
+| `--ts-types <bool>`          | JS/TS           | Resolve types from TypeScript declarations (default: true). |
+| `--flow`                     | JS              | Enable Flow mode.                                      |
+| `--venv-dir <dir>`           | Python          | Virtual-environment directory (default: `.venv`).      |
+| `--ignore-paths <csv>`       | Python          | Paths to ignore from analysis.                         |
+| `--android-sdk <path>`       | Jimple/Android  | Path to `android.jar` for APK analysis.                |
+| `--solver-depth N`           | Jimple/Scala    | Recursive jar unpacking depth (default: 1).            |
+| `--full-resolver`            | Jimple/Scala    | Whole-program, transitive call resolution.             |
+| `--php-ini <path>`           | PHP             | php.ini path for the PHP parser.                       |
+| `--disable-type-stubs`       | Ruby            | Disable type-stub based type recovery.                 |
+
+Example combining flags with a config file:
+
+```bash
+java -jar atom.jar -l java --delombok-mode run-delombok --jdk-path /opt/jdk17 ./my-app
+```
+
+## Configuration file
+
+For repeatable, project-level settings, drop a HOCON (or JSON) file next to the source tree. atom
+discovers it automatically — no flag required. Discovery order (first match wins):
+
+1. an explicit `--config <path>`;
+2. `atom.conf` or `atom.json` at the root of the analysed input;
+3. `.atom/config.conf` (or `atom.conf`/`atom.json`) under that root;
+4. the path in the `ATOM_CONFIG_FILE` environment variable;
+5. `~/.config/atom/config.conf` for user-wide defaults.
+
+The `[frontend]` section holds universal knobs and an optional `[frontend.<language>]` sub-section
+for language-specific knobs. Both are flattened into `--frontend-args`, so the file is just another
+source. Command-line flags always override the file.
+
+```hocon
+# atom.conf
+frontend {
+  exclude          = ["target/", "node_modules/"]
+  no-dummy-types   = false
+  type-prop-iterations = 2
+
+  java {
+    delombok-mode = "run-delombok"
+    jdk-path      = "/opt/jdk17"
+  }
+  python {
+    venv-dir       = ".venv"
+    ignore-paths   = ["build/", "dist/"]
+  }
+  c {
+    cpp-standard = "c++17"
+    defines      = ["DEBUG"]
+  }
+}
+```
+
+The same file can also carry graph-command keys (`type`, `source`, `target`, `maxDepth`, `out` for
+`algorithms`; `format`, `scope`, `exportDir` for `export`) at the top level, so existing flat-JSON
+config files continue to work unchanged.
 
 ---
 

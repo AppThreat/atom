@@ -3,13 +3,14 @@ ThisBuild / organization := "io.appthreat"
 ThisBuild / version      := "3.0.4"
 ThisBuild / scalaVersion := "3.8.4"
 
-val chenVersion = "3.0.1"
+val chenVersion = "3.0.3"
 
 lazy val atom = Projects.atom
-resolvers += "Google Maven" at "https://maven.google.com/"
+resolvers += "Google Maven".at("https://maven.google.com/")
 libraryDependencies ++= Seq(
   "com.github.pathikrit" %% "better-files" % "3.9.2",
   "com.github.scopt"     %% "scopt"        % "4.1.0",
+  "com.typesafe"          % "config"       % "1.4.9",
   "org.slf4j"             % "slf4j-nop"    % "2.0.18" % Optional,
   ("io.appthreat"        %% "c2cpg"        % Versions.chen).excludeAll(
     ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
@@ -60,26 +61,26 @@ Universal / topLevelDirectory := None
 
 // These jars can be excluded from the distribution
 lazy val excludedNS = Seq(
-    // Build-time / REPL dependencies
-    "org.scala-lang.scala3-compiler",
-    "io.get-coursier",
-    "com.michaelpollmeier.scala-repl-pp",
-    "dev.scalapy.scalapy-core",
-    "dev.scalapy.scalapy-macros",
-    // Eclipse platform packages not needed by CDT at runtime
-    "org.eclipse.platform.org.eclipse.equinox.app",
-    "org.eclipse.platform.org.eclipse.equinox.preferences",
-    "org.eclipse.platform.org.eclipse.equinox.registry",
-    "org.eclipse.platform.org.eclipse.core.expressions",
-    "org.eclipse.platform.org.eclipse.core.contenttype",
-    "org.eclipse.platform.org.eclipse.core.filesystem",
-    "org.eclipse.platform.org.eclipse.core.resources",
-    // JSON/XML libraries not used by atom at runtime
-    "org.json4s",
-    "org.glassfish.jaxb",
-    "io.spray.spray-json",
-    "org.reflections.reflections",
-    "org.scala-lang.modules.scala-xml"
+  // Build-time / REPL dependencies
+  "org.scala-lang.scala3-compiler",
+  "io.get-coursier",
+  "com.michaelpollmeier.scala-repl-pp",
+  "dev.scalapy.scalapy-core",
+  "dev.scalapy.scalapy-macros",
+  // Eclipse platform packages not needed by CDT at runtime
+  "org.eclipse.platform.org.eclipse.equinox.app",
+  "org.eclipse.platform.org.eclipse.equinox.preferences",
+  "org.eclipse.platform.org.eclipse.equinox.registry",
+  "org.eclipse.platform.org.eclipse.core.expressions",
+  "org.eclipse.platform.org.eclipse.core.contenttype",
+  "org.eclipse.platform.org.eclipse.core.filesystem",
+  "org.eclipse.platform.org.eclipse.core.resources",
+  // JSON/XML libraries not used by atom at runtime
+  "org.json4s",
+  "org.glassfish.jaxb",
+  "io.spray.spray-json",
+  "org.reflections.reflections",
+  "org.scala-lang.modules.scala-xml"
 )
 
 Universal / mappings := (Universal / mappings).value.filterNot {
@@ -144,15 +145,16 @@ credentials +=
     )
 
 // GraalVM CE builds are released under version 2 of the GNU General Public License with the "Classpath" Exception (GPLv2+CPE)
-val libcOptions = if (sys.env.getOrElse("ATOM_GRAALVM_LIBC", "glibc") == "musl") Seq("--libc=musl") else Seq.empty
-val niOpt = sys.env.getOrElse("ATOM_NI_OPT", "-O2")
+val libcOptions =
+    if (sys.env.getOrElse("ATOM_GRAALVM_LIBC", "glibc") == "musl") Seq("--libc=musl") else Seq.empty
+val niOpt   = sys.env.getOrElse("ATOM_NI_OPT", "-O2")
 val niMarch = sys.env.getOrElse("ATOM_NI_MARCH", "compatibility")
-val niGc = sys.env.getOrElse("ATOM_NI_GC", "serial")
+val niGc    = sys.env.getOrElse("ATOM_NI_GC", "serial")
 graalVMNativeImageOptions := Seq(
   "-H:+UnlockExperimentalVMOptions",
   "-R:MaximumHeapSizePercent=90", // Reduce for more predictable and deterministic slicing
   s"--gc=$niGc",
-  "-H:+CompactingOldGen",         // Mark-and-compact for the old generation to reduce memory fragmentation
+  "-H:+CompactingOldGen", // Mark-and-compact for the old generation to reduce memory fragmentation
   niOpt,
   s"-march=$niMarch",
   "--initialize-at-build-time=io.appthreat.*",
