@@ -10,7 +10,6 @@ resolvers += "Google Maven".at("https://maven.google.com/")
 libraryDependencies ++= Seq(
   "com.github.pathikrit" %% "better-files" % "3.9.2",
   "com.github.scopt"     %% "scopt"        % "4.1.0",
-  "com.typesafe"          % "config"       % "1.4.9",
   "org.slf4j"             % "slf4j-nop"    % "2.0.18" % Optional,
   ("io.appthreat"        %% "c2cpg"        % Versions.chen).excludeAll(
     ExclusionRule(organization = "com.ibm.icu", name = "icu4j"),
