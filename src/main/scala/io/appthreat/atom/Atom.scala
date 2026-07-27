@@ -2,6 +2,7 @@ package io.appthreat.atom
 
 import better.files.File
 import io.appthreat.atom.dataflows.{DataFlowGraph, OssDataFlow, OssDataFlowOptions}
+import io.appthreat.atom.frontends.FrontendArgsApplier
 import io.appthreat.atom.frontends.clike.C2Atom
 import io.appthreat.atom.parsedeps.parseDependencies
 import io.appthreat.atom.passes.TypeHintPass
@@ -192,6 +193,25 @@ object Atom:
   val DEFAULT_EXPORT_DIR: String = "atom-exports"
   // Possible values: graphml, dot
   val DEFAULT_EXPORT_FORMAT: String = "graphml"
+
+  /** Accepted values for the `--cache` flag. Each maps to a `chen.cache.*` JVM system property
+    * consumed by the analysis core's cache controller at runtime.
+    */
+  val CacheModes: Set[String] =
+      Set("all", "none", "no-ast", "no-cpg", "no-astgen", "no-summary")
+
+  /** Translates a friendly `--cache <mode>` value into the JVM system properties consumed by the
+    * analysis core. These must be set before the frontend runs, so they are applied during option
+    * parsing rather than threaded through `frontendArgs`.
+    */
+  def applyCacheMode(mode: String): Unit = mode match
+    case "all"        => // default caching; nothing to disable
+    case "none"       => System.setProperty("chen.cache.disabled", "true")
+    case "no-ast"     => System.setProperty("chen.cache.disabled.ast", "true")
+    case "no-cpg"     => System.setProperty("chen.cache.disabled.cpg", "true")
+    case "no-astgen"  => System.setProperty("chen.cache.disabled.astgen", "true")
+    case "no-summary" => System.setProperty("chen.cache.disabled.summary", "true")
+    case _            =>
   // Possible values: no-delombok, default, types-only, run-delombok
   private val DEFAULT_DELOMBOK_MODE: String =
       sys.env.getOrElse("CHEN_DELOMBOK_MODE", "types-only")
@@ -253,6 +273,190 @@ object Atom:
         .action((x, c) =>
             c match
               case config: AtomConfig => config.withFrontendArgs(x)
+              case _                  => c
+        )
+    opt[Unit]("frontend-args-keys")
+        .text(
+          "Print the supported --frontend-args keys for the selected language (-l) and exit."
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArgsKeys(true)
+              case _                  => c
+        )
+    // --- First-class universal frontend flags (populate the same frontendArgs channel) ---
+    opt[String]("exclude")
+        .text("Comma-separated files/folders to exclude (relative to input or absolute).")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("exclude", x)
+              case _                  => c
+        )
+    opt[String]("exclude-regex")
+        .text("Regex of file paths to exclude during analysis.")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("exclude-regex", x)
+              case _                  => c
+        )
+    opt[Unit]("no-ast-cache")
+        .text("Disable the on-disk AST cache for this run (default: enabled).")
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("enable-ast-cache", "false")
+              case _                  => c
+        )
+    opt[String]("cache-dir")
+        .text("Directory for the AST cache (default: <input>/.chen).")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("ast-cache-dir", x)
+              case _                  => c
+        )
+    opt[Unit]("schema-check")
+        .text("Enable early schema validation during AST creation.")
+        .action((_, c) =>
+            c match
+              case config: AtomConfig =>
+                  config.withFrontendArg("enable-early-schema-checking", "true")
+              case _ => c
+        )
+    opt[Unit]("no-dummy-types")
+        .text("Disable placeholder dummy types during type propagation.")
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("no-dummyTypes", "true")
+              case _                  => c
+        )
+    opt[Int]("type-prop-iterations")
+        .text("Maximum iterations of type propagation (applies to supported frontends).")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("type-prop-iterations", x.toString)
+              case _                  => c
+        )
+    opt[String]("cache")
+        .text(
+          "Cache mode: all (default) | none | no-ast | no-cpg | no-astgen | no-summary."
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig =>
+                  applyCacheMode(x.trim.toLowerCase)
+                  c
+              case _ => c
+        )
+        .validate(x =>
+          val mode = x.trim.toLowerCase
+          if CacheModes.contains(mode) then success
+          else failure(s"Unknown cache mode '$x'. Use: ${CacheModes.mkString(", ")}.")
+        )
+    // --- Per-language frontend flags (applied only when -l matches) ---
+    opt[String]("cpp-standard")
+        .text("C/C++ standard, e.g. c++17, c++20. (C/C++ only)")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("cpp-standard", x)
+              case _                  => c
+        )
+    opt[String]("define")
+        .unbounded()
+        .text("Define a preprocessor name. Repeatable. (C/C++ only)")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withAppendedFrontendArg("defines", x)
+              case _                  => c
+        )
+    opt[String]("include-path")
+        .unbounded()
+        .text("Header include path. Repeatable. (C/C++ only)")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withAppendedFrontendArg("includes", x)
+              case _                  => c
+        )
+    opt[String]("delombok-mode")
+        .text("Delombok strategy: no-delombok|default|types-only|run-delombok. (Java only)")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("delombok-mode", x)
+              case _                  => c
+        )
+    opt[String]("jdk-path")
+        .text("JDK used to resolve builtin Java types. (Java only)")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("jdk-path", x)
+              case _                  => c
+        )
+    opt[Unit]("fetch-deps")
+        .text("Fetch dependency jars for extra type information. (Java only)")
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("fetch-dependencies", "true")
+              case _                  => c
+        )
+    opt[Boolean]("ts-types")
+        .text("Resolve types from TypeScript declarations (default: true). (JS/TS only)")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("ts-types", x.toString)
+              case _                  => c
+        )
+    opt[Unit]("flow")
+        .text("Enable Flow mode. (JS only)")
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("flow", "true")
+              case _                  => c
+        )
+    opt[String]("venv-dir")
+        .text("Virtual-environment directory (default: .venv). (Python only)")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("venv-dir", x)
+              case _                  => c
+        )
+    opt[String]("ignore-paths")
+        .text("Comma-separated paths to ignore from analysis. (Python only)")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("ignore-paths", x)
+              case _                  => c
+        )
+    opt[String]("android-sdk")
+        .text("Path to android.jar for APK analysis. (Jimple/Android only)")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("android", x)
+              case _                  => c
+        )
+    opt[Int]("solver-depth")
+        .text("Recursive jar unpacking depth (default: 1). (Jimple/Scala only)")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("depth", x.toString)
+              case _                  => c
+        )
+    opt[Unit]("full-resolver")
+        .text("Enable whole-program, transitive call resolution. (Jimple/Scala only)")
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("full-resolver", "true")
+              case _                  => c
+        )
+    opt[String]("php-ini")
+        .text("php.ini path for the PHP parser. (PHP only)")
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("php-ini", x)
+              case _                  => c
+        )
+    opt[Unit]("disable-type-stubs")
+        .text("Disable type-stub based type recovery. (Ruby only)")
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("disable-type-stubs", "true")
               case _                  => c
         )
     opt[Unit]("with-data-deps")
@@ -529,19 +733,6 @@ object Atom:
         )
     help("help").text("display this help message")
 
-  private def extractArgSet(config: AtomConfig, key: String): Set[String] =
-      config.frontendArgs.get(key)
-          .map(_.split(",").map(_.trim).filter(_.nonEmpty).toSet)
-          .getOrElse(Set.empty)
-
-  private def extractArgString(config: AtomConfig, key: String, default: String = ""): String =
-      config.frontendArgs.getOrElse(key, default)
-
-  private def extractArgBoolean(config: AtomConfig, key: String, default: Boolean): Boolean =
-      config.frontendArgs.get(key)
-          .map(v => Try(v.toBoolean).getOrElse(default))
-          .getOrElse(default)
-
   def main(args: Array[String]): Unit =
       run(args) match
         case Right(_) =>
@@ -562,9 +753,16 @@ object Atom:
   private[atom] def run(args: Array[String]): Either[String, String] =
     val parserArgs = args.toList
     parseConfig(parserArgs) match
-      case Right(config: AtomConfig) => run(config, config.language)
-      case Right(_)                  => Left("Invalid configuration generated")
-      case Left(err)                 => Left(err)
+      case Right(config: AtomConfig) =>
+          AtomConfigLoader(config) match
+            case Right(loaded) =>
+                if loaded.frontendArgsKeys then
+                  println(FrontendArgsApplier.renderKeys(loaded.language))
+                  Right("Displayed frontend-args keys")
+                else run(loaded, loaded.language)
+            case Left(err) => Left(err)
+      case Right(_)  => Left("Invalid configuration generated")
+      case Left(err) => Left(err)
 
   private def run(config: AtomConfig, language: String): Either[String, String] =
       for
@@ -604,16 +802,10 @@ object Atom:
             Left(s"${err.toString}\n${err.getStackTrace.take(20).mkString("\n")}")
 
   private def runGraphExport(config: AtomExportConfig, ag: Cpg): Either[String, String] =
-      AtomConfigFile(config).flatMap {
-          case e: AtomExportConfig => GraphCommands.runExport(ag, e)
-          case _                   => Left("Invalid configuration for export")
-      }
+      GraphCommands.runExport(ag, config)
 
   private def runGraphAlgorithms(config: AtomAlgorithmsConfig, ag: Cpg): Either[String, String] =
-      AtomConfigFile(config).flatMap {
-          case a: AtomAlgorithmsConfig => GraphCommands.runAlgorithms(ag, a)
-          case _                       => Left("Invalid configuration for algorithms")
-      }
+      GraphCommands.runAlgorithms(ag, config)
 
   private def exportAtom(
     config: AtomConfig,
@@ -828,7 +1020,8 @@ object Atom:
         true
     ))
     val outputAtomFile = config.outputAtomFile.pathAsString
-    val onlyAstCache   = extractArgBoolean(config, "only-ast-cache", default = false)
+    val onlyAstCache =
+        FrontendArgsApplier.bool(config.frontendArgs, "only-ast-cache", default = false)
     // Mini-graph fragment AST caching has its own opt-in (`--cache-fragments`), decoupled from
     // the `--flux` data-flow engine so each improvement can be evaluated independently.
     if config.cacheFragments then
@@ -920,14 +1113,7 @@ object Atom:
   end createNewAtom
 
   private def createC2Atom(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-    val defines       = extractArgSet(config, "defines")
-    val extraIncludes = extractArgSet(config, "includes") ++ extractArgSet(config, "include-paths")
-    val cppStandard   = extractArgString(config, "cpp-standard")
-    val onlyAstCache  = extractArgBoolean(config, "only-ast-cache", default = false)
-    // AST caching is on by default; disable globally with -Dchen.cache.disabled.ast=true.
-    val enableAstCache  = true
-    val defaultCacheDir = (config.inputPath / ".chen").pathAsString
-    val cacheDir        = extractArgString(config, "ast-cache-dir", default = defaultCacheDir)
+    val cIgnoreDirEnvVars = Seq("CHEN_C_IGNORE_DIRS")
     val baseConfig = CConfig(
       includeComments = false,
       logProblems = false,
@@ -937,61 +1123,34 @@ object Atom:
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
         .withFunctionBodies(false)
-        .withIgnoredFilesRegex(ignoredFilesRegex(COMMON_IGNORE_REGEX, "CHEN_C_IGNORE_DIRS"))
+        .withIgnoredFilesRegex(ignoredFilesRegex(COMMON_IGNORE_REGEX, cIgnoreDirEnvVars*))
         .withParseInactiveCode(false)
         .withImageLocations(false)
         .withIncludeTrivialExpressions(false)
-        .withAstCache(enableAstCache)
-        .withCacheDir(cacheDir)
-        .withOnlyAstCache(onlyAstCache)
-
-    val finalConfig = baseConfig
-        .withDefines(defines)
-        .withCppStandard(cppStandard)
-        .withIncludePaths(C2ATOM_INCLUDE_PATH ++ extraIncludes)
+        .withIncludePaths(C2ATOM_INCLUDE_PATH)
+    val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
     new C2Atom().createCpg(finalConfig)
-  end createC2Atom
 
   private def createC2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-    val defines        = extractArgSet(config, "defines")
-    val extraIncludes  = extractArgSet(config, "includes") ++ extractArgSet(config, "include-paths")
-    val cppStandard    = extractArgString(config, "cpp-standard")
-    val functionBodies = extractArgBoolean(config, "function-bodies", default = true)
-    val parseInactive  = extractArgBoolean(config, "parse-inactive-code", default = false)
-    val imageLocations = extractArgBoolean(config, "with-image-locations", default = false)
-    val includeComments = extractArgBoolean(config, "include-comments", default = false)
-    val includeTrivialExpressions =
-        extractArgBoolean(config, "include-trivial-expressions", default = false)
-    val onlyAstCache = extractArgBoolean(config, "only-ast-cache", default = false)
-    // AST caching is on by default; disable globally with -Dchen.cache.disabled.ast=true.
-    val enableAstCache  = true
-    val defaultCacheDir = (config.inputPath / ".chen").pathAsString
-    val cacheDir        = extractArgString(config, "ast-cache-dir", default = defaultCacheDir)
     val cIgnoreDirEnvVars =
         if config.language.equalsIgnoreCase("CPP") || config.language.equalsIgnoreCase("C++") then
           Seq("CHEN_C_IGNORE_DIRS", "CHEN_CPP_IGNORE_DIRS")
         else Seq("CHEN_C_IGNORE_DIRS")
     val baseConfig = CConfig(
-      includeComments = includeComments,
+      includeComments = false,
       logProblems = false,
       includePathsAutoDiscovery = true
     )
         .withLogPreprocessor(false)
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
-        .withFunctionBodies(functionBodies)
+        .withFunctionBodies(true)
         .withIgnoredFilesRegex(ignoredFilesRegex(COMMON_IGNORE_REGEX, cIgnoreDirEnvVars*))
-        .withParseInactiveCode(parseInactive)
-        .withImageLocations(imageLocations)
-        .withIncludeTrivialExpressions(includeTrivialExpressions)
-        .withAstCache(enableAstCache)
-        .withCacheDir(cacheDir)
-        .withOnlyAstCache(onlyAstCache)
-
-    val finalConfig = baseConfig
-        .withDefines(defines)
-        .withCppStandard(cppStandard)
-        .withIncludePaths(C2ATOM_INCLUDE_PATH ++ extraIncludes)
+        .withParseInactiveCode(false)
+        .withImageLocations(false)
+        .withIncludeTrivialExpressions(false)
+        .withIncludePaths(C2ATOM_INCLUDE_PATH)
+    val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
     new C2Cpg().createCpgWithOverlays(finalConfig)
   end createC2Cpg
 
@@ -1002,37 +1161,37 @@ object Atom:
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
         .withFullResolver(true)
-    val finalConfig = (ignoredFilesRegexFromEnv("CHEN_JIMPLE_IGNORE_DIRS") match
+    val withIgnore = ignoredFilesRegexFromEnv("CHEN_JIMPLE_IGNORE_DIRS") match
       case Some(regex) => baseConfig.withIgnoredFilesRegex(regex)
       case None        => baseConfig
-    )
+    val finalConfig = FrontendArgsApplier.applyJimple(withIgnore, config.frontendArgs)
     new Jimple2Cpg().createCpgWithOverlays(finalConfig)
 
   private def createJavaSrc2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-      new JavaSrc2Cpg().createCpgWithOverlays(
-        JavaConfig(
-          fetchDependencies = true,
-          inferenceJarPaths = JAR_INFERENCE_PATHS,
-          enableTypeRecovery = true,
-          delombokMode = Some(DEFAULT_DELOMBOK_MODE)
-        )
-            .withInputPath(config.inputPath.pathAsString)
-            .withIgnoredFilesRegex(ignoredFilesRegex(JAVA_IGNORE_REGEX, "CHEN_JAVA_IGNORE_DIRS"))
-            .withOutputPath(outputAtomFile)
-      )
+    val baseConfig = JavaConfig(
+      fetchDependencies = true,
+      inferenceJarPaths = JAR_INFERENCE_PATHS,
+      enableTypeRecovery = true,
+      delombokMode = Some(DEFAULT_DELOMBOK_MODE)
+    )
+        .withInputPath(config.inputPath.pathAsString)
+        .withIgnoredFilesRegex(ignoredFilesRegex(JAVA_IGNORE_REGEX, "CHEN_JAVA_IGNORE_DIRS"))
+        .withOutputPath(outputAtomFile)
+    val finalConfig = FrontendArgsApplier.applyJava(baseConfig, config.frontendArgs)
+    new JavaSrc2Cpg().createCpgWithOverlays(finalConfig)
 
   private def createScalaCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
     handleScalaSemantics(config)
-    new Jimple2Cpg().createCpgWithOverlays(
-      JimpleConfig(scalaSdk = Option(System.getProperty("java.class.path")))
-          .withInputPath(config.inputPath.pathAsString)
-          .withOutputPath(outputAtomFile)
-          .withFullResolver(true)
-          .withIgnoredFilesRegex(ignoredFilesRegex("$^", "CHEN_SCALA_IGNORE_DIRS"))
-          .withOnlyClasses(true)
-          .withDepth(1)
-          .withRecurse(true)
-    )
+    val baseConfig = JimpleConfig(scalaSdk = Option(System.getProperty("java.class.path")))
+        .withInputPath(config.inputPath.pathAsString)
+        .withOutputPath(outputAtomFile)
+        .withFullResolver(true)
+        .withIgnoredFilesRegex(ignoredFilesRegex("$^", "CHEN_SCALA_IGNORE_DIRS"))
+        .withOnlyClasses(true)
+        .withDepth(1)
+        .withRecurse(true)
+    val finalConfig = FrontendArgsApplier.applyJimple(baseConfig, config.frontendArgs)
+    new Jimple2Cpg().createCpgWithOverlays(finalConfig)
 
   private def handleScalaSemantics(config: AtomConfig): Unit =
     val workDir = sys.env.getOrElse("ATOM_SCALASEM_WORK_DIR", config.inputPath.pathAsString)
@@ -1065,7 +1224,7 @@ object Atom:
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
         .withFlow(config.language.equalsIgnoreCase("FLOW"))
-    val astGenConfig = sys.env.get("CHEN_ASTGEN_OUT") match
+    val withAstGen = sys.env.get("CHEN_ASTGEN_OUT") match
       case Some(dir) => initialConfig.withAstGenOutDir(dir)
       case None      => initialConfig
     val jsIgnoreDirEnvVars =
@@ -1076,10 +1235,10 @@ object Atom:
         then
           Seq("CHEN_JAVASCRIPT_IGNORE_DIRS", "CHEN_JS_IGNORE_DIRS", "CHEN_TYPESCRIPT_IGNORE_DIRS")
         else Seq("CHEN_JAVASCRIPT_IGNORE_DIRS", "CHEN_JS_IGNORE_DIRS")
-    val finalConfig = (ignoredFilesRegexFromEnv(jsIgnoreDirEnvVars*) match
-      case Some(regex) => astGenConfig.withIgnoredFilesRegex(regex)
-      case None        => astGenConfig
-    )
+    val withIgnore = ignoredFilesRegexFromEnv(jsIgnoreDirEnvVars*) match
+      case Some(regex) => withAstGen.withIgnoredFilesRegex(regex)
+      case None        => withAstGen
+    val finalConfig = FrontendArgsApplier.applyJs(withIgnore, config.frontendArgs)
     new JsSrc2Cpg()
         .createCpgWithOverlays(finalConfig)
         .map { ag =>
@@ -1093,52 +1252,53 @@ object Atom:
   end createJsSrc2Cpg
 
   private def createPythonCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-      new Py2CpgOnFileSystem()
-          .createCpgWithOverlays(
-            PyConfig()
-                .withDisableDummyTypes(true)
-                .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
-                .withInputPath(config.inputPath.pathAsString)
-                .withOutputPath(outputAtomFile)
-                .withDefaultIgnoredFilesRegex(List("\\..*".r))
-                .withIgnoredFilesRegex(pythonIgnoredFilesRegex)
-          )
-          .map { ag =>
-            new PythonImportsPass(ag).createAndApply()
-            new PyImportResolverPass(ag).createAndApply()
-            new DynamicTypeHintFullNamePass(ag).createAndApply()
-            new PythonInheritanceNamePass(ag).createAndApply()
-            new PythonTypeRecoveryPass(
-              ag,
-              XTypeRecoveryConfig(enabledDummyTypes = false)
-            ).createAndApply()
-            new PythonTypeHintCallLinker(ag).createAndApply()
-            new AstLinkerPass(ag).createAndApply()
-            ag
-          }
+    val baseConfig = PyConfig()
+        .withDisableDummyTypes(true)
+        .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
+        .withInputPath(config.inputPath.pathAsString)
+        .withOutputPath(outputAtomFile)
+        .withDefaultIgnoredFilesRegex(List("\\..*".r))
+        .withIgnoredFilesRegex(pythonIgnoredFilesRegex)
+    val finalConfig = FrontendArgsApplier.applyPython(baseConfig, config.frontendArgs)
+    new Py2CpgOnFileSystem()
+        .createCpgWithOverlays(finalConfig)
+        .map { ag =>
+          new PythonImportsPass(ag).createAndApply()
+          new PyImportResolverPass(ag).createAndApply()
+          new DynamicTypeHintFullNamePass(ag).createAndApply()
+          new PythonInheritanceNamePass(ag).createAndApply()
+          new PythonTypeRecoveryPass(
+            ag,
+            XTypeRecoveryConfig(enabledDummyTypes = false)
+          ).createAndApply()
+          new PythonTypeHintCallLinker(ag).createAndApply()
+          new AstLinkerPass(ag).createAndApply()
+          ag
+        }
+  end createPythonCpg
 
   private def createPhpCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-      new Php2Atom().createCpgWithOverlays(
-        PhpConfig()
-            .withDisableDummyTypes(true)
-            .withInputPath(config.inputPath.pathAsString)
-            .withOutputPath(outputAtomFile)
-            .withDefaultIgnoredFilesRegex(List("\\..*".r))
-            .withIgnoredFilesRegex(ignoredFilesRegex(PHP_IGNORE_REGEX, "CHEN_PHP_IGNORE_DIRS"))
-      ).map { ag =>
-        new PhpSetKnownTypesPass(ag).createAndApply()
-        ag
-      }
+    val baseConfig = PhpConfig()
+        .withDisableDummyTypes(true)
+        .withInputPath(config.inputPath.pathAsString)
+        .withOutputPath(outputAtomFile)
+        .withDefaultIgnoredFilesRegex(List("\\..*".r))
+        .withIgnoredFilesRegex(ignoredFilesRegex(PHP_IGNORE_REGEX, "CHEN_PHP_IGNORE_DIRS"))
+    val finalConfig = FrontendArgsApplier.applyPhp(baseConfig, config.frontendArgs)
+    new Php2Atom().createCpgWithOverlays(finalConfig).map { ag =>
+      new PhpSetKnownTypesPass(ag).createAndApply()
+      ag
+    }
 
   private def createRubyCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-      new Ruby2Atom().createCpgWithOverlays(
-        RubyConfig()
-            .withInputPath(config.inputPath.pathAsString)
-            .withOutputPath(outputAtomFile)
-            .withIgnoredFilesRegex(ignoredFilesRegex(RUBY_IGNORE_REGEX, "CHEN_RUBY_IGNORE_DIRS"))
-      ).map { ag =>
-          ag
-      }
+    val baseConfig = RubyConfig()
+        .withInputPath(config.inputPath.pathAsString)
+        .withOutputPath(outputAtomFile)
+        .withIgnoredFilesRegex(ignoredFilesRegex(RUBY_IGNORE_REGEX, "CHEN_RUBY_IGNORE_DIRS"))
+    val finalConfig = FrontendArgsApplier.applyRuby(baseConfig, config.frontendArgs)
+    new Ruby2Atom().createCpgWithOverlays(finalConfig).map { ag =>
+        ag
+    }
 
   /** Run the framework/route tagger, feeding it the optional validators/sanitisers config so calls
     * to declared sanitisers are tagged for later flow filtering.

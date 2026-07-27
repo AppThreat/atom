@@ -27,6 +27,9 @@ package object atom:
     var exportDir: String                 = DEFAULT_EXPORT_DIR
     var exportFormat: String              = DEFAULT_EXPORT_FORMAT
     var frontendArgs: Map[String, String] = Map.empty
+    // When set, atom prints the supported `--frontend-args` keys for the selected language and
+    // exits without building an atom. Driven by the `--frontend-args-keys` flag.
+    var frontendArgsKeys: Boolean = false
     // Optional config file (JSON) for the verbose, repeatable parameters of the graph-level
     // commands. CLI flags always take precedence over values read from this file.
     var configFile: Option[File] = None
@@ -80,6 +83,28 @@ package object atom:
 
     def withFrontendArgs(args: Map[String, String]): AtomConfig =
       this.frontendArgs = args
+      this
+
+    /** Sets a single frontend argument, replacing any previous value for the key. Used by the
+      * first-class CLI flags so they share the same `frontendArgs` channel as `--frontend-args`.
+      */
+    def withFrontendArg(key: String, value: String): AtomConfig =
+      this.frontendArgs = this.frontendArgs.updated(key, value)
+      this
+
+    /** Appends a value to a comma-separated frontend argument, preserving earlier occurrences. Lets
+      * a flag such as `--define` repeat on the command line.
+      */
+    def withAppendedFrontendArg(key: String, value: String): AtomConfig =
+      val existing = this.frontendArgs.getOrElse(key, "")
+      this.frontendArgs = this.frontendArgs.updated(
+        key,
+        if existing.isEmpty then value else s"$existing,$value"
+      )
+      this
+
+    def withFrontendArgsKeys(value: Boolean): AtomConfig =
+      this.frontendArgsKeys = value
       this
 
     def withConfigFile(x: Option[File]): AtomConfig =
