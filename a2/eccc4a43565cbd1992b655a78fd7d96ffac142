@@ -1,0 +1,28 @@
+.github/workflows/release.yml
+  s_042f57f024294c::t_cc9964e4d7701d 470-498
+codemeta.json
+  s_042f57f024294c::t_378e33168331f6 10
+wrapper/nodejs/scripts/assemble.mjs
+  s_042f57f024294c::t_5e1fb79da62be4 101-113
+  s_042f57f024294c::t_bb0737fc221b66 136
+build.sbt
+  s_042f57f024294c::t_378e33168331f6 3
+wrapper/nodejs/packages/atom/package.json
+  s_042f57f024294c::t_c685e4e6ffd665 3,38-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a2eccc4a43565cbd1992b655a78fd7d96ffac142",
+  "prompts": {},
+  "sessions": {
+    "s_042f57f024294c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7eaf5cd9-285a-4be8-ad51-ffc4d96fdc48",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
