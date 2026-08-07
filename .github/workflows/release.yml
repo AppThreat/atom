@@ -467,6 +467,35 @@ jobs:
           cd wrapper/nodejs
           npm run test
 
+      - name: Verify package versions are in lockstep
+        run: |
+          cd wrapper/nodejs
+          node -e '
+            const fs = require("node:fs");
+            const parent = JSON.parse(fs.readFileSync("packages/atom/package.json", "utf8"));
+            const version = parent.version;
+            let failed = false;
+            for (const [name, range] of Object.entries(parent.optionalDependencies || {})) {
+              const dir = `packages/${name.split("/")[1]}`;
+              if (range !== version) {
+                console.error(`${name}: optionalDependencies pin ${range} != parent ${version}`);
+                failed = true;
+              }
+              if (!fs.existsSync(`${dir}/package.json`)) {
+                console.error(`${name}: no ${dir}/package.json to publish`);
+                failed = true;
+                continue;
+              }
+              const sub = JSON.parse(fs.readFileSync(`${dir}/package.json`, "utf8"));
+              if (sub.version !== version) {
+                console.error(`${name}: package version ${sub.version} != parent ${version}`);
+                failed = true;
+              }
+            }
+            if (failed) process.exit(1);
+            console.log(`All sub-packages pinned at ${version}`);
+          '
+
       - name: NPM Dry-run Publish (Verify packaging checks)
         run: |
           cd wrapper/nodejs

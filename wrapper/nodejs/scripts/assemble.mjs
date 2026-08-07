@@ -98,6 +98,19 @@ function copyDirSync(src, dest) {
   }
 }
 
+// Rewrite the parent's optionalDependencies from packagesInfo so every sub-package
+// is pinned to the exact parent version. npm silently ignores optional deps that
+// fail to resolve, so a stale pin here yields an "installed" @appthreat/atom with
+// no binary and no JAR fallback.
+function syncParentOptionalDeps() {
+  const atomPkgPath = path.join(packagesDir, "atom", "package.json");
+  const pkg = JSON.parse(fs.readFileSync(atomPkgPath, "utf8"));
+  pkg.optionalDependencies = Object.fromEntries(
+    packagesInfo.map((p) => [p.name, version]).sort((a, b) => a[0].localeCompare(b[0]))
+  );
+  fs.writeFileSync(atomPkgPath, `${JSON.stringify(pkg, null, 2)}\n`, "utf8");
+}
+
 // Stage the parent @appthreat/atom package's LICENSE and README so that the
 // `files` allowlist in its package.json publishes them.
 function stageParentMetadata() {
@@ -120,6 +133,7 @@ const targetPkgName = process.argv[2];
 const srcPathArg = process.argv[3];
 
 // Always (re)stage parent metadata; harmless and keeps the published parent complete.
+syncParentOptionalDeps();
 stageParentMetadata();
 
 const selectedPkgs = targetPkgName
