@@ -1,0 +1,24 @@
+ci/Dockerfile
+  h_0926447d100ad2 7
+ci/Dockerfile-alpine-ruby3
+  h_0926447d100ad2 7
+ci/Dockerfile-ruby3
+  h_0926447d100ad2 7
+ci/Dockerfile-ruby
+  h_0926447d100ad2 7
+ci/Dockerfile-alpine-ruby
+  h_0926447d100ad2 7
+ci/Dockerfile-sle
+  h_0926447d100ad2 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d6ad32c26e8e18894ebbc48a87184adb977b5cf1",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
