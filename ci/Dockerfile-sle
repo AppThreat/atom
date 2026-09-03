@@ -73,7 +73,7 @@ ENV LC_ALL=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
 COPY ./target/atom.zip target/atom.zip
 COPY ./wrapper wrapper
-RUN cd /opt/wrapper/nodejs && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar @appthreat/atom-parsetools && cd /opt \
+RUN cd /opt/wrapper/nodejs && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar @appthreat/atom-parsetools@1.5.0 && cd /opt \
     && rm -rf target \
     && java --version \
     && ls -alh /opt/ \

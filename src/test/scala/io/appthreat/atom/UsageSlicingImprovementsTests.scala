@@ -6,11 +6,11 @@ import io.shiftleft.semanticcpg.language.*
 
 /** Tests for four usage-slice improvements:
   *
-  *   1. Import deduplication — the same import identity must not appear more than once in the output.
-  *   2. Method definitions without call-sites must not generate UNKNOWN-labelled target objects.
-  *   3. Constructor `returnType` in `userDefinedTypes.procedures` must be the class type, not `void`.
-  *   4. Enum-member `typeFullName` must be the enclosing enum, not `ANY` (verified here via Python;
-  *      the C++ fix is covered in c2cpg's EnumTypeTests).
+  *   1. Import deduplication — the same import identity must not appear more than once in the
+  *      output. 2. Method definitions without call-sites must not generate UNKNOWN-labelled target
+  *      objects. 3. Constructor `returnType` in `userDefinedTypes.procedures` must be the class
+  *      type, not `void`. 4. Enum-member `typeFullName` must be the enclosing enum, not `ANY`
+  *      (verified here via Python; the C++ fix is covered in c2cpg's EnumTypeTests).
   */
 class UsageSlicingImprovementsTests extends PySrc2CpgFixture(withOssDataflow = false):
 
@@ -30,7 +30,8 @@ class UsageSlicingImprovementsTests extends PySrc2CpgFixture(withOssDataflow = f
             |    return os.path.join("a", "b")
             |""".stripMargin)
 
-          val slice = UsageSlicing.calculateUsageSlice(cpg, UsagesConfig()).asInstanceOf[ProgramUsageSlice]
+          val slice =
+              UsageSlicing.calculateUsageSlice(cpg, UsagesConfig()).asInstanceOf[ProgramUsageSlice]
           val importSlices = slice.objectSlices.filter(_.slices.isEmpty)
           val names        = importSlices.map(_.fullName)
           // Duplicate imports must be collapsed to a single entry.
@@ -53,7 +54,8 @@ class UsageSlicingImprovementsTests extends PySrc2CpgFixture(withOssDataflow = f
             |    return value * 2
             |""".stripMargin)
 
-          val slice = UsageSlicing.calculateUsageSlice(cpg, UsagesConfig()).asInstanceOf[ProgramUsageSlice]
+          val slice =
+              UsageSlicing.calculateUsageSlice(cpg, UsagesConfig()).asInstanceOf[ProgramUsageSlice]
           val unknownTargets = slice.objectSlices.flatMap(_.slices).filter { s =>
               s.targetObj.label == "UNKNOWN"
           }
@@ -66,7 +68,8 @@ class UsageSlicingImprovementsTests extends PySrc2CpgFixture(withOssDataflow = f
             |    return x + y
             |""".stripMargin)
 
-          val slice = UsageSlicing.calculateUsageSlice(cpg, UsagesConfig()).asInstanceOf[ProgramUsageSlice]
+          val slice =
+              UsageSlicing.calculateUsageSlice(cpg, UsagesConfig()).asInstanceOf[ProgramUsageSlice]
           val unknownDefined = slice.objectSlices.flatMap(_.slices).flatMap(_.definedBy).filter {
               d => d.label == "UNKNOWN"
           }
@@ -128,6 +131,7 @@ class UsageSlicingImprovementsTests extends PySrc2CpgFixture(withOssDataflow = f
           // Non-constructor adapters must not be overridden with the class type.
           val runProc = metaUdt.get.procedures.find(_.callName.contains("run"))
           runProc should not be empty
-          runProc.get.returnType should not include "Processor"
+          (runProc.get.returnType should not).include("Processor")
       }
   }
+end UsageSlicingImprovementsTests

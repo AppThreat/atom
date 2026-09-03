@@ -17,7 +17,7 @@ WORKDIR /opt
 COPY ./target/atom.zip target/atom.zip
 COPY ./wrapper wrapper
 RUN apk update && apk add --no-cache git build-base ruby-dev bash nodejs npm ruby ruby-bundler openjdk25 python3 python3-dev py3-pip \
-    && npm install -g corepack @appthreat/atom-parsetools \
+    && npm install -g corepack @appthreat/atom-parsetools@1.5.0 \
     && node -v \
     && npm -v \
     && cd /opt/wrapper/nodejs && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar && cd /opt \

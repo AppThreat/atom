@@ -80,7 +80,10 @@ Extract reachable data-flow slices based on automated framework tags
 | **ASTGEN_IGNORE_FILE_PATTERN**          | File pattern to ignore by the JavaScript astgen pre-processor command.                                                                                     |
 | **ASTGEN_INCLUDE_NODE_MODULES_BUNDLES** | Also include source code from node_modules directory. Makes the flows more complete at the cost of increased memory use.                                   |
 | **JAVA_CMD**                            | Overrides the java command.                                                                                                                                |
-| **RUBY_CMD**                            | Overrides the Ruby command.                                                                                                                                |
+| **RUBY_CMD**                            | Overrides the Ruby command used by the `rbastgen` wrapper.                                                                                                 |
+| **ATOM_RUBY_HOME**                      | Ruby installation directory for the `rbastgen` wrapper, when Ruby is not on `PATH`.                                                                        |
+| **RUBY_ASTGEN_BIN**                     | Path to the `ruby_ast_gen` script that the `rbastgen` wrapper runs. The simplest way to test a generator build.                                            |
+| **RBASTGEN_PATH**                       | Path to the `rbastgen` executable itself, overriding the one on `PATH`; the `rbastgen.path` system property takes precedence.                              |
 
 ## Advanced Configuration
 
@@ -197,36 +200,36 @@ spelling of the equivalent key.
 
 ### Universal (every language)
 
-| Flag                       | Type   | Description                                              |
-| :------------------------- | :----- | :------------------------------------------------------- |
-| `--exclude <csv>`          | csv    | Files/folders to exclude (relative to input or absolute).|
-| `--exclude-regex <re>`     | string | Regex of file paths to exclude.                          |
-| `--no-ast-cache`           | flag   | Disable the on-disk AST cache for this run.              |
-| `--cache-dir <dir>`        | string | Directory for the AST cache (default: `<input>/.chen`).  |
-| `--schema-check`           | flag   | Enable early schema validation during AST creation.      |
-| `--no-dummy-types`         | flag   | Disable placeholder dummy types during type propagation. |
-| `--type-prop-iterations N` | int    | Maximum type-propagation iterations.                     |
+| Flag                       | Type   | Description                                                                         |
+| :------------------------- | :----- | :---------------------------------------------------------------------------------- |
+| `--exclude <csv>`          | csv    | Files/folders to exclude (relative to input or absolute).                           |
+| `--exclude-regex <re>`     | string | Regex of file paths to exclude.                                                     |
+| `--no-ast-cache`           | flag   | Disable the on-disk AST cache for this run.                                         |
+| `--cache-dir <dir>`        | string | Directory for the AST cache (default: `<input>/.chen`).                             |
+| `--schema-check`           | flag   | Enable early schema validation during AST creation.                                 |
+| `--no-dummy-types`         | flag   | Disable placeholder dummy types during type propagation.                            |
+| `--type-prop-iterations N` | int    | Maximum type-propagation iterations.                                                |
 | `--cache <mode>`           | enum   | Cache mode: `all` \| `none` \| `no-ast` \| `no-cpg` \| `no-astgen` \| `no-summary`. |
 
 ### Per-language
 
-| Flag                         | Languages       | Description                                            |
-| :--------------------------- | :-------------- | :----------------------------------------------------- |
-| `--cpp-standard <std>`       | C/C++           | C++ standard, e.g. `c++17`, `c++20`.                   |
-| `--define NAME`              | C/C++ (repeat)  | Preprocessor define.                                   |
-| `--include-path <dir>`       | C/C++ (repeat)  | Header include path.                                   |
-| `--delombok-mode <m>`        | Java            | `no-delombok` \| `default` \| `types-only` \| `run-delombok`. |
-| `--jdk-path <path>`          | Java            | JDK used to resolve builtin Java types.                |
-| `--fetch-deps`               | Java            | Fetch dependency jars for type information.            |
-| `--ts-types <bool>`          | JS/TS           | Resolve types from TypeScript declarations (default: true). |
-| `--flow`                     | JS              | Enable Flow mode.                                      |
-| `--venv-dir <dir>`           | Python          | Virtual-environment directory (default: `.venv`).      |
-| `--ignore-paths <csv>`       | Python          | Paths to ignore from analysis.                         |
-| `--android-sdk <path>`       | Jimple/Android  | Path to `android.jar` for APK analysis.                |
-| `--solver-depth N`           | Jimple/Scala    | Recursive jar unpacking depth (default: 1).            |
-| `--full-resolver`            | Jimple/Scala    | Whole-program, transitive call resolution.             |
-| `--php-ini <path>`           | PHP             | php.ini path for the PHP parser.                       |
-| `--disable-type-stubs`       | Ruby            | Disable type-stub based type recovery.                 |
+| Flag                   | Languages      | Description                                                   |
+| :--------------------- | :------------- | :------------------------------------------------------------ |
+| `--cpp-standard <std>` | C/C++          | C++ standard, e.g. `c++17`, `c++20`.                          |
+| `--define NAME`        | C/C++ (repeat) | Preprocessor define.                                          |
+| `--include-path <dir>` | C/C++ (repeat) | Header include path.                                          |
+| `--delombok-mode <m>`  | Java           | `no-delombok` \| `default` \| `types-only` \| `run-delombok`. |
+| `--jdk-path <path>`    | Java           | JDK used to resolve builtin Java types.                       |
+| `--fetch-deps`         | Java           | Fetch dependency jars for type information.                   |
+| `--ts-types <bool>`    | JS/TS          | Resolve types from TypeScript declarations (default: true).   |
+| `--flow`               | JS             | Enable Flow mode.                                             |
+| `--venv-dir <dir>`     | Python         | Virtual-environment directory (default: `.venv`).             |
+| `--ignore-paths <csv>` | Python         | Paths to ignore from analysis.                                |
+| `--android-sdk <path>` | Jimple/Android | Path to `android.jar` for APK analysis.                       |
+| `--solver-depth N`     | Jimple/Scala   | Recursive jar unpacking depth (default: 1).                   |
+| `--full-resolver`      | Jimple/Scala   | Whole-program, transitive call resolution.                    |
+| `--php-ini <path>`     | PHP            | php.ini path for the PHP parser.                              |
+| `--disable-type-stubs` | Ruby           | Disable type-stub based type recovery.                        |
 
 Example combining flags with a config file:
 

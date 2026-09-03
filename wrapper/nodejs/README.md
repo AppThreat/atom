@@ -28,7 +28,9 @@ npm install -g @appthreat/atom-parsetools
 - TypeScript
 - Python (Supports 3.x to 3.13)
 - PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.4 with limited support for PHP 5.x)
-- Ruby (Requires Ruby 4.0.x. Supports Ruby 1.8 - 4.0.x syntax)
+- Ruby (Requires a Ruby runtime with the `rbastgen` generator; the grammar is chosen by
+  capability, not by the runtime version, so Ruby 1.8 - 4.0.x syntax is supported on any
+  supported runtime)
 - Scala (WIP)
 
 ## CLI Usage
@@ -139,7 +141,10 @@ atom reachables --reuse-atom -o app.atom -s reachables.json -l java .
 | **ASTGEN_IGNORE_FILE_PATTERN**          | File pattern to ignore by the JavaScript astgen pre-processor command.                                                                                     |
 | **ASTGEN_INCLUDE_NODE_MODULES_BUNDLES** | Also include source code from node_modules directory. Makes the flows more complete at the cost of increased memory use.                                   |
 | **JAVA_CMD**                            | Overrides the java command.                                                                                                                                |
-| **RUBY_CMD**                            | Overrides the Ruby command.                                                                                                                                |
+| **RUBY_CMD**                            | Overrides the Ruby command used by the `rbastgen` wrapper.                                                                                                 |
+| **ATOM_RUBY_HOME**                      | Ruby installation directory for the `rbastgen` wrapper, when Ruby is not on `PATH`.                                                                        |
+| **RUBY_ASTGEN_BIN**                     | Path to the `ruby_ast_gen` script that the `rbastgen` wrapper runs. The simplest way to test a generator build.                                            |
+| **RBASTGEN_PATH**                       | Path to the `rbastgen` executable itself, overriding the one on `PATH`; the `rbastgen.path` system property takes precedence.                              |
 
 ## Troubleshooting
 

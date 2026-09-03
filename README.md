@@ -30,8 +30,10 @@ and more.
 - Flow
 - TypeScript
 - Python (Supports 3.x to 3.14)
-- PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.4 with limited support for PHP 5.x)
-- Ruby (Requires Ruby 4.0.x. Supports Ruby 1.8 - 4.0.x syntax)
+- PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.5 with limited support for PHP 5.x)
+- Ruby (Requires a Ruby runtime with the `rbastgen` generator; the grammar is chosen by
+  capability, not by the runtime version, so Ruby 1.8 - 4.0.x syntax is supported on any
+  supported runtime)
 - Scala (WIP)
 
 ## Installation
@@ -494,7 +496,10 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 | **ASTGEN_IGNORE_FILE_PATTERN**          | File pattern to ignore by the JavaScript astgen pre-processor command.                                                                                     |
 | **ASTGEN_INCLUDE_NODE_MODULES_BUNDLES** | Also include source code from node_modules directory. Makes the flows more complete at the cost of increased memory use.                                   |
 | **JAVA_CMD**                            | Overrides the java command.                                                                                                                                |
-| **RUBY_CMD**                            | Overrides the Ruby command.                                                                                                                                |
+| **RUBY_CMD**                            | Overrides the Ruby command used by the `rbastgen` wrapper.                                                                                                 |
+| **ATOM_RUBY_HOME**                      | Ruby installation directory for the `rbastgen` wrapper, when Ruby is not on `PATH`.                                                                        |
+| **RUBY_ASTGEN_BIN**                     | Path to the `ruby_ast_gen` script that the `rbastgen` wrapper runs. The simplest way to test a generator build.                                            |
+| **RBASTGEN_PATH**                       | Path to the `rbastgen` executable itself, overriding the one on `PATH`; the `rbastgen.path` system property takes precedence.                              |
 
 ## atom Specification
 
@@ -541,6 +546,40 @@ sbt clean stage scalafmt test createDistribution
 cd wrapper/nodejs
 bash build.sh && sudo npm install -g .
 ```
+
+### Testing Ruby against a specific rbastgen
+
+Ruby support depends on the external [ruby_ast_gen](https://github.com/AppThreat/ruby_ast_gen)
+generator, which atom's Ruby frontend runs as a subprocess. There are two layers, and which knob
+to use depends on which one you are replacing:
+
+- `rbastgen` (from [atom-parsetools](https://github.com/AppThreat/atom-parsetools)) is a Node
+  wrapper. It runs the bundled `ruby_ast_gen` script under a Ruby interpreter, so
+  **`RUBY_ASTGEN_BIN`** points it at a different generator checkout - the simplest way to test a
+  generator branch:
+
+  ```shell
+  RUBY_ASTGEN_BIN=/path/to/ruby_ast_gen/exe/ruby_ast_gen sbt test
+  ```
+
+  `RUBY_CMD` and `ATOM_RUBY_HOME` select the interpreter the wrapper uses; it needs Ruby 3.4.x or
+  4.0.x.
+
+- **`RBASTGEN_PATH`** (or `-Drbastgen.path=`) replaces the `rbastgen` executable itself, for a
+  generator that is not driven by that wrapper. Because atom loads the Ruby frontend in-process it
+  would otherwise inherit whatever `rbastgen` is first on `PATH`:
+
+  ```shell
+  RBASTGEN_PATH=/path/to/rbastgen sbt test
+  sbt -Drbastgen.path=/path/to/rbastgen test
+  ```
+
+Both work for any chen-based tool and for `atom` at runtime. The end-to-end Ruby suite
+(`RubyAtomWorkflowTests` - atom generation, usage slicing and data-flow slicing over a small Ruby
+project) needs a generator implementing the 2.x JSON contract and **cancels itself** when the
+reachable one is older or unusable, rather than reporting assertion failures. A generator that
+fails to parse produces an empty atom, not an error, so check the reported version first if Ruby
+slices come back empty.
 
 ## Using atom with chennai
 
