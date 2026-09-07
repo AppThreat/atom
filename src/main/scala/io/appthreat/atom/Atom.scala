@@ -2,6 +2,9 @@ package io.appthreat.atom
 
 import better.files.File
 import io.appthreat.atom.dataflows.{DataFlowGraph, OssDataFlow, OssDataFlowOptions}
+import io.appthreat.dataflowengineoss.DefaultSemantics
+import io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryTags
+import io.appthreat.dataflowengineoss.semanticsloader.FlowSemantic
 import io.appthreat.atom.frontends.FrontendArgsApplier
 import io.appthreat.atom.frontends.clike.C2Atom
 import io.appthreat.atom.parsedeps.parseDependencies
@@ -22,16 +25,21 @@ import io.appthreat.php2atom.{Php2Atom, Config as PhpConfig}
 import io.appthreat.pysrc2cpg.{
     DynamicTypeHintFullNamePass,
     Py2CpgOnFileSystem,
+    PythonAnnotationTypePass,
+    PythonCallSiteReturnTypePass,
+    PythonPseudoTypeSanityPass,
     PythonInheritanceNamePass,
     PythonTypeHintCallLinker,
     PythonTypeRecoveryPass,
     ImportResolverPass as PyImportResolverPass,
     ImportsPass as PythonImportsPass,
-    Py2CpgOnFileSystemConfig as PyConfig
+    Py2CpgOnFileSystemConfig as PyConfig,
+    PythonTemplateRenderPass
 }
 import io.appthreat.ruby2atom.{Ruby2Atom, Config as RubyConfig}
 import io.appthreat.x2cpg.passes.base.AstLinkerPass
-import io.appthreat.x2cpg.passes.frontend.XTypeRecoveryConfig
+import io.appthreat.x2cpg.perf.PerfReporter
+import io.appthreat.x2cpg.passes.frontend.{XTypeRecovery, XTypeRecoveryConfig}
 import io.appthreat.x2cpg.passes.taggers.{
     AndroidServicesTagsPass,
     CdxPass,
@@ -40,6 +48,7 @@ import io.appthreat.x2cpg.passes.taggers.{
     PiiTagsPass,
     TrackersTagsPass
 }
+import io.appthreat.x2cpg.passes.taggers.python.PythonFrameworkRecognizersPass
 import io.appthreat.x2cpg.utils.ExternalCommand
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
 import io.shiftleft.codepropertygraph.generated.{Cpg, Languages}
@@ -75,7 +84,10 @@ object Atom:
         "sensitive-data",
         "pii",
         // remote content fetched onto the device (download / read response body)
-        "service-ingress"
+        "service-ingress",
+        // MCP tool/resource/prompt arguments are attacker-controlled by construction
+        // (tagged by the Python framework recognizers)
+        "mcp-input"
       )
   val DEFAULT_SINK_TAGS: Seq[String] =
       Seq(
@@ -89,6 +101,12 @@ object Atom:
         "file-io",
         "sql",
         "code-execution",
+        "shell-exec",
+        "ssrf",
+        "path-traversal",
+        "template-injection",
+        "ldap",
+        "xxe",
         "reflection",
         "concurrent",
         "serialization",
@@ -103,6 +121,10 @@ object Atom:
         "service-egress",
         // sensitive data reaching a local/on-device AI model is privacy relevant too
         "on-device-ai",
+        // AI/LLM semantics (tagged by the Python framework recognizers): prompt injection is data
+        // reaching `ai-prompt`; `ai-invoke` marks model/chain invocations
+        "ai-prompt",
+        "ai-invoke",
         "tracker",
         "adware"
       )
@@ -216,7 +238,14 @@ object Atom:
   private val DEFAULT_DELOMBOK_MODE: String =
       sys.env.getOrElse("CHEN_DELOMBOK_MODE", "types-only")
   private val TYPE_PROPAGATION_ITERATIONS = 1
-  private val MAVEN_JAR_PATH: File        = File.home / ".m2" / "repository"
+  // Python keeps the base default of 2. Interprocedural type recovery needs at least two
+  // rounds (the first only populates the symbol table), and Python was already getting 2 by
+  // accident: the recovery pass used to be built from a literal config that discarded the
+  // requested count. Measured on the five published packages, dropping to 1 costs ~4 points
+  // of ANY and resolves fewer calls, so the accident was the better setting - it is now the
+  // stated one.
+  private val PYTHON_TYPE_PROPAGATION_ITERATIONS = 2
+  private val MAVEN_JAR_PATH: File               = File.home / ".m2" / "repository"
   private val GRADLE_JAR_PATH: File = File.home / ".gradle" / "caches" / "modules-2" / "files-2.1"
   private val SBT_JAR_PATH: File    = File.home / ".ivy2" / "cache"
   private val JAR_INFERENCE_PATHS: Set[String] =
@@ -350,6 +379,18 @@ object Atom:
           val mode = x.trim.toLowerCase
           if CacheModes.contains(mode) then success
           else failure(s"Unknown cache mode '$x'. Use: ${CacheModes.mkString(", ")}.")
+        )
+    // Deliberately NOT --profile: that name is the reachability flow-filtering profile. This is
+    // the opt-in per-stage timing/allocation report; disabled entirely without it.
+    opt[String]("perf-report")
+        .text(
+          "Opt-in per-stage performance report: pass a file path to have atom append NDJSON " +
+              "lines (wall ms, applying-thread CPU ms / allocated MB) for every frontend, pass, " +
+              "dataflow and slicing stage. Separate analysis from verification timing with it."
+        )
+        .action((x, c) =>
+          if x.trim.nonEmpty then System.setProperty("chen.perf.report", x.trim)
+          c
         )
     // --- Per-language frontend flags (applied only when -l matches) ---
     opt[String]("cpp-standard")
@@ -781,19 +822,29 @@ object Atom:
       try
         migrateAtomConfigToSliceConfig(config) match
           case e: AtomExportConfig =>
-              runGraphExport(e, ag)
+              PerfReporter.stage("verification.graphExport", "verification")(
+                runGraphExport(e, ag)
+              )
           case a: AtomAlgorithmsConfig =>
-              runGraphAlgorithms(a, ag)
+              PerfReporter.stage("verification.graphAlgorithms", "verification")(
+                runGraphAlgorithms(a, ag)
+              )
           case x: AtomConfig if config.exportAtom =>
-              exportAtom(config, ag, x)
+              PerfReporter.stage("verification.exportAtom", "verification")(
+                exportAtom(config, ag, x)
+              )
           case _: DataFlowConfig =>
-              generateDataFlowSlice(config, ag)
+              PerfReporter.stage("slicing.dataFlow", "slicing")(generateDataFlowSlice(config, ag))
           case u: UsagesConfig =>
-              generateUsagesSlice(config, ag, u)
+              PerfReporter.stage("slicing.usages", "slicing")(generateUsagesSlice(config, ag, u))
           case _: ReachablesConfig =>
-              generateReachablesSlice(config, ag)
+              PerfReporter.stage("slicing.reachables", "slicing")(
+                generateReachablesSlice(config, ag)
+              )
           case x: AtomParseDepsConfig =>
-              generateParseDepsSlice(config, ag, x)
+              PerfReporter.stage("slicing.parseDeps", "slicing")(
+                generateParseDepsSlice(config, ag, x)
+              )
           case _ =>
               Right("No slice generation required")
         end match
@@ -1039,7 +1090,9 @@ object Atom:
     val reusing = shouldReuseExistingAtom(config, outputAtomFile)
     getOrCreateAtom(language, config, outputAtomFile, reusing) match
       case Failure(exception) =>
-          Left(exception.getStackTrace.take(20).mkString("\n"))
+          // The message first: a frontend failure a script can grep for - the
+          // no-source diagnostic lives in the message, and a bare stack trace hides it.
+          Left(s"${exception.getMessage}\n${exception.getStackTrace.take(20).mkString("\n")}")
       case Success(ag) =>
           if onlyAstCache then
             closeCpg(ag)
@@ -1049,7 +1102,7 @@ object Atom:
             for
               _ <- enhanceCpg(config, ag, reusing)
               _ <- generateSlice(config, ag)
-              _ <- closeCpg(ag)
+              _ <- PerfReporter.stage("verification.persist", "verification")(closeCpg(ag))
             yield "Atom generation successful"
   end generateForLanguage
 
@@ -1219,8 +1272,6 @@ object Atom:
 
   private def createJsSrc2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
     val initialConfig = JSConfig()
-        .withDisableDummyTypes(true)
-        .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
         .withFlow(config.language.equalsIgnoreCase("FLOW"))
@@ -1238,41 +1289,76 @@ object Atom:
     val withIgnore = ignoredFilesRegexFromEnv(jsIgnoreDirEnvVars*) match
       case Some(regex) => withAstGen.withIgnoredFilesRegex(regex)
       case None        => withAstGen
-    val finalConfig = FrontendArgsApplier.applyJs(withIgnore, config.frontendArgs)
+    // The two type-recovery setters go LAST, after every copy-based builder above. They write
+    // inherited `TypeRecoveryParserConfig` vars, and a case-class `copy` re-initialises those to
+    // their declared defaults - so setting them at the head of the chain, as this did, discarded
+    // them, and JS graphs shipped placeholder types despite asking for none.
+    val withTypeRecovery = withIgnore
+        .withDisableDummyTypes(true)
+        .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
+    val finalConfig = FrontendArgsApplier.applyJs(withTypeRecovery, config.frontendArgs)
     new JsSrc2Cpg()
         .createCpgWithOverlays(finalConfig)
         .map { ag =>
           new JavaScriptInheritanceNamePass(ag).createAndApply()
           new ConstClosurePass(ag).createAndApply()
           new ImportResolverPass(ag).createAndApply()
-          new JavaScriptTypeRecoveryPass(ag).createAndApply()
+          // Derived from the frontend config for the same reason as the Python path: the
+          // default-argument form re-enabled dummy types on every JS graph, silently overriding
+          // the `withDisableDummyTypes(true)` above. (`createCpgWithOverlays` has already run
+          // this pass once from the config; this second run is pre-existing and left alone.)
+          new JavaScriptTypeRecoveryPass(ag, XTypeRecovery.configFor(finalConfig))
+              .createAndApply()
           new TypeHintPass(ag).createAndApply()
           ag
         }
   end createJsSrc2Cpg
 
   private def createPythonCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
+    // The type-recovery setters go last - see `createJsSrc2Cpg` for why the order matters.
     val baseConfig = PyConfig()
-        .withDisableDummyTypes(true)
-        .withTypePropagationIterations(TYPE_PROPAGATION_ITERATIONS)
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
         .withDefaultIgnoredFilesRegex(List("\\..*".r))
         .withIgnoredFilesRegex(pythonIgnoredFilesRegex)
+        .withDisableDummyTypes(true)
+        .withTypePropagationIterations(PYTHON_TYPE_PROPAGATION_ITERATIONS)
     val finalConfig = FrontendArgsApplier.applyPython(baseConfig, config.frontendArgs)
+    // Per-pass timing. Passes are applied sequentially here, so each wall-clock
+    // span is attributable without double-counting; the frontend's own stages are timed inside
+    // createCpgWithOverlays via the same PerfReporter.
+    def pythonPass(stageName: String)(applyPass: => Unit): Unit =
+        PerfReporter.stage(s"python.$stageName", "analysis")(applyPass)
     new Py2CpgOnFileSystem()
         .createCpgWithOverlays(finalConfig)
         .map { ag =>
-          new PythonImportsPass(ag).createAndApply()
-          new PyImportResolverPass(ag).createAndApply()
-          new DynamicTypeHintFullNamePass(ag).createAndApply()
-          new PythonInheritanceNamePass(ag).createAndApply()
-          new PythonTypeRecoveryPass(
-            ag,
-            XTypeRecoveryConfig(enabledDummyTypes = false)
-          ).createAndApply()
-          new PythonTypeHintCallLinker(ag).createAndApply()
-          new AstLinkerPass(ag).createAndApply()
+          pythonPass("PythonImportsPass")(new PythonImportsPass(ag).createAndApply())
+          pythonPass("PyImportResolverPass")(new PyImportResolverPass(ag).createAndApply())
+          pythonPass("DynamicTypeHintFullNamePass")(
+            new DynamicTypeHintFullNamePass(ag).createAndApply()
+          )
+          pythonPass("PythonInheritanceNamePass")(
+            new PythonInheritanceNamePass(ag).createAndApply()
+          )
+          pythonPass("PythonAnnotationTypePass")(new PythonAnnotationTypePass(ag).createAndApply())
+          // Derive the recovery config from the frontend config rather than restating it:
+          // a literal `XTypeRecoveryConfig(...)` here silently discarded both knobs the
+          // config above sets, so `--no-dummy-types` and `--type-prop-iterations` were dead
+          // for Python and the pass ran the default 2 iterations, not the requested count.
+          pythonPass("PythonTypeRecoveryPass")(
+            new PythonTypeRecoveryPass(ag, XTypeRecovery.configFor(finalConfig)).createAndApply()
+          )
+          pythonPass("PythonTypeHintCallLinker")(new PythonTypeHintCallLinker(ag).createAndApply())
+          pythonPass("PythonCallSiteReturnTypePass")(
+            new PythonCallSiteReturnTypePass(ag).createAndApply()
+          )
+          pythonPass("PythonPseudoTypeSanityPass")(
+            new PythonPseudoTypeSanityPass(
+              ag,
+              removeDummyTypes = finalConfig.disableDummyTypes
+            ).createAndApply()
+          )
+          pythonPass("AstLinkerPass")(new AstLinkerPass(ag).createAndApply())
           ag
         }
   end createPythonCpg
@@ -1318,26 +1404,46 @@ object Atom:
             else
               println("Generating data-flow dependencies from atom. Please wait ...")
             try
-              new OssDataFlow(new OssDataFlowOptions(
-                maxNumberOfDefinitions = x.maxNumDef,
-                useFluxEngine = x.useFluxEngine
-              ))
-                  .run(new LayerCreatorContext(atom))
-              // Persist per-method flow summaries (CHEN3 §5 / G-5) as CPG-native `flow-summary`
+              PerfReporter.stage("dataflow.OssDataFlow", "analysis") {
+                  new OssDataFlow(new OssDataFlowOptions(
+                    maxNumberOfDefinitions = x.maxNumDef,
+                    useFluxEngine = x.useFluxEngine,
+                    extraFlows = dependencySemantics(atom)
+                  ))
+                      .run(new LayerCreatorContext(atom))
+              }
+              // t-string renderer bridges - REACHING_DEF edges from a template's
+              // interpolation values to a renderer call consuming that template, so `str(t"..")`
+              // propagates the interpolations' taint while the direct-consumption boundary holds.
+              // Python-only inside the pass; a no-op wherever no renderer consumes a template.
+              if x.language.toUpperCase == "PY" || x.language.toUpperCase == "PYTHON" then
+                PerfReporter.stage("dataflow.PythonTemplateRenderPass", "analysis")(
+                  new PythonTemplateRenderPass(atom).createAndApply()
+                )
+              // Persist per-method flow summaries as CPG-native `flow-summary`
               // tags so they serialize with the atom and the reachables engine can be primed
               // without recomputation. Part of the Flux bundle.
               if x.useFluxEngine then
-                val summaries =
-                    io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryComputer
-                        .computeAll(atom, io.appthreat.dataflowengineoss.DefaultSemantics())
-                new io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryTagsPass(
-                  atom,
-                  summaries
-                ).createAndApply()
-              new CdxPass(atom).createAndApply()
-              new EasyTagsPass(atom).createAndApply()
-              runChennaiTags(x, atom)
-              applyJvmTaggers(atom)
+                PerfReporter.stage("dataflow.FlowSummaries", "analysis") {
+                    val summaries =
+                        io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryComputer
+                            .computeAll(atom, io.appthreat.dataflowengineoss.DefaultSemantics())
+                    new io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryTagsPass(
+                      atom,
+                      summaries
+                    ).createAndApply()
+                }
+              PerfReporter.stage("taggers.CdxPass", "analysis") {
+                  new CdxPass(atom).createAndApply()
+              }
+              PerfReporter.stage("taggers.EasyTagsPass", "analysis") {
+                  new EasyTagsPass(atom).createAndApply()
+              }
+              PerfReporter.stage("taggers.PythonFrameworkRecognizersPass", "analysis") {
+                  new PythonFrameworkRecognizersPass(atom).createAndApply()
+              }
+              PerfReporter.stage("taggers.ChennaiTagsPass", "analysis")(runChennaiTags(x, atom))
+              PerfReporter.stage("taggers.JvmTaggers", "analysis")(applyJvmTaggers(atom))
               Right(())
             catch
               case npe: NullPointerException
@@ -1355,10 +1461,38 @@ object Atom:
                     s"Failed to enhance CPG: ${rootCause.getClass.getName}: ${rootCause.getMessage}"
                   )
             end try
+        case _ if reusing =>
+            // A reused atom already carries the tags these passes wrote when it was first
+            // built. Re-applying them appended a fresh set of TAG nodes on every re-export
+            // (+9 TAG nodes per run measured on a 331-node probe), so a reused atom grew
+            // without bound. Fresh builds still get tagged in the case below.
+            Right(())
         case _ =>
             new EasyTagsPass(atom).createAndApply()
+            new PythonFrameworkRecognizersPass(atom).createAndApply()
             applyJvmTaggers(atom)
             Right(())
+
+  /** Flow semantics derived from the `flow-summary` tags that `--frontend-args
+    * python-deps=summaries` left on the ingested dependency signatures.
+    *
+    * The reason this exists: for a callee the engine cannot look inside, its default is permissive
+    *   - every argument taints the call's result and every sibling argument. That is a safe
+    *     over-approximation and it is why `python-deps=stubs` alone changes almost nothing about
+    *     flows: taint already crossed the library boundary, it just crossed it for every library
+    *     function alike. The summaries computed from the dependency's real source are the missing
+    *     evidence for the other direction, so a library function that provably does not carry its
+    *     argument to its result stops manufacturing a flow.
+    *
+    * Empty for every run that did not ingest dependencies with summaries, which keeps the default
+    * pipeline byte-identical.
+    */
+  private def dependencySemantics(atom: Cpg): List[FlowSemantic] =
+    val curated = DefaultSemantics().elements.map(_.methodFullName).toSet
+    val derived = FlowSummaryTags.externalSemantics(atom, curated)
+    if derived.nonEmpty then
+      println(s"Applying ${derived.size} dependency flow semantics derived from library sources.")
+    derived
 
   /** JVM/Android-focused taggers (java, jar, jimple frontends): PII / sensitive data, known
     * trackers & adware SDKs, and device-data egress to internet-facing services. Each pass guards

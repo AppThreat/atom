@@ -30,8 +30,10 @@ and more.
 - Flow
 - TypeScript
 - Python (Supports 3.x to 3.14)
-- PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.4 with limited support for PHP 5.x)
-- Ruby (Requires Ruby 4.0.x. Supports Ruby 1.8 - 4.0.x syntax)
+- PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.5 with limited support for PHP 5.x)
+- Ruby (Requires a Ruby runtime with the `rbastgen` generator; the grammar is chosen by
+  capability, not by the runtime version, so Ruby 1.8 - 4.0.x syntax is supported on any
+  supported runtime)
 - Scala (WIP)
 
 ## Installation
@@ -116,6 +118,7 @@ Usage: atom [parsedeps|data-flow|usages|reachables|export|algorithms] [options] 
   --max-num-def <value>    maximum number of definitions in per-method data flow calculation - defaults to 2000
   --legacy-dataflow        use the classic data-flow engine and disable mini-graph fragment caching and method flow summaries. By default atom uses the faster, lower-allocation Flux engine with fragment caching and summary-guided pruning enabled.
   --validation-config <value>  path to a JSON file declaring validators/sanitisers (chennai.json schema). Reachable flows passing through a declared sanitiser are dropped for its categories.
+  --perf-report <value>     opt-in per-stage performance report - pass a file path to append NDJSON lines (wall ms, CPU ms, allocated MB) for every frontend, pass, dataflow and slicing stage
 Command: parsedeps
 Extract dependencies from the build file and imports
 Command: data-flow [options]
@@ -494,7 +497,10 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 | **ASTGEN_IGNORE_FILE_PATTERN**          | File pattern to ignore by the JavaScript astgen pre-processor command.                                                                                     |
 | **ASTGEN_INCLUDE_NODE_MODULES_BUNDLES** | Also include source code from node_modules directory. Makes the flows more complete at the cost of increased memory use.                                   |
 | **JAVA_CMD**                            | Overrides the java command.                                                                                                                                |
-| **RUBY_CMD**                            | Overrides the Ruby command.                                                                                                                                |
+| **RUBY_CMD**                            | Overrides the Ruby command used by the `rbastgen` wrapper.                                                                                                 |
+| **ATOM_RUBY_HOME**                      | Ruby installation directory for the `rbastgen` wrapper, when Ruby is not on `PATH`.                                                                        |
+| **RUBY_ASTGEN_BIN**                     | Path to the `ruby_ast_gen` script that the `rbastgen` wrapper runs. The simplest way to test a generator build.                                            |
+| **RBASTGEN_PATH**                       | Path to the `rbastgen` executable itself, overriding the one on `PATH`; the `rbastgen.path` system property takes precedence.                              |
 
 ## atom Specification
 
@@ -542,6 +548,40 @@ cd wrapper/nodejs
 bash build.sh && sudo npm install -g .
 ```
 
+### Testing Ruby against a specific rbastgen
+
+Ruby support depends on the external [ruby_ast_gen](https://github.com/AppThreat/ruby_ast_gen)
+generator, which atom's Ruby frontend runs as a subprocess. There are two layers, and which knob
+to use depends on which one you are replacing:
+
+- `rbastgen` (from [atom-parsetools](https://github.com/AppThreat/atom-parsetools)) is a Node
+  wrapper. It runs the bundled `ruby_ast_gen` script under a Ruby interpreter, so
+  **`RUBY_ASTGEN_BIN`** points it at a different generator checkout - the simplest way to test a
+  generator branch:
+
+  ```shell
+  RUBY_ASTGEN_BIN=/path/to/ruby_ast_gen/exe/ruby_ast_gen sbt test
+  ```
+
+  `RUBY_CMD` and `ATOM_RUBY_HOME` select the interpreter the wrapper uses; it needs Ruby 3.4.x or
+  4.0.x.
+
+- **`RBASTGEN_PATH`** (or `-Drbastgen.path=`) replaces the `rbastgen` executable itself, for a
+  generator that is not driven by that wrapper. Because atom loads the Ruby frontend in-process it
+  would otherwise inherit whatever `rbastgen` is first on `PATH`:
+
+  ```shell
+  RBASTGEN_PATH=/path/to/rbastgen sbt test
+  sbt -Drbastgen.path=/path/to/rbastgen test
+  ```
+
+Both work for any chen-based tool and for `atom` at runtime. The end-to-end Ruby suite
+(`RubyAtomWorkflowTests` - atom generation, usage slicing and data-flow slicing over a small Ruby
+project) needs a generator implementing the 2.x JSON contract and **cancels itself** when the
+reachable one is older or unusable, rather than reporting assertion failures. A generator that
+fails to parse produces an empty atom, not an error, so check the reported version first if Ruby
+slices come back empty.
+
 ## Using atom with chennai
 
 [chennai](https://github.com/AppThreat/chen) is the recommended query interface for working with atom.
@@ -574,7 +614,7 @@ devenv --option config.profile:string php shell
 
 ## Advanced Configuration
 
-For complex projects, specifically those written in C or C++, you may need to pass granular configuration options to the underlying language frontend. You can achieve this using the `--frontend-args` flag.
+For complex projects you may need to pass granular configuration options to the underlying language frontend. You can achieve this using the `--frontend-args` flag.
 
 This flag accepts a comma-separated list of key-value pairs in the format `key=value`.
 
@@ -601,6 +641,27 @@ The following arguments are supported when `--language` is set to `c`, `cpp`, or
 | `only-ast-cache`       | Boolean | Only generate AST cache files and exit. Useful for large projects to avoid OOM. | `only-ast-cache=true`         |
 
 > **Note:** Boolean values must be passed as the strings `true` or `false`.
+
+### Supported Arguments (Python)
+
+The following arguments are supported when `--language` is set to `py` or `python`. The
+`python-deps` family controls how installed dependencies (from the virtual environment) enter the
+graph - from none at all to the whole dependency tree with method bodies:
+
+| Key                  | Type    | Description                                                                                                                                                                                                                                                     | Example                             |
+| :------------------- | :------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------- |
+| `venv-dir`           | String  | Virtual-environment directory. Defaults to `.venv`.                                                                                                                                                                                                             | `venv-dir=/opt/venv`                |
+| `ignore-paths`       | List    | Paths to ignore from analysis.                                                                                                                                                                                                                                  | `ignore-paths=build,dist`           |
+| `requirements-txt`   | String  | Requirements file name.                                                                                                                                                                                                                                         | `requirements-txt=requirements.txt` |
+| `strict-parse`       | Boolean | Fail the run when any statement fails to parse (errors are always summarized).                                                                                                                                                                                  | `strict-parse=true`                 |
+| `python-deps`        | Enum    | Dependency treatment: `none` (default) \| `stubs` (signature-only, external) \| `summaries` (stubs + flow summaries) \| `full` (whole dependency tree with bodies, external for attribution, explorable by the engine; opt-in, trades build cost for accuracy). | `python-deps=summaries`             |
+| `python-deps-rounds` | Int     | Transitive import-closure rounds for `python-deps=stubs\|summaries` only (`full` ingests everything, unbounded). Default 2 - the imported distributions' own modules; raise to 3-4 for deeper chains.                                                           | `python-deps-rounds=3`              |
+| `typeshed-dir`       | String  | Typeshed checkout (with a `stdlib/` subtree) for `python-deps` stubs/summaries/full (`full` ingests stdlib signatures). Falls back to `$CHEN_TYPESHED_DIR`.                                                                                                     | `typeshed-dir=/opt/typeshed`        |
+
+> **Note:** With `python-deps=full`, reachables stays scoped to the project's own code: a flow
+> whose source lives in library code is a fact about the library, not a finding about the analyzed
+> project, so it is explored but not reported. A flow that merely traverses library code (project
+> source -> library -> project sink) survives.
 
 ### Examples
 

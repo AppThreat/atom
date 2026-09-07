@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "3.1.1"
+ThisBuild / version      := "3.2.0"
 ThisBuild / scalaVersion := "3.8.4"
 
-val chenVersion = "3.1.0"
+val chenVersion = "3.2.0"
 
 lazy val atom = Projects.atom
 resolvers += "Google Maven".at("https://maven.google.com/")
@@ -34,7 +34,6 @@ excludeDependencies ++= Seq(
   ExclusionRule("dev.scalapy", "scalapy-core"),
   ExclusionRule("org.scala-lang", "scala3-compiler"),
   ExclusionRule("com.google.protobuf", "protobuf-java-util"),
-  ExclusionRule("com.github.tototoshi", "scala-csv_3"),
   ExclusionRule("au.com.bytecode", "opencsv")
 )
 
@@ -74,10 +73,9 @@ lazy val excludedNS = Seq(
   "org.eclipse.platform.org.eclipse.core.contenttype",
   "org.eclipse.platform.org.eclipse.core.filesystem",
   "org.eclipse.platform.org.eclipse.core.resources",
-  // JSON/XML libraries not used by atom at runtime
+  // JSON/XML libraries not used by atom at runtime.
   "org.json4s",
   "org.glassfish.jaxb",
-  "io.spray.spray-json",
   "org.reflections.reflections",
   "org.scala-lang.modules.scala-xml"
 )
@@ -119,6 +117,12 @@ ThisBuild / resolvers ++= Seq(
 ThisBuild / versionScheme := Some("semver-spec")
 
 ThisBuild / Test / fork                := true
+// The PHP/Ruby frontends run in-process inside the forked test JVM and resolve their generator
+// binary from the environment, so propagate the generator overrides from the launching shell.
+ThisBuild / Test / envVars ++=
+    Seq("PHP_PARSER_BIN", "RBASTGEN_PATH", "RUBY_ASTGEN_BIN")
+        .flatMap(name => sys.env.get(name).map(name -> _))
+        .toMap
 Global / onChangedBuildSource          := ReloadOnSourceChanges
 Compile / doc / sources                := Seq.empty
 Compile / packageDoc / publishArtifact := false

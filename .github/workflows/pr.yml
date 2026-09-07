@@ -76,11 +76,14 @@ jobs:
         with:
           apps: scala3 scalac
       - run: |
+          # Install the AST generators (astgen, phpastgen, rbastgen) BEFORE `sbt test`: the
+          # workflow tests probe for them and cancel without them, so a post-test install would
+          # silently skip the JavaScript (and Ruby) reachables fixtures.
+          npm install -g @appthreat/atom-parsetools
           sbt scalafmtCheck test stage createDistribution
           cd wrapper/nodejs
           bash build.sh
           npm install -g .
-          npm install -g @appthreat/atom-parsetools
           cd ../..
           ./atom.sh --remove-atom -o /tmp/java.atom -l java $GITHUB_WORKSPACE/repotests/shiftleft-java-example -Dlog4j.configurationFile=log4j2.xml
           ./atom.sh --remove-atom -o /tmp/juice.atom -l js $GITHUB_WORKSPACE/repotests/juice-shop -Dlog4j.configurationFile=log4j2.xml

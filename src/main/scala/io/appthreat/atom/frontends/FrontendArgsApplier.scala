@@ -7,8 +7,7 @@ import io.appthreat.jssrc2cpg.Config as JSConfig
 import io.appthreat.php2atom.Config as PhpConfig
 import io.appthreat.pysrc2cpg.Py2CpgOnFileSystemConfig as PyConfig
 import io.appthreat.ruby2atom.Config as RubyConfig
-import io.appthreat.x2cpg.ValidationMode
-import io.appthreat.x2cpg.X2CpgConfig
+import io.appthreat.x2cpg.{PythonDepsMode, ValidationMode, X2CpgConfig}
 import io.appthreat.x2cpg.passes.frontend.TypeRecoveryParserConfig
 
 import java.nio.file.Paths
@@ -64,19 +63,25 @@ object FrontendArgsApplier:
 
   /** Applies the type-recovery knobs (`no-dummyTypes`, `type-prop-iterations`) shared by the
     * frontends that mix in [[TypeRecoveryParserConfig]].
+    *
+    * @param defaults
+    *   the config as the *caller* built it, before this object's copy-based builders ran. Taking
+    *   the fallbacks from `c` instead looks equivalent and is not: by the time this runs, `c` has
+    *   been through several `copy` calls, each of which re-initialises the inherited trait vars to
+    *   their declared defaults. Reading them back therefore yields `disableDummyTypes = false` and
+    *   `typePropagationIterations = 2` no matter what the caller asked for - which is how
+    *   `Atom.createPythonCpg`, having explicitly requested `withDisableDummyTypes(true)`, shipped
+    *   Python graphs full of placeholder types for as long as the flag has existed.
     */
   def applyTypeRecovery[R <: X2CpgConfig[R] & TypeRecoveryParserConfig[R]](
     c: R,
-    args: Map[String, String]
+    args: Map[String, String],
+    defaults: R
   ): R =
     var r = c
-    r = r.withDisableDummyTypes(bool(args, "no-dummyTypes", r.disableDummyTypes))
-    args.get("type-prop-iterations").foreach(_ =>
-        r = r.withTypePropagationIterations(int(
-          args,
-          "type-prop-iterations",
-          r.typePropagationIterations
-        ))
+    r = r.withDisableDummyTypes(bool(args, "no-dummyTypes", defaults.disableDummyTypes))
+    r = r.withTypePropagationIterations(
+      int(args, "type-prop-iterations", defaults.typePropagationIterations)
     )
     r
 
@@ -133,7 +138,7 @@ object FrontendArgsApplier:
     strOpt(args, "delombok-mode").foreach(v => r = r.withDelombokMode(v))
     strOpt(args, "jdk-path").foreach(v => r = r.withJdkPath(v))
     applyUniversal(r, args)
-    applyTypeRecovery(r, args)
+    applyTypeRecovery(r, args, c)
     r
 
   /** JavaScript / TypeScript / Flow frontend. */
@@ -143,7 +148,7 @@ object FrontendArgsApplier:
     r = r.withFlow(bool(args, "flow", r.flow))
     strOpt(args, "astgen-out").foreach(v => r = r.withAstGenOutDir(v))
     applyUniversal(r, args)
-    applyTypeRecovery(r, args)
+    applyTypeRecovery(r, args, c)
     r
 
   /** JVM bytecode / Android / Scala frontend. */
@@ -168,8 +173,13 @@ object FrontendArgsApplier:
     r = r.withIgnorePaths(r.ignorePaths ++ csv(args, "ignore-paths").toSeq.map(p => Paths.get(p)))
     strOpt(args, "venv-dir").foreach(v => r = r.withVenvDir(Paths.get(v)))
     strOpt(args, "requirements-txt").foreach(v => r = r.withRequirementsTxt(v))
+    r = r.withStrictParse(bool(args, "strict-parse", r.strictParse))
+    // Dependency treatment: `none` (default) | `stubs` | `summaries` | `full`.
+    r = r.withPythonDeps(PythonDepsMode.parse(str(args, "python-deps", "none")))
+    r = r.withPythonDepsRounds(int(args, "python-deps-rounds", r.pythonDepsRounds))
+    strOpt(args, "typeshed-dir").foreach(v => r = r.withTypeshedDir(Paths.get(v)))
     applyUniversal(r, args)
-    applyTypeRecovery(r, args)
+    applyTypeRecovery(r, args, c)
     r
 
   /** PHP frontend. */
@@ -180,7 +190,7 @@ object FrontendArgsApplier:
     strOpt(args, "php-ini").foreach(v => r = r.withPhpIni(v))
     strOpt(args, "php-parser-bin").foreach(v => r = r.withPhpParserBin(v))
     applyUniversal(r, args)
-    applyTypeRecovery(r, args)
+    applyTypeRecovery(r, args, c)
     r
 
   /** Ruby frontend. */
@@ -188,7 +198,7 @@ object FrontendArgsApplier:
     var r = c
     if bool(args, "disable-type-stubs", default = false) then r = r.withTypeStubs(false)
     applyUniversal(r, args)
-    applyTypeRecovery(r, args)
+    applyTypeRecovery(r, args, c)
     r
 
   /** Description of a single tunable, used to generate the `--frontend-args-keys` reference. */
@@ -369,6 +379,34 @@ object FrontendArgsApplier:
       "string",
       "requirements.txt",
       "Requirements file name.",
+      Seq("python")
+    ),
+    KeyDoc(
+      "strict-parse",
+      "bool",
+      "false",
+      "Fail the run when any statement fails to parse (errors are always summarized).",
+      Seq("python")
+    ),
+    KeyDoc(
+      "python-deps",
+      "enum",
+      "none",
+      "Dependency treatment: none | stubs (signature-only, external) | summaries (stubs + flow summaries) | full (whole dependency tree with bodies, external for attribution, explorable by the engine; opt-in, trades build cost for accuracy).",
+      Seq("python")
+    ),
+    KeyDoc(
+      "python-deps-rounds",
+      "int",
+      "2",
+      "Transitive import-closure rounds for python-deps=stubs|summaries only (full ingests everything, unbounded); default 2 = the imported distributions' own modules; raise to 3-4 for deeper chains.",
+      Seq("python")
+    ),
+    KeyDoc(
+      "typeshed-dir",
+      "string",
+      "",
+      "Typeshed checkout (with a `stdlib/` subtree) for python-deps stubs/summaries/full (full ingests stdlib signatures); falls back to $CHEN_TYPESHED_DIR.",
       Seq("python")
     ),
     KeyDoc("php-ini", "string", "", "php.ini path for the PHP parser.", Seq("php")),
