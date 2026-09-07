@@ -54,15 +54,15 @@ _For usages slices_
 - resolvedMethod
 - signature
 
-| attribute      | locations searched                                                                                                                                                      | reachables locations                       |
+| attribute | locations searched | reachables locations |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------- | --- | --- |
-| callName       | objectSlices.usages.argToCalls<br/>objectSlices.usages.invokedCalls<br/>userDefinedTypes.procedures,                                                                    |                                            |
-| fileName       | objectSlices<br/>userDefinedTypes                                                                                                                                       |                                            |     |
-| fullName       | objectSlices                                                                                                                                                            |                                            |
-| name           | objectSlices.usages.targetObj<br/>objectSlices.usages.definedBy<br/>userDefinedTypes.fields                                                                             |                                            |
-| purl           |                                                                                                                                                                         | reachables.purls<br/>reachables.flows.tags |
-| resolvedMethod | objectSlices.usages.targetObj<br/>objectSlices.usages.definedBy<br/>objectSlices.usages.argToCalls<br/>objectSlices.usages.invokedCalls<br/>userDefinedTypes.procedures |                                            |
-| signature      | objectSlices                                                                                                                                                            |                                            |     |     |
+| callName | objectSlices.usages.argToCalls<br/>objectSlices.usages.invokedCalls<br/>userDefinedTypes.procedures, | |
+| fileName | objectSlices<br/>userDefinedTypes | | |
+| fullName | objectSlices | |
+| name | objectSlices.usages.targetObj<br/>objectSlices.usages.definedBy<br/>userDefinedTypes.fields | |
+| purl | | reachables.purls<br/>reachables.flows.tags |
+| resolvedMethod | objectSlices.usages.targetObj<br/>objectSlices.usages.definedBy<br/>objectSlices.usages.argToCalls<br/>objectSlices.usages.invokedCalls<br/>userDefinedTypes.procedures | |
+| signature | objectSlices | | | |
 
 #### Searching reachables for package name/version
 
