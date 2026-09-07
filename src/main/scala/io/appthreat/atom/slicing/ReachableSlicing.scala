@@ -19,6 +19,8 @@ import io.circe.syntax.*
 
 object ReachableSlicing:
 
+  private val logger = org.slf4j.LoggerFactory.getLogger(getClass)
+
   implicit val semantics: Semantics = DefaultSemantics()
   // Reassigned per run to carry the method flow summaries computed for this atom (the backward query
   // engine uses them to prune provably empty cross-call work). The reaching-def engine choice (Flux
@@ -99,29 +101,110 @@ object ReachableSlicing:
         summaries = summaries
       )
     )
+    // Materialise the graph's lazily-loaded state once, single-threaded, before
+    // the parallel query engine reads it concurrently. The engine solves on a thread pool, and a
+    // graph fresh off disk still has lazily-deserialized adjacency: threads racing to force the
+    // same adjacency could transiently fail (a dropped task, a dropped source) or silently miss
+    // edges - a different handful of lost paths per run and, measured on one fixture, a
+    // 2888-2937 reachables spread from concurrency alone. Walking every node's edges here makes
+    // the lazy loads happen exactly once, deterministically; the parallel engine then races
+    // nothing. The cost is proportional to edges and is logged (debug) rather than asserted
+    // here - it was sub-second on a 28k-node graph, which says nothing useful about an atom two
+    // orders of magnitude larger, and the log is what an operator chasing slicing time needs.
+    warmGraph(atom)
     // The various collectors overlap (e.g. a default-tag flow may also be a privacy flow), so the
-    // same path can be produced more than once. Deduplicate paths by their node-id signature, and
-    // also drop paths that are a contiguous sub-sequence of an already-seen (longer) path sharing
-    // the same source and sink, which removes near-duplicate partial flows.
-    val seenSignatures = scala.collection.mutable.HashSet.empty[String]
-    val seenEndpoints  = scala.collection.mutable.HashSet.empty[String]
+    // same path can be produced more than once; the uniqueness filter below (canonical survivor
+    // per endpoint group + exact-signature suppression) removes the duplicates order-independently.
     // Calls tagged as sanitisers/validators (by ChennaiTagsPass) and the sink categories each
     // covers. A flow that passes through such a call is dropped for the matching categories.
     val sanitizerCalls = collectSanitizerCalls(atom)
     // Profile-driven neutraliser barriers (validators, sanitisers, encoders, ORM reads). A flow that
     // passes through any of these node ids is dropped. Empty for the default `generic` profile.
     val neutralizerNodeIds = collectNeutralizerNodeIds(atom, config.profile.neutralizerTags)
-    val flowIterator = collectFlowSlices(atom, config, language)
+    // One pattern matching any tag name this run treats as a source or sink. Rendered paths keep
+    // operator calls carrying one of these tags (see createSliceNode): Python lowers sources such
+    // as `request.form["n"]` to `<operator>.indexAccess`, so an untagged-operator-only filter
+    // would silently unroot exactly those flows.
+    val sourceSinkTagPattern = Pattern.compile(
+      s"(${(config.sourceTag ++ config.sinkTag).mkString("|")})"
+    )
+    val sinkTagPattern = Pattern.compile(s"(${config.sinkTag.mkString("|")})")
+    // Materialise BEFORE the stateful filters. The collectors and the query
+    // engine underneath produce the same SET of paths on a given graph, but their arrival ORDER
+    // is not deterministic (the engine's virtual-thread task pool completes in scheduling order,
+    // so its result table order varies run to run). A streaming first-wins uniqueness filter
+    // then keeps a different representative of each same-endpoint group per run, and the
+    // downstream containment dedup absorbs a different number of entries - a measured 2888-2937
+    // spread on one fixture from ordering alone. Selecting survivors canonically (minimum
+    // id-signature per endpoint group) makes the SET of emitted entries independent of arrival
+    // order.
+    //
+    // What this does NOT do, stated plainly: the emitted ORDER still follows arrival, so an
+    // output file is only byte-stable where arrival is. That holds on the small gates
+    // (express-sample is byte-identical) and does not on a large python target, where the count
+    // is now stable but the entry order need not be. And the canonical choice is not the old
+    // choice: java-sec-code keeps its 1195 entries with 2 of them swapped for the other
+    // truncation variant of one `XSSFCell -> cell` finding. That is the fix working - the old
+    // variant was whichever the scheduler delivered first - but it is a real output change, and
+    // a claim of byte-identity there would be false.
+    val collectedPaths = collectFlowSlices(atom, config, language)
         .iterator
         .flatten
+        .filterNot(isLibrarySourcedFlow)
         .filterNot(isSanitized(_, sanitizerCalls))
         .filterNot(passesThroughNeutralizer(_, neutralizerNodeIds))
         .filterNot(isMetaClassAdapterFlow)
         .filterNot(endsAtNonSink)
-        .filter(isUniqueFlow(_, seenSignatures, seenEndpoints))
-        .map(toSlice)
+        .toVector
+    // Each path's endpoint key and signature, computed ONCE. Both are O(path length) string
+    // builds over every collected path, and the group fold plus the emit filter each need both -
+    // deriving them twice doubled that work on the largest inputs, which is where this whole
+    // code path is slow to begin with.
+    val keyed: Vector[(Option[String], String, Path)] =
+        collectedPaths.map(path => (endpointKeyOf(path), pathSignatureOf(path), path))
+    // The canonical (minimum) signature per endpoint group, computed from the whole materialised
+    // collection order-independently - which path of a group survives no longer depends on
+    // collector or engine scheduling. A mutable map because this runs over every collected path
+    // and an immutable `updated` fold rebuilt the map once per entry.
+    val canonicalSurvivor = scala.collection.mutable.HashMap.empty[String, String]
+    keyed.foreach { case (keyOpt, sig, _) =>
+        keyOpt.foreach { key =>
+          val current = canonicalSurvivor.get(key)
+          if current.isEmpty || sig < current.get then canonicalSurvivor.update(key, sig)
+        }
+    }
+    // Debug hook (CHEN_SLICE_DEBUG=<dir>): the sorted signature multiset of the collected
+    // paths - a fingerprint of the ENGINE's output set, independent of ordering and of every
+    // filter below it. Diffing this across runs on one fixed atom answers "does the engine
+    // itself vary?" without touching anything else.
+    Option(System.getenv("CHEN_SLICE_DEBUG")).filter(_.nonEmpty).foreach { dir =>
+      // The directory is created: a debug hook that throws because the operator did not
+      // pre-create the path is a diagnostic that costs a whole run to learn.
+      val target = better.files.File(dir).createDirectoryIfNotExists(createParents = true)
+      (target / "collected-sigs.txt").write(keyed.map(_._2).sorted.mkString("\n"))
+    }
+    val seenSignatures = scala.collection.mutable.HashSet.empty[String]
+    val flowIterator = keyed.iterator
+        .filter { case (keyOpt, signature, _) =>
+            // Keep the canonical representative of each endpoint group, once. `seenSignatures`
+            // still earns its place: two collectors can yield the identical path, and both
+            // copies carry the group's surviving signature.
+            keyOpt.exists(key => canonicalSurvivor.get(key).contains(signature)) &&
+            seenSignatures.add(signature)
+        }
+        .map { case (_, _, path) => toSlice(path, sourceSinkTagPattern) }
+        // Backstop: never emit an entry with no evidence. A path whose every element renders to
+        // None (untagged operator calls, bare identifiers) carries a purl attribution at best and
+        // no flow at all - consumers that count entries would count it as a real finding.
+        .filter(_.flows.nonEmpty)
 
-    val chunkedIterator = flowIterator.grouped(chunkSize).zipWithIndex
+    // Canonicalise before writing: the collectors query overlapping source/sink sets, so one
+    // finding routinely arrives as several entries - the path, a truncation of it (ending at an
+    // argument or starting at an intermediate), and the same path again from another collector.
+    // Deduplicate on the canonical form (see deduplicateFlows) so each finding is emitted once.
+    val canonicalFlows = deduplicateFlows(flowIterator.toVector, sinkTagPattern)
+
+    val chunkedIterator = canonicalFlows.grouped(chunkSize).zipWithIndex
     var hasFlows        = false
 
     chunkedIterator.foreach { case (chunk, index) =>
@@ -135,6 +218,38 @@ object ReachableSlicing:
       handleEmptySlices(atom, config)
       File(s"$outputBasePath.json").writeText("[]")
   end calculateReachableSliceAndPersist
+
+  /** Force every node's in/out edges (and their endpoints) to materialise, single-threaded. See the
+    * call site for why this precedes the parallel query engine.
+    */
+  private def warmGraph(atom: Cpg): Unit =
+    val started   = System.nanoTime()
+    var nodeCount = 0L
+    // Counted, and the count logged. Two reasons, neither cosmetic: the endpoint reads exist
+    // ONLY for their side effect (forcing a lazy deserialization), and a result nothing observes
+    // is the shape a compiler is entitled to optimise away - accumulating it makes the work
+    // load-bearing. And the cost of this walk is proportional to edges, so an operator chasing
+    // slicing time on a large atom needs the number rather than an assurance.
+    var edgeCount = 0L
+    val nodes     = atom.graph.nodes()
+    while nodes.hasNext do
+      val node = nodes.next()
+      nodeCount += 1
+      val outE = node.outE()
+      while outE.hasNext do
+        val e = outE.next()
+        if e.inNode() != null then edgeCount += 1
+        e.outNode()
+      val inE = node.inE()
+      while inE.hasNext do
+        val e = inE.next()
+        if e.outNode() != null then edgeCount += 1
+        e.inNode()
+    logger.debug(
+      s"warmGraph materialised $nodeCount nodes / $edgeCount edge endpoints in " +
+          s"${(System.nanoTime() - started) / 1000000L} ms"
+    )
+  end warmGraph
 
   private def collectFlowSlices(
     atom: Cpg,
@@ -219,26 +334,139 @@ object ReachableSlicing:
       toDeviceSink(atom.tag.name(INGRESS_SINK_TAG).parameter)
     )
 
-  /** Returns true if the path is worth keeping. Drops:
-    *   - exact duplicates (same node-id sequence), which arise because collectors overlap, and
-    *   - same-endpoint, same-length variants (typically SSA/operator noise around an identical
-    *     source -> sink flow), keeping the first one seen.
+  /** True for a flow whose SOURCE - its first element - lives in library code. A finding must be
+    * rooted in the analyzed project: with dependency bodies in the graph (`--frontend-args
+    * python-deps=full`), flows sourced inside the library (flask internals tagged framework-input,
+    * urllib3 internals tagged http, ...) exist by the thousand and a reachables run that reports
+    * them is unreadable - they are facts about the library, not findings about the project.
+    * Exploration still traverses library code freely (a project-sourced flow through the library to
+    * any sink survives); only reporting is scoped.
     *
-    * Paths of differing length between the same endpoints are retained as distinct flows.
+    * A no-op wherever dependency code is not in the graph: sources are tagged nodes of the
+    * project's own code there, and those methods are internal.
     */
-  private def isUniqueFlow(
-    path: Path,
-    seenSignatures: scala.collection.mutable.HashSet[String],
-    seenEndpoints: scala.collection.mutable.HashSet[String]
-  ): Boolean =
-    val elems = path.elements
-    if elems.isEmpty then false
+  private def isLibrarySourcedFlow(path: Path): Boolean =
+      path.elements.headOption.exists {
+          case m: MethodParameterIn => m.method.isExternal
+          case e: Expression        => e.method.isExternal
+          case m: Method            => m.isExternal
+          case _                    => false
+      }
+
+  /** The node-id sequence of a path, rendered as a comparable string. Two paths with the same
+    * signature traverse the identical route and are interchangeable for every downstream filter and
+    * renderer, which is what makes the signature usable both as the exact-duplicate key and as the
+    * canonical survivor tie-break.
+    */
+  private def pathSignatureOf(path: Path): String =
+      path.elements.map(_.id()).mkString("-")
+
+  /** The uniqueness group of a path: same first node, same last node, same length. Historically the
+    * first-arrived member of each group was kept; survivor selection is now the group's minimum
+    * signature, so which member survives no longer depends on collector or engine scheduling. Paths
+    * of differing length between the same endpoints are distinct groups and are both retained as
+    * distinct flows. `None` for a path with no elements (never kept).
+    */
+  private def endpointKeyOf(path: Path): Option[String] =
+      path.elements.headOption.zip(path.elements.lastOption).map { (head, last) =>
+          s"${head.id()}->${last.id()}#${path.elements.size}"
+      }
+
+  /** Reduce the collected entries to one entry per finding, on a canonical form rather than by
+    * ranking.
+    *
+    * The engine is queried once per (sink set, source set) combination, and those sets overlap by
+    * design, so a single source -> sink finding typically arrives as several entries that differ
+    * only in where they were cut: the path to the sink call, the path ending at one of the sink's
+    * arguments, the same path truncated earlier in the source (starting at an intermediate instead
+    * of the tagged source), and its continuation through the sink's return into the caller.
+    *
+    * Two steps, both canonical rather than ranked:
+    *
+    *   1. Terminus normalisation - a flow TERMINATES at its sink. An entry whose last node is not
+    *      itself a sink is a continuation variant; it is cut right after the last sink-tagged CALL
+    *      it traverses (calls only - never an argument, which would cut one node too early). An
+    *      entry whose terminus IS a sink (e.g. data reaching a framework output after passing a sql
+    *      call) is a distinct downstream finding and is left whole.
+    *
+    * 2. Containment dedup - entries are the SAME finding when one's rendered node sequence is a
+    * contiguous subsequence of the other's (or equal): they traverse the identical route, just
+    * reported at different truncation points. The kept representative is the maximal sequence of
+    * each such group - not a ranking between findings, since there is only one route in the group
+    * and the maximal form is the only one that shows both the tagged source and the sink. Distinct
+    * routes - sequences not contained in one another - are always both kept.
+    *
+    * Entries with fewer than two rendered nodes, or whose first and last node are the same, are
+    * zero-information (source == sink) and dropped outright.
+    *
+    * Deterministic regardless of collector/iterator order: candidates are processed longest-first
+    * with the id-signature as tie-break, and entries with equal signatures render identically.
+    */
+  private def deduplicateFlows(
+    entries: Vector[ReachableFlows],
+    sinkTagPattern: Pattern
+  ): Vector[ReachableFlows] =
+    val normalised = entries.flatMap(normaliseTerminus(_, sinkTagPattern))
+        .filter { entry =>
+            entry.flows.lengthCompare(1) > 0 && entry.flows.head.id != entry.flows.last.id
+        }
+    if normalised.lengthCompare(2) < 0 then return normalised
+
+    // "#id1#id2#" - the delimiters make `contains` a contiguous-node-subsequence test.
+    def signature(entry: ReachableFlows): String =
+        entry.flows.map(n => s"#${n.id}").mkString + "#"
+
+    val signatures = normalised.map(signature)
+
+    // A container of entry B necessarily contains B's head and terminus nodes, so indexing every
+    // entry by every node id lets the containment check only consider entries reachable from B's
+    // endpoints - without restricting where in the container the subsequence may sit.
+    val entriesByNode = scala.collection.mutable.HashMap.empty[Long, List[Int]]
+    normalised.indices.foreach { i =>
+        entryNodeIds(normalised(i)).foreach { nodeId =>
+            entriesByNode.update(nodeId, i :: entriesByNode.getOrElse(nodeId, Nil))
+        }
+    }
+
+    val keep  = Array.fill(normalised.size)(false)
+    val order = normalised.indices.sortBy(i => (-signatures(i).length, signatures(i)))
+    order.foreach { i =>
+      val flows        = normalised(i).flows
+      val candidateSig = signatures(i)
+      val candidates =
+          entriesByNode.getOrElse(flows.head.id, Nil) ++
+              entriesByNode.getOrElse(flows.last.id, Nil)
+      keep(i) = !candidates.exists { j =>
+          j != i && keep(j) && (
+            signatures(j) == candidateSig ||
+                (signatures(j).length > candidateSig.length &&
+                    signatures(j).contains(candidateSig))
+          )
+      }
+    }
+    normalised.indices.filter(keep(_)).map(normalised).toVector
+  end deduplicateFlows
+
+  /** A flow terminates at its sink: when an entry's last node is not itself sink-tagged but the
+    * path traverses a sink-tagged call, everything after that call is a continuation into the
+    * caller and the entry is cut back to the call. Purls accumulated on the cut nodes stay on the
+    * entry - package attribution is metadata, not evidence.
+    */
+  private def normaliseTerminus(
+    entry: ReachableFlows,
+    sinkTagPattern: Pattern
+  ): Option[ReachableFlows] =
+    val flows = entry.flows
+    def carriesSinkTag(node: SliceNode): Boolean =
+        node.tags.split(",").exists((t: String) => sinkTagPattern.matcher(t.trim).matches)
+    if carriesSinkTag(flows.last) then Some(entry)
     else
-      val signature = elems.map(_.id()).mkString("-")
-      if !seenSignatures.add(signature) then false
-      else
-        val endpointKey = s"${elems.head.id()}->${elems.last.id()}#${elems.size}"
-        seenEndpoints.add(endpointKey)
+      val cutAt = flows.lastIndexWhere { n => n.label == "CALL" && carriesSinkTag(n) }
+      if cutAt <= 0 then Some(entry)
+      else Some(entry.copy(flows = flows.take(cutAt + 1)))
+
+  private def entryNodeIds(entry: ReachableFlows): Set[Long] =
+      entry.flows.map(_.id).toSet
 
   /** Collects the ids of nodes that act as profile neutraliser barriers: calls carrying any of the
     * profile's tags, calls to methods carrying them, and the parameters/identifiers/returns of such
@@ -594,11 +822,11 @@ object ReachableSlicing:
     val purls = effectiveTags.map(_.name).filter(_.startsWith("pkg:")).toSet
     (tagStr, purls)
 
-  private def toSlice(path: Path): ReachableFlows =
+  private def toSlice(path: Path, sourceSinkTagPattern: Pattern): ReachableFlows =
     val (sliceNodes, purls, _) =
         path.elements.foldLeft((Vector.empty[SliceNode], Set.empty[String], Set.empty[String])) {
             case ((nodes, accPurls, visited), astNode) =>
-                val (nodeOpt, nodePurls) = createSliceNode(astNode)
+                val (nodeOpt, nodePurls) = createSliceNode(astNode, sourceSinkTagPattern)
                 val fileLoc = s"${astNode.file.name.headOption.getOrElse("")}#${astNode.lineNumber
                         .map(_.intValue()).getOrElse(0)}"
 
@@ -612,7 +840,17 @@ object ReachableSlicing:
         }
     ReachableFlows(flows = sliceNodes.toList, purls = purls)
 
-  private def createSliceNode(astNode: AstNode): (Option[SliceNode], Set[String]) =
+  /** True when the node carries a tag matching the run's source or sink tag patterns. Language
+    * neutral: an operator call a tagger deliberately marked is by definition a meaningful flow
+    * element, even though operator calls are SSA/lowering plumbing as a class.
+    */
+  private def carriesSourceOrSinkTag(node: AstNode, sourceSinkTagPattern: Pattern): Boolean =
+      node.tag.name.exists(sourceSinkTagPattern.matcher(_).matches)
+
+  private def createSliceNode(
+    astNode: AstNode,
+    sourceSinkTagPattern: Pattern
+  ): (Option[SliceNode], Set[String]) =
     val (tags, purls) = resolveTagsAndPurls(astNode)
 
     val baseNode = SliceNode(
@@ -697,7 +935,13 @@ object ReachableSlicing:
           (Some(baseNode.copy(name = m.name, parentMethodName = "<not-in-method>")), purls)
 
       case c: Call =>
-          if c.code.startsWith("<operator") || c.methodFullName.startsWith("<operator") then
+          val isOperatorCall =
+              c.code.startsWith("<operator") || c.methodFullName.startsWith("<operator")
+          // Operator calls are lowering plumbing and are dropped from rendered paths - UNLESS the
+          // taggers marked this one as a source or sink. Python lowers `request.form["n"]` to
+          // `<operator>.indexAccess` and tags that call as framework-input; dropping it made every
+          // Flask-style flow start at an intermediate node instead of its source.
+          if isOperatorCall && !carriesSourceOrSinkTag(c, sourceSinkTagPattern) then
             (None, purls)
           else
             val resolvedCallee = c.callee(using NoResolve).headOption
@@ -732,6 +976,7 @@ object ReachableSlicing:
               )),
               finalPurls
             )
+          end if
 
       case cfg: CfgNode =>
           val (finalTags, finalPurls) = resolveTagsAndPurls(cfg, Some(cfg.method))

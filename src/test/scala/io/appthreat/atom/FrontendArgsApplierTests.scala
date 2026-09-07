@@ -8,6 +8,8 @@ import io.appthreat.jssrc2cpg.Config as JSConfig
 import io.appthreat.php2atom.Config as PhpConfig
 import io.appthreat.pysrc2cpg.Py2CpgOnFileSystemConfig as PyConfig
 import io.appthreat.ruby2atom.Config as RubyConfig
+import io.appthreat.x2cpg.PythonDepsMode
+import io.appthreat.x2cpg.passes.frontend.{XTypeRecovery, XTypeRecoveryConfig}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 
@@ -83,6 +85,47 @@ class FrontendArgsApplierTests extends AnyFunSuite with Matchers:
         )
     result.disableDummyTypes shouldBe true
 
+  test("applyPython preserves the type-recovery defaults the caller set"):
+    // The gap that let a real bug live for the lifetime of the flag. The test above proves only
+    // that an *argument* reaches the config; what was never tested is that a value the caller
+    // set survives the applier when no argument overrides it. It did not: every copy-based
+    // `withX` builder re-initialises the inherited `TypeRecoveryParserConfig` vars, so
+    // `Atom.createPythonCpg` asking for `withDisableDummyTypes(true)` came back as `false`, and
+    // Python graphs shipped full of placeholder types.
+    val result = FrontendArgsApplier.applyPython(
+      PyConfig()
+          .withInputPath(inputPath)
+          .withDisableDummyTypes(true)
+          .withTypePropagationIterations(2),
+      // unrelated keys, so the copy-based builders really do run
+      Map("strict-parse" -> "true", "ignore-dir-names" -> "docs")
+    )
+    result.disableDummyTypes shouldBe true
+    result.typePropagationIterations shouldBe 2
+    result.strictParse shouldBe true
+
+  test("an explicit type-recovery argument still overrides the caller default"):
+    val result = FrontendArgsApplier.applyPython(
+      PyConfig()
+          .withInputPath(inputPath)
+          .withDisableDummyTypes(true)
+          .withTypePropagationIterations(2),
+      Map("no-dummyTypes" -> "false", "type-prop-iterations" -> "4")
+    )
+    result.disableDummyTypes shouldBe false
+    result.typePropagationIterations shouldBe 4
+
+  test("XTypeRecovery.configFor translates a frontend config into a recovery config"):
+    // The other half of the same bug: the knobs stay inert unless the recovery pass is built
+    // from them, and `Atom.createPythonCpg` used to restate the config as a literal and discard
+    // both.
+    val config = PyConfig()
+        .withInputPath(inputPath)
+        .withDisableDummyTypes(true)
+        .withTypePropagationIterations(2)
+    XTypeRecovery.configFor(config) shouldBe
+        XTypeRecoveryConfig(iterations = 2, enabledDummyTypes = false)
+
   test("applyJs forwards ts-types and flow"):
     val result = FrontendArgsApplier.applyJs(
       JSConfig().withInputPath(inputPath),
@@ -104,6 +147,43 @@ class FrontendArgsApplierTests extends AnyFunSuite with Matchers:
     result.venvDir.toString shouldBe ".venv-2"
     result.ignorePaths.map(_.toString) should contain("build")
     result.ignorePaths.map(_.toString) should contain("dist")
+
+  test("applyPython keeps python-deps=none default and honours the stubs/summaries/full modes"):
+    // The default path ships: an absent key must leave today's behaviour untouched.
+    val defaultResult = FrontendArgsApplier.applyPython(
+      PyConfig().withInputPath(inputPath),
+      Map("strict-parse" -> "true") // unrelated key so the copy builders run
+    )
+    defaultResult.pythonDeps shouldBe PythonDepsMode.Disabled
+
+    val stubs = FrontendArgsApplier.applyPython(
+      PyConfig().withInputPath(inputPath),
+      Map("python-deps" -> "stubs")
+    )
+    stubs.pythonDeps shouldBe PythonDepsMode.Stubs
+    // stubs mode must NOT silently flip the venv handling - that is `full`.
+    stubs.ignoreVenvDir shouldBe true
+
+    val summaries = FrontendArgsApplier.applyPython(
+      PyConfig().withInputPath(inputPath),
+      Map("python-deps" -> "summaries", "typeshed-dir" -> "/tmp/typeshed")
+    )
+    summaries.pythonDeps shouldBe PythonDepsMode.Summaries
+    summaries.typeshedDir shouldBe Some(java.nio.file.Paths.get("/tmp/typeshed"))
+
+    // `full` is the legacy ignore-venv-dir=false switch
+    val full = FrontendArgsApplier.applyPython(
+      PyConfig().withInputPath(inputPath),
+      Map("python-deps" -> "full")
+    )
+    full.pythonDeps shouldBe PythonDepsMode.Full
+
+    // garbage falls back to none rather than crashing the run
+    val garbage = FrontendArgsApplier.applyPython(
+      PyConfig().withInputPath(inputPath),
+      Map("python-deps" -> "maybe")
+    )
+    garbage.pythonDeps shouldBe PythonDepsMode.Disabled
 
   test("applyPhp honours enable-ast-cache and cache-dir"):
     val result = FrontendArgsApplier.applyPhp(

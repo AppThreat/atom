@@ -52,7 +52,7 @@ RUN set -e; \
     && node --version \
     && python3 -m pip install --upgrade pip atom-tools \
     && atom-tools --version && atom-tools --help \
-    && cd /opt/wrapper/nodejs && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar @appthreat/atom-parsetools && cd /opt \
+    && cd /opt/wrapper/nodejs && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar @appthreat/atom-parsetools@1.5.0 && cd /opt \
     && rm -rf target \
     && /usr/local/bin/atom --help \
     && microdnf remove -y unzip gcc git-core make \

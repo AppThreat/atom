@@ -6,7 +6,7 @@ title: CLI Usage
 # CLI Usage
 
 ```
-Usage: atom [parsedeps|data-flow|usages|reachables] [options] [input]
+Usage: atom [parsedeps|data-flow|usages|reachables|export|algorithms] [options] [input]
 
   input                    source file or directory
   -o, --output <value>     output filename. Default app.⚛ or app.atom in windows
@@ -16,8 +16,8 @@ Usage: atom [parsedeps|data-flow|usages|reachables] [options] [input]
   --frontend-args <value>  Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,cpp-standard=c++17
   --with-data-deps         generate the atom with data-dependencies - defaults to `false`
   --remove-atom            do not persist the atom file - defaults to `false`
-  -x, --export-atom        export the atom file with data-dependencies to graphml - defaults to `false`
   --reuse-atom             reuse existing atom file - defaults to `false`
+  -x, --export-atom        export the atom file with data-dependencies to graphml - defaults to `false`
   --export-dir <value>     export directory. Default: atom-exports
   --file-filter <value>    the name of the source file to generate slices from. Uses regex.
   --method-name-filter <value>
@@ -27,6 +27,9 @@ Usage: atom [parsedeps|data-flow|usages|reachables] [options] [input]
   --method-annotation-filter <value>
                            filters in slices that go through methods with specific annotations on the methods. Uses regex.
   --max-num-def <value>    maximum number of definitions in per-method data flow calculation - defaults to 2000
+  --legacy-dataflow        use the classic data-flow engine and disable mini-graph fragment caching and method flow summaries. By default atom uses the faster, lower-allocation Flux engine with fragment caching and summary-guided pruning enabled.
+  --validation-config <value>  path to a JSON file declaring validators/sanitisers (chennai.json schema). Reachable flows passing through a declared sanitiser are dropped for its categories.
+  --perf-report <value>    opt-in per-stage performance report - pass a file path to append NDJSON lines (wall ms, CPU ms, allocated MB) for every frontend, pass, dataflow and slicing stage
 Command: parsedeps
 Extract dependencies from the build file and imports
 Command: data-flow [options]
@@ -40,9 +43,22 @@ Extract local variable and parameter usages
   --extract-endpoints      extract http endpoints and convert to openapi format using atom-tools - defaults to false.
 Command: reachables [options]
 Extract reachable data-flow slices based on automated framework tags
-  --source-tag <value>     source tag - defaults to framework-input.
-  --sink-tag <value>       sink tag - defaults to framework-output.
+  --source-tag <value>     source tag - defaults to framework-input. Comma-separated values allowed.
+  --sink-tag <value>       sink tag - defaults to framework-output. Comma-separated values allowed.
   --include-crypto         includes crypto library flows - defaults to false.
+  --profile <value>        reduce false positives with a flow-filtering profile: appsec, generic. Defaults to generic (no extra filtering).
+Command: export [options]
+Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)
+  --format <value>         export format: dot, graphml, gexf, graphson, neo4jcsv or gnn
+  --scope <value>          export scope: whole or methods. Default: whole
+  --out <value>            output directory. Default: atom-exports
+Command: algorithms [options]
+Run a graph algorithm over the atom and write the result as JSON
+  --type <value>           algorithm: scc, toposort, dominators, paths, centrality, lowest-common-ancestors, dependency-sequencer, union-find, heap-walker, or context-sensitive-paths
+  --source <value>         source method full-name pattern for the paths algorithm. Uses regex.
+  --target <value>         target method full-name pattern for the paths algorithm. Uses regex.
+  --max-depth <value>      maximum path depth for the paths algorithm
+  --config <value>         path to a JSON config file for the export and algorithms commands
   --help                   display this help message
 ```
 
@@ -80,7 +96,10 @@ Extract reachable data-flow slices based on automated framework tags
 | **ASTGEN_IGNORE_FILE_PATTERN**          | File pattern to ignore by the JavaScript astgen pre-processor command.                                                                                     |
 | **ASTGEN_INCLUDE_NODE_MODULES_BUNDLES** | Also include source code from node_modules directory. Makes the flows more complete at the cost of increased memory use.                                   |
 | **JAVA_CMD**                            | Overrides the java command.                                                                                                                                |
-| **RUBY_CMD**                            | Overrides the Ruby command.                                                                                                                                |
+| **RUBY_CMD**                            | Overrides the Ruby command used by the `rbastgen` wrapper.                                                                                                 |
+| **ATOM_RUBY_HOME**                      | Ruby installation directory for the `rbastgen` wrapper, when Ruby is not on `PATH`.                                                                        |
+| **RUBY_ASTGEN_BIN**                     | Path to the `ruby_ast_gen` script that the `rbastgen` wrapper runs. The simplest way to test a generator build.                                            |
+| **RBASTGEN_PATH**                       | Path to the `rbastgen` executable itself, overriding the one on `PATH`; the `rbastgen.path` system property takes precedence.                              |
 
 ## Advanced Configuration
 
@@ -131,6 +150,27 @@ The following arguments are supported when `--language` is set to `c`, `cpp`, or
 | `only-ast-cache`       | Boolean | Only generate AST cache files and exit. Useful for large projects to avoid OOM. | `only-ast-cache=true`         |
 
 > **Note:** Boolean values must be passed as the strings `true` or `false`.
+
+### Supported Arguments (Python)
+
+The following arguments are supported when `--language` is set to `py` or `python`. The
+`python-deps` family controls how installed dependencies (from the virtual environment) enter the
+graph - from none at all to the whole dependency tree with method bodies:
+
+| Key                  | Type    | Description                                                                                                                                                     | Example                          |
+| :------------------- | :------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------- |
+| `venv-dir`           | String  | Virtual-environment directory. Defaults to `.venv`.                                                                                                             | `venv-dir=/opt/venv`             |
+| `ignore-paths`       | List    | Paths to ignore from analysis.                                                                                                                                  | `ignore-paths=build,dist`        |
+| `requirements-txt`   | String  | Requirements file name.                                                                                                                                         | `requirements-txt=requirements.txt` |
+| `strict-parse`       | Boolean | Fail the run when any statement fails to parse (errors are always summarized).                                                                                  | `strict-parse=true`              |
+| `python-deps`        | Enum    | Dependency treatment: `none` (default) \| `stubs` (signature-only, external) \| `summaries` (stubs + flow summaries) \| `full` (whole dependency tree with bodies, external for attribution, explorable by the engine; opt-in, trades build cost for accuracy). | `python-deps=summaries` |
+| `python-deps-rounds` | Int     | Transitive import-closure rounds for `python-deps=stubs\|summaries` only (`full` ingests everything, unbounded). Default 2 - the imported distributions' own modules; raise to 3-4 for deeper chains. | `python-deps-rounds=3`           |
+| `typeshed-dir`       | String  | Typeshed checkout (with a `stdlib/` subtree) for `python-deps` stubs/summaries/full (`full` ingests stdlib signatures). Falls back to `$CHEN_TYPESHED_DIR`.      | `typeshed-dir=/opt/typeshed`     |
+
+> **Note:** With `python-deps=full`, reachables stays scoped to the project's own code: a flow
+> whose source lives in library code is a fact about the library, not a finding about the analyzed
+> project, so it is explored but not reported. A flow that merely traverses library code (project
+> source -> library -> project sink) survives.
 
 ### Examples
 
@@ -197,36 +237,36 @@ spelling of the equivalent key.
 
 ### Universal (every language)
 
-| Flag                       | Type   | Description                                              |
-| :------------------------- | :----- | :------------------------------------------------------- |
-| `--exclude <csv>`          | csv    | Files/folders to exclude (relative to input or absolute).|
-| `--exclude-regex <re>`     | string | Regex of file paths to exclude.                          |
-| `--no-ast-cache`           | flag   | Disable the on-disk AST cache for this run.              |
-| `--cache-dir <dir>`        | string | Directory for the AST cache (default: `<input>/.chen`).  |
-| `--schema-check`           | flag   | Enable early schema validation during AST creation.      |
-| `--no-dummy-types`         | flag   | Disable placeholder dummy types during type propagation. |
-| `--type-prop-iterations N` | int    | Maximum type-propagation iterations.                     |
+| Flag                       | Type   | Description                                                                         |
+| :------------------------- | :----- | :---------------------------------------------------------------------------------- |
+| `--exclude <csv>`          | csv    | Files/folders to exclude (relative to input or absolute).                           |
+| `--exclude-regex <re>`     | string | Regex of file paths to exclude.                                                     |
+| `--no-ast-cache`           | flag   | Disable the on-disk AST cache for this run.                                         |
+| `--cache-dir <dir>`        | string | Directory for the AST cache (default: `<input>/.chen`).                             |
+| `--schema-check`           | flag   | Enable early schema validation during AST creation.                                 |
+| `--no-dummy-types`         | flag   | Disable placeholder dummy types during type propagation.                            |
+| `--type-prop-iterations N` | int    | Maximum type-propagation iterations.                                                |
 | `--cache <mode>`           | enum   | Cache mode: `all` \| `none` \| `no-ast` \| `no-cpg` \| `no-astgen` \| `no-summary`. |
 
 ### Per-language
 
-| Flag                         | Languages       | Description                                            |
-| :--------------------------- | :-------------- | :----------------------------------------------------- |
-| `--cpp-standard <std>`       | C/C++           | C++ standard, e.g. `c++17`, `c++20`.                   |
-| `--define NAME`              | C/C++ (repeat)  | Preprocessor define.                                   |
-| `--include-path <dir>`       | C/C++ (repeat)  | Header include path.                                   |
-| `--delombok-mode <m>`        | Java            | `no-delombok` \| `default` \| `types-only` \| `run-delombok`. |
-| `--jdk-path <path>`          | Java            | JDK used to resolve builtin Java types.                |
-| `--fetch-deps`               | Java            | Fetch dependency jars for type information.            |
-| `--ts-types <bool>`          | JS/TS           | Resolve types from TypeScript declarations (default: true). |
-| `--flow`                     | JS              | Enable Flow mode.                                      |
-| `--venv-dir <dir>`           | Python          | Virtual-environment directory (default: `.venv`).      |
-| `--ignore-paths <csv>`       | Python          | Paths to ignore from analysis.                         |
-| `--android-sdk <path>`       | Jimple/Android  | Path to `android.jar` for APK analysis.                |
-| `--solver-depth N`           | Jimple/Scala    | Recursive jar unpacking depth (default: 1).            |
-| `--full-resolver`            | Jimple/Scala    | Whole-program, transitive call resolution.             |
-| `--php-ini <path>`           | PHP             | php.ini path for the PHP parser.                       |
-| `--disable-type-stubs`       | Ruby            | Disable type-stub based type recovery.                 |
+| Flag                   | Languages      | Description                                                   |
+| :--------------------- | :------------- | :------------------------------------------------------------ |
+| `--cpp-standard <std>` | C/C++          | C++ standard, e.g. `c++17`, `c++20`.                          |
+| `--define NAME`        | C/C++ (repeat) | Preprocessor define.                                          |
+| `--include-path <dir>` | C/C++ (repeat) | Header include path.                                          |
+| `--delombok-mode <m>`  | Java           | `no-delombok` \| `default` \| `types-only` \| `run-delombok`. |
+| `--jdk-path <path>`    | Java           | JDK used to resolve builtin Java types.                       |
+| `--fetch-deps`         | Java           | Fetch dependency jars for type information.                   |
+| `--ts-types <bool>`    | JS/TS          | Resolve types from TypeScript declarations (default: true).   |
+| `--flow`               | JS             | Enable Flow mode.                                             |
+| `--venv-dir <dir>`     | Python         | Virtual-environment directory (default: `.venv`).             |
+| `--ignore-paths <csv>` | Python         | Paths to ignore from analysis.                                |
+| `--android-sdk <path>` | Jimple/Android | Path to `android.jar` for APK analysis.                       |
+| `--solver-depth N`     | Jimple/Scala   | Recursive jar unpacking depth (default: 1).                   |
+| `--full-resolver`      | Jimple/Scala   | Whole-program, transitive call resolution.                    |
+| `--php-ini <path>`     | PHP            | php.ini path for the PHP parser.                              |
+| `--disable-type-stubs` | Ruby           | Disable type-stub based type recovery.                        |
 
 Example combining flags with a config file:
 

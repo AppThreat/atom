@@ -143,8 +143,11 @@ class GraphCommandsTests extends PySrc2CpgFixture(withOssDataflow = false):
       "find lowest common ancestors of methods" in {
           val cpg = code(recursiveCode)
           File.usingTemporaryDirectory("atom-algo-lca") { dir =>
-            val out    = dir / "lca.json"
-            val config = AtomAlgorithmsConfig().withAlgoType("lowest-common-ancestors").withSourceSelector(Some(".*(ping|pong)"))
+            val out = dir / "lca.json"
+            val config =
+                AtomAlgorithmsConfig().withAlgoType("lowest-common-ancestors").withSourceSelector(
+                  Some(".*(ping|pong)")
+                )
             config.withOutputSliceFile(out)
             GraphCommands.runAlgorithms(cpg, config).isRight shouldBe true
             val content = out.contentAsString
@@ -182,8 +185,10 @@ class GraphCommandsTests extends PySrc2CpgFixture(withOssDataflow = false):
       "traverse AST using HeapWalker" in {
           val cpg = code(sampleCode)
           File.usingTemporaryDirectory("atom-algo-hw") { dir =>
-            val out    = dir / "heapwalker.json"
-            val config = AtomAlgorithmsConfig().withAlgoType("heap-walker").withSourceSelector(Some(".*main"))
+            val out = dir / "heapwalker.json"
+            val config = AtomAlgorithmsConfig().withAlgoType("heap-walker").withSourceSelector(
+              Some(".*main")
+            )
             config.withOutputSliceFile(out)
             GraphCommands.runAlgorithms(cpg, config).isRight shouldBe true
             val content = out.contentAsString
@@ -195,11 +200,11 @@ class GraphCommandsTests extends PySrc2CpgFixture(withOssDataflow = false):
       "find context-sensitive paths" in {
           val cpg = code(sampleCode)
           File.usingTemporaryDirectory("atom-algo-csp") { dir =>
-            val out    = dir / "csp.json"
+            val out = dir / "csp.json"
             val config = AtomAlgorithmsConfig()
-              .withAlgoType("context-sensitive-paths")
-              .withSourceSelector(Some(".*main"))
-              .withTargetSelector(Some(".*helper"))
+                .withAlgoType("context-sensitive-paths")
+                .withSourceSelector(Some(".*main"))
+                .withTargetSelector(Some(".*helper"))
             config.withOutputSliceFile(out)
             GraphCommands.runAlgorithms(cpg, config).isRight shouldBe true
             val content = out.contentAsString
@@ -211,17 +216,20 @@ class GraphCommandsTests extends PySrc2CpgFixture(withOssDataflow = false):
 
       "automatically create nested directories for output atom and slice files" in {
           val testNestedDir = File("target/test-nested-output-dir")
-          if (testNestedDir.exists) testNestedDir.delete(true)
+          if testNestedDir.exists then testNestedDir.delete(true)
           testNestedDir.exists shouldBe false
 
-          val outputAtom = testNestedDir / "sub" / "dir" / "app.atom"
+          val outputAtom  = testNestedDir / "sub" / "dir" / "app.atom"
           val outputSlice = testNestedDir / "sub" / "dir" / "slices.json"
 
           val args = Array(
             "data-flow",
-            "-l", "python",
-            "-o", outputAtom.pathAsString,
-            "-s", outputSlice.pathAsString,
+            "-l",
+            "python",
+            "-o",
+            outputAtom.pathAsString,
+            "-s",
+            outputSlice.pathAsString,
             "test/fixtures/sample-py"
           )
 
