@@ -24,9 +24,12 @@ import scala.util.Try
   * language. Counts move deliberately: when a change alters them, update the number AND record why
   * in the commit.
   *
-  * The PHP and Ruby frontends need their external AST generators (`phpastgen`, `rbastgen`); those
-  * sections cancel (not fail) when the generator is missing or too old, exactly like
-  * [[PhpAtomWorkflowTests]] and [[RubyAtomWorkflowTests]].
+  * The JavaScript, PHP and Ruby frontends need their external AST generators (`astgen`,
+  * `phpastgen`, `rbastgen` - all from `@appthreat/atom-parsetools`); those sections cancel (not
+  * fail) when the generator is missing or too old, exactly like [[PhpAtomWorkflowTests]] and
+  * [[RubyAtomWorkflowTests]]. Without the gate a missing `astgen` surfaces as a frontend that
+  * "succeeds" with an empty graph, and the fixture then fails with an opaque count mismatch instead
+  * of canceling with the reason.
   */
 class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
@@ -148,6 +151,7 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
 
   "reachables for javascript" should {
       "emit source-to-sink flows for an express-style project" in {
+          requireAstgen()
           val flows = runReachables(
             "javascript",
             "js-project",
@@ -274,6 +278,24 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
   }
 
   // ------------------------------------------------------------------ generator gates
+
+  /** astgen binary the way jssrc2cpg's `AstGenRunner` resolves it: plain `astgen` from `PATH` (the
+    * frontend honours no environment override). The probe is the frontend's own: it also runs
+    * `astgen --version` and treats an unparseable answer as unusable. Anything from
+    * `@appthreat/atom-parsetools` reports 4.x; only the long-retired standalone `@appthreat/astgen`
+    * 1.x is excluded by the floor.
+    */
+  private lazy val astgenUsable: Boolean =
+      Try(scala.sys.process.Process(Seq("astgen", "--version")).lazyLines_!.headOption.map(_.trim))
+          .toOption
+          .flatten
+          .exists(v => v.takeWhile(_.isDigit).toIntOption.exists(_ >= 2))
+
+  private def requireAstgen(): Unit =
+      if !astgenUsable then
+        cancel(
+          s"astgen 'astgen' unavailable or too old; JavaScript reachables fixture needs the astgen from @appthreat/atom-parsetools on PATH"
+        )
 
   /** phpastgen binary resolved the way php2atom does (env override, then PATH). */
   private val phpastgen: String =
