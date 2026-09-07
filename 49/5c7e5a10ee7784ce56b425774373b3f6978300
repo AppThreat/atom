@@ -1,0 +1,90 @@
+src/main/scala/io/appthreat/atom/frontends/FrontendArgsApplier.scala
+  s_526190b23001e8::t_a029efc9ffbaa6 395-409
+  s_6b8fe346c7989b::t_c49ce005dcf30b 10,66-74,78-79,82-84,141,151,176-180,182,193,201,384-394,410-411
+README.md
+  s_3fea8b5b7f767f::t_8b74457f58a322 33-36,121,500-503,551-584,617,645-665
+build.sbt
+  s_6b8fe346c7989b::t_3bec90337b072f 3,6,76,120-125
+ci/Dockerfile
+  s_6b8fe346c7989b::t_e21a532bbf5d6f 103,106
+ci/Dockerfile-alpine-ruby
+  s_6b8fe346c7989b::t_3554905ceb34ec 20
+ci/Dockerfile-alpine-ruby3
+  s_6b8fe346c7989b::t_5f049407e62b8e 20
+ci/Dockerfile-ruby
+  s_6b8fe346c7989b::t_1dc7e0668b5549 55
+ci/Dockerfile-ruby3
+  s_6b8fe346c7989b::t_5d7493aa054a5f 55
+ci/Dockerfile-sle
+  s_6b8fe346c7989b::t_744e286a16e788 76
+codemeta.json
+  s_6b8fe346c7989b::t_7b0174286262d2 10
+docs/docs/cli.md
+  s_3fea8b5b7f767f::t_d1de0f8b099a15 9,20,30-32,46-47,49-61,99-102,154-174,240-248,253-269
+docs/docs/languages.md
+  s_3fea8b5b7f767f::t_f68dd7363bc02f 16-20
+project/build.properties
+  s_6b8fe346c7989b::t_309f36accaa4af 1
+src/main/resources/META-INF/native-image/resource-config.json
+  s_6b8fe346c7989b::t_2e97927cb76996 1
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_3fea8b5b7f767f::t_a8dc84b9bc92ad 5-7,28-30,36-37,41-42,51,87-90,104-109,124-127,241-248,383-394,825-827,829-831,833-835,837,839,841-843,845-847,1093-1095,1105,1292-1299,1306-1311,1318,1324-1325,1327-1331,1335-1361,1407-1423,1427-1446,1464-1469,1472,1476-1496
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  s_3fea8b5b7f767f::t_449a8379c894a0 22-23,104-114,116-117,124-150,153,158-207,222-253,337-343,345-368,370-462,464-469,825,829,843-853,938-944,979
+src/test/scala/io/appthreat/atom/FrontendArgsApplierTests.scala
+  s_6b8fe346c7989b::t_96e0d5ba391ed1 11-12,88-128,151-187
+src/test/scala/io/appthreat/atom/GraphCommandsTests.scala
+  s_6b8fe346c7989b::t_f31b4681cc5fd3 146-150,188-191,203,205-207,219,222,227-232
+src/test/scala/io/appthreat/atom/PhpAtomWorkflowTests.scala
+  s_3fea8b5b7f767f::t_11d9ba5c87b543 1-385
+src/test/scala/io/appthreat/atom/PythonDepsFullWorkflowTests.scala
+  s_3fea8b5b7f767f::t_eab870539cc781 1-142
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  s_6b8fe346c7989b::t_b4e47f38eb0e78 1-324
+src/test/scala/io/appthreat/atom/ReuseAtomIdempotencyTests.scala
+  s_3fea8b5b7f767f::t_d7f24d7caeb46f 1-98
+src/test/scala/io/appthreat/atom/RubyAtomWorkflowTests.scala
+  s_6b8fe346c7989b::t_ea32f6b4266ace 1-262
+src/test/scala/io/appthreat/atom/UsageSlicingImprovementsTests.scala
+  s_6b8fe346c7989b::t_e165862d6940b3 9-13,33-34,57-58,71-72,134,137
+wrapper/nodejs/README.md
+  s_3fea8b5b7f767f::t_9e6839d27474e4 29-33,144-147
+wrapper/nodejs/package-lock.json
+  s_6b8fe346c7989b::t_4e2d2a90a5e6b9 1294,1303-1311,1316,1327,1338,1343,1357,1371,1385,1399,1410
+wrapper/nodejs/packages/atom/README.md
+  s_3fea8b5b7f767f::t_1c5d3d226a55e2 29-33,144-147
+wrapper/nodejs/packages/atom/package.json
+  s_6b8fe346c7989b::t_b22b322fad07db 3,38-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "495c7e5a10ee7784ce56b425774373b3f6978300",
+  "prompts": {},
+  "sessions": {
+    "s_3fea8b5b7f767f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9da2e8b7-6f12-4b8f-aed2-f018bbc93668",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_526190b23001e8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9a7ce33f-29e2-4c58-8c37-d6bd29ae0016",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_6b8fe346c7989b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11f11498-3459-4644-b80a-948e68d5323c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
