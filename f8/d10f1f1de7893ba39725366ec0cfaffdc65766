@@ -1,0 +1,14 @@
+docs/docs/languages.md
+  h_6a4cc5cdf68def 36,38-41,43-46,48-50,53-54,57,60-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f8d10f1f1de7893ba39725366ec0cfaffdc65766",
+  "prompts": {},
+  "humans": {
+    "h_6a4cc5cdf68def": {
+      "author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
