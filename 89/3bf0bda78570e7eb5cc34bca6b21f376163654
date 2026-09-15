@@ -1,0 +1,16 @@
+src/main/scala/io/appthreat/atom/frontends/FrontendArgsApplier.scala
+  h_6a4cc5cdf68def 181,303
+src/test/scala/io/appthreat/atom/GraphCommandsTests.scala
+  h_6a4cc5cdf68def 229-232
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "893bf0bda78570e7eb5cc34bca6b21f376163654",
+  "prompts": {},
+  "humans": {
+    "h_6a4cc5cdf68def": {
+      "author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
