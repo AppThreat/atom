@@ -29,6 +29,10 @@ and more.
 - JavaScript
 - Flow
 - TypeScript
+- JavaScript frameworks: Vue (`.vue`) and Svelte / SvelteKit (`.svelte`)
+  single-file components. Svelte templates are modelled as JSX-equivalent
+  structure with exact source offsets; `<style>` blocks and HTML comments are
+  not analysed.
 - Python (Supports 3.x to 3.14)
 - PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.5 with limited support for PHP 5.x)
 - Ruby (Requires a Ruby runtime with the `rbastgen` generator; the grammar is chosen by
