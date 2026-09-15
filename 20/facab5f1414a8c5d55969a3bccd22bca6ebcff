@@ -1,0 +1,18 @@
+README.md
+  h_6a4cc5cdf68def 26-32
+build.sbt
+  h_6a4cc5cdf68def 6
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  h_6a4cc5cdf68def 290-373
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "20facab5f1414a8c5d55969a3bccd22bca6ebcff",
+  "prompts": {},
+  "humans": {
+    "h_6a4cc5cdf68def": {
+      "author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
