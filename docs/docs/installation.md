@@ -17,5 +17,5 @@ npm install @appthreat/atom @appthreat/atom-parsetools
 Install cdxgen to generate a Software Bill-of-Materials which is required for reachables slicing.
 
 ```shell
-npm install -g @cyclonedx/cdxgen --omit=optional
+npm install -g @cdxgen/cdxgen --omit=optional
 ```

@@ -79,7 +79,7 @@ atom --help
 Install cdxgen npm package to generate a Software Bill-of-Materials (SBOM) which is required for reachables slicing.
 
 ```shell
-npm install -g @cyclonedx/cdxgen --omit=optional --ignore-scripts
+npm install -g @cdxgen/cdxgen --omit=optional --ignore-scripts
 ```
 
 ## container usage

@@ -93,7 +93,7 @@ RUN set -e; \
     && /opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager 'platform-tools' --sdk_root=/opt/android-sdk-linux \
     && /opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager 'platforms;android-34' --sdk_root=/opt/android-sdk-linux \
     && /opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager 'build-tools;34.0.0' --sdk_root=/opt/android-sdk-linux \
-    && npm install -g @cyclonedx/cdxgen --omit=optional \
+    && npm install -g @cdxgen/cdxgen --omit=optional \
     && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && php composer-setup.php \
     && mv composer.phar /usr/local/bin/composer \
     && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.lock \

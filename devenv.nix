@@ -67,7 +67,7 @@
         set -e
         mkdir -p /tmp/empty-cache
         export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 --enable-native-access=ALL-UNNAMED"
-        sudo npm install --cache /tmp/empty-cache --prefer-online -g @cyclonedx/cdxgen
+        sudo npm install --cache /tmp/empty-cache --prefer-online -g @cdxgen/cdxgen
         cdxgen --version
         python3 --version
         python3 -m pip install atom-tools
