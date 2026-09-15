@@ -1,0 +1,32 @@
+ci/Dockerfile-alpine-ruby
+  h_6a4cc5cdf68def 20
+ci/Dockerfile-ruby
+  h_6a4cc5cdf68def 55
+ci/Dockerfile-ruby3
+  h_6a4cc5cdf68def 55
+ci/Dockerfile-alpine-ruby3
+  h_6a4cc5cdf68def 20
+docs/docs/languages.md
+  h_6a4cc5cdf68def 16-23,30-53
+.github/workflows/repotests.yml
+  h_6a4cc5cdf68def 47-51,157,173,180
+ci/Dockerfile
+  h_6a4cc5cdf68def 103
+build.sbt
+  h_6a4cc5cdf68def 6
+README.md
+  h_6a4cc5cdf68def 32-35
+ci/Dockerfile-sle
+  h_6a4cc5cdf68def 76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1ebe0d8f8ca74e5b8533eb89b109aecb8210f032",
+  "prompts": {},
+  "humans": {
+    "h_6a4cc5cdf68def": {
+      "author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
