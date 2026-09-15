@@ -176,6 +176,72 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
           // The request-derived local must reach the framework output sink.
           assertSourceToSinkFlow(flows, "javascript", "name", "send", "framework-output")
       }
+
+      "emit source-to-sink flows for a react-router component" in {
+          requireAstgen()
+          val flows = runReachables(
+            "javascript",
+            "js-react-project",
+            dir =>
+              (dir / "src").createDirectories()
+              (dir / "src" / "profile.jsx").write(
+                """import { useParams } from "react-router-dom";
+                    |
+                    |export default function Profile() {
+                    |    const { bio } = useParams();
+                    |    return <div dangerouslySetInnerHTML={{ __html: bio }} />;
+                    |}
+                    |""".stripMargin
+              )
+          )
+          // The URL parameter reaches the raw-HTML render through the props chain: the flow must
+          // be rooted at the tagged useParams call and end at the framework-output sink.
+          assertSourceToSinkFlow(flows, "javascript", "useParams", "__html", "framework-output")
+      }
+  }
+
+  "usages for javascript" should {
+      "expose a React Router <Route path> attribute as a route usage type" in {
+          requireAstgen()
+          val projectDir = workspace / "js-route-project"
+          projectDir.createDirectories()
+          (projectDir / "src").createDirectories()
+          (projectDir / "src" / "app.jsx").write(
+            """import { Route } from "react-router-dom";
+                |function Profile(props) {
+                |    return <div>{props.name}</div>;
+                |}
+                |export default function App() {
+                |    return <Route path="/profile" element={<Profile />} />;
+                |}
+                |""".stripMargin
+          )
+          val atomFile  = workspace / "js-route-project.atom"
+          val sliceFile = workspace / "js-route-project-usages.json"
+          val result = Atom.run(
+            Seq(
+              "usages",
+              "--cache",
+              "none",
+              "-l",
+              "javascript",
+              "-o",
+              atomFile.pathAsString,
+              "-s",
+              sliceFile.pathAsString,
+              projectDir.pathAsString
+            ).toArray
+          )
+          result.isRight shouldBe true
+          val json = ujson.read(sliceFile.contentAsString)
+          val udtNames = json.obj
+              .get("userDefinedTypes")
+              .map(_.arr.map(_.obj("name").str))
+              .getOrElse(Seq.empty)
+          // The JSX Route path literal sits under a TEMPLATE_DOM node, not a call argument, so
+          // only the template-literal branch of routesAsUDT can surface it.
+          udtNames should contain("/profile")
+      }
   }
 
   "reachables for java" should {

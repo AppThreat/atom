@@ -530,9 +530,38 @@ object UsageSlicing:
       )
 
   private def routesAsUDT(atom: Cpg): List[UserDefinedType] =
-      atom.call.where(_.argument.tag.nameExact(FRAMEWORK_ROUTE)).map(generateRouteUDT).filter(u =>
-          u.fields.nonEmpty || u.procedures.nonEmpty
-      ).l
+    val callRoutes =
+        atom.call.where(_.argument.tag.nameExact(FRAMEWORK_ROUTE)).map(generateRouteUDT).l
+    // Route paths tagged outside a call argument - a React Router `<Route path="/x" .../>`
+    // attribute whose literal sits under a TEMPLATE_DOM node - never reach the call-based
+    // branch above. Emit them as literal-only route records, minus the ones already covered.
+    val callTaggedLiteralIds = atom.call
+        .where(_.argument.tag.nameExact(FRAMEWORK_ROUTE))
+        .argument
+        .isLiteral
+        .map(_.id())
+        .toSet
+    val templateRoutes = atom.literal
+        .where(_.tag.nameExact(FRAMEWORK_ROUTE))
+        .filterNot(lit => callTaggedLiteralIds.contains(lit.id()))
+        .map { lit =>
+            UserDefinedType(
+              lit.code.stripPrefix("\"").stripSuffix("\""),
+              List(LocalDef(
+                lit.code,
+                lit.typeFullName,
+                lit.lineNumber.map(_.toInt),
+                lit.columnNumber.map(_.toInt)
+              )),
+              Nil,
+              lit.location.filename,
+              lit.lineNumber.map(_.intValue()),
+              lit.columnNumber.map(_.intValue())
+            )
+        }
+        .l
+    (callRoutes ++ templateRoutes).filter(u => u.fields.nonEmpty || u.procedures.nonEmpty)
+  end routesAsUDT
 
   private def generateRouteUDT(call: Call): UserDefinedType =
     val locals = call.argument.isLiteral.map(m =>
