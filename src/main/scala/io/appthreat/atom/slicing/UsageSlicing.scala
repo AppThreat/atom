@@ -530,34 +530,34 @@ object UsageSlicing:
       )
 
   private def routesAsUDT(atom: Cpg): List[UserDefinedType] =
-    val callRoutes =
-        atom.call.where(_.argument.tag.nameExact(FRAMEWORK_ROUTE)).map(generateRouteUDT).l
+    // Collected once: the call-based branch below and the tagged-literal id filter walk the
+    // same `argument.tag` traversal, which is not cheap on a large graph.
+    val routeCalls = atom.call.where(_.argument.tag.nameExact(FRAMEWORK_ROUTE)).l
+    val callRoutes = routeCalls.map(generateRouteUDT)
     // Route paths tagged outside a call argument - a React Router `<Route path="/x" .../>`
     // attribute whose literal sits under a TEMPLATE_DOM node - never reach the call-based
     // branch above. Emit them as literal-only route records, minus the ones already covered.
-    val callTaggedLiteralIds = atom.call
-        .where(_.argument.tag.nameExact(FRAMEWORK_ROUTE))
-        .argument
-        .isLiteral
-        .map(_.id())
-        .toSet
+    // The UDT and its single field are both named after the unquoted path so consumers see one
+    // consistent shape.
+    val callTaggedLiteralIds = routeCalls.flatMap(_.argument.isLiteral).map(_.id()).toSet
     val templateRoutes = atom.literal
         .where(_.tag.nameExact(FRAMEWORK_ROUTE))
         .filterNot(lit => callTaggedLiteralIds.contains(lit.id()))
         .map { lit =>
-            UserDefinedType(
-              lit.code.stripPrefix("\"").stripSuffix("\""),
-              List(LocalDef(
-                lit.code,
-                lit.typeFullName,
-                lit.lineNumber.map(_.toInt),
-                lit.columnNumber.map(_.toInt)
-              )),
-              Nil,
-              lit.location.filename,
-              lit.lineNumber.map(_.intValue()),
-              lit.columnNumber.map(_.intValue())
-            )
+          val unquoted = lit.code.stripPrefix("\"").stripSuffix("\"")
+          UserDefinedType(
+            unquoted,
+            List(LocalDef(
+              unquoted,
+              lit.typeFullName,
+              lit.lineNumber.map(_.toInt),
+              lit.columnNumber.map(_.toInt)
+            )),
+            Nil,
+            lit.location.filename,
+            lit.lineNumber.map(_.intValue()),
+            lit.columnNumber.map(_.intValue())
+          )
         }
         .l
     (callRoutes ++ templateRoutes).filter(u => u.fields.nonEmpty || u.procedures.nonEmpty)

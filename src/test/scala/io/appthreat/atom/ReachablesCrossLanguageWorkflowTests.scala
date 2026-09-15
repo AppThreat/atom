@@ -179,6 +179,10 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
 
       "emit source-to-sink flows for a react-router component" in {
           requireAstgen()
+          // RELEASE ORDERING: this fixture and the usages one below depend on the chen framework
+          // taggers (ChennaiTagsPass route tables / React Router). chen is consumed at an exact
+          // version with no local bump, so chen must be published BEFORE atom's CI runs these -
+          // a clean machine resolving the previously published chen fails both fixtures.
           val flows = runReachables(
             "javascript",
             "js-react-project",
