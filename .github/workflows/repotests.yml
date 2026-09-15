@@ -209,7 +209,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
       - run: |
-          npm install -g @cyclonedx/cdxgen --omit=optional
+          npm install -g @cdxgen/cdxgen --omit=optional
           cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/bouncycastle-examples/bom.json $GITHUB_WORKSPACE/repotests/bouncycastle-examples
           ./atom.sh reachables --include-crypto --remove-atom -o /tmp/bouncycastle-examples.atom -l java $GITHUB_WORKSPACE/repotests/bouncycastle-examples -Dlog4j.configurationFile=log4j2.xml --slice-outfile /tmp/bouncycastle-examples.reachables.json
           cdxgen -t java --deep -o $GITHUB_WORKSPACE/repotests/java-sec-code/bom.json $GITHUB_WORKSPACE/repotests/java-sec-code
