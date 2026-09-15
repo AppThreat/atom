@@ -120,7 +120,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: |
-          npm install -g @cyclonedx/cdxgen --omit=optional
+          npm install -g @cdxgen/cdxgen --omit=optional
           cdxgen -t python --deep -o $GITHUB_WORKSPACE/repotests/DjanGoat/bom.json $GITHUB_WORKSPACE/repotests/DjanGoat
           # Reachables runs the Flux engine by default, which builds method flow summaries and uses
           # them for summary-guided pruning (cached next to the atom). `--legacy-dataflow` opts out.
@@ -139,7 +139,7 @@ jobs:
         shell: bash
       - name: Generate SBOM with cdxgen
         run: |
-          npm install -g @cyclonedx/cdxgen
+          npm install -g @cdxgen/cdxgen
           cdxgen -t sbt -o bom.json . -p --no-recurse
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
