@@ -1,0 +1,14 @@
+.gitignore
+  h_6a4cc5cdf68def 191-194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fe09923e2ead2255abfb32cfbfc0c567b47e5839",
+  "prompts": {},
+  "humans": {
+    "h_6a4cc5cdf68def": {
+      "author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
