@@ -23,7 +23,13 @@ and more.
 
 - C/C++
 - H (C/C++ Header and pre-processed .i files alone)
-- Java (Requires compilation)
+- Java (Requires compilation. Java 8 through Java 26 syntax: records, sealed types, pattern
+  matching for `instanceof` and `switch` with guards and record patterns, switch expressions
+  with `yield`, text blocks, unnamed variables, local classes and records, module imports,
+  flexible constructor bodies, virtual threads and the FFM API. Spring MVC/WebFlux, JAX-RS,
+  Micronaut, servlet, Vert.x, gRPC, JDBC/JPA/MyBatis, AI SDKs, MCP tools, AWS/GCP/Azure, Kafka
+  and JNI/FFM boundaries are tagged automatically - reachables no longer needs a project
+  `chennai.json` to find Java sources and sinks.)
 - Jar
 - Android APK and split bundles (.apkm, .apks, .xapk). Requires Android SDK. Set the environment variable `ANDROID_HOME` or use the container image.
 - JavaScript

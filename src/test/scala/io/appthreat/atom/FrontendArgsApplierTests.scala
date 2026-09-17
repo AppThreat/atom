@@ -9,6 +9,7 @@ import io.appthreat.php2atom.Config as PhpConfig
 import io.appthreat.pysrc2cpg.Py2CpgOnFileSystemConfig as PyConfig
 import io.appthreat.ruby2atom.Config as RubyConfig
 import io.appthreat.x2cpg.PythonDepsMode
+import io.appthreat.x2cpg.passes.frontend.AstCacheStore
 import io.appthreat.x2cpg.passes.frontend.{XTypeRecovery, XTypeRecoveryConfig}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
@@ -59,12 +60,19 @@ class FrontendArgsApplierTests extends AnyFunSuite with Matchers:
     result.includeFiles shouldBe Set("common.h")
     result.includeComments shouldBe true
 
-  test("applyC defaults the cache dir to <input>/.chen"):
-    val result = FrontendArgsApplier.applyC(
+  test("applyC leaves the cache dir to chen's default unless configured"):
+    // An unset key must leave the config's "" alone: chen's AstCacheStore.resolveCacheDir is
+    // what substitutes <input>/.chen, so the ".chen" spelling lives in one place. The eager
+    // `str(args, ..., Paths.get(inputPath, ".chen"))` this replaces had to be kept in
+    // lockstep with it by hand.
+    val unset = FrontendArgsApplier.applyC(CConfig().withInputPath(inputPath), Map.empty)
+    unset.cacheDir shouldBe ""
+    AstCacheStore.resolveCacheDir(inputPath, unset.cacheDir).endsWith(".chen") shouldBe true
+    val configured = FrontendArgsApplier.applyC(
       CConfig().withInputPath(inputPath),
-      Map.empty
+      Map("ast-cache-dir" -> "/tmp/ast-cache")
     )
-    result.cacheDir.endsWith(".chen") shouldBe true
+    configured.cacheDir shouldBe "/tmp/ast-cache"
 
   test("applyJava forwards delombok and jdk options"):
     val args = Map(

@@ -119,7 +119,10 @@ object FrontendArgsApplier:
       r.includeTrivialExpressions
     ))
     r = r.withAstCache(bool(args, "enable-ast-cache", r.enableAstCache))
-    r = r.withCacheDir(str(args, "ast-cache-dir", Paths.get(r.inputPath, ".chen").toString))
+    // Not eagerly defaulted here: an unset key leaves the config's own "" and chen's
+    // AstCacheStore.resolveCacheDir substitutes <input>/.chen, keeping that spelling in one
+    // place instead of duplicating it on every frontend.
+    strOpt(args, "ast-cache-dir").foreach(v => r = r.withCacheDir(v))
     r = r.withOnlyAstCache(bool(args, "only-ast-cache", r.onlyAstCache))
     applyUniversal(r, args)
     r
@@ -178,6 +181,7 @@ object FrontendArgsApplier:
     r = r.withPythonDeps(PythonDepsMode.parse(str(args, "python-deps", "none")))
     r = r.withPythonDepsRounds(int(args, "python-deps-rounds", r.pythonDepsRounds))
     strOpt(args, "typeshed-dir").foreach(v => r = r.withTypeshedDir(Paths.get(v)))
+    strOpt(args, "ast-cache-dir").foreach(v => r = r.withCacheDir(v))
     applyUniversal(r, args)
     applyTypeRecovery(r, args, c)
     r
@@ -186,7 +190,7 @@ object FrontendArgsApplier:
   def applyPhp(c: PhpConfig, args: Map[String, String]): PhpConfig =
     var r = c
     r = r.withAstCache(bool(args, "enable-ast-cache", r.enableAstCache))
-    r = r.withCacheDir(str(args, "ast-cache-dir", Paths.get(r.inputPath, ".chen").toString))
+    strOpt(args, "ast-cache-dir").foreach(v => r = r.withCacheDir(v))
     strOpt(args, "php-ini").foreach(v => r = r.withPhpIni(v))
     strOpt(args, "php-parser-bin").foreach(v => r = r.withPhpParserBin(v))
     applyUniversal(r, args)
@@ -298,8 +302,9 @@ object FrontendArgsApplier:
       "ast-cache-dir",
       "string",
       "<input>/.chen",
-      "Directory for the AST cache.",
-      CLike ++ Seq("php")
+      "Directory for the AST cache (resolved by chen when unset). The first-class atom flag " +
+          "`--cache-dir` feeds this key; chen's standalone frontend CLIs spell it `--cache-dir` too.",
+      CLike ++ Seq("php", "python")
     ),
     KeyDoc("only-ast-cache", "bool", "false", "Build the AST cache then skip CPG creation.", CLike),
     KeyDoc("inference-jar-paths", "csv", "", "Extra jars used for type information.", Seq("java")),
