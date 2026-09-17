@@ -226,6 +226,10 @@ class GraphCommandsTests extends PySrc2CpgFixture(withOssDataflow = false):
             "data-flow",
             "-l",
             "python",
+            // The AST cache defaults to <input>/.chen, which would litter the CHECKED-IN
+            // fixture with fragment files; keep test caches under target/ instead.
+            "--cache-dir",
+            "target/test-ast-cache",
             "-o",
             outputAtom.pathAsString,
             "-s",

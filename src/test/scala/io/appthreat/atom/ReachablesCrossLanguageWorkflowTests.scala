@@ -287,6 +287,90 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
           // The controller parameter must reach the Runtime.exec call, across the helper call.
           assertSourceToSinkFlow(flows, "java", "name", "exec", "code-execution")
       }
+
+      "emit framework-tagged flows for a Spring controller without any chennai.json" in {
+          // RELEASE ORDERING: depends on chen's Java framework taggers (ChennaiTagsPass
+          // .tagJavaRoutes: @RequestParam parameters are framework-input) and the Java sink
+          // families (EasyTagsPass.tagJavaSinkFamilies: Runtime.exec is code-execution). chen is
+          // consumed at an exact version, so chen must be published BEFORE atom's CI runs this -
+          // a clean machine resolving the previously published chen fails this fixture.
+          val flows = runReachables(
+            "java",
+            "java-spring-project",
+            dir =>
+              (dir / "src" / "main" / "java" / "com" / "example").createDirectories()
+              (dir / "src" / "main" / "java" / "com" / "example" / "GreetingController.java")
+                  .write(
+                    """package com.example;
+                        |
+                        |import org.springframework.web.bind.annotation.GetMapping;
+                        |import org.springframework.web.bind.annotation.RequestParam;
+                        |import org.springframework.web.bind.annotation.RestController;
+                        |
+                        |@RestController
+                        |public class GreetingController {
+                        |
+                        |    @GetMapping("/greet")
+                        |    public String greet(@RequestParam("name") String name) throws Exception {
+                        |        return run("echo " + name);
+                        |    }
+                        |
+                        |    private String run(String command) throws Exception {
+                        |        return new String(Runtime.getRuntime().exec(command).getInputStream().readAllBytes());
+                        |    }
+                        |}
+                        |""".stripMargin
+                  )
+          )
+          flows.length should be(1)
+          // The @RequestParam parameter is web-facing input by annotation, and Runtime.exec is a
+          // code-execution sink by the Java sink family - no project config involved.
+          assertSourceToSinkFlow(flows, "java", "name", "exec", "code-execution")
+      }
+
+      "emit dataflow through a Java 21 pattern switch from a servlet parameter" in {
+          // RELEASE ORDERING: depends on chen's switch-expression and pattern lowering (the
+          // javasrc2cpg AstCreator lowers `switch` expressions to conditionals and binds pattern
+          // variables). Same publish-before-CI ordering as the Spring fixture above.
+          val flows = runReachables(
+            "java",
+            "java-modern-project",
+            dir =>
+              (dir / "src" / "main" / "java" / "com" / "example").createDirectories()
+              (dir / "src" / "main" / "java" / "com" / "example" / "LegacyServlet.java")
+                  .write(
+                    """package com.example;
+                        |
+                        |import jakarta.servlet.http.HttpServlet;
+                        |import jakarta.servlet.http.HttpServletRequest;
+                        |import jakarta.servlet.http.HttpServletResponse;
+                        |import java.io.IOException;
+                        |
+                        |public class LegacyServlet extends HttpServlet {
+                        |    @Override
+                        |    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+                        |        String kind = req.getParameter("kind");
+                        |        String command = switch (kind) {
+                        |            case "greet" -> "echo hello";
+                        |            case String k when k.length() > 3 -> "echo " + k;
+                        |            default -> "echo noop";
+                        |        };
+                        |        resp.getWriter().println(execute(command));
+                        |    }
+                        |
+                        |    private String execute(String command) throws IOException {
+                        |        return new String(Runtime.getRuntime().exec(command).getInputStream().readAllBytes());
+                        |    }
+                        |}
+                        |""".stripMargin
+                  )
+          )
+          flows should not be empty
+          // The servlet request PARAMETER is the tagged source; the request reader, the switch
+          // expression (a Java 14 construct with Java 21 pattern arms and a guard), and the
+          // helper call all sit between it and the Runtime.exec sink.
+          assertSourceToSinkFlow(flows, "java", "req", "exec", "code-execution")
+      }
   }
 
   "reachables for php" should {

@@ -188,3 +188,7 @@ wrapper/nodejs/packages/atom-darwin-arm64/
 wrapper/nodejs/packages/atom-darwin-amd64/
 wrapper/nodejs/packages/atom-windows-amd64/
 wrapper/nodejs/packages/atom-windows-arm64/
+# AST cache fragments the cache layer writes into analysed projects. Scoped to the fixture
+# trees tests analyse in place (GraphCommandsTests on sample-py): a blanket *.frag would also
+# silently swallow a legitimate committed .frag fixture elsewhere in the repo.
+test/fixtures/**/.chen/
