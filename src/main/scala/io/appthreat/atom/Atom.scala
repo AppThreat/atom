@@ -45,6 +45,8 @@ import io.appthreat.x2cpg.passes.taggers.{
     CdxPass,
     ChennaiTagsPass,
     EasyTagsPass,
+    ExtentPass,
+    GuardPass,
     MemoryApiPass,
     PiiTagsPass,
     TrackersTagsPass
@@ -1457,6 +1459,19 @@ object Atom:
               PerfReporter.stage("taggers.ChennaiTagsPass", "analysis")(runChennaiTags(x, atom))
               PerfReporter.stage("taggers.MemoryApiPass", "analysis") {
                   new MemoryApiPass(
+                    atom,
+                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                  )
+                      .createAndApply()
+              }
+              // The rest of the memory-safety overlay (plan phase 2a): Extent reads MemoryApi's
+              // argument tags, Guard reads Extent's. Each pass no-ops on non-C/C++ graphs, so one
+              // unconditional pipeline serves every language.
+              PerfReporter.stage("taggers.ExtentPass", "analysis") {
+                  new ExtentPass(atom).createAndApply()
+              }
+              PerfReporter.stage("taggers.GuardPass", "analysis") {
+                  new GuardPass(
                     atom,
                     x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
                   )
