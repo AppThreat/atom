@@ -884,13 +884,9 @@ object Atom:
               PerfReporter.stage("slicing.parseDeps", "slicing")(
                 generateParseDepsSlice(config, ag, x)
               )
-          case _: AtomMemorySafetyConfig =>
+          case msConfig: AtomMemorySafetyConfig =>
               PerfReporter.stage("slicing.memorySafety", "slicing")(
-                MemorySafetyCommands.runMemorySafety(
-                  ag,
-                  config.asInstanceOf[AtomMemorySafetyConfig],
-                  config.outputAtomFile
-                )
+                MemorySafetyCommands.runMemorySafety(ag, msConfig, config.outputAtomFile)
               )
           case _ =>
               Right("No slice generation required")

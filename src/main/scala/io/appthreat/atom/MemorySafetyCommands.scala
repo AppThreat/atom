@@ -46,7 +46,16 @@ object MemorySafetyCommands:
     config: AtomMemorySafetyConfig,
     atomFile: File
   ): Either[String, String] =
-    val minConfidence = confidenceOrder.getOrElse(config.minConfidence.toLowerCase, 0)
+    // Reject rather than silently ignore: a caller that asked for `--format sarif` and got JSON
+    // named `.sarif`, or that misspelled a confidence and got every finding, has no way to tell.
+    val format = config.format.toLowerCase
+    if format != "json" then return Left(s"unsupported --format `$format`; only `json` exists")
+    val requested = config.minConfidence.toLowerCase
+    if requested.nonEmpty && !confidenceOrder.contains(requested) then
+      return Left(
+        s"unknown --min-confidence `$requested`; expected ${confidenceOrder.keys.toList.sorted.mkString(", ")}"
+      )
+    val minConfidence = confidenceOrder.getOrElse(requested, 0)
     val inputRoot     = config.inputPath.name
 
     val seen = mutable.LinkedHashSet.empty[(Long, String)]
@@ -130,17 +139,24 @@ object MemorySafetyCommands:
           "code" -> n.code.asJson,
           "role" -> role.asJson
         )
+    // The tag-derived evidence has no node of its own: it is the fact a rule read, rendered as
+    // text. It must APPEND like `entry` does - a version that merely returns the object silently
+    // drops the origin, guard and extent rows the flow exists to show.
+    def textEntry(text: String, role: String): Unit =
+        entries += JsonObject("code" -> text.asJson, "role" -> role.asJson)
 
     entry(node, "length-argument")
     node._astIn.collectFirst { case c: Call => c }.foreach(c => entry(c, "memory-operation"))
 
+    // Tag.value is a String, not an Option - iterating it yields CHARACTERS, which is how
+    // `struct-field` rendered as twelve one-letter origin rows.
     val tags = node.tag.l
     tags.filter(_.name == ValueOriginPass.TagOrigin)
-        .foreach(t => t.value.foreach(v => textEntry(s"origin: $v", "origin")))
+        .foreach(t => textEntry(s"origin: ${t.value}", "origin"))
     tags.filter(_.name == GuardPass.TagBelow)
-        .foreach(t => t.value.foreach(v => textEntry(s"bounded-below by $v", "guard")))
+        .foreach(t => textEntry(s"bounded-below by ${t.value}", "guard"))
     tags.filter(_.name == GuardPass.TagAbove)
-        .foreach(t => t.value.foreach(v => textEntry(s"bounded-above by $v", "guard")))
+        .foreach(t => textEntry(s"bounded-above by ${t.value}", "guard"))
 
     // the destination's extent, for the size-parameter rule
     node._astIn.collectFirst { case c: Call => c }.foreach { call =>
@@ -187,9 +203,6 @@ object MemorySafetyCommands:
 
     entries.toList.map(_.asJson)
   end flowOf
-
-  private def textEntry(text: String, role: String): Json =
-      JsonObject("code" -> text.asJson, "role" -> role.asJson).asJson
 
   private val MaxFlowEntries = 8
 end MemorySafetyCommands
