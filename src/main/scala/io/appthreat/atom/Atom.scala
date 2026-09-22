@@ -740,14 +740,14 @@ object Atom:
               )
               .action((x, c) =>
                   c match
-                    case c: AtomMemorySafetyConfig => c.copy(minConfidence = x)
+                    case c: AtomMemorySafetyConfig => c.withMinConfidence(x)
                     case _                         => c
               ),
           opt[String]("format")
               .text("output format: json (sarif is planned). Default: json.")
               .action((x, c) =>
                   c match
-                    case c: AtomMemorySafetyConfig => c.copy(format = x)
+                    case c: AtomMemorySafetyConfig => c.withFormat(x)
                     case _                         => c
               )
         )
