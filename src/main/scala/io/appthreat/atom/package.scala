@@ -36,6 +36,10 @@ package object atom:
     // Optional validators/sanitisers config (the chennai.json schema). Calls to the declared
     // methods are tagged as sanitisers so reachable flows passing through them can be dropped.
     var validationConfigFile: Option[File] = None
+    // Optional memory-API inventory overlay (the memory-apis.json schema), merged over the
+    // built-in inventory by API name - declare an in-house `av_memcpy` wrapper or a platform's
+    // memcpy roles without patching chen. Applies to C/C++ graphs.
+    var memoryApiConfigFile: Option[File] = None
 
     def withOutputAtomFile(x: File): AtomConfig =
       this.outputAtomFile = x
@@ -113,6 +117,10 @@ package object atom:
 
     def withValidationConfigFile(x: Option[File]): AtomConfig =
       this.validationConfigFile = x
+      this
+
+    def withMemoryApiConfigFile(x: Option[File]): AtomConfig =
+      this.memoryApiConfigFile = x
       this
 
   end AtomConfig

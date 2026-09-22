@@ -21,7 +21,11 @@ object ReachableSlicing:
 
   private val logger = org.slf4j.LoggerFactory.getLogger(getClass)
 
-  implicit val semantics: Semantics = DefaultSemantics()
+  // Reassigned per run (see calculateReachableSliceAndPersist) to the semantics scoped to the
+  // graph's own language: the neutral defaults plus whatever flowsForLanguage adds for it. The
+  // previous language-neutral instance matched every graph against every language's summaries -
+  // a C graph against the Java request readers, a Java graph against C's bare `free`.
+  implicit var semantics: Semantics = DefaultSemantics.memoised
   // Reassigned per run to carry the method flow summaries computed for this atom (the backward query
   // engine uses them to prune provably empty cross-call work). The reaching-def engine choice (Flux
   // vs classic) is made earlier at enhancement time, not here. Reachable slicing runs one project at
@@ -81,6 +85,12 @@ object ReachableSlicing:
     val baseFile = File(outputBasePath)
     Option(baseFile.parent).foreach(_.createDirectoryIfNotExists(createParents = true))
     val language = atom.metaData.language.head
+    // Scope the semantics to this graph's language before any query runs, and warm the
+    // regex-result cache once, single-threaded.
+    semantics = Semantics.fromList(
+      DefaultSemantics().elements ++ DefaultSemantics.flowsForLanguage(language)
+    )
+    semantics.loadRegexSemantics(atom)
     // Build method flow summaries up front when requested, so the backward query engine can prune
     // cross-call tasks that provably carry no taint. Prefer the `flow-summary` tags already embedded
     // in the atom (written during enhancement, so they survive a reused/cached atom); only fall back

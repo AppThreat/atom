@@ -45,6 +45,7 @@ import io.appthreat.x2cpg.passes.taggers.{
     CdxPass,
     ChennaiTagsPass,
     EasyTagsPass,
+    MemoryApiPass,
     PiiTagsPass,
     TrackersTagsPass
 }
@@ -549,6 +550,17 @@ object Atom:
         .action((x, c) =>
             c match
               case config: AtomConfig => config.withConfigFile(Option(File(x)))
+              case _                  => c
+        )
+    opt[String]("memory-api-config")
+        .text(
+          "path to a JSON file (memory-apis.json schema) merged over the built-in memory-API " +
+              "inventory by API name, declaring in-house wrappers or platform argument roles. " +
+              "C/C++ only."
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withMemoryApiConfigFile(Option(File(x)))
               case _                  => c
         )
     opt[String]("validation-config")
@@ -1443,6 +1455,13 @@ object Atom:
                   new PythonFrameworkRecognizersPass(atom).createAndApply()
               }
               PerfReporter.stage("taggers.ChennaiTagsPass", "analysis")(runChennaiTags(x, atom))
+              PerfReporter.stage("taggers.MemoryApiPass", "analysis") {
+                  new MemoryApiPass(
+                    atom,
+                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                  )
+                      .createAndApply()
+              }
               PerfReporter.stage("taggers.JvmTaggers", "analysis")(applyJvmTaggers(atom))
               Right(())
             catch
