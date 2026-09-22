@@ -3,6 +3,7 @@ package io.appthreat.atom
 import better.files.File
 import io.appthreat.c2cpg.testfixtures.{DataFlowCodeToCpgSuite, DataFlowTestCpg}
 import io.appthreat.x2cpg.passes.taggers.{
+    AllocationStatePass,
     ExtentPass,
     GuardPass,
     MemoryApiPass,
@@ -46,11 +47,26 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
         |""".stripMargin,
         "copy.c"
       )
+      .moreCode(
+        """
+        |#include <stdlib.h>
+        |
+        |/* MS-ALLOC-003 at the implicit end of the function: the fact lands on METHOD_RETURN,
+        |   which is a CFG_NODE and not an Expression. */
+        |void leaks_at_the_implicit_end(void)
+        |{
+        |    char *p = (char *)malloc(64);
+        |    p[0] = 'x';
+        |}
+        |""".stripMargin,
+        "leak.c"
+      )
 
   new MemoryApiPass(cpg).createAndApply()
   new ExtentPass(cpg).createAndApply()
   new GuardPass(cpg).createAndApply()
   new ValueOriginPass(cpg).createAndApply()
+  new AllocationStatePass(cpg).createAndApply()
   new MemorySafetyFindingPass(cpg).createAndApply()
 
   private def render(config: AtomMemorySafetyConfig): Either[String, List[io.circe.Json]] =
@@ -61,12 +77,16 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
         parse(out.contentAsString).toOption.flatMap(_.asArray.map(_.toList)).getOrElse(Nil)
     }
 
+  private def findingOf(rule: String): io.circe.Json =
+      render(AtomMemorySafetyConfig()).toOption
+          .getOrElse(Nil)
+          .find(_.hcursor.get[String]("rule").toOption.contains(rule))
+          .getOrElse(fail(s"no $rule finding was rendered"))
+
   "the memory-safety command" should {
 
       "render the finding contract the corpus scorer reads" in {
-          val findings = render(AtomMemorySafetyConfig()).toOption.getOrElse(Nil)
-          findings.size shouldBe 1
-          val f = findings.head.hcursor
+          val f = findingOf(MemorySafetyFindingPass.RuleSizeParamContract).hcursor
           f.get[String]("rule").toOption shouldBe Some(
             MemorySafetyFindingPass.RuleSizeParamContract
           )
@@ -78,8 +98,7 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
       }
 
       "carry the evidence the rule read, one row per fact" in {
-          val findings = render(AtomMemorySafetyConfig()).toOption.getOrElse(Nil)
-          val flow = findings.head.hcursor
+          val flow = findingOf(MemorySafetyFindingPass.RuleSizeParamContract).hcursor
               .downField("flow")
               .as[List[Map[String, io.circe.Json]]]
               .toOption
@@ -111,13 +130,22 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
           config.dataDeps shouldBe true
       }
 
+      "render an allocation-state finding" in {
+          // MS-ALLOC-003 is the first rule whose findings do not sit on a length argument, and
+          // the renderer dropped every one of them: it matched `Expression | ControlStructure`,
+          // which is just Expression, while an exit-anchored finding can be a METHOD_RETURN
+          val f = findingOf(MemorySafetyFindingPass.RuleLeak).hcursor
+          f.get[String]("cwe").toOption shouldBe Some("CWE-401")
+          f.get[String]("file").toOption.exists(_.endsWith("leak.c")) shouldBe true
+          f.get[Int]("line").toOption.exists(_ > 0) shouldBe true
+      }
+
       "drop findings below the requested confidence" in {
-          // the only finding here is high-confidence, so a high floor keeps it and nothing is lost
-          render(AtomMemorySafetyConfig().withMinConfidence("high")).toOption.map(
-            _.size
-          ) shouldBe Some(
-            1
-          )
+          // the leak is medium; a high floor leaves only the high-confidence contract violation
+          val high = render(AtomMemorySafetyConfig().withMinConfidence("high")).toOption
+              .getOrElse(Nil)
+              .flatMap(_.hcursor.get[String]("rule").toOption)
+          high shouldBe List(MemorySafetyFindingPass.RuleSizeParamContract)
       }
   }
 end MemorySafetyCommandTests

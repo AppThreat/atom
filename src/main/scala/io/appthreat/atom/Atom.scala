@@ -41,6 +41,7 @@ import io.appthreat.x2cpg.passes.base.AstLinkerPass
 import io.appthreat.x2cpg.perf.PerfReporter
 import io.appthreat.x2cpg.passes.frontend.{XTypeRecovery, XTypeRecoveryConfig}
 import io.appthreat.x2cpg.passes.taggers.{
+    AllocationStatePass,
     AndroidServicesTagsPass,
     CdxPass,
     ChennaiTagsPass,
@@ -1514,6 +1515,11 @@ object Atom:
               // attacker-influenced arithmetic feeding lengths. Facts only; no rule reads them.
               PerfReporter.stage("taggers.IntegerWidthPass", "analysis") {
                   new IntegerWidthPass(atom).createAndApply()
+              }
+              // MS4 (part-4 D3): per-allocation state facts - allocated/freed/maybe-freed/null/
+              // escaped at each program point. Facts only; the ALLOC rules read them.
+              PerfReporter.stage("taggers.AllocationStatePass", "analysis") {
+                  new AllocationStatePass(atom).createAndApply()
               }
               PerfReporter.stage("taggers.MemorySafetyFindingPass", "analysis") {
                   new MemorySafetyFindingPass(atom).createAndApply()
