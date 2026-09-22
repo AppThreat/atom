@@ -94,14 +94,28 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
       }
 
       "reject a format or confidence it does not implement rather than ignoring it" in {
-          render(AtomMemorySafetyConfig(format = "sarif")).isLeft shouldBe true
-          render(AtomMemorySafetyConfig(minConfidence = "very-high")).isLeft shouldBe true
-          render(AtomMemorySafetyConfig(minConfidence = "HIGH")).isRight shouldBe true
+          render(AtomMemorySafetyConfig().withFormat("sarif")).isLeft shouldBe true
+          render(AtomMemorySafetyConfig().withMinConfidence("very-high")).isLeft shouldBe true
+          render(AtomMemorySafetyConfig().withMinConfidence("HIGH")).isRight shouldBe true
+      }
+
+      "keep the flags set before it: a command option must not reset the config" in {
+          // AtomConfig holds language/dataDeps/output paths in the TRAIT's vars, so a `copy`-based
+          // option silently returns them to their defaults. `atom memory-safety -l c
+          // --min-confidence medium` lost the `-l` and died with "No language frontend supported
+          // for language ''" - invisible to any test that builds the config directly.
+          val config = AtomMemorySafetyConfig()
+          config.withLanguage("c").withDataDependencies(true)
+          config.withMinConfidence("medium").withFormat("json")
+          config.language shouldBe "c"
+          config.dataDeps shouldBe true
       }
 
       "drop findings below the requested confidence" in {
           // the only finding here is high-confidence, so a high floor keeps it and nothing is lost
-          render(AtomMemorySafetyConfig(minConfidence = "high")).toOption.map(_.size) shouldBe Some(
+          render(AtomMemorySafetyConfig().withMinConfidence("high")).toOption.map(
+            _.size
+          ) shouldBe Some(
             1
           )
       }

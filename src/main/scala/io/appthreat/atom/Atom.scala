@@ -47,6 +47,7 @@ import io.appthreat.x2cpg.passes.taggers.{
     EasyTagsPass,
     ExtentPass,
     GuardPass,
+    IntegerWidthPass,
     MemoryApiPass,
     MemorySafetyFindingPass,
     PiiTagsPass,
@@ -739,14 +740,14 @@ object Atom:
               )
               .action((x, c) =>
                   c match
-                    case c: AtomMemorySafetyConfig => c.copy(minConfidence = x)
+                    case c: AtomMemorySafetyConfig => c.withMinConfidence(x)
                     case _                         => c
               ),
           opt[String]("format")
               .text("output format: json (sarif is planned). Default: json.")
               .action((x, c) =>
                   c match
-                    case c: AtomMemorySafetyConfig => c.copy(format = x)
+                    case c: AtomMemorySafetyConfig => c.withFormat(x)
                     case _                         => c
               )
         )
@@ -1508,6 +1509,11 @@ object Atom:
               }
               PerfReporter.stage("taggers.ValueOriginPass", "analysis") {
                   new ValueOriginPass(atom).createAndApply()
+              }
+              // MS7 (part-3 C5): integer width facts - narrowing, sign-changing casts and
+              // attacker-influenced arithmetic feeding lengths. Facts only; no rule reads them.
+              PerfReporter.stage("taggers.IntegerWidthPass", "analysis") {
+                  new IntegerWidthPass(atom).createAndApply()
               }
               PerfReporter.stage("taggers.MemorySafetyFindingPass", "analysis") {
                   new MemorySafetyFindingPass(atom).createAndApply()
