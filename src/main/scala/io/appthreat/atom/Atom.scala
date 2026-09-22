@@ -48,6 +48,7 @@ import io.appthreat.x2cpg.passes.taggers.{
     ExtentPass,
     GuardPass,
     MemoryApiPass,
+    MemorySafetyFindingPass,
     PiiTagsPass,
     TrackersTagsPass,
     ValueOriginPass
@@ -726,6 +727,29 @@ object Atom:
                     case _                       => c
               )
         )
+    cmd("memory-safety")
+        .text(
+          "Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON"
+        )
+        .action((_, _) => AtomMemorySafetyConfig().withDataDependencies(true))
+        .children(
+          opt[String]("min-confidence")
+              .text(
+                s"drop findings below this confidence: high, medium or low. Defaults to keeping all."
+              )
+              .action((x, c) =>
+                  c match
+                    case c: AtomMemorySafetyConfig => c.copy(minConfidence = x)
+                    case _                         => c
+              ),
+          opt[String]("format")
+              .text("output format: json (sarif is planned). Default: json.")
+              .action((x, c) =>
+                  c match
+                    case c: AtomMemorySafetyConfig => c.copy(format = x)
+                    case _                         => c
+              )
+        )
     cmd("export")
         .text("Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)")
         .action((_, _) => AtomExportConfig().withDataDependencies(true))
@@ -859,6 +883,14 @@ object Atom:
           case x: AtomParseDepsConfig =>
               PerfReporter.stage("slicing.parseDeps", "slicing")(
                 generateParseDepsSlice(config, ag, x)
+              )
+          case _: AtomMemorySafetyConfig =>
+              PerfReporter.stage("slicing.memorySafety", "slicing")(
+                MemorySafetyCommands.runMemorySafety(
+                  ag,
+                  config.asInstanceOf[AtomMemorySafetyConfig],
+                  config.outputAtomFile
+                )
               )
           case _ =>
               Right("No slice generation required")
@@ -1480,6 +1512,9 @@ object Atom:
               }
               PerfReporter.stage("taggers.ValueOriginPass", "analysis") {
                   new ValueOriginPass(atom).createAndApply()
+              }
+              PerfReporter.stage("taggers.MemorySafetyFindingPass", "analysis") {
+                  new MemorySafetyFindingPass(atom).createAndApply()
               }
               PerfReporter.stage("taggers.JvmTaggers", "analysis")(applyJvmTaggers(atom))
               Right(())

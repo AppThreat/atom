@@ -151,6 +151,15 @@ package object atom:
     profile: String = "generic"
   ) extends AtomConfig
 
+  /** Run the memory-safety overlay over the input and write the findings JSON to the slice file
+    * (`-s`). The overlay needs data dependencies (the rules read REACHING_DEF facts), so the
+    * command turns them on the way `reachables` does rather than requiring `--with-data-deps`.
+    */
+  case class AtomMemorySafetyConfig(
+    minConfidence: String = "",
+    format: String = "json"
+  ) extends AtomConfig
+
   /** Export the whole atom, or a per-method subgraph of it, to one of the supported graph formats.
     * `scope` is either "whole" or "methods". The output format is taken from `exportFormat` and the
     * destination directory from `exportDir`.
