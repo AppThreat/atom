@@ -130,9 +130,10 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
           config.dataDeps shouldBe true
       }
 
-      "render a leak reported at the implicit end of a function" in {
-          // the fact sits on METHOD_RETURN, which is a CFG_NODE and NOT an Expression - the
-          // renderer used to match `Expression | ControlStructure` and silently drop every one
+      "render an allocation-state finding" in {
+          // MS-ALLOC-003 is the first rule whose findings do not sit on a length argument, and
+          // the renderer dropped every one of them: it matched `Expression | ControlStructure`,
+          // which is just Expression, while an exit-anchored finding can be a METHOD_RETURN
           val f = findingOf(MemorySafetyFindingPass.RuleLeak).hcursor
           f.get[String]("cwe").toOption shouldBe Some("CWE-401")
           f.get[String]("file").toOption.exists(_.endsWith("leak.c")) shouldBe true
