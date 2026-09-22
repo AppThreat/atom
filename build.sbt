@@ -27,6 +27,8 @@ libraryDependencies ++= Seq(
   ("io.appthreat" %% "semanticcpg"       % Versions.chen % Test).classifier("tests"),
   ("io.appthreat" %% "x2cpg"             % Versions.chen % Test).classifier("tests"),
   ("io.appthreat" %% "pysrc2cpg"         % Versions.chen % Test).classifier("tests"),
+  // the memory-safety overlay is C/C++ only, so its command needs a C fixture to test against
+  ("io.appthreat" %% "c2cpg"             % Versions.chen % Test).classifier("tests"),
   "org.scalatest" %% "scalatest"         % "3.2.20"      % Test
 )
 
