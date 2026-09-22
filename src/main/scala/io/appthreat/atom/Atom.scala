@@ -1456,7 +1456,10 @@ object Atom:
               }
               PerfReporter.stage("taggers.ChennaiTagsPass", "analysis")(runChennaiTags(x, atom))
               PerfReporter.stage("taggers.MemoryApiPass", "analysis") {
-                  new MemoryApiPass(atom, x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString))
+                  new MemoryApiPass(
+                    atom,
+                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                  )
                       .createAndApply()
               }
               PerfReporter.stage("taggers.JvmTaggers", "analysis")(applyJvmTaggers(atom))

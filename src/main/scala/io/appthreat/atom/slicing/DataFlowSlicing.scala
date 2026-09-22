@@ -22,21 +22,25 @@ class DataFlowSlicing:
   private var language: Option[String] = scala.compiletime.uninitialized
 
   /** Language-scoped semantics for the graph being sliced, built once per
-    * [[calculateDataFlowSlice]] call. The slicing `repeat` invokes the DDG steps as bare
-    * `_.ddgIn`, so the implicit default semantics is consulted for every step: it must be (a)
-    * built once, not per step - a per-step rebuild of the table was measured at ~28 GB/s of
-    * garbage (4.5 TB in 155 s) while slicing libavformat - and (b) scoped to the graph's own
-    * language, so a C graph is not matched against the Java summaries and vice versa.
+    * [[calculateDataFlowSlice]] call. The slicing `repeat` invokes the DDG steps as bare `_.ddgIn`,
+    * so the implicit default semantics is consulted for every step: it must be (a) built once, not
+    * per step - a per-step rebuild of the table was measured at ~28 GB/s of garbage (4.5 TB in 155
+    * s) while slicing libavformat - and (b) scoped to the graph's own language, so a C graph is not
+    * matched against the Java summaries and vice versa.
+    *
+    * Volatile because `TrackDataFlowTask` reads it from the slicing thread pool: the write happens
+    * before any task is submitted, but without it the workers are not guaranteed to see anything
+    * but the uninitialised value.
     */
-  private var graphSemantics: Semantics = scala.compiletime.uninitialized
+  @volatile private var graphSemantics: Semantics = scala.compiletime.uninitialized
 
   private def buildGraphSemantics(atom: Cpg): Semantics =
-      val extra = language.map(DefaultSemantics.flowsForLanguage).getOrElse(List.empty)
-      val semantics = Semantics.fromList(DefaultSemantics().elements ++ extra)
-      // Warm the regex-result cache once, up front: the per-step lookups below only read it,
-      // and an unwarmed instance silently never matches regex semantics (the clamping macros).
-      semantics.loadRegexSemantics(atom)
-      semantics
+    val extra     = language.map(DefaultSemantics.flowsForLanguage).getOrElse(List.empty)
+    val semantics = Semantics.fromList(DefaultSemantics().elements ++ extra)
+    // Warm the regex-result cache once, up front: the per-step lookups below only read it,
+    // and an unwarmed instance silently never matches regex semantics (the clamping macros).
+    semantics.loadRegexSemantics(atom)
+    semantics
 
   def calculateDataFlowSlice(atom: Cpg, config: DataFlowConfig): Option[DataFlowSlice] =
     language = atom.metaData.language.headOption
