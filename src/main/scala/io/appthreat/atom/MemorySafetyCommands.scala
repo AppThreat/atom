@@ -64,8 +64,10 @@ object MemorySafetyCommands:
         .l
         .flatMap { tag =>
           val ruleId = tag.value
+          // a finding may sit on an expression (a length argument, a freed pointer) or on the
+          // exit node itself - a bare `return;` has no expression child (part 4, D3 leaks)
           tag._taggedByIn
-              .collectFirst { case e: Expression => e }
+              .collectFirst { case e: (Expression | ControlStructure) => e }
               .filter(e => seen.add((e.id, ruleId)))
               .map(e => (e, ruleId))
         }
@@ -102,11 +104,16 @@ object MemorySafetyCommands:
     * run_cve.sh's worktree re-rooting) matches on paths that carry that root.
     */
   private def render(cpg: Cpg, atomFile: File, inputRoot: String)(
-    node: Expression,
+    node: AstNode,
     rule: MemorySafetyFindingPass.MemorySafetyRule
   ): Json =
-    val method   = node.method
-    val relative = node.file.name.headOption.getOrElse(method.filename)
+    // an exit-node finding (a bare `return;`) has no .method step on its static type; its file
+    // edge is what the path is rooted at, and the method name is only the fallback
+    val relative = node.file.name.headOption.getOrElse(
+      node match
+        case e: Expression => e.method.filename
+        case _             => ""
+    )
     val file   = if inputRoot.isEmpty || inputRoot == "." then relative else s"$inputRoot/$relative"
     val line   = node.lineNumber.map(_.toInt).getOrElse(0)
     val column = node.columnNumber.map(_.toInt).getOrElse(0)
@@ -130,7 +137,7 @@ object MemorySafetyCommands:
     * guard facts the rule read, and the definitions that produced the value (the REACHING_DEF walk
     * backwards - where `df` would be paying for a solve this does not need).
     */
-  private def flowOf(node: Expression): List[Json] =
+  private def flowOf(node: AstNode): List[Json] =
     val entries = mutable.ListBuffer.empty[JsonObject]
     def entry(n: AstNode, role: String): Unit =
         entries += JsonObject(
@@ -145,7 +152,9 @@ object MemorySafetyCommands:
     def textEntry(text: String, role: String): Unit =
         entries += JsonObject("code" -> text.asJson, "role" -> role.asJson)
 
-    entry(node, "length-argument")
+    node match
+      case _: Return | _: MethodReturn => entry(node, "exit")
+      case _                           => entry(node, "length-argument")
     node._astIn.collectFirst { case c: Call => c }.foreach(c => entry(c, "memory-operation"))
 
     // Tag.value is a String, not an Option - iterating it yields CHARACTERS, which is how
