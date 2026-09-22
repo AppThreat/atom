@@ -49,7 +49,8 @@ import io.appthreat.x2cpg.passes.taggers.{
     GuardPass,
     MemoryApiPass,
     PiiTagsPass,
-    TrackersTagsPass
+    TrackersTagsPass,
+    ValueOriginPass
 }
 import io.appthreat.x2cpg.passes.taggers.python.PythonFrameworkRecognizersPass
 import io.appthreat.x2cpg.utils.ExternalCommand
@@ -1476,6 +1477,9 @@ object Atom:
                     x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
                   )
                       .createAndApply()
+              }
+              PerfReporter.stage("taggers.ValueOriginPass", "analysis") {
+                  new ValueOriginPass(atom).createAndApply()
               }
               PerfReporter.stage("taggers.JvmTaggers", "analysis")(applyJvmTaggers(atom))
               Right(())
