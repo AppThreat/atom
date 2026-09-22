@@ -47,6 +47,7 @@ object MemorySafetyCommands:
     atomFile: File
   ): Either[String, String] =
     val minConfidence = confidenceOrder.getOrElse(config.minConfidence.toLowerCase, 0)
+    val inputRoot     = config.inputPath.name
 
     val seen = mutable.LinkedHashSet.empty[(Long, String)]
     val findings = cpg.tag
@@ -67,14 +68,14 @@ object MemorySafetyCommands:
         .filter { (_, rule) =>
             confidenceOrder.getOrElse(rule.confidence.toLowerCase, 0) >= minConfidence
         }
-        .map { (node, rule) => render(cpg, atomFile)(node, rule) }
         .toList
-        .sortBy { f =>
-          val obj  = f.asObject.getOrElse(JsonObject.empty)
-          val file = obj("file").flatMap(_.asString).getOrElse("")
-          val line = obj("line").flatMap(_.asNumber).flatMap(_.toInt).getOrElse(0)
-          (file, line)
+        .sortBy { (node, _) =>
+            (
+              node.file.name.headOption.getOrElse(node.method.filename),
+              node.lineNumber.map(_.toInt).getOrElse(0): Int
+            )
         }
+        .map { (node, rule) => render(cpg, atomFile, inputRoot)(node, rule) }
 
     val outFile = config.outputSliceFile.createFileIfNotExists(createParents = true)
     outFile.write(findings.asJson.noSpaces)
@@ -86,13 +87,18 @@ object MemorySafetyCommands:
 
   /** One finding: rule metadata from the registry, location from the offending node, flow from the
     * node's own tags, its memory operation, and the definitions that produced the value.
+    *
+    * The file path is rooted at the input directory's name: c2cpg records FILE names relative to
+    * the analysed input, and every consumer of this JSON (the corpus scorer's `c/`/`cpp/` prefixes,
+    * run_cve.sh's worktree re-rooting) matches on paths that carry that root.
     */
-  private def render(cpg: Cpg, atomFile: File)(
+  private def render(cpg: Cpg, atomFile: File, inputRoot: String)(
     node: Expression,
     rule: MemorySafetyFindingPass.MemorySafetyRule
   ): Json =
-    val method = node.method
-    val file   = node.file.name.headOption.getOrElse(method.filename)
+    val method   = node.method
+    val relative = node.file.name.headOption.getOrElse(method.filename)
+    val file   = if inputRoot.isEmpty || inputRoot == "." then relative else s"$inputRoot/$relative"
     val line   = node.lineNumber.map(_.toInt).getOrElse(0)
     val column = node.columnNumber.map(_.toInt).getOrElse(0)
 
