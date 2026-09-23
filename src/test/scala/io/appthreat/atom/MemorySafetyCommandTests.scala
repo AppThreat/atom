@@ -307,10 +307,11 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
           }
       }
 
-      "honour a finding-level confidence override below the rule's own (MS-NULL-001)" in {
-          // the unvalidated-parameter arm is the rule's hypothesis tier: same rule id, `low`
-          // confidence on the FINDING, invisible at a medium floor and present at low. null.c
-          // holds one arm-1 fixture (medium) and one arm-3 fixture (low tier).
+      "render MS-NULL-001 only below the medium floor (the per-rule gate demoted it)" in {
+          // part 5's gate: the rule is 76% of libavformat output at medium - the FFmpeg idiom
+          // of using a nullable result before the error path - so it ships at low, exactly as
+          // MS-INT-001 does. What must survive the demotion is the arms' visibility below the
+          // floor: the evidence arms and the chained-parameter arm (its own per-finding low).
           def nullDerefLines(floor: String): Set[Int] = render(
             AtomMemorySafetyConfig().withMinConfidence(floor)
           ).toOption
@@ -321,11 +322,8 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
               .filter(_.hcursor.get[String]("file").toOption.exists(_.endsWith("null.c")))
               .flatMap(_.hcursor.get[Int]("line").toOption)
               .toSet
-          val medium = nullDerefLines("medium")
-          val low    = nullDerefLines("low")
-          medium should not be empty     // the evidence arm renders
-          (low should not).equal(medium) // and the hypothesis arm joins only below the floor
-          medium.subsetOf(low) shouldBe true
+          nullDerefLines("medium") shouldBe empty // the gate, visible end to end
+          nullDerefLines("low") should not be empty // both arms render below the floor
       }
 
       "drop findings below the requested confidence" in {
