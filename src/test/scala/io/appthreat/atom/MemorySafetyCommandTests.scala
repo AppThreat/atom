@@ -322,7 +322,7 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
               .filter(_.hcursor.get[String]("file").toOption.exists(_.endsWith("null.c")))
               .flatMap(_.hcursor.get[Int]("line").toOption)
               .toSet
-          nullDerefLines("medium") shouldBe empty // the gate, visible end to end
+          nullDerefLines("medium") shouldBe empty   // the gate, visible end to end
           nullDerefLines("low") should not be empty // both arms render below the floor
       }
 

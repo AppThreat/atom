@@ -77,15 +77,10 @@ object MemorySafetyCommands:
         }
         .flatMap { (node, ruleId) =>
             MemorySafetyFindingPass.rules.get(ruleId).map { rule =>
-              // a finding-level confidence override (part 5, E3): one arm of a rule can be a
-              // hypothesis tier the rule's own confidence does not describe - the renderer
-              // reads it INSTEAD of the default, never in addition
-              val confidence = node.tag
-                  .name(MemorySafetyFindingPass.TagConfidence)
-                  .value
-                  .headOption
-                  .getOrElse(rule.confidence)
-              (node, rule, confidence)
+                // a finding-level confidence override (part 5, E3), scoped to its own rule: one
+                // node can carry several findings, and one rule's hypothesis tier must not demote
+                // another rule's finding on the same node
+                (node, rule, MemorySafetyFindingPass.confidenceOf(node, rule))
             }
         }
         .filter { (_, rule, confidence) =>
