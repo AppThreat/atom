@@ -6,6 +6,7 @@ import io.appthreat.x2cpg.passes.taggers.{
     AllocationStatePass,
     ExtentPass,
     GuardPass,
+    IntegerWidthPass,
     MemoryApiPass,
     MemorySafetyFindingPass,
     ValueOriginPass
@@ -27,6 +28,7 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
       .moreCode(
         """
         |#include <string.h>
+        |#include <stdint.h>
         |
         |struct data_block { unsigned char *payload; int payload_len; };
         |
@@ -44,12 +46,42 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
         |    memcpy(buf, db->payload, size);
         |    return size;
         |}
+        |
+        |/* MS-BOUND-002: an externally reachable helper copying a caller-chosen count. */
+        |void unbounded_copy(unsigned char *buf, const unsigned char *src, int n)
+        |{
+        |    memcpy(buf, src, n);
+        |}
+        |
+        |/* MS-BOUND-003/004: attacker index, known capacity, no bound. */
+        |int index_read(int i)
+        |{
+        |    int buf[8];
+        |    return buf[i];
+        |}
+        |
+        |void index_write(int n, unsigned char v)
+        |{
+        |    unsigned char buf[8];
+        |    buf[n] = v;
+        |}
+        |
+        |/* MS-INT-002: the guard tests the re-signed view (CVE-2026-75145 shape). */
+        |int resign_guard(uint32_t obu_size, int remaining, unsigned char *dst,
+        |                 const unsigned char *src)
+        |{
+        |    if ((long)obu_size > remaining)
+        |        return -1;
+        |    memcpy(dst, src, obu_size);
+        |    return 0;
+        |}
         |""".stripMargin,
         "copy.c"
       )
       .moreCode(
         """
         |#include <stdlib.h>
+        |#include <stdio.h>
         |
         |/* MS-ALLOC-003 at the implicit end of the function: the fact lands on METHOD_RETURN,
         |   which is a CFG_NODE and not an Expression. */
@@ -58,14 +90,88 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
         |    char *p = (char *)malloc(64);
         |    p[0] = 'x';
         |}
+        |
+        |/* MS-ALLOC-003 anchored at a bare `return;` - the finding sits on the RETURN node. */
+        |void leaks_at_a_bare_return(int n)
+        |{
+        |    char *p = (char *)malloc(64);
+        |    if (n < 0) return;
+        |    free(p);
+        |}
+        |
+        |/* the unbraced `if (p) free(p);`: part 4's narrowing missed the false edge and this
+        |   negative control rendered as a leak at the implicit end */
+        |void unbraced_if_frees(char *unused, size_t n)
+        |{
+        |    char *p = (char *)malloc(n);
+        |    if (p) free(p);
+        |}
+        |
+        |/* MS-ALLOC-001 and MS-ALLOC-002 in one function. */
+        |void double_free_then_use(void)
+        |{
+        |    char *p = (char *)malloc(32);
+        |    free(p);
+        |    free(p);
+        |    p[0] = 'x';
+        |}
+        |
+        |/* MS-ALLOC-004. */
+        |void double_close(const char *path)
+        |{
+        |    FILE *f = fopen(path, "r");
+        |    if (f == NULL) return;
+        |    fclose(f);
+        |    fclose(f);
+        |}
         |""".stripMargin,
-        "leak.c"
+        "alloc.c"
+      )
+      .moreCode(
+        """
+        |#include <stdlib.h>
+        |#include <string.h>
+        |
+        |struct node { struct node *next; int v; };
+        |
+        |/* MS-NULL-001 arm 1 (medium): an unchecked allocation result. */
+        |void null_deref_unchecked_malloc(size_t n)
+        |{
+        |    char *p = (char *)malloc(n);
+        |    p[0] = 'a';
+        |    free(p);
+        |}
+        |
+        |/* MS-NULL-001 arm 3 (the per-finding low tier): an unvalidated parameter. */
+        |void null_deref_chained_param(struct node *head)
+        |{
+        |    int v = head->next->v;
+        |    (void)v;
+        |}
+        |""".stripMargin,
+        "null.c"
+      )
+      .moreCode(
+        """
+        |#include <string.h>
+        |
+        |/* MS-ESC-001: the finding is anchored at the RETURN - an exit node, not a length
+        |   argument; a renderer that only matched arguments would silently drop every one. */
+        |char *returns_stack_array(void)
+        |{
+        |    char buf[32];
+        |    strcpy(buf, "hello");
+        |    return buf;
+        |}
+        |""".stripMargin,
+        "escape.c"
       )
 
   new MemoryApiPass(cpg).createAndApply()
   new ExtentPass(cpg).createAndApply()
   new GuardPass(cpg).createAndApply()
   new ValueOriginPass(cpg).createAndApply()
+  new IntegerWidthPass(cpg).createAndApply()
   new AllocationStatePass(cpg).createAndApply()
   new MemorySafetyFindingPass(cpg).createAndApply()
 
@@ -136,16 +242,102 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
           // which is just Expression, while an exit-anchored finding can be a METHOD_RETURN
           val f = findingOf(MemorySafetyFindingPass.RuleLeak).hcursor
           f.get[String]("cwe").toOption shouldBe Some("CWE-401")
-          f.get[String]("file").toOption.exists(_.endsWith("leak.c")) shouldBe true
+          f.get[String]("file").toOption.exists(_.endsWith("alloc.c")) shouldBe true
           f.get[Int]("line").toOption.exists(_ > 0) shouldBe true
       }
 
+      "render a leak anchored at a bare `return;` (part 4's renderer dropped exit nodes)" in {
+          // the finding's node IS the RETURN - not the allocation, not an argument
+          val f = findingOf(MemorySafetyFindingPass.RuleLeak).hcursor
+          f.get[String]("file").toOption.exists(_.endsWith("alloc.c")) shouldBe true
+          // the implicit-end fixture and the bare-return fixture both leak; one of the two
+          // rendered findings must sit inside leaks_at_a_bare_return's body, above the free
+          val lines = render(AtomMemorySafetyConfig()).toOption
+              .getOrElse(Nil)
+              .filter(_.hcursor.get[String]("rule").toOption.contains(
+                MemorySafetyFindingPass.RuleLeak
+              ))
+          lines should not be empty
+      }
+
+      "render every rule's finding end to end (part 5, standing rule 6)" in {
+          // a tag the renderer never surfaces is not a finding; part 4 credited MS-ALLOC-003
+          // with precision that was measured through a renderer dropping its findings
+          val byRule = render(AtomMemorySafetyConfig()).toOption
+              .getOrElse(Nil)
+              .flatMap(_.hcursor.get[String]("rule").toOption)
+              .toSet
+          Seq(
+            MemorySafetyFindingPass.RuleSizeParamContract,
+            MemorySafetyFindingPass.RuleUnboundedCopy,
+            MemorySafetyFindingPass.RuleIndexRead,
+            MemorySafetyFindingPass.RuleIndexWrite,
+            MemorySafetyFindingPass.RuleResignAcrossGuard,
+            MemorySafetyFindingPass.RuleDoubleFree,
+            MemorySafetyFindingPass.RuleUseAfterFree,
+            MemorySafetyFindingPass.RuleLeak,
+            MemorySafetyFindingPass.RuleDoubleClose,
+            MemorySafetyFindingPass.RuleNullDeref,
+            MemorySafetyFindingPass.RuleStackEscape
+          ).foreach(rule => byRule should contain(rule))
+      }
+
+      "render the stack-escape finding at its RETURN anchor" in {
+          // MS-ESC-001's finding sits on the Return of returns_stack_array: an exit node is
+          // exactly where part 4's renderer was silently discarding findings
+          val f = findingOf(MemorySafetyFindingPass.RuleStackEscape).hcursor
+          f.get[String]("cwe").toOption shouldBe Some("CWE-562")
+          f.get[String]("file").toOption.exists(_.endsWith("escape.c")) shouldBe true
+          f.get[Int]("line").toOption.exists(_ > 0) shouldBe true
+      }
+
+      "keep the unbraced `if (p) free(p);` silent through the renderer (good_capped)" in {
+          // part 4 rendered this negative control as a leak at the implicit end; the branch
+          // narrowing fix must be visible HERE too, not only in chen's tag assertions
+          val leaksInIt = render(AtomMemorySafetyConfig()).toOption
+              .getOrElse(Nil)
+              .filter(_.hcursor.get[String]("rule").toOption.contains(
+                MemorySafetyFindingPass.RuleLeak
+              ))
+              .filterNot(_.hcursor.get[String]("file").toOption.exists(_.endsWith("escape.c")))
+          // the fixtures that legitimately leak are leaks_at_the_implicit_end and
+          // leaks_at_a_bare_return; the unbraced one contributes nothing
+          leaksInIt.map(_.hcursor.get[String]("file").toOption.getOrElse("")).foreach { f =>
+              (f should not).include("unbraced")
+          }
+      }
+
+      "honour a finding-level confidence override below the rule's own (MS-NULL-001)" in {
+          // the unvalidated-parameter arm is the rule's hypothesis tier: same rule id, `low`
+          // confidence on the FINDING, invisible at a medium floor and present at low. null.c
+          // holds one arm-1 fixture (medium) and one arm-3 fixture (low tier).
+          def nullDerefLines(floor: String): Set[Int] = render(
+            AtomMemorySafetyConfig().withMinConfidence(floor)
+          ).toOption
+              .getOrElse(Nil)
+              .filter(_.hcursor.get[String]("rule").toOption.contains(
+                MemorySafetyFindingPass.RuleNullDeref
+              ))
+              .filter(_.hcursor.get[String]("file").toOption.exists(_.endsWith("null.c")))
+              .flatMap(_.hcursor.get[Int]("line").toOption)
+              .toSet
+          val medium = nullDerefLines("medium")
+          val low    = nullDerefLines("low")
+          medium should not be empty     // the evidence arm renders
+          (low should not).equal(medium) // and the hypothesis arm joins only below the floor
+          medium.subsetOf(low) shouldBe true
+      }
+
       "drop findings below the requested confidence" in {
-          // the leak is medium; a high floor leaves only the high-confidence contract violation
+          // the high floor keeps the high-confidence rules (the contract violation, the
+          // double free, the resign cast) and drops the medium/low ones entirely
           val high = render(AtomMemorySafetyConfig().withMinConfidence("high")).toOption
               .getOrElse(Nil)
               .flatMap(_.hcursor.get[String]("rule").toOption)
-          high shouldBe List(MemorySafetyFindingPass.RuleSizeParamContract)
+          high should contain(MemorySafetyFindingPass.RuleSizeParamContract)
+          high should not contain MemorySafetyFindingPass.RuleLeak
+          high should not contain MemorySafetyFindingPass.RuleNullDeref
+          high should not contain MemorySafetyFindingPass.RuleStackEscape
       }
   }
 end MemorySafetyCommandTests
