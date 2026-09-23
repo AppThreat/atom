@@ -193,7 +193,7 @@ object MemorySafetyCommands:
     node match
       case i: Identifier =>
           var frontier: List[StoredNode] = List(i)
-          val visited                    = mutable.Set.empty[Long] + i.id
+          val visited                    = mutable.Set[Long](i.id)
           var shown                      = 0
           while frontier.nonEmpty && shown < MaxFlowEntries do
             val next = mutable.ListBuffer.empty[StoredNode]
