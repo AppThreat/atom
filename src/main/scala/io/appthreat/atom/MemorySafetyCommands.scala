@@ -77,17 +77,22 @@ object MemorySafetyCommands:
         }
         .flatMap { (node, ruleId) =>
             MemorySafetyFindingPass.rules.get(ruleId).map { rule =>
-                (node, rule)
+                // a finding-level confidence override (part 5, E3), scoped to its own rule: one
+                // node can carry several findings, and one rule's hypothesis tier must not demote
+                // another rule's finding on the same node
+                (node, rule, MemorySafetyFindingPass.confidenceOf(node, rule))
             }
         }
-        .filter { (_, rule) =>
-            confidenceOrder.getOrElse(rule.confidence.toLowerCase, 0) >= minConfidence
+        .filter { (_, rule, confidence) =>
+            confidenceOrder.getOrElse(confidence.toLowerCase, 0) >= minConfidence
         }
         .toList
-        .sortBy { (node, _) =>
+        .sortBy { (node, _, _) =>
             (filenameOf(node), node.lineNumber.map(_.toInt).getOrElse(0): Int)
         }
-        .map { (node, rule) => render(cpg, atomFile, inputRoot)(node, rule) }
+        .map { (node, rule, confidence) =>
+            render(cpg, atomFile, inputRoot, confidence)(node, rule)
+        }
 
     val outFile = config.outputSliceFile.createFileIfNotExists(createParents = true)
     outFile.write(findings.asJson.noSpaces)
@@ -117,7 +122,7 @@ object MemorySafetyCommands:
     * the analysed input, and every consumer of this JSON (the corpus scorer's `c/`/`cpp/` prefixes,
     * run_cve.sh's worktree re-rooting) matches on paths that carry that root.
     */
-  private def render(cpg: Cpg, atomFile: File, inputRoot: String)(
+  private def render(cpg: Cpg, atomFile: File, inputRoot: String, confidence: String)(
     node: AstNode,
     rule: MemorySafetyFindingPass.MemorySafetyRule
   ): Json =
@@ -134,7 +139,7 @@ object MemorySafetyCommands:
       "line"       -> line.asJson,
       "column"     -> column.asJson,
       "severity"   -> rule.severity.asJson,
-      "confidence" -> rule.confidence.asJson,
+      "confidence" -> confidence.asJson,
       "message"    -> s"${node.code}: ${rule.message}".asJson,
       "flow"       -> flowOf(node).asJson,
       "atom"       -> atomFile.pathAsString.asJson
