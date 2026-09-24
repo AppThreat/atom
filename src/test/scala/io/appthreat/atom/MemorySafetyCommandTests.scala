@@ -142,11 +142,41 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
         |    free(p);
         |}
         |
-        |/* MS-NULL-001 arm 3 (the per-finding low tier): an unvalidated parameter. */
+        |/* MS-NULL-001 arm 3 (the per-finding low tier): an unvalidated parameter through a
+        |   SELF-REFERENTIAL traversal hop (next has head's own pointee type). */
         |void null_deref_chained_param(struct node *head)
         |{
         |    int v = head->next->v;
         |    (void)v;
+        |}
+        |
+        |/* part 6 (F1): arm 1 through a helper - the callee's derefs-param summary is what
+        |   makes handing it an unchecked allocation a dereference */
+        |static int head_byte(char *s)
+        |{
+        |    return s[0];
+        |}
+        |
+        |void null_deref_via_helper_summary(size_t n)
+        |{
+        |    char *p = (char *)malloc(n);
+        |    int c = head_byte(p);
+        |    (void)c;
+        |    free(p);
+        |}
+        |
+        |/* part 6 (F1): the helper reads through nothing, so the same statement is not a
+        |   dereference and must not render */
+        |static void just_log(char *p)
+        |{
+        |    printf("%p\n", (void *)p);
+        |}
+        |
+        |void no_null_deref_via_nonreading_helper(size_t n)
+        |{
+        |    char *p = (char *)malloc(n);
+        |    just_log(p);
+        |    free(p);
         |}
         |""".stripMargin,
         "null.c"
@@ -324,6 +354,31 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
               .toSet
           nullDerefLines("medium") shouldBe empty   // the gate, visible end to end
           nullDerefLines("low") should not be empty // both arms render below the floor
+      }
+
+      "render a null-deref licensed by a derefs-param summary, not one handed to a non-reader (F1)" in {
+          // the low arm's null.c findings, by line, with the fixture's three positive shapes
+          // (unchecked malloc, chained param, helper summary) and one negative (just_log)
+          val lines = render(AtomMemorySafetyConfig().withMinConfidence("low")).toOption
+              .getOrElse(Nil)
+              .filter(_.hcursor.get[String]("rule").toOption.contains(
+                MemorySafetyFindingPass.RuleNullDeref
+              ))
+              .filter(_.hcursor.get[String]("file").toOption.exists(_.endsWith("null.c")))
+              .flatMap(_.hcursor.get[Int]("line").toOption)
+              .toSet
+          // the three positives sit on three distinct lines; the non-reading helper adds none
+          lines should have size 3
+          // the just_log call's own line carries no finding: its argument is read by nobody
+          import io.shiftleft.semanticcpg.language.*
+          val justLogLine = cpg.method
+              .name("no_null_deref_via_nonreading_helper")
+              .call
+              .name("just_log")
+              .l
+              .headOption
+              .flatMap(_.lineNumber.map(_.toInt))
+          justLogLine.foreach(l => lines should not contain l)
       }
 
       "drop findings below the requested confidence" in {
