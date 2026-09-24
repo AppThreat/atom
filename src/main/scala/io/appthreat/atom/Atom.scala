@@ -51,6 +51,7 @@ import io.appthreat.x2cpg.passes.taggers.{
     IntegerWidthPass,
     MemoryApiPass,
     MemorySafetyFindingPass,
+    MemorySemanticsPass,
     PiiTagsPass,
     TrackersTagsPass,
     ValueOriginPass
@@ -1488,6 +1489,15 @@ object Atom:
                   new PythonFrameworkRecognizersPass(atom).createAndApply()
               }
               PerfReporter.stage("taggers.ChennaiTagsPass", "analysis")(runChennaiTags(x, atom))
+              // What chen concludes about memory on its own - declared GCC attributes, wrapper
+              // bodies, nullable returns, variable storage - so MemoryApiPass needs no
+              // hand-written project inventory to see a project's allocator layer
+              PerfReporter.stage("taggers.MemorySemanticsPass", "analysis") {
+                  new MemorySemanticsPass(
+                    atom,
+                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                  ).createAndApply()
+              }
               PerfReporter.stage("taggers.MemoryApiPass", "analysis") {
                   new MemoryApiPass(
                     atom,
