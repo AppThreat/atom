@@ -104,6 +104,8 @@ object FrontendArgsApplier:
     r = r.withLogProblems(bool(args, "log-problems", r.logProblems))
     r = r.withLogPreprocessor(bool(args, "log-preprocessor", r.logPreprocessor))
     r = r.withPrintIfDefsOnly(bool(args, "print-ifdef-only", r.printIfDefsOnly))
+    r = r.withAutoDefines(bool(args, "auto-defines", r.autoDefines))
+    r = r.withMacroCensusReport(str(args, "macro-census", r.macroCensusReport))
     r = r.withIncludePathsAutoDiscovery(bool(
       args,
       "include-auto-discovery",
@@ -279,6 +281,20 @@ object FrontendArgsApplier:
     KeyDoc("log-problems", "bool", "false", "Log every parse problem.", CLike),
     KeyDoc("log-preprocessor", "bool", "false", "Log every preprocessor statement.", CLike),
     KeyDoc("print-ifdef-only", "bool", "false", "Print preprocessor conditionals and exit.", CLike),
+    KeyDoc(
+      "auto-defines",
+      "bool",
+      "false",
+      "Run the macro census and define its build-option macros before parsing.",
+      CLike
+    ),
+    KeyDoc(
+      "macro-census",
+      "string",
+      "",
+      "Write the macro census to <file>.json and <file>.h.",
+      CLike
+    ),
     KeyDoc("include-auto-discovery", "bool", "false", "Auto-discover system header paths.", CLike),
     KeyDoc("function-bodies", "bool", "true", "Parse function and method bodies.", CLike),
     KeyDoc(
