@@ -1532,7 +1532,10 @@ object Atom:
                   new AllocationStatePass(atom).createAndApply()
               }
               PerfReporter.stage("taggers.MemorySafetyFindingPass", "analysis") {
-                  new MemorySafetyFindingPass(atom).createAndApply()
+                  new MemorySafetyFindingPass(
+                    atom,
+                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                  ).createAndApply()
               }
               PerfReporter.stage("taggers.JvmTaggers", "analysis")(applyJvmTaggers(atom))
               Right(())
