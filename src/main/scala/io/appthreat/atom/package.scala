@@ -85,8 +85,11 @@ package object atom:
       this.cacheFragments = x
       this
 
+    /** Merges into the arguments the first-class flags (`--define`, `--auto-defines`, ...) have
+      * already set: a later `--frontend-args` overrides the keys it names and keeps the rest.
+      */
     def withFrontendArgs(args: Map[String, String]): AtomConfig =
-      this.frontendArgs = args
+      this.frontendArgs = this.frontendArgs ++ args
       this
 
     /** Sets a single frontend argument, replacing any previous value for the key. Used by the

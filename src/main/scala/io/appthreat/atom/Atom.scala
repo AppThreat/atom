@@ -416,6 +416,25 @@ object Atom:
               case config: AtomConfig => config.withAppendedFrontendArg("defines", x)
               case _                  => c
         )
+    opt[Unit]("auto-defines")
+        .text(
+          "Run a macro census first and define the build-option macros (CONFIG_*, ENABLE_*, template-declared) that hide #if code. Opt-in: it changes what is analysed. (C/C++ only)"
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("auto-defines", "true")
+              case _                  => c
+        )
+    opt[String]("suggest-defines")
+        .valueName("<file>")
+        .text(
+          "Write the macro census to <file>.json and a reviewable --macro-files header to <file>.h, then exit; with --auto-defines, write it and continue. (C/C++ only)"
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("macro-census", x)
+              case _                  => c
+        )
     opt[String]("include-path")
         .unbounded()
         .text("Header include path. Repeatable. (C/C++ only)")
@@ -842,10 +861,27 @@ object Atom:
                 if loaded.frontendArgsKeys then
                   println(FrontendArgsApplier.renderKeys(loaded.language))
                   Right("Displayed frontend-args keys")
-                else run(loaded, loaded.language)
+                else if isCensusOnly(loaded) then
+                  Try(
+                    new C2Cpg().writeMacroCensus(
+                      c2CpgConfig(loaded, loaded.outputAtomFile.pathAsString)
+                    )
+                  ).toEither.left.map(e => s"Macro census failed: ${e.getMessage}")
+                      .map(_ => "Wrote the macro census")
+                else
+                  if hasCensusFlags(loaded) && !CensusLanguages.contains(
+                      loaded.language.toUpperCase
+                    )
+                  then
+                    println(
+                      s"--auto-defines and --suggest-defines apply to C/C++ only; ignored for -l ${loaded.language}"
+                    )
+                  run(loaded, loaded.language)
             case Left(err) => Left(err)
       case Right(_)  => Left("Invalid configuration generated")
       case Left(err) => Left(err)
+    end match
+  end run
 
   private def run(config: AtomConfig, language: String): Either[String, String] =
       for
@@ -1228,9 +1264,12 @@ object Atom:
         .withIncludeTrivialExpressions(false)
         .withIncludePaths(C2ATOM_INCLUDE_PATH)
     val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
-    new C2Atom().createCpg(finalConfig)
+    new C2Atom().createCpg(C2Cpg.withCensusDefines(finalConfig))
 
   private def createC2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
+      new C2Cpg().createCpgWithOverlays(c2CpgConfig(config, outputAtomFile))
+
+  private def c2CpgConfig(config: AtomConfig, outputAtomFile: String): CConfig =
     val cIgnoreDirEnvVars =
         if config.language.equalsIgnoreCase("CPP") || config.language.equalsIgnoreCase("C++") then
           Seq("CHEN_C_IGNORE_DIRS", "CHEN_CPP_IGNORE_DIRS")
@@ -1249,9 +1288,24 @@ object Atom:
         .withImageLocations(false)
         .withIncludeTrivialExpressions(false)
         .withIncludePaths(C2ATOM_INCLUDE_PATH)
-    val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
-    new C2Cpg().createCpgWithOverlays(finalConfig)
-  end createC2Cpg
+    FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
+  end c2CpgConfig
+
+  /** `--suggest-defines` without `--auto-defines`: the macro census alone, no atom. */
+  /** Every language the C frontends serve, so every one runs the census the same way. */
+  private val CensusLanguages = Set("C", "NEWC", "CPP", "C++", "H", "HPP", "I")
+
+  private def hasCensusFlags(config: AtomConfig): Boolean =
+      config.frontendArgs.contains("auto-defines") || config.frontendArgs.contains("macro-census")
+
+  /** `--suggest-defines` without `--auto-defines`: the census alone, no atom. Read from the
+    * resolved frontend config, so the flags mean exactly what the frontend will see.
+    */
+  private def isCensusOnly(config: AtomConfig): Boolean =
+      hasCensusFlags(config) && CensusLanguages.contains(config.language.toUpperCase) && {
+          val c = c2CpgConfig(config, config.outputAtomFile.pathAsString)
+          c.macroCensusReport.nonEmpty && !c.autoDefines
+      }
 
   private def createJimple2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
     val baseConfig = JimpleConfig(android = androidJarPath, fullResolver = true)
