@@ -1,0 +1,53 @@
+name: Build chen from main
+description: >-
+  Temporary: builds AppThreat/chen from main and publishes it to the local Ivy repository, so atom
+  resolves a chen version that is not released yet. Remove this action and its callers once that
+  chen version is on the package registry.
+inputs:
+  ivy-home:
+    description: Ivy home to publish into, for builds that mount their own (Linux and macOS). Defaults to sbt's.
+    required: false
+    default: ''
+  setup-jdk:
+    description: Set up a JDK and sbt first, for jobs that do not install them.
+    required: false
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961  # v5.7.0
+      if: inputs.setup-jdk == 'true'
+      with:
+        distribution: 'temurin'
+        java-version: '25'
+    - uses: sbt/setup-sbt@bfea3c5f48abd221b04a6df4798aa5eb8b6a2baf  # v1.5.6
+      if: inputs.setup-jdk == 'true'
+    - name: Publish chen main locally
+      if: runner.os != 'Windows'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        CHEN_DIR: ${{ runner.temp }}/chen-main
+        IVY_HOME: ${{ inputs.ivy-home }}
+      run: |
+        set -euo pipefail
+        git clone --quiet --depth 1 --branch main https://github.com/AppThreat/chen.git "$CHEN_DIR"
+        cd "$CHEN_DIR"
+        sbt ${IVY_HOME:+"-Dsbt.ivy.home=$IVY_HOME"} -batch \
+          "set ThisBuild / Compile / packageDoc / publishArtifact := false" publishLocal
+        cd "$RUNNER_TEMP"
+        rm -rf "$CHEN_DIR"
+    - name: Publish chen main locally
+      if: runner.os == 'Windows'
+      shell: pwsh
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        CHEN_DIR: ${{ runner.temp }}\chen-main
+      run: |
+        git clone --quiet --depth 1 --branch main https://github.com/AppThreat/chen.git "$env:CHEN_DIR"
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        Push-Location "$env:CHEN_DIR"
+        sbt -batch "set ThisBuild / Compile / packageDoc / publishArtifact := false" publishLocal
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        Pop-Location
+        Remove-Item -Recurse -Force "$env:CHEN_DIR"

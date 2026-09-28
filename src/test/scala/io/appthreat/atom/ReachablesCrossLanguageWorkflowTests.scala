@@ -13,9 +13,9 @@ import scala.util.Try
   * end-to-end through `Atom.run`: frontend, enhancement passes, taggers, the backward data-flow
   * engine and the reachable slicer.
   *
-  * These exist because reachables output is language-agnostic shared code: until now exactly ONE
-  * reachables test existed (PHP), which is how a 77% JS flow loss passed review during the Python
-  * upgrade. Every fixture pins
+  * These exist because reachables output is language-agnostic shared code: a change made for one
+  * language can silently lose flows in another unless every language has a reachables test. Every
+  * fixture pins
   *
   *   - the total number of emitted flow entries, and
   *   - the source and sink node identity of at least one flow,

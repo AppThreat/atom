@@ -75,6 +75,7 @@ jobs:
       - uses: coursier/setup-action@9b7939bf01fd1185ce2babe16135168361bf2c62  # v3.0.2
         with:
           apps: scala3 scalac
+      - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
       - run: |
           # Install the AST generators (astgen, phpastgen, rbastgen) BEFORE `sbt test`: the
           # workflow tests probe for them and cancel without them, so a post-test install would

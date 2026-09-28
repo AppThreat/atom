@@ -36,6 +36,10 @@ package object atom:
     // Optional validators/sanitisers config (the chennai.json schema). Calls to the declared
     // methods are tagged as sanitisers so reachable flows passing through them can be dropped.
     var validationConfigFile: Option[File] = None
+    // Optional memory-API inventory overlay (the memory-apis.json schema), merged over the
+    // built-in inventory by API name - declare an in-house `av_memcpy` wrapper or a platform's
+    // memcpy roles without patching chen. Applies to C/C++ graphs.
+    var memoryApiConfigFile: Option[File] = None
 
     def withOutputAtomFile(x: File): AtomConfig =
       this.outputAtomFile = x
@@ -81,8 +85,11 @@ package object atom:
       this.cacheFragments = x
       this
 
+    /** Merges into the arguments the first-class flags (`--define`, `--auto-defines`, ...) have
+      * already set: a later `--frontend-args` overrides the keys it names and keeps the rest.
+      */
     def withFrontendArgs(args: Map[String, String]): AtomConfig =
-      this.frontendArgs = args
+      this.frontendArgs = this.frontendArgs ++ args
       this
 
     /** Sets a single frontend argument, replacing any previous value for the key. Used by the
@@ -115,6 +122,10 @@ package object atom:
       this.validationConfigFile = x
       this
 
+    def withMemoryApiConfigFile(x: Option[File]): AtomConfig =
+      this.memoryApiConfigFile = x
+      this
+
   end AtomConfig
 
   case class DefaultAtomConfig() extends AtomConfig
@@ -142,6 +153,27 @@ package object atom:
     includeCryptoFlows: Boolean = false,
     profile: String = "generic"
   ) extends AtomConfig
+
+  /** Run the memory-safety overlay over the input and write the findings JSON to the slice file
+    * (`-s`). The overlay needs data dependencies (the rules read REACHING_DEF facts), so the
+    * command turns them on the way `reachables` does rather than requiring `--with-data-deps`.
+    *
+    * The settings are `var`s mutated in place, like every other command's, and NOT a `copy`: the
+    * base [[AtomConfig]] keeps `language`, `dataDeps` and the output paths in `var`s of the trait,
+    * so a `copy` returns a fresh instance with all of those back at their defaults. `atom
+    * memory-safety -l c --min-confidence medium` used to lose the `-l`.
+    */
+  case class AtomMemorySafetyConfig() extends AtomConfig:
+    var minConfidence: String = ""
+    var format: String        = "json"
+
+    def withMinConfidence(x: String): AtomMemorySafetyConfig =
+      this.minConfidence = x
+      this
+
+    def withFormat(x: String): AtomMemorySafetyConfig =
+      this.format = x
+      this
 
   /** Export the whole atom, or a per-method subgraph of it, to one of the supported graph formats.
     * `scope` is either "whole" or "methods". The output format is taken from `exportFormat` and the

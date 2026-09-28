@@ -41,12 +41,20 @@ import io.appthreat.x2cpg.passes.base.AstLinkerPass
 import io.appthreat.x2cpg.perf.PerfReporter
 import io.appthreat.x2cpg.passes.frontend.{XTypeRecovery, XTypeRecoveryConfig}
 import io.appthreat.x2cpg.passes.taggers.{
+    AllocationStatePass,
     AndroidServicesTagsPass,
     CdxPass,
     ChennaiTagsPass,
     EasyTagsPass,
+    ExtentPass,
+    GuardPass,
+    IntegerWidthPass,
+    MemoryApiPass,
+    MemorySafetyFindingPass,
+    MemorySemanticsPass,
     PiiTagsPass,
-    TrackersTagsPass
+    TrackersTagsPass,
+    ValueOriginPass
 }
 import io.appthreat.x2cpg.passes.taggers.python.PythonFrameworkRecognizersPass
 import io.appthreat.x2cpg.utils.ExternalCommand
@@ -408,6 +416,25 @@ object Atom:
               case config: AtomConfig => config.withAppendedFrontendArg("defines", x)
               case _                  => c
         )
+    opt[Unit]("auto-defines")
+        .text(
+          "Run a macro census first and define the build-option macros (CONFIG_*, ENABLE_*, template-declared) that hide #if code. Opt-in: it changes what is analysed. (C/C++ only)"
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("auto-defines", "true")
+              case _                  => c
+        )
+    opt[String]("suggest-defines")
+        .valueName("<file>")
+        .text(
+          "Write the macro census to <file>.json and a reviewable --macro-files header to <file>.h, then exit; with --auto-defines, write it and continue. (C/C++ only)"
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("macro-census", x)
+              case _                  => c
+        )
     opt[String]("include-path")
         .unbounded()
         .text("Header include path. Repeatable. (C/C++ only)")
@@ -549,6 +576,17 @@ object Atom:
         .action((x, c) =>
             c match
               case config: AtomConfig => config.withConfigFile(Option(File(x)))
+              case _                  => c
+        )
+    opt[String]("memory-api-config")
+        .text(
+          "path to a JSON file (memory-apis.json schema) merged over the built-in memory-API " +
+              "inventory by API name, declaring in-house wrappers or platform argument roles. " +
+              "C/C++ only."
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withMemoryApiConfigFile(Option(File(x)))
               case _                  => c
         )
     opt[String]("validation-config")
@@ -711,6 +749,29 @@ object Atom:
                     case _                       => c
               )
         )
+    cmd("memory-safety")
+        .text(
+          "Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON"
+        )
+        .action((_, _) => AtomMemorySafetyConfig().withDataDependencies(true))
+        .children(
+          opt[String]("min-confidence")
+              .text(
+                s"drop findings below this confidence: high, medium or low. Defaults to keeping all."
+              )
+              .action((x, c) =>
+                  c match
+                    case c: AtomMemorySafetyConfig => c.withMinConfidence(x)
+                    case _                         => c
+              ),
+          opt[String]("format")
+              .text("output format: json (sarif is planned). Default: json.")
+              .action((x, c) =>
+                  c match
+                    case c: AtomMemorySafetyConfig => c.withFormat(x)
+                    case _                         => c
+              )
+        )
     cmd("export")
         .text("Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)")
         .action((_, _) => AtomExportConfig().withDataDependencies(true))
@@ -800,10 +861,27 @@ object Atom:
                 if loaded.frontendArgsKeys then
                   println(FrontendArgsApplier.renderKeys(loaded.language))
                   Right("Displayed frontend-args keys")
-                else run(loaded, loaded.language)
+                else if isCensusOnly(loaded) then
+                  Try(
+                    new C2Cpg().writeMacroCensus(
+                      c2CpgConfig(loaded, loaded.outputAtomFile.pathAsString)
+                    )
+                  ).toEither.left.map(e => s"Macro census failed: ${e.getMessage}")
+                      .map(_ => "Wrote the macro census")
+                else
+                  if hasCensusFlags(loaded) && !CensusLanguages.contains(
+                      loaded.language.toUpperCase
+                    )
+                  then
+                    println(
+                      s"--auto-defines and --suggest-defines apply to C/C++ only; ignored for -l ${loaded.language}"
+                    )
+                  run(loaded, loaded.language)
             case Left(err) => Left(err)
       case Right(_)  => Left("Invalid configuration generated")
       case Left(err) => Left(err)
+    end match
+  end run
 
   private def run(config: AtomConfig, language: String): Either[String, String] =
       for
@@ -844,6 +922,10 @@ object Atom:
           case x: AtomParseDepsConfig =>
               PerfReporter.stage("slicing.parseDeps", "slicing")(
                 generateParseDepsSlice(config, ag, x)
+              )
+          case msConfig: AtomMemorySafetyConfig =>
+              PerfReporter.stage("slicing.memorySafety", "slicing")(
+                MemorySafetyCommands.runMemorySafety(ag, msConfig, config.outputAtomFile)
               )
           case _ =>
               Right("No slice generation required")
@@ -1182,9 +1264,12 @@ object Atom:
         .withIncludeTrivialExpressions(false)
         .withIncludePaths(C2ATOM_INCLUDE_PATH)
     val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
-    new C2Atom().createCpg(finalConfig)
+    new C2Atom().createCpg(C2Cpg.withCensusDefines(finalConfig))
 
   private def createC2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
+      new C2Cpg().createCpgWithOverlays(c2CpgConfig(config, outputAtomFile))
+
+  private def c2CpgConfig(config: AtomConfig, outputAtomFile: String): CConfig =
     val cIgnoreDirEnvVars =
         if config.language.equalsIgnoreCase("CPP") || config.language.equalsIgnoreCase("C++") then
           Seq("CHEN_C_IGNORE_DIRS", "CHEN_CPP_IGNORE_DIRS")
@@ -1203,9 +1288,24 @@ object Atom:
         .withImageLocations(false)
         .withIncludeTrivialExpressions(false)
         .withIncludePaths(C2ATOM_INCLUDE_PATH)
-    val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
-    new C2Cpg().createCpgWithOverlays(finalConfig)
-  end createC2Cpg
+    FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
+  end c2CpgConfig
+
+  /** `--suggest-defines` without `--auto-defines`: the macro census alone, no atom. */
+  /** Every language the C frontends serve, so every one runs the census the same way. */
+  private val CensusLanguages = Set("C", "NEWC", "CPP", "C++", "H", "HPP", "I")
+
+  private def hasCensusFlags(config: AtomConfig): Boolean =
+      config.frontendArgs.contains("auto-defines") || config.frontendArgs.contains("macro-census")
+
+  /** `--suggest-defines` without `--auto-defines`: the census alone, no atom. Read from the
+    * resolved frontend config, so the flags mean exactly what the frontend will see.
+    */
+  private def isCensusOnly(config: AtomConfig): Boolean =
+      hasCensusFlags(config) && CensusLanguages.contains(config.language.toUpperCase) && {
+          val c = c2CpgConfig(config, config.outputAtomFile.pathAsString)
+          c.macroCensusReport.nonEmpty && !c.autoDefines
+      }
 
   private def createJimple2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
     val baseConfig = JimpleConfig(android = androidJarPath, fullResolver = true)
@@ -1443,6 +1543,54 @@ object Atom:
                   new PythonFrameworkRecognizersPass(atom).createAndApply()
               }
               PerfReporter.stage("taggers.ChennaiTagsPass", "analysis")(runChennaiTags(x, atom))
+              // What chen concludes about memory on its own - declared GCC attributes, wrapper
+              // bodies, nullable returns, variable storage - so MemoryApiPass needs no
+              // hand-written project inventory to see a project's allocator layer
+              PerfReporter.stage("taggers.MemorySemanticsPass", "analysis") {
+                  new MemorySemanticsPass(
+                    atom,
+                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                  ).createAndApply()
+              }
+              PerfReporter.stage("taggers.MemoryApiPass", "analysis") {
+                  new MemoryApiPass(
+                    atom,
+                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                  )
+                      .createAndApply()
+              }
+              // The rest of the memory-safety overlay: Extent reads MemoryApi's
+              // argument tags, Guard reads Extent's. Each pass no-ops on non-C/C++ graphs, so one
+              // unconditional pipeline serves every language.
+              PerfReporter.stage("taggers.ExtentPass", "analysis") {
+                  new ExtentPass(atom).createAndApply()
+              }
+              PerfReporter.stage("taggers.GuardPass", "analysis") {
+                  new GuardPass(
+                    atom,
+                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                  )
+                      .createAndApply()
+              }
+              PerfReporter.stage("taggers.ValueOriginPass", "analysis") {
+                  new ValueOriginPass(atom).createAndApply()
+              }
+              // Integer width facts - narrowing, sign-changing casts and attacker-influenced
+              // arithmetic feeding lengths. Facts only; the integer rules read them.
+              PerfReporter.stage("taggers.IntegerWidthPass", "analysis") {
+                  new IntegerWidthPass(atom).createAndApply()
+              }
+              // Per-allocation state facts - allocated/freed/maybe-freed/null/
+              // escaped at each program point. Facts only; the ALLOC rules read them.
+              PerfReporter.stage("taggers.AllocationStatePass", "analysis") {
+                  new AllocationStatePass(atom).createAndApply()
+              }
+              PerfReporter.stage("taggers.MemorySafetyFindingPass", "analysis") {
+                  new MemorySafetyFindingPass(
+                    atom,
+                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                  ).createAndApply()
+              }
               PerfReporter.stage("taggers.JvmTaggers", "analysis")(applyJvmTaggers(atom))
               Right(())
             catch

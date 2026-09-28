@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "3.2.0"
-ThisBuild / scalaVersion := "3.8.4"
+ThisBuild / version      := "4.0.0"
+ThisBuild / scalaVersion := "3.9.0"
 
-val chenVersion = "3.4.0"
+val chenVersion = "4.0.0"
 
 lazy val atom = Projects.atom
 resolvers += "Google Maven".at("https://maven.google.com/")
@@ -27,6 +27,8 @@ libraryDependencies ++= Seq(
   ("io.appthreat" %% "semanticcpg"       % Versions.chen % Test).classifier("tests"),
   ("io.appthreat" %% "x2cpg"             % Versions.chen % Test).classifier("tests"),
   ("io.appthreat" %% "pysrc2cpg"         % Versions.chen % Test).classifier("tests"),
+  // the memory-safety overlay is C/C++ only, so its command needs a C fixture to test against
+  ("io.appthreat" %% "c2cpg"             % Versions.chen % Test).classifier("tests"),
   "org.scalatest" %% "scalatest"         % "3.2.20"      % Test
 )
 
