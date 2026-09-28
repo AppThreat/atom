@@ -101,6 +101,7 @@ jobs:
           sudo apt update -y
           sudo apt install -y zlib1g php-zip
         if: runner.os == 'Linux'
+      - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
       - name: atom node tests
         run: |
           sbt stage createDistribution
@@ -190,6 +191,7 @@ jobs:
       - uses: coursier/setup-action@9b7939bf01fd1185ce2babe16135168361bf2c62  # v3.0.2
         with:
           apps: scala3 scalac
+      - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
       - name: build
         shell: pwsh
         run: |

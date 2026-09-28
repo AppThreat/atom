@@ -101,6 +101,7 @@ jobs:
             ~/.coursier
           key: ${{ runner.os }}-sbt-${{ hashfiles('**/build.sbt') }}
           lookup-only: true
+      - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
       - run: |
           sbt stage createDistribution
         env:
