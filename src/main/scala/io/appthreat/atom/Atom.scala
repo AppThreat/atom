@@ -312,14 +312,19 @@ object Atom:
             if x.isBlank then failure(s"Please specify a language using the --language option.")
             else success
         )
-    opt[Map[String, String]]("frontend-args")
+    opt[String]("frontend-args")
+        .unbounded()
         .text(
-          "Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,only-ast-cache=true"
+          "Advanced frontend configuration: comma-separated key=value pairs, where a list value keeps its own commas. Repeatable. E.g. --frontend-args defines=DEBUG,NDEBUG,only-ast-cache=true"
         )
+        .validate(x => FrontendArgsApplier.parseFrontendArgs(x).map(_ => ()))
         .action((x, c) =>
             c match
-              case config: AtomConfig => config.withFrontendArgs(x)
-              case _                  => c
+              case config: AtomConfig =>
+                  config.withFrontendArgs(
+                    FrontendArgsApplier.parseFrontendArgs(x).getOrElse(Map.empty)
+                  )
+              case _ => c
         )
     opt[Unit]("frontend-args-keys")
         .text(
@@ -591,7 +596,7 @@ object Atom:
         .text(
           "path to a JSON file (memory-apis.json schema) merged over the built-in memory-API " +
               "inventory by API name, declaring in-house wrappers or platform argument roles. " +
-              "C/C++ only."
+              "(C/C++ only)"
         )
         .action((x, c) =>
             c match
@@ -1679,7 +1684,10 @@ object Atom:
         case err: Throwable =>
             Left(err.getStackTrace.take(20).mkString("\n"))
 
-  private def parseConfig(parserArgs: List[String]): Either[String, BaseConfig] =
+  /** The `--help` text, as printed. */
+  private[atom] def usage: String = optionParser.usage
+
+  private[atom] def parseConfig(parserArgs: List[String]): Either[String, BaseConfig] =
       optionParser.parse(
         parserArgs,
         DefaultAtomConfig()

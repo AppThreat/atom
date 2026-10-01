@@ -441,6 +441,30 @@ object FrontendArgsApplier:
     )
   )
 
+  /** Parses one `--frontend-args` value: `key=value` pairs separated by commas. A list (`csv`) key
+    * keeps the commas of its own value, so `includes=/a,/b,cpp-standard=c++17` sets `includes` to
+    * `/a,/b`: after a list key, every segment that does not name a known key continues its value
+    * (`defines=DEBUG,VERSION=2` defines both names).
+    */
+  def parseFrontendArgs(raw: String): Either[String, Map[String, String]] =
+    val known    = allKeys.map(k => k.name -> k.typ).toMap
+    val segments = raw.split(",").map(_.trim).filter(_.nonEmpty).toList
+    segments
+        .foldLeft(Right(Vector.empty): Either[String, Vector[(String, String)]]) {
+            case (Left(err), _) => Left(err)
+            case (Right(pairs), segment) =>
+                val eq       = segment.indexOf('=')
+                val key      = if eq > 0 then segment.take(eq).trim else ""
+                val listOpen = pairs.lastOption.exists { case (k, _) => known.get(k).contains("csv") }
+                if listOpen && !known.contains(key) then
+                  val (k, v) = pairs.last
+                  Right(pairs.init :+ (k -> s"$v,$segment"))
+                else if eq > 0 then Right(pairs :+ (key -> segment.drop(eq + 1).trim))
+                else Left(s"Expected a key=value pair, got '$segment'")
+        }
+        .map(_.toMap)
+  end parseFrontendArgs
+
   /** The other `-l` spellings atom accepts, by the name [[allKeys]] lists them under. */
   private val LanguageAliases: Map[String, String] = Map(
     "newc"       -> "c",
