@@ -224,12 +224,12 @@ object ReachableSlicing:
         hasFlows = true
         val fileName =
             if index == 0 then s"$outputBasePath.json" else s"${outputBasePath}_$index.json"
-        File(fileName).writeText(chunk.asJson.noSpaces)
+        SliceFiles.writeAtomically(File(fileName))(_.writeText(chunk.asJson.noSpaces))
     }
 
     if !hasFlows then
       handleEmptySlices(atom, config)
-      File(s"$outputBasePath.json").writeText("[]")
+      SliceFiles.writeAtomically(File(s"$outputBasePath.json"))(_.writeText("[]"))
   end calculateReachableSliceAndPersist
 
   /** Delete the numbered chunks (`<base>_1.json`, `<base>_2.json`, ...) written for this base path.

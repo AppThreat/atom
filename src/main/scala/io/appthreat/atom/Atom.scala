@@ -988,8 +988,8 @@ object Atom:
     runChennaiTags(config, ag)
     val slice = calculateUsagesSlice(ag, config)
     slice.foreach { s =>
-      val outFile = config.outputSliceFile.createFileIfNotExists(createParents = true)
-      s.toJsonFile(outFile)
+      val outFile = config.outputSliceFile
+      SliceFiles.writeAtomically(outFile)(s.toJsonFile)
       println(s"Slices have been successfully written to ${outFile.pathAsString}")
     }
     handleEndpointExtraction(config, usagesConfig)
@@ -1078,11 +1078,9 @@ object Atom:
 
   private def saveSlice(outFile: File, programSlice: Option[String]): Unit =
       programSlice.foreach { slice =>
-        val finalOutputPath =
-            File(outFile.pathAsString)
-                .createFileIfNotExists(createParents = true)
-                .write(slice)
-                .pathAsString
+        val target = File(outFile.pathAsString)
+        SliceFiles.writeAtomically(target)(_.write(slice))
+        val finalOutputPath = target.pathAsString
         println(s"Slices have been successfully written to $finalOutputPath")
       }
 
