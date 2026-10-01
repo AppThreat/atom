@@ -216,3 +216,23 @@ test(
     assert.equal(isAlive(pid), false);
   }
 );
+
+test(
+  "a second signal to the dispatcher kills a runtime that ignores the first",
+  { skip: isWin },
+  async () => {
+    const { child, exited, runtimeInfo } = startDispatcher(
+      {},
+      `process.on("SIGTERM", () => {}); ${WAIT_FOREVER}`
+    );
+    const { pid } = await runtimeInfo();
+    child.kill("SIGTERM");
+    await new Promise((r) => setTimeout(r, 300));
+    assert.equal(isAlive(pid), true, "the first SIGTERM is only relayed");
+    child.kill("SIGTERM");
+    const result = await exited;
+    // The runtime dies from SIGKILL; the dispatcher reports that as 128 + 9.
+    assert.equal(result.code, 137);
+    assert.equal(await waitForDeath(pid), true);
+  }
+);

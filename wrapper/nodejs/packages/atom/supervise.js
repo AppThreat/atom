@@ -94,6 +94,7 @@ export function supervisorWatch(env = process.env, probe = defaultProbe) {
  * status. The dispatcher only relays, so it must never leave the runtime behind:
  *
  * - signals sent to the dispatcher are forwarded, and it keeps waiting until the runtime exits;
+ *   a second signal kills the runtime;
  * - ATOM_TIMEOUT (milliseconds) stops the runtime (SIGTERM, then SIGKILL after
  *   ATOM_KILL_GRACE_MS, default 10 s) and exits with TIMEOUT_EXIT_CODE;
  * - when the supervisor named by ATOM_PARENT_PID goes away, the runtime is stopped the same way;
@@ -132,8 +133,14 @@ export function superviseRuntime(command, args, env, cwd) {
     child.kill("SIGTERM");
     killTimer = setTimeout(() => child.kill("SIGKILL"), killGraceMs);
   };
+  // The first signal is relayed so the runtime can stop cleanly; a second one means the caller
+  // has stopped waiting for that, and the runtime is killed.
+  let signalsReceived = 0;
   const forwarders = FORWARDED_SIGNALS.map((signal) => {
-    const forward = () => child.kill(signal);
+    const forward = () => {
+      signalsReceived++;
+      child.kill(signalsReceived > 1 ? "SIGKILL" : signal);
+    };
     process.on(signal, forward);
     return [signal, forward];
   });
