@@ -32,11 +32,16 @@ export function splitRuntimeOptions(atomArgs) {
   let i = 0;
   while (
     i < atomArgs.length &&
-    RUNTIME_OPTION_PREFIXES.some((prefix) => String(atomArgs[i]).startsWith(prefix))
+    RUNTIME_OPTION_PREFIXES.some((prefix) =>
+      String(atomArgs[i]).startsWith(prefix)
+    )
   ) {
     i++;
   }
-  return { runtimeOptions: atomArgs.slice(0, i), programArgs: atomArgs.slice(i) };
+  return {
+    runtimeOptions: atomArgs.slice(0, i),
+    programArgs: atomArgs.slice(i)
+  };
 }
 
 /**
@@ -105,7 +110,9 @@ export function superviseRuntime(command, args, env, cwd) {
   const killGraceMs = parsePositiveInt(process.env.ATOM_KILL_GRACE_MS) || 10000;
   const supervisor = supervisorWatch();
   if (supervisor?.isGone()) {
-    console.error(`atom: supervising process ${supervisor.pid} is gone; not starting.`);
+    console.error(
+      `atom: supervising process ${supervisor.pid} is gone; not starting.`
+    );
     process.exit(1);
   }
   const child = spawn(command, args, {
@@ -157,11 +164,15 @@ export function superviseRuntime(command, args, env, cwd) {
   child.on("exit", (code, signal) => {
     cleanup();
     if (stopReason === "timeout") {
-      console.error(`atom: stopped after exceeding ATOM_TIMEOUT (${timeoutMs} ms).`);
+      console.error(
+        `atom: stopped after exceeding ATOM_TIMEOUT (${timeoutMs} ms).`
+      );
       process.exit(TIMEOUT_EXIT_CODE);
     }
     if (stopReason === "supervisor") {
-      console.error(`atom: stopped because supervising process ${supervisor.pid} is gone.`);
+      console.error(
+        `atom: stopped because supervising process ${supervisor.pid} is gone.`
+      );
     }
     if (code !== null) {
       process.exit(code);
