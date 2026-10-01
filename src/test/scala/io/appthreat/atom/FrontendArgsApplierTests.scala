@@ -230,6 +230,28 @@ class FrontendArgsApplierTests extends AnyFunSuite with Matchers:
     cppKeys should contain("cpp-standard")
     cppKeys should contain("defines")
 
+  test("keysForLanguage answers every -l spelling atom accepts"):
+    val aliases = Map(
+      "c++"        -> "cpp",
+      "newc"       -> "c",
+      "hpp"        -> "h",
+      "i"          -> "h",
+      "javasrc"    -> "java",
+      "tasty"      -> "scala",
+      "jssrc"      -> "js",
+      "javascript" -> "js",
+      "typescript" -> "ts",
+      "pythonsrc"  -> "python",
+      "rubysrc"    -> "ruby",
+      "jruby"      -> "ruby"
+    )
+    aliases.foreach { case (alias, canonical) =>
+        val keys = FrontendArgsApplier.keysForLanguage(alias)
+        keys should not be empty
+        keys shouldBe FrontendArgsApplier.keysForLanguage(canonical)
+    }
+    FrontendArgsApplier.keysForLanguage("C++").map(_.name) should contain("cpp-standard")
+
   test("renderKeys produces a readable header for a known language"):
     val rendered = FrontendArgsApplier.renderKeys("python")
     rendered should include("key")

@@ -441,10 +441,27 @@ object FrontendArgsApplier:
     )
   )
 
+  /** The other `-l` spellings atom accepts, by the name [[allKeys]] lists them under. */
+  private val LanguageAliases: Map[String, String] = Map(
+    "newc"       -> "c",
+    "c++"        -> "cpp",
+    "hpp"        -> "h",
+    "i"          -> "h",
+    "javasrc"    -> "java",
+    "tasty"      -> "scala",
+    "jssrc"      -> "js",
+    "javascript" -> "js",
+    "typescript" -> "ts",
+    "pythonsrc"  -> "python",
+    "rubysrc"    -> "ruby",
+    "jruby"      -> "ruby"
+  )
+
   /** Returns the keys relevant to a given atom `-l` value, formatted for display. */
   def keysForLanguage(language: String): Seq[KeyDoc] =
     val normalized = language.trim.toLowerCase
-    allKeys.filter(_.languages.contains(normalized))
+    val canonical  = LanguageAliases.getOrElse(normalized, normalized)
+    allKeys.filter(_.languages.contains(canonical))
 
   /** Renders the supported keys for a language as a human-readable table. */
   def renderKeys(language: String): String =
