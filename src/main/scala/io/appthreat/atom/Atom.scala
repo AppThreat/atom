@@ -270,15 +270,24 @@ object Atom:
     val envDir    = Option(System.getenv("ANDROID_HOME")).map(File(_))
     val macSdkDir = File.home / "Library" / "Android" / "sdk"
     findAndroidJar(Seq(envDir, Some(macSdkDir)).flatten)
-  private val CHEN_INCLUDE_PATH = sys.env.getOrElse("CHEN_INCLUDE_PATH", "")
   // Custom include paths for c/c++
-  private val C2ATOM_INCLUDE_PATH =
-      if CHEN_INCLUDE_PATH.nonEmpty && File(
-          CHEN_INCLUDE_PATH
-        ).isDirectory
-      then CHEN_INCLUDE_PATH.split(java.io.File.pathSeparator).toSet
-      else
-        Set.empty
+  private lazy val C2ATOM_INCLUDE_PATH =
+      includePathsFrom(sys.env.getOrElse("CHEN_INCLUDE_PATH", ""))
+
+  /** The include directories listed in a `CHEN_INCLUDE_PATH` value. On Linux and macOS the entries
+    * may be separated by `:` or `;`; on Windows only by `;`, since `:` follows a drive letter there.
+    * Entries that are not directories are reported and skipped.
+    */
+  private[atom] def includePathsFrom(
+    value: String,
+    windows: Boolean = java.io.File.pathSeparatorChar == ';'
+  ): Set[String] =
+    val entries = value.split(if windows then ";" else "[:;]").map(_.trim).filter(_.nonEmpty)
+    val (dirs, missing) = entries.partition(File(_).isDirectory)
+    missing.foreach(m =>
+        System.err.println(s"CHEN_INCLUDE_PATH: '$m' is not a directory and is ignored")
+    )
+    dirs.toSet
 
   private val optionParser: OptionParser[BaseConfig] = new scopt.OptionParser[BaseConfig]("atom"):
     opt[String]('o', "output")
