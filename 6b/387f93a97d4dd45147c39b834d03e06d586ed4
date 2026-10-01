@@ -1,0 +1,25 @@
+src/test/scala/io/appthreat/atom/slicing/SliceFilesTests.scala
+  s_d0def3984b5153::t_0a322ecae79a05 1-31
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_d0def3984b5153::t_6c08de96a25c2e 991-992,1081-1083
+src/main/scala/io/appthreat/atom/slicing/SliceFiles.scala
+  s_d0def3984b5153::t_72d399d214fec1 1-37
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  s_d0def3984b5153::t_6c08de96a25c2e 227,232
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "6b387f93a97d4dd45147c39b834d03e06d586ed4",
+  "prompts": {},
+  "sessions": {
+    "s_d0def3984b5153": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2152c1a9-0695-4073-ad88-dd4f54925ca3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
