@@ -11,6 +11,7 @@ import io.appthreat.ruby2atom.Config as RubyConfig
 import io.appthreat.x2cpg.PythonDepsMode
 import io.appthreat.x2cpg.passes.frontend.AstCacheStore
 import io.appthreat.x2cpg.passes.frontend.{XTypeRecovery, XTypeRecoveryConfig}
+import org.scalatest.Inside
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 
@@ -18,7 +19,7 @@ import org.scalatest.matchers.should.Matchers
   * constructed directly and the applier is exercised in isolation, so the suite is fast and
   * independent of the analysis toolchain.
   */
-class FrontendArgsApplierTests extends AnyFunSuite with Matchers:
+class FrontendArgsApplierTests extends AnyFunSuite with Matchers with Inside:
 
   private val inputPath = System.getProperty("java.io.tmpdir")
 
@@ -229,6 +230,65 @@ class FrontendArgsApplierTests extends AnyFunSuite with Matchers:
     val cppKeys = FrontendArgsApplier.keysForLanguage("cpp").map(_.name)
     cppKeys should contain("cpp-standard")
     cppKeys should contain("defines")
+
+  test("keysForLanguage answers every -l spelling atom accepts"):
+    val aliases = Map(
+      "c++"        -> "cpp",
+      "newc"       -> "c",
+      "hpp"        -> "h",
+      "i"          -> "h",
+      "javasrc"    -> "java",
+      "tasty"      -> "scala",
+      "jssrc"      -> "js",
+      "javascript" -> "js",
+      "typescript" -> "ts",
+      "pythonsrc"  -> "python",
+      "rubysrc"    -> "ruby",
+      "jruby"      -> "ruby"
+    )
+    aliases.foreach { case (alias, canonical) =>
+        val keys = FrontendArgsApplier.keysForLanguage(alias)
+        keys should not be empty
+        keys shouldBe FrontendArgsApplier.keysForLanguage(canonical)
+    }
+    FrontendArgsApplier.keysForLanguage("C++").map(_.name) should contain("cpp-standard")
+
+  test("parseFrontendArgs keeps the commas of a list value"):
+    FrontendArgsApplier.parseFrontendArgs("includes=/a,/b,cpp-standard=c++17") shouldBe Right(
+      Map("includes" -> "/a,/b", "cpp-standard" -> "c++17")
+    )
+    FrontendArgsApplier.parseFrontendArgs("defines=DEBUG,VERSION=2") shouldBe Right(
+      Map("defines" -> "DEBUG,VERSION=2")
+    )
+    FrontendArgsApplier.parseFrontendArgs("only-ast-cache=true,") shouldBe Right(
+      Map("only-ast-cache" -> "true")
+    )
+    // a segment without a key after a non-list key is an error, as before
+    FrontendArgsApplier.parseFrontendArgs("cpp-standard=c++17,c++20").isLeft shouldBe true
+    FrontendArgsApplier.parseFrontendArgs("bare").isLeft shouldBe true
+    // keys atom does not know are kept (and later ignored), not folded into a scalar value
+    FrontendArgsApplier.parseFrontendArgs("cpp-standard=c++17,no-such-key=1") shouldBe Right(
+      Map("cpp-standard" -> "c++17", "no-such-key" -> "1")
+    )
+
+  test("--frontend-args is repeatable and carries list values"):
+    val parsed = Atom.parseConfig(
+      List(
+        "-l",
+        "c",
+        "--frontend-args",
+        "includes=/a,/b,cpp-standard=c++17",
+        "--frontend-args",
+        "defines=DEBUG,VERSION=2",
+        inputPath
+      )
+    )
+    inside(parsed) { case Right(config: AtomConfig) =>
+        config.frontendArgs("includes") shouldBe "/a,/b"
+        config.frontendArgs("cpp-standard") shouldBe "c++17"
+        FrontendArgsApplier.csv(config.frontendArgs, "defines") shouldBe Set("DEBUG", "VERSION=2")
+    }
+    Atom.parseConfig(List("-l", "c", "--frontend-args", "bare", inputPath)).isLeft shouldBe true
 
   test("renderKeys produces a readable header for a known language"):
     val rendered = FrontendArgsApplier.renderKeys("python")

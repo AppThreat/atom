@@ -270,15 +270,24 @@ object Atom:
     val envDir    = Option(System.getenv("ANDROID_HOME")).map(File(_))
     val macSdkDir = File.home / "Library" / "Android" / "sdk"
     findAndroidJar(Seq(envDir, Some(macSdkDir)).flatten)
-  private val CHEN_INCLUDE_PATH = sys.env.getOrElse("CHEN_INCLUDE_PATH", "")
   // Custom include paths for c/c++
-  private val C2ATOM_INCLUDE_PATH =
-      if CHEN_INCLUDE_PATH.nonEmpty && File(
-          CHEN_INCLUDE_PATH
-        ).isDirectory
-      then CHEN_INCLUDE_PATH.split(java.io.File.pathSeparator).toSet
-      else
-        Set.empty
+  private lazy val C2ATOM_INCLUDE_PATH =
+      includePathsFrom(sys.env.getOrElse("CHEN_INCLUDE_PATH", ""))
+
+  /** The include directories listed in a `CHEN_INCLUDE_PATH` value. On Linux and macOS the entries
+    * may be separated by `:` or `;`; on Windows only by `;`, since `:` follows a drive letter
+    * there. Entries that are not directories are reported and skipped.
+    */
+  private[atom] def includePathsFrom(
+    value: String,
+    windows: Boolean = java.io.File.pathSeparatorChar == ';'
+  ): Set[String] =
+    val entries = value.split(if windows then ";" else "[:;]").map(_.trim).filter(_.nonEmpty)
+    val (dirs, missing) = entries.partition(File(_).isDirectory)
+    missing.foreach(m =>
+        System.err.println(s"CHEN_INCLUDE_PATH: '$m' is not a directory and is ignored")
+    )
+    dirs.toSet
 
   private val optionParser: OptionParser[BaseConfig] = new scopt.OptionParser[BaseConfig]("atom"):
     opt[String]('o', "output")
@@ -303,14 +312,19 @@ object Atom:
             if x.isBlank then failure(s"Please specify a language using the --language option.")
             else success
         )
-    opt[Map[String, String]]("frontend-args")
+    opt[String]("frontend-args")
+        .unbounded()
         .text(
-          "Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,only-ast-cache=true"
+          "Advanced frontend configuration: comma-separated key=value pairs, where a list value keeps its own commas. Repeatable. E.g. --frontend-args defines=DEBUG,NDEBUG,only-ast-cache=true"
         )
+        .validate(x => FrontendArgsApplier.parseFrontendArgs(x).map(_ => ()))
         .action((x, c) =>
             c match
-              case config: AtomConfig => config.withFrontendArgs(x)
-              case _                  => c
+              case config: AtomConfig =>
+                  config.withFrontendArgs(
+                    FrontendArgsApplier.parseFrontendArgs(x).getOrElse(Map.empty)
+                  )
+              case _ => c
         )
     opt[Unit]("frontend-args-keys")
         .text(
@@ -582,7 +596,7 @@ object Atom:
         .text(
           "path to a JSON file (memory-apis.json schema) merged over the built-in memory-API " +
               "inventory by API name, declaring in-house wrappers or platform argument roles. " +
-              "C/C++ only."
+              "(C/C++ only)"
         )
         .action((x, c) =>
             c match
@@ -1526,7 +1540,10 @@ object Atom:
                 PerfReporter.stage("dataflow.FlowSummaries", "analysis") {
                     val summaries =
                         io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryComputer
-                            .computeAll(atom, io.appthreat.dataflowengineoss.DefaultSemantics())
+                            .computeAll(
+                              atom,
+                              OssDataFlow.withLanguageFlows(DefaultSemantics(), atom)
+                            )
                     new io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryTagsPass(
                       atom,
                       summaries
@@ -1667,7 +1684,10 @@ object Atom:
         case err: Throwable =>
             Left(err.getStackTrace.take(20).mkString("\n"))
 
-  private def parseConfig(parserArgs: List[String]): Either[String, BaseConfig] =
+  /** The `--help` text, as printed. */
+  private[atom] def usage: String = optionParser.usage
+
+  private[atom] def parseConfig(parserArgs: List[String]): Either[String, BaseConfig] =
       optionParser.parse(
         parserArgs,
         DefaultAtomConfig()
