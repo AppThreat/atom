@@ -1535,7 +1535,10 @@ object Atom:
                 PerfReporter.stage("dataflow.FlowSummaries", "analysis") {
                     val summaries =
                         io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryComputer
-                            .computeAll(atom, io.appthreat.dataflowengineoss.DefaultSemantics())
+                            .computeAll(
+                              atom,
+                              OssDataFlow.withLanguageFlows(DefaultSemantics(), atom)
+                            )
                     new io.appthreat.dataflowengineoss.queryengine.summaries.FlowSummaryTagsPass(
                       atom,
                       summaries
