@@ -214,6 +214,9 @@ object ReachableSlicing:
     // Deduplicate on the canonical form (see deduplicateFlows) so each finding is emitted once.
     val canonicalFlows = deduplicateFlows(flowIterator.toVector, sinkTagPattern)
 
+    // Chunks of an earlier run into the same path would otherwise survive next to fewer new ones,
+    // and consumers that read `<base>_N.json` until the first gap would pick up stale flows.
+    removeChunkFiles(outputBasePath)
     val chunkedIterator = canonicalFlows.grouped(chunkSize).zipWithIndex
     var hasFlows        = false
 
@@ -228,6 +231,19 @@ object ReachableSlicing:
       handleEmptySlices(atom, config)
       File(s"$outputBasePath.json").writeText("[]")
   end calculateReachableSliceAndPersist
+
+  /** Delete the numbered chunks (`<base>_1.json`, `<base>_2.json`, ...) written for this base path.
+    */
+  private[slicing] def removeChunkFiles(outputBasePath: String): Unit =
+    val base   = File(outputBasePath)
+    val prefix = s"${base.name}_"
+    Option(base.parent).filter(_.isDirectory).foreach { dir =>
+        dir.list(f =>
+            f.isRegularFile && f.name.startsWith(prefix) && f.name.endsWith(".json") &&
+                f.name.stripPrefix(prefix).stripSuffix(".json").forall(_.isDigit) &&
+                f.name.length > prefix.length + ".json".length
+        ).foreach(_.delete(swallowIOExceptions = true))
+    }
 
   /** Force every node's in/out edges (and their endpoints) to materialise, single-threaded. See the
     * call site for why this precedes the parallel query engine.
