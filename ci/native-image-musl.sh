@@ -140,9 +140,11 @@ echo "Building linux/${ARCH} musl native image with ${ENGINE} using ${IMAGE}"
     if [ ! -f /usr/local/bin/sbt-launch.jar ]; then
       curl -fsSL https://repo1.maven.org/maven2/org/scala-sbt/sbt-launch/1.12.11/sbt-launch-1.12.11.jar -o /usr/local/bin/sbt-launch.jar
     fi
+    # Java takes user.home from the passwd entry (/root), not from HOME, so without it sbt misses
+    # the Ivy repository mounted under HOME, and with it the locally published chen.
     cat > /usr/local/bin/sbt <<"SBT"
 #!/usr/bin/env bash
-exec java -Xms512M -Xmx4G -jar /usr/local/bin/sbt-launch.jar "$@"
+exec java -Xms512M -Xmx4G -Duser.home="$HOME" -jar /usr/local/bin/sbt-launch.jar "$@"
 SBT
     chmod +x /usr/local/bin/sbt
     sbt "GraalVMNativeImage / packageBin"
