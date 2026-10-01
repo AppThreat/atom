@@ -1,0 +1,21 @@
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_b9f6f98e1c3bda::t_ae5f0aae047a12 274-290
+src/test/scala/io/appthreat/atom/IncludePathEnvTests.scala
+  s_b9f6f98e1c3bda::t_ae5f0aae047a12 1-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "49f69eb6fe09e41792f73ae0d3e782614a01aa78",
+  "prompts": {},
+  "sessions": {
+    "s_b9f6f98e1c3bda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eb6bce3d-1e28-48ad-a820-e339060a0abd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
