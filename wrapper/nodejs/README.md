@@ -133,6 +133,9 @@ atom reachables --reuse-atom -o app.atom -s reachables.json -l java .
 | **ATOM_SCALASEM_SLICES_FILE**           | Slices file name. Defaults to `semantics.slices.json`.                                                                                                     |
 | **ATOM_JVM_ARGS**                       | Overrides the JVM arguments, including heap memory values, constructed by the atom Node.js wrapper.                                                        |
 | **ATOM_JAVA_HOME**                      | Java 21 or above to be used by atom.                                                                                                                       |
+| **ATOM_TIMEOUT**                        | Maximum run time in milliseconds, enforced by the atom Node.js wrapper: atom is stopped with SIGTERM, then SIGKILL, and the wrapper exits with status 124. |
+| **ATOM_KILL_GRACE_MS**                  | How long the wrapper waits after SIGTERM before it kills atom with SIGKILL. Default: `10000`.                                                              |
+| **ATOM_PARENT_PID**                     | Supervising process id; cdxgen sets its own. The wrapper stops atom when it exits, and passes its own id on, so atom exits if the wrapper is killed.       |
 | **PHP_CMD**                             | Overrides the PHP command used by the PHP frontend.                                                                                                        |
 | **PHP_PARSER_BIN**                      | Overrides the php-parse command used by the PHP frontend.                                                                                                  |
 | **SCALA_CMD**                           | Overrides the scala command.                                                                                                                               |

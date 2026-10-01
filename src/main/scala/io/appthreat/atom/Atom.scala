@@ -836,21 +836,22 @@ object Atom:
     help("help").text("display this help message")
 
   def main(args: Array[String]): Unit =
-      run(args) match
-        case Right(_) =>
-        case Left(errMsg) =>
-            if errMsg == null then
-              println("Unexpected error")
-            else if errMsg.nonEmpty && errMsg.contains(
-                "storage metadata does not contain version number"
-              )
-            then
-              println(
-                "Existing app.atom appears to be corrupted. Please remove and re-run this command."
-              )
-            else
-              println(s"Failure: $errMsg")
-            System.exit(1)
+    ProcessSupervision.install()
+    run(args) match
+      case Right(_) =>
+      case Left(errMsg) =>
+          if errMsg == null then
+            println("Unexpected error")
+          else if errMsg.nonEmpty && errMsg.contains(
+              "storage metadata does not contain version number"
+            )
+          then
+            println(
+              "Existing app.atom appears to be corrupted. Please remove and re-run this command."
+            )
+          else
+            println(s"Failure: $errMsg")
+          System.exit(1)
 
   private[atom] def run(args: Array[String]): Either[String, String] =
     val parserArgs = args.toList
@@ -987,8 +988,8 @@ object Atom:
     runChennaiTags(config, ag)
     val slice = calculateUsagesSlice(ag, config)
     slice.foreach { s =>
-      val outFile = config.outputSliceFile.createFileIfNotExists(createParents = true)
-      s.toJsonFile(outFile)
+      val outFile = config.outputSliceFile
+      SliceFiles.writeAtomically(outFile)(s.toJsonFile)
       println(s"Slices have been successfully written to ${outFile.pathAsString}")
     }
     handleEndpointExtraction(config, usagesConfig)
@@ -1077,11 +1078,9 @@ object Atom:
 
   private def saveSlice(outFile: File, programSlice: Option[String]): Unit =
       programSlice.foreach { slice =>
-        val finalOutputPath =
-            File(outFile.pathAsString)
-                .createFileIfNotExists(createParents = true)
-                .write(slice)
-                .pathAsString
+        val target = File(outFile.pathAsString)
+        SliceFiles.writeAtomically(target)(_.write(slice))
+        val finalOutputPath = target.pathAsString
         println(s"Slices have been successfully written to $finalOutputPath")
       }
 

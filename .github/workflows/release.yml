@@ -449,6 +449,7 @@ jobs:
           distribution: 'temurin'
           java-version: '23'
       - uses: sbt/setup-sbt@bfea3c5f48abd221b04a6df4798aa5eb8b6a2baf  # v1.5.6
+      - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
       - name: Install deps
         run: |
           sudo apt update -y

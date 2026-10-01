@@ -2,14 +2,19 @@
 
 import { platform as _platform } from "node:os";
 import { dirname, join, delimiter } from "node:path";
-import { readFileSync, realpathSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { locateAtomBinary, describeAtomSearch } from "./resolve.js";
+import { splitRuntimeOptions, superviseRuntime } from "./supervise.js";
+
+export { TIMEOUT_EXIT_CODE } from "./supervise.js";
 
 const isWin = _platform() === "win32";
 const dirName = dirname(fileURLToPath(import.meta.url));
-const selfPJson = JSON.parse(readFileSync(join(dirName, "package.json"), "utf8"));
+const selfPJson = JSON.parse(
+  readFileSync(join(dirName, "package.json"), "utf8")
+);
 export const ATOM_VERSION = selfPJson.version;
 
 export const JVM_ARGS = "-XX:MinRAMPercentage=30 -XX:MaxRAMPercentage=90";
@@ -50,21 +55,27 @@ function detectJava() {
 
 export const executeAtom = (atomArgs) => {
   if (!provider) {
-    console.error("Error: The '@appthreat/atom' package was not installed correctly or is unsupported on this platform.");
-    console.error("Please verify your installation and make sure optional dependencies are not blocked.");
+    console.error(
+      "Error: The '@appthreat/atom' package was not installed correctly or is unsupported on this platform."
+    );
+    console.error(
+      "Please verify your installation and make sure optional dependencies are not blocked."
+    );
     // Dump the full resolution search so installation issues are diagnosable from
     // CI logs without needing to re-run with ATOM_DEBUG.
     try {
       const diag = describeAtomSearch();
       console.error(
         `\n[atom] resolution diagnostics:\n` +
-        `  dispatcher dir: ${diag.selfDir}\n` +
-        `  platform=${diag.platform} arch=${diag.arch} libc=${diag.libc}\n` +
-        `  preferred package: ${diag.preferredPkg}\n` +
-        `  paths checked (${diag.attempts.length}):`
+          `  dispatcher dir: ${diag.selfDir}\n` +
+          `  platform=${diag.platform} arch=${diag.arch} libc=${diag.libc}\n` +
+          `  preferred package: ${diag.preferredPkg}\n` +
+          `  paths checked (${diag.attempts.length}):`
       );
       for (const a of diag.attempts) {
-        console.error(`    [${a.exists ? "found" : "missing"}] (${a.pkg}, ${a.kind}) ${a.path}`);
+        console.error(
+          `    [${a.exists ? "found" : "missing"}] (${a.pkg}, ${a.kind}) ${a.path}`
+        );
       }
     } catch (e) {
       console.error(`[atom] failed to produce diagnostics: ${e?.message || e}`);
@@ -73,67 +84,56 @@ export const executeAtom = (atomArgs) => {
   }
 
   const cwd = process.env.ATOM_CWD || process.cwd();
-  const timeout = process.env.ATOM_TIMEOUT ? parseInt(process.env.ATOM_TIMEOUT, 10) : undefined;
+  // A caller-supplied PHP_PARSER_BIN wins: the default below does not exist for the native
+  // packages, which do not ship php-parse.
+  const env = {
+    ...process.env,
+    ATOM_HOME,
+    PHP_PARSER_BIN: process.env.PHP_PARSER_BIN || PHP_PARSER_BIN
+  };
 
   if (provider.kind === "native") {
-    const env = {
-      ...process.env,
-      ATOM_HOME,
-      PHP_PARSER_BIN
-    };
-    const result = spawnSync(provider.binPath, atomArgs, {
-      encoding: "utf-8",
-      env,
-      cwd,
-      stdio: "inherit",
-      timeout
-    });
-    process.exit(result.status !== null ? result.status : 1);
-  } else {
-    if (!detectJava()) {
-      const atomJavaHome = process.env.ATOM_JAVA_HOME || process.env.JAVA_HOME;
-      if (atomJavaHome) {
-        process.env.PATH =
-          join(atomJavaHome, "bin") + delimiter + process.env.PATH + delimiter;
-      } else {
-        console.warn(
-          "A Java JDK is not installed or can't be found. Please install JDK version 21 or higher before running atom."
-        );
-        process.exit(1);
-      }
-    }
-
-    let JAVACMD = "java";
-    if (process.env.JAVA_HOME) {
-      JAVACMD = join(process.env.JAVA_HOME, "bin", "java" + (isWin ? ".exe" : ""));
-    }
-
-    const atomLibs = [APP_CLASSPATH];
-    let args = JAVA_OPTS.trim()
-      .split(" ")
-      .concat([
-        "-cp",
-        atomLibs.join(delimiter),
-        `-Dlog4j2.configurationFile=${LOG4J_CONFIG}`,
-        APP_MAIN_CLASS,
-        ...atomArgs
-      ]);
-
-    const env = {
-      ...process.env,
-      ATOM_HOME,
-      PHP_PARSER_BIN
-    };
-
-    const result = spawnSync(JAVACMD, args, {
-      encoding: "utf-8",
-      env,
-      cwd,
-      stdio: "inherit",
-      timeout
-    });
-    process.exit(result.status !== null ? result.status : 1);
+    superviseRuntime(provider.binPath, atomArgs, env, cwd);
+    return;
   }
+  if (!detectJava()) {
+    const atomJavaHome = process.env.ATOM_JAVA_HOME || process.env.JAVA_HOME;
+    if (atomJavaHome) {
+      process.env.PATH =
+        join(atomJavaHome, "bin") + delimiter + process.env.PATH + delimiter;
+      env.PATH = process.env.PATH;
+    } else {
+      console.warn(
+        "A Java JDK is not installed or can't be found. Please install JDK version 21 or higher before running atom."
+      );
+      process.exit(1);
+    }
+  }
+
+  let JAVACMD = "java";
+  if (process.env.JAVA_HOME) {
+    JAVACMD = join(
+      process.env.JAVA_HOME,
+      "bin",
+      "java" + (isWin ? ".exe" : "")
+    );
+  }
+
+  // Runtime options given in front of the atom arguments belong to the JVM. They come after
+  // JAVA_OPTS so that an explicit heap size overrides the default RAM percentages.
+  const { runtimeOptions, programArgs } = splitRuntimeOptions(atomArgs);
+  const atomLibs = [APP_CLASSPATH];
+  const args = JAVA_OPTS.trim()
+    .split(" ")
+    .filter(Boolean)
+    .concat(runtimeOptions, [
+      "-cp",
+      atomLibs.join(delimiter),
+      `-Dlog4j2.configurationFile=${LOG4J_CONFIG}`,
+      APP_MAIN_CLASS,
+      ...programArgs
+    ]);
+  superviseRuntime(JAVACMD, args, env, cwd);
 };
 
 if (process.argv[1]) {
