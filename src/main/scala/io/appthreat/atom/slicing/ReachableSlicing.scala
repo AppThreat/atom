@@ -237,11 +237,17 @@ object ReachableSlicing:
   private[slicing] def removeChunkFiles(outputBasePath: String): Unit =
     val base   = File(outputBasePath)
     val prefix = s"${base.name}_"
+    // A run killed between writing a slices file and renaming it into place leaves its hidden
+    // temporary file (see SliceFiles.writeAtomically) next to the chunks; it goes with them.
+    val tempPrefix = s".${base.name}"
     Option(base.parent).filter(_.isDirectory).foreach { dir =>
         dir.list(f =>
-            f.isRegularFile && f.name.startsWith(prefix) && f.name.endsWith(".json") &&
-                f.name.stripPrefix(prefix).stripSuffix(".json").forall(_.isDigit) &&
-                f.name.length > prefix.length + ".json".length
+            f.isRegularFile && (
+              (f.name.startsWith(prefix) && f.name.endsWith(".json") &&
+                  f.name.stripPrefix(prefix).stripSuffix(".json").forall(_.isDigit) &&
+                  f.name.length > prefix.length + ".json".length) ||
+                  (f.name.startsWith(tempPrefix) && f.name.endsWith(".tmp"))
+            )
         ).foreach(_.delete(swallowIOExceptions = true))
     }
 

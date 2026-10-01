@@ -7,7 +7,7 @@ import org.scalatest.matchers.should.Matchers
 /** A reachables run must not leave the numbered chunks of an earlier, larger run behind. */
 class ReachableChunkFilesTests extends AnyFunSuite with Matchers:
 
-  test("only the numbered chunks of the base path are removed"):
+  test("only the numbered chunks and leftover temporary files of the base path are removed"):
     File.usingTemporaryDirectory("atom-chunks") { dir =>
       val names = Seq(
         "python-reachables.slices.json",
@@ -16,7 +16,10 @@ class ReachableChunkFilesTests extends AnyFunSuite with Matchers:
         "python-reachables.slices_.json",
         "python-reachables.slices_x.json",
         "python-reachables.slices_1.json.bak",
-        "js-reachables.slices_1.json"
+        "js-reachables.slices_1.json",
+        ".python-reachables.slices.json.4242.tmp",
+        ".python-reachables.slices_3.json.4242.tmp",
+        ".js-reachables.slices.json.4242.tmp"
       )
       names.foreach(n => (dir / n).writeText("[]"))
       ReachableSlicing.removeChunkFiles((dir / "python-reachables.slices").pathAsString)
@@ -25,7 +28,8 @@ class ReachableChunkFilesTests extends AnyFunSuite with Matchers:
         "python-reachables.slices_.json",
         "python-reachables.slices_x.json",
         "python-reachables.slices_1.json.bak",
-        "js-reachables.slices_1.json"
+        "js-reachables.slices_1.json",
+        ".js-reachables.slices.json.4242.tmp"
       )
     }
 
