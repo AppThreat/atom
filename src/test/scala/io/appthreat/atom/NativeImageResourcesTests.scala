@@ -10,10 +10,9 @@ import java.util.zip.ZipFile
 import scala.jdk.CollectionConverters.*
 import scala.util.Using
 
-/** A native image only carries the classpath resources its resource config names; a resource a
-  * pass loads but the config misses is silently absent from the native binary (the loaders fall
-  * back to an empty vocabulary). Every data file at the root of the chen jars atom ships must be
-  * covered.
+/** A native image only carries the classpath resources its resource config names; a resource a pass
+  * loads but the config misses is silently absent from the native binary (the loaders fall back to
+  * an empty vocabulary). Every data file at the root of the chen jars atom ships must be covered.
   */
 class NativeImageResourcesTests extends AnyFunSuite with Matchers:
 
@@ -58,7 +57,7 @@ class NativeImageResourcesTests extends AnyFunSuite with Matchers:
       globs.exists(g => FileSystems.getDefault.getPathMatcher(s"glob:$g").matches(Paths.get(name)))
 
   test("the resource config parses and lists the chen vocabularies"):
-    globs should contain allOf ("component-tags.json", "memory-apis.json", "trackers.json")
+    (globs should contain).allOf("component-tags.json", "memory-apis.json", "trackers.json")
 
   test("every data file at the root of a bundled chen jar is in the native resource config"):
     val files = chenArtifacts.flatMap(rootDataFiles).distinct

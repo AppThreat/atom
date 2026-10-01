@@ -459,9 +459,11 @@ object FrontendArgsApplier:
         .foldLeft(Right(Vector.empty): Either[String, Vector[(String, String)]]) {
             case (Left(err), _) => Left(err)
             case (Right(pairs), segment) =>
-                val eq       = segment.indexOf('=')
-                val key      = if eq > 0 then segment.take(eq).trim else ""
-                val listOpen = pairs.lastOption.exists { case (k, _) => known.get(k).contains("csv") }
+                val eq  = segment.indexOf('=')
+                val key = if eq > 0 then segment.take(eq).trim else ""
+                val listOpen = pairs.lastOption.exists { case (k, _) =>
+                    known.get(k).contains("csv")
+                }
                 if listOpen && !known.contains(key) then
                   val (k, v) = pairs.last
                   Right(pairs.init :+ (k -> s"$v,$segment"))

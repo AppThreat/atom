@@ -7,12 +7,18 @@ import org.scalatest.matchers.should.Matchers
 class IncludePathEnvTests extends AnyFunSuite with Matchers:
 
   test("every directory in a CHEN_INCLUDE_PATH list is used, missing ones are skipped"):
-    val first   = File.newTemporaryDirectory("inc-a").deleteOnExit()
-    val second  = File.newTemporaryDirectory("inc-b").deleteOnExit()
-    val missing = (first / "does-not-exist").pathAsString
+    val first    = File.newTemporaryDirectory("inc-a").deleteOnExit()
+    val second   = File.newTemporaryDirectory("inc-b").deleteOnExit()
+    val missing  = (first / "does-not-exist").pathAsString
     val expected = Set(first.pathAsString, second.pathAsString)
-    Atom.includePathsFrom(s"${first.pathAsString}:${second.pathAsString}:$missing", windows = false) shouldBe expected
-    Atom.includePathsFrom(s"${first.pathAsString};${second.pathAsString}", windows = false) shouldBe expected
+    Atom.includePathsFrom(
+      s"${first.pathAsString}:${second.pathAsString}:$missing",
+      windows = false
+    ) shouldBe expected
+    Atom.includePathsFrom(
+      s"${first.pathAsString};${second.pathAsString}",
+      windows = false
+    ) shouldBe expected
     Atom.includePathsFrom(first.pathAsString, windows = false) shouldBe Set(first.pathAsString)
     Atom.includePathsFrom("", windows = false) shouldBe Set.empty
 

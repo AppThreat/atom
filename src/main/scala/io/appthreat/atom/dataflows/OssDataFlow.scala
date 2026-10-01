@@ -38,7 +38,7 @@ class OssDataFlow(opts: OssDataFlowOptions)(implicit
   override val description: String = OssDataFlow.description
 
   override def create(context: LayerCreatorContext, storeUndoInfo: Boolean): Unit =
-    val cpg       = context.cpg
+    val cpg                  = context.cpg
     val semantics: Semantics = OssDataFlow.withLanguageFlows(s, cpg)
     // The static-member pass runs after the per-method reaching definitions: it adds the edges
     // BETWEEN methods that a per-method computation cannot see - a value parked in a static field

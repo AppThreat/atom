@@ -23,4 +23,3 @@ class CliDocsTests extends AnyFunSuite with Matchers:
       test(s"$path shows the current --help text"):
         documentedHelp(File(path)) shouldBe normalise(Atom.usage)
   }
-end CliDocsTests

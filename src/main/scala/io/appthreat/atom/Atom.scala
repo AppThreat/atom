@@ -275,8 +275,8 @@ object Atom:
       includePathsFrom(sys.env.getOrElse("CHEN_INCLUDE_PATH", ""))
 
   /** The include directories listed in a `CHEN_INCLUDE_PATH` value. On Linux and macOS the entries
-    * may be separated by `:` or `;`; on Windows only by `;`, since `:` follows a drive letter there.
-    * Entries that are not directories are reported and skipped.
+    * may be separated by `:` or `;`; on Windows only by `;`, since `:` follows a drive letter
+    * there. Entries that are not directories are reported and skipped.
     */
   private[atom] def includePathsFrom(
     value: String,
