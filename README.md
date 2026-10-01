@@ -105,19 +105,53 @@ docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthre
 ## CLI Usage
 
 ```
-Usage: atom [parsedeps|data-flow|usages|reachables|export|algorithms] [options] [input]
+Usage: atom [parsedeps|data-flow|usages|reachables|memory-safety|export|algorithms] [options] [input]
 
-  input                    source file or directory
   -o, --output <value>     output filename. Default app.⚛ or app.atom in windows
   -s, --slice-outfile <value>
                            export intra-procedural slices as json
   -l, --language <value>   source language
-  --frontend-args <value>  Advanced frontend configuration (key=value). E.g. --frontend-args defines=DEBUG,cpp-standard=c++17
+  --frontend-args <value>  Advanced frontend configuration: comma-separated key=value pairs, where a list value keeps its own commas. Repeatable. E.g. --frontend-args defines=DEBUG,NDEBUG,only-ast-cache=true
+  --frontend-args-keys     Print the supported --frontend-args keys for the selected language (-l) and exit.
+  --exclude <value>        Comma-separated files/folders to exclude (relative to input or absolute).
+  --exclude-regex <value>  Regex of file paths to exclude during analysis.
+  --no-ast-cache           Disable the on-disk AST cache for this run (default: enabled).
+  --cache-dir <value>      Directory for the AST cache (default: <input>/.chen).
+  --schema-check           Enable early schema validation during AST creation.
+  --no-dummy-types         Disable placeholder dummy types during type propagation.
+  --type-prop-iterations <value>
+                           Maximum iterations of type propagation (applies to supported frontends).
+  --cache <value>          Cache mode: all (default) | none | no-ast | no-cpg | no-astgen | no-summary.
+  --perf-report <value>    Opt-in per-stage performance report: pass a file path to have atom append NDJSON lines (wall ms, applying-thread CPU ms / allocated MB) for every frontend, pass, dataflow and slicing stage. Separate analysis from verification timing with it.
+  --cpp-standard <value>   C/C++ standard, e.g. c++17, c++20. (C/C++ only)
+  --define <value>         Define a preprocessor name. Repeatable. (C/C++ only)
+  --auto-defines           Run a macro census first and define the build-option macros (CONFIG_*, ENABLE_*, template-declared) that hide #if code. Opt-in: it changes what is analysed. (C/C++ only)
+  --suggest-defines <file>
+                           Write the macro census to <file>.json and a reviewable --macro-files header to <file>.h, then exit; with --auto-defines, write it and continue. (C/C++ only)
+  --include-path <value>   Header include path. Repeatable. (C/C++ only)
+  --delombok-mode <value>  Delombok strategy: no-delombok|default|types-only|run-delombok. (Java only)
+  --jdk-path <value>       JDK used to resolve builtin Java types. (Java only)
+  --fetch-deps             Fetch dependency jars for extra type information. (Java only)
+  --ts-types <value>       Resolve types from TypeScript declarations (default: true). (JS/TS only)
+  --flow                   Enable Flow mode. (JS only)
+  --venv-dir <value>       Virtual-environment directory (default: .venv). (Python only)
+  --ignore-paths <value>   Comma-separated paths to ignore from analysis. (Python only)
+  --android-sdk <value>    Path to android.jar for APK analysis. (Jimple/Android only)
+  --solver-depth <value>   Recursive jar unpacking depth (default: 1). (Jimple/Scala only)
+  --full-resolver          Enable whole-program, transitive call resolution. (Jimple/Scala only)
+  --php-ini <value>        php.ini path for the PHP parser. (PHP only)
+  --disable-type-stubs     Disable type-stub based type recovery. (Ruby only)
   --with-data-deps         generate the atom with data-dependencies - defaults to `false`
   --remove-atom            do not persist the atom file - defaults to `false`
-  --reuse-atom             reuse existing atom file - defaults to `false`
   -x, --export-atom        export the atom file with data-dependencies to graphml - defaults to `false`
+  --reuse-atom             reuse existing atom file - defaults to `false`
   --export-dir <value>     export directory. Default: atom-exports
+  --export-format <value>  export format graphml or dot. Default: graphml
+  --config <value>         path to a JSON config file for the export and algorithms commands
+  --memory-api-config <value>
+                           path to a JSON file (memory-apis.json schema) merged over the built-in memory-API inventory by API name, declaring in-house wrappers or platform argument roles. (C/C++ only)
+  --validation-config <value>
+                           path to a JSON file declaring validators/sanitisers (chennai.json schema). Reachable flows passing through a declared sanitiser are dropped for its categories.
   --file-filter <value>    the name of the source file to generate slices from. Uses regex.
   --method-name-filter <value>
                            filters in slices that go through specific methods by names. Uses regex.
@@ -126,9 +160,8 @@ Usage: atom [parsedeps|data-flow|usages|reachables|export|algorithms] [options] 
   --method-annotation-filter <value>
                            filters in slices that go through methods with specific annotations on the methods. Uses regex.
   --max-num-def <value>    maximum number of definitions in per-method data flow calculation - defaults to 2000
-  --legacy-dataflow        use the classic data-flow engine and disable mini-graph fragment caching and method flow summaries. By default atom uses the faster, lower-allocation Flux engine with fragment caching and summary-guided pruning enabled.
-  --validation-config <value>  path to a JSON file declaring validators/sanitisers (chennai.json schema). Reachable flows passing through a declared sanitiser are dropped for its categories.
-  --perf-report <value>     opt-in per-stage performance report - pass a file path to append NDJSON lines (wall ms, CPU ms, allocated MB) for every frontend, pass, dataflow and slicing stage
+  --legacy-dataflow        use the classic data-flow engine and disable mini-graph fragment caching. By default atom uses the faster, lower-allocation Flux engine with fragment caching enabled.
+  input                    source file or directory
 Command: parsedeps
 Extract dependencies from the build file and imports
 Command: data-flow [options]
@@ -144,8 +177,14 @@ Command: reachables [options]
 Extract reachable data-flow slices based on automated framework tags
   --source-tag <value>     source tag - defaults to framework-input. Comma-separated values allowed.
   --sink-tag <value>       sink tag - defaults to framework-output. Comma-separated values allowed.
+  --slice-depth <value>    the max depth to traverse the DDG during reverse reachability - defaults to 7.
   --include-crypto         includes crypto library flows - defaults to false.
   --profile <value>        reduce false positives with a flow-filtering profile: appsec, generic. Defaults to generic (no extra filtering).
+Command: memory-safety [options]
+Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON
+  --min-confidence <value>
+                           drop findings below this confidence: high, medium or low. Defaults to keeping all.
+  --format <value>         output format: json (sarif is planned). Default: json.
 Command: export [options]
 Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)
   --format <value>         export format: dot, graphml, gexf, graphson, neo4jcsv or gnn
@@ -157,7 +196,6 @@ Run a graph algorithm over the atom and write the result as JSON
   --source <value>         source method full-name pattern for the paths algorithm. Uses regex.
   --target <value>         target method full-name pattern for the paths algorithm. Uses regex.
   --max-depth <value>      maximum path depth for the paths algorithm
-  --config <value>         path to a JSON config file for the export and algorithms commands
   --help                   display this help message
 ```
 
@@ -491,7 +529,7 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 | **CHEN_PHP_IGNORE_DIRS**                | Comma-separated list of additional directories to ignore for the PHP frontend.                                                                             |
 | **CHEN_RUBY_IGNORE_DIRS**               | Comma-separated list of additional directories to ignore for the Ruby frontend.                                                                            |
 | **CHEN_DELOMBOK_MODE**                  | Delombok mode for the Java frontend (`no-delombok`, `default`, `types-only`, `run-delombok`).                                                              |
-| **CHEN_INCLUDE_PATH**                   | Include directories for the C frontend. Separate paths with `:` or `;`.                                                                                    |
+| **CHEN_INCLUDE_PATH**                   | Include directories for the C frontend. Separate paths with `:` or `;` (only `;` on Windows).                                                              |
 | **CHEN_ASTGEN_OUT**                     | Existing astgen output directory. Improves performance for JavaScript, TypeScript, and Flow during repeated invocations by reusing existing AST json data. |
 | **ATOM_TOOLS_OPENAPI_FORMAT**           | OpenAPI format for atom-tools. Default: `openapi3.1.0`; alternative: `openapi3.0.1`.                                                                       |
 | **ATOM_TOOLS_WORK_DIR**                 | Working directory for atom-tools. Defaults to atom input path.                                                                                             |
@@ -621,7 +659,8 @@ devenv --option config.profile:string php shell
 
 For complex projects you may need to pass granular configuration options to the underlying language frontend. You can achieve this using the `--frontend-args` flag.
 
-This flag accepts a comma-separated list of key-value pairs in the format `key=value`.
+This flag accepts a comma-separated list of key-value pairs in the format `key=value`, and may be
+given more than once. A list value keeps its own commas (`includes=/a,/b`).
 
 ### Usage
 
@@ -631,21 +670,30 @@ This flag accepts a comma-separated list of key-value pairs in the format `key=v
 
 ### Supported Arguments (C/C++)
 
-The following arguments are supported when `--language` is set to `c`, `cpp`, or `c++`.
+The following arguments are supported when `--language` is `c`, `cpp` or `c++`, and by the
+header-only modes `h`, `hpp` and `i`. `atom -l c --frontend-args-keys` lists every key with its
+default.
 
-| Key                    | Type    | Description                                                                     | Example                       |
-| :--------------------- | :------ | :------------------------------------------------------------------------------ | :---------------------------- |
-| `defines`              | List    | Comma-separated preprocessor definitions.                                       | `defines=DEBUG,VERSION=2`     |
-| `includes`             | List    | Additional header include paths.                                                | `includes=/opt/local/include` |
-| `cpp-standard`         | String  | The C++ standard version to use.                                                | `cpp-standard=c++17`          |
-| `function-bodies`      | Boolean | Whether to extract function bodies.                                             | `function-bodies=false`       |
-| `parse-inactive-code`  | Boolean | Parse code within disabled preprocessor blocks (e.g., inside `#if 0`).          | `parse-inactive-code=true`    |
-| `with-image-locations` | Boolean | Create image locations (explains how a name made it into the translation unit). | `with-image-locations=true`   |
-| `enable-ast-cache`     | Boolean | Cache parsed ASTs to disk to speed up subsequent runs on unchanged files.       | `enable-ast-cache=true`       |
-| `ast-cache-dir`        | String  | Directory to store cached AST files. Defaults to `ast_out` in input directory.  | `ast-cache-dir=/tmp/cache`    |
-| `only-ast-cache`       | Boolean | Only generate AST cache files and exit. Useful for large projects to avoid OOM. | `only-ast-cache=true`         |
+| Key                      | Type    | Description                                                                               | Example                           |
+| :----------------------- | :------ | :---------------------------------------------------------------------------------------- | :-------------------------------- |
+| `defines`                | List    | Preprocessor definitions.                                                                 | `defines=DEBUG,VERSION=2`         |
+| `includes`               | List    | Additional header include paths (alias: `include-paths`).                                 | `includes=/opt/a/include,/opt/b`  |
+| `include-files`          | List    | Header files to include in every translation unit.                                        | `include-files=config.h`          |
+| `macro-files`            | List    | Files whose macro definitions apply to every translation unit.                            | `macro-files=build/defs.h`        |
+| `cpp-standard`           | String  | The C++ standard version to use.                                                          | `cpp-standard=c++17`              |
+| `auto-defines`           | Boolean | Run the macro census and define the build-option macros it finds before parsing.          | `auto-defines=true`               |
+| `macro-census`           | String  | Write the macro census to `<file>.json` and `<file>.h`.                                   | `macro-census=/tmp/census`        |
+| `include-auto-discovery` | Boolean | Ask `gcc` and `clang` for the system include paths and guess the project's include dirs.  | `include-auto-discovery=true`     |
+| `function-bodies`        | Boolean | Parse function bodies (default `true`).                                                   | `function-bodies=false`           |
+| `parse-inactive-code`    | Boolean | Parse code within disabled preprocessor blocks (e.g., inside `#if 0`).                    | `parse-inactive-code=true`        |
+| `with-image-locations`   | Boolean | Create image locations (explains how a name made it into the translation unit).           | `with-image-locations=true`       |
+| `enable-ast-cache`       | Boolean | Cache parsed ASTs to disk to speed up later runs on unchanged files (default `true`).     | `enable-ast-cache=false`          |
+| `ast-cache-dir`          | String  | Directory to store cached AST files. Defaults to `.chen` in the input directory.          | `ast-cache-dir=/tmp/cache`        |
+| `only-ast-cache`         | Boolean | Only generate AST cache files and exit. Useful for large projects to avoid OOM.           | `only-ast-cache=true`             |
 
-> **Note:** Boolean values must be passed as the strings `true` or `false`.
+> **Note:** Boolean values must be passed as the strings `true` or `false`. A list value keeps its
+> own commas: `--frontend-args includes=/a,/b,cpp-standard=c++17` sets two include paths and the
+> standard.
 
 ### Supported Arguments (Python)
 
@@ -674,9 +722,8 @@ graph - from none at all to the whole dependency tree with method bodies:
 Generate an atom for a C++ project using C++17.
 
 ```bash
-java -jar atom.jar \
-  --language c++ \
-  --frontend-args cpp-standard=c++17 \
+atom -l c++ -o app.atom \
+  --frontend-args cpp-standard=c++17,defines=NDEBUG,VERSION=2 \
   ./my-cpp-project
 ```
 
@@ -684,8 +731,7 @@ java -jar atom.jar \
 If your project relies on headers located outside the source tree:
 
 ```bash
-java -jar atom.jar \
-  --language c \
+atom -l c -o app.atom \
   --frontend-args includes=/usr/local/include,/opt/mylib/include \
   ./src
 ```
@@ -694,33 +740,24 @@ java -jar atom.jar \
 To include code hidden behind preprocessor directives (like `#ifdef WINDOWS` when running on Linux):
 
 ```bash
-java -jar atom.jar \
-  --language c \
-  --frontend-args parse-inactive-code=true \
-  ./src
+atom -l c -o app.atom --frontend-args parse-inactive-code=true ./src
 ```
 
 **4. Large Projects: Two-Stage Generation (Memory Optimization)**
 For very large C/C++ codebases, generating the full graph in one pass might consume too much memory. You can split the process into two stages using the AST cache.
 
 _Stage 1: Generate AST Cache Only_
-This parses files one by one and saves their ASTs to disk (`./src/ast_out` by default), keeping memory usage low.
+This parses files one by one and saves their ASTs to disk (`./src/.chen` by default), keeping memory usage low.
 
 ```bash
-java -jar atom.jar \
-  --language c \
-  --frontend-args only-ast-cache=true,ast-cache-dir=/tmp/cache \
-  ./src
+atom -l c -o app.atom --frontend-args only-ast-cache=true,ast-cache-dir=/tmp/cache ./src
 ```
 
 _Stage 2: Generate Atom from Cache_
 Run the command again with caching enabled. It will load the pre-computed ASTs from disk, significantly speeding up graph creation.
 
 ```bash
-java -jar atom.jar \
-  --language c \
-  --frontend-args enable-ast-cache=true,ast-cache-dir=/tmp/cache \
-  ./src
+atom -l c -o app.atom --frontend-args enable-ast-cache=true,ast-cache-dir=/tmp/cache ./src
 ```
 
 ## Troubleshooting

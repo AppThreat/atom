@@ -295,7 +295,13 @@ object FrontendArgsApplier:
       "Write the macro census to <file>.json and <file>.h.",
       CLike
     ),
-    KeyDoc("include-auto-discovery", "bool", "false", "Auto-discover system header paths.", CLike),
+    KeyDoc(
+      "include-auto-discovery",
+      "bool",
+      "false",
+      "Ask gcc and clang for the system include paths and guess the project's include directories.",
+      CLike
+    ),
     KeyDoc("function-bodies", "bool", "true", "Parse function and method bodies.", CLike),
     KeyDoc(
       "with-image-locations",
