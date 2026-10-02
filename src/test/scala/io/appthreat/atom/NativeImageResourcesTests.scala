@@ -65,6 +65,26 @@ class NativeImageResourcesTests extends AnyFunSuite with Matchers:
   test("the resource config parses and lists the chen vocabularies"):
     (globs should contain).allOf("component-tags.json", "memory-apis.json", "trackers.json")
 
+  /** The service registrations of an artifact (`META-INF/services/<interface>`). */
+  private def serviceFiles(cls: Class[?]): List[String] =
+    val location = Paths.get(cls.getProtectionDomain.getCodeSource.getLocation.toURI)
+    def isService(name: String): Boolean =
+        name.startsWith("META-INF/services/") && !name.endsWith("/")
+    if location.toString.endsWith(".jar") then
+      Using.resource(ZipFile(location.toFile)) { zip =>
+          zip.entries.asScala.map(_.getName).filter(isService).toList
+      }
+    else
+      val root = File(location)
+      root.listRecursively.filter(_.isRegularFile).map(f => root.relativize(f).toString)
+          .filter(isService).toList
+
+  test("every service a bundled chen jar registers is in the native resource config"):
+    val files = chenArtifacts.flatMap(serviceFiles).distinct
+    // CDT's plugin finds its bundle through this service outside an OSGi runtime
+    files should contain("META-INF/services/org.osgi.framework.connect.FrameworkUtilHelper")
+    files.filterNot(covered) shouldBe empty
+
   test("every data file of a bundled chen jar is in the native resource config"):
     val files = chenArtifacts.flatMap(dataFiles).distinct
     files should contain("memory-apis.json")

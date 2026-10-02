@@ -411,6 +411,10 @@
   "fields":[{"name":"io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"}]
 },
 {
+  "name":"io.appthreat.c2cpg.parser.CdtBundleLocator",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"io.appthreat.dataflowengineoss.language.Path$",
   "fields":[{"name":"maxTrackedWidth$lzy1"}]
 },
@@ -1962,6 +1966,10 @@
 {
   "name":"org.eclipse.core.internal.utils.Messages",
   "allDeclaredFields":true
+},
+{
+  "name":"org.eclipse.core.runtime.Plugin",
+  "fields":[{"name":"bundle", "allowWrite":true}]
 },
 {
   "name":"org.h2.mvstore.MVStore$TxCounter",
