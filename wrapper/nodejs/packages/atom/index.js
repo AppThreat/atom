@@ -75,12 +75,19 @@ export const executeAtom = (atomArgs) => {
   const cwd = process.env.ATOM_CWD || process.cwd();
   const timeout = process.env.ATOM_TIMEOUT ? parseInt(process.env.ATOM_TIMEOUT, 10) : undefined;
 
+  // A caller-provided PHP_PARSER_BIN (cdxgen resolves the real phpastgen/php-parse
+  // location) wins over the location derived from ATOM_HOME: for a native sub-package
+  // install `join(ATOM_HOME, "bin", "php-parse")` does not exist, and clobbering the
+  // caller's value used to break the PHP frontend on native platforms.
+  const childEnv = (extra = {}) => ({
+    ...process.env,
+    ATOM_HOME,
+    ...(process.env.PHP_PARSER_BIN ? {} : { PHP_PARSER_BIN }),
+    ...extra
+  });
+
   if (provider.kind === "native") {
-    const env = {
-      ...process.env,
-      ATOM_HOME,
-      PHP_PARSER_BIN
-    };
+    const env = childEnv();
     const result = spawnSync(provider.binPath, atomArgs, {
       encoding: "utf-8",
       env,
@@ -119,11 +126,7 @@ export const executeAtom = (atomArgs) => {
         ...atomArgs
       ]);
 
-    const env = {
-      ...process.env,
-      ATOM_HOME,
-      PHP_PARSER_BIN
-    };
+    const env = childEnv();
 
     const result = spawnSync(JAVACMD, args, {
       encoding: "utf-8",
