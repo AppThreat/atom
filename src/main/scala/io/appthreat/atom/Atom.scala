@@ -457,6 +457,23 @@ object Atom:
               case config: AtomConfig => config.withAppendedFrontendArg("includes", x)
               case _                  => c
         )
+    opt[String]("compile-commands")
+        .valueName("<file|dir>")
+        .text(
+          "Parse the translation units of a JSON compilation database (compile_commands.json, or a directory holding one) with their own flags. (C/C++ only)"
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("compile-commands", x)
+              case _                  => c
+        )
+    opt[Unit]("compile-commands-only")
+        .text("With --compile-commands, parse only the database's translation units. (C/C++ only)")
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("compile-commands-only", "true")
+              case _                  => c
+        )
     opt[String]("delombok-mode")
         .text("Delombok strategy: no-delombok|default|types-only|run-delombok. (Java only)")
         .action((x, c) =>

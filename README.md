@@ -129,6 +129,9 @@ Usage: atom [parsedeps|data-flow|usages|reachables|memory-safety|export|algorith
   --suggest-defines <file>
                            Write the macro census to <file>.json and a reviewable --macro-files header to <file>.h, then exit; with --auto-defines, write it and continue. (C/C++ only)
   --include-path <value>   Header include path. Repeatable. (C/C++ only)
+  --compile-commands <file|dir>
+                           Parse the translation units of a JSON compilation database (compile_commands.json, or a directory holding one) with their own flags. (C/C++ only)
+  --compile-commands-only  With --compile-commands, parse only the database's translation units. (C/C++ only)
   --delombok-mode <value>  Delombok strategy: no-delombok|default|types-only|run-delombok. (Java only)
   --jdk-path <value>       JDK used to resolve builtin Java types. (Java only)
   --fetch-deps             Fetch dependency jars for extra type information. (Java only)
@@ -681,6 +684,8 @@ default.
 | `include-files`          | List    | Header files to include in every translation unit.                                        | `include-files=config.h`          |
 | `macro-files`            | List    | Files whose macro definitions apply to every translation unit.                            | `macro-files=build/defs.h`        |
 | `cpp-standard`           | String  | The C++ standard version to use.                                                          | `cpp-standard=c++17`              |
+| `compile-commands`       | String  | A JSON compilation database (or a directory holding `compile_commands.json`): each translation unit is parsed with its own flags, and only its units and the project's headers are parsed. | `compile-commands=build`          |
+| `compile-commands-only`  | Boolean | With `compile-commands`, parse only the database's translation units.                     | `compile-commands-only=true`      |
 | `auto-defines`           | Boolean | Run the macro census and define the build-option macros it finds before parsing.          | `auto-defines=true`               |
 | `macro-census`           | String  | Write the macro census to `<file>.json` and `<file>.h`.                                   | `macro-census=/tmp/census`        |
 | `include-auto-discovery` | Boolean | Ask `gcc` and `clang` for the system include paths and guess the project's include dirs.  | `include-auto-discovery=true`     |

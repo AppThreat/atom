@@ -100,6 +100,8 @@ object FrontendArgsApplier:
     r = r.withIncludeFiles(r.includeFiles ++ csv(args, "include-files"))
     r = r.withMacroFiles(r.macroFiles ++ csv(args, "macro-files"))
     r = r.withCppStandard(str(args, "cpp-standard", r.cppStandard))
+    r = r.withCompileCommands(str(args, "compile-commands", r.compileCommands))
+    r = r.withCompileCommandsOnly(bool(args, "compile-commands-only", r.compileCommandsOnly))
     r = r.withIncludeComments(bool(args, "include-comments", r.includeComments))
     r = r.withLogProblems(bool(args, "log-problems", r.logProblems))
     r = r.withLogPreprocessor(bool(args, "log-preprocessor", r.logPreprocessor))
@@ -277,6 +279,21 @@ object FrontendArgsApplier:
     KeyDoc("include-files", "csv", "", "Specific header files to include.", CLike),
     KeyDoc("macro-files", "csv", "", "Macro definition files.", CLike),
     KeyDoc("cpp-standard", "string", "", "C++ standard, e.g. `c++17`, `c++20`.", CLike),
+    KeyDoc(
+      "compile-commands",
+      "string",
+      "",
+      "A JSON compilation database (`compile_commands.json`, or a directory holding one): its " +
+          "translation units are parsed with their own flags.",
+      CLike
+    ),
+    KeyDoc(
+      "compile-commands-only",
+      "bool",
+      "false",
+      "With `compile-commands`, parse only the database's translation units.",
+      CLike
+    ),
     KeyDoc("include-comments", "bool", "false", "Embed comments into the graph.", CLike),
     KeyDoc("log-problems", "bool", "false", "Log every parse problem.", CLike),
     KeyDoc("log-preprocessor", "bool", "false", "Log every preprocessor statement.", CLike),
