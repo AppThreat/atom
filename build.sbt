@@ -29,7 +29,9 @@ libraryDependencies ++= Seq(
   ("io.appthreat" %% "pysrc2cpg"         % Versions.chen % Test).classifier("tests"),
   // the memory-safety overlay is C/C++ only, so its command needs a C fixture to test against
   ("io.appthreat" %% "c2cpg"             % Versions.chen % Test).classifier("tests"),
-  "org.scalatest" %% "scalatest"         % "3.2.20"      % Test
+  "org.scalatest" %% "scalatest"         % "3.2.20"      % Test,
+  // validates the SARIF the memory-safety command writes against the official schema
+  "com.networknt"  % "json-schema-validator" % "1.5.9"   % Test
 )
 
 excludeDependencies ++= Seq(

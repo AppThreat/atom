@@ -783,7 +783,7 @@ object Atom:
         )
     cmd("memory-safety")
         .text(
-          "Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON"
+          "Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF"
         )
         .action((_, _) => AtomMemorySafetyConfig().withDataDependencies(true))
         .children(
@@ -797,7 +797,7 @@ object Atom:
                     case _                         => c
               ),
           opt[String]("format")
-              .text("output format: json (sarif is planned). Default: json.")
+              .text("output format: json or sarif (SARIF 2.1.0). Default: json.")
               .action((x, c) =>
                   c match
                     case c: AtomMemorySafetyConfig => c.withFormat(x)

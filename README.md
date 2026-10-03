@@ -184,10 +184,10 @@ Extract reachable data-flow slices based on automated framework tags
   --include-crypto         includes crypto library flows - defaults to false.
   --profile <value>        reduce false positives with a flow-filtering profile: appsec, generic. Defaults to generic (no extra filtering).
 Command: memory-safety [options]
-Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON
+Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF
   --min-confidence <value>
                            drop findings below this confidence: high, medium or low. Defaults to keeping all.
-  --format <value>         output format: json (sarif is planned). Default: json.
+  --format <value>         output format: json or sarif (SARIF 2.1.0). Default: json.
 Command: export [options]
 Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)
   --format <value>         export format: dot, graphml, gexf, graphson, neo4jcsv or gnn

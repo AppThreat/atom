@@ -26,8 +26,8 @@ import scala.collection.mutable
   * definitions. No detector logic lives here, which is what keeps the command and the tags from
   * drifting apart.
   *
-  * Output contract (tools/score.py reads file/line/cwe/kind/confidence; flow is for humans and
-  * SARIF later):
+  * Output contract (tools/score.py reads file/line/cwe/kind/confidence; flow is for humans, and
+  * becomes the code flow of `--format sarif`, see [[MemorySafetySarif]]):
   *
   * {{{
   * {"rule": "MS-BOUND-002", "cwe": "CWE-787", "kind": "unbounded-copy",
@@ -49,7 +49,8 @@ object MemorySafetyCommands:
     // Reject rather than silently ignore: a caller that asked for `--format sarif` and got JSON
     // named `.sarif`, or that misspelled a confidence and got every finding, has no way to tell.
     val format = config.format.toLowerCase
-    if format != "json" then return Left(s"unsupported --format `$format`; only `json` exists")
+    if format != "json" && format != "sarif" then
+      return Left(s"unsupported --format `$format`; expected json or sarif")
     val requested = config.minConfidence.toLowerCase
     if requested.nonEmpty && !confidenceOrder.contains(requested) then
       return Left(
@@ -95,7 +96,15 @@ object MemorySafetyCommands:
         }
 
     val outFile = config.outputSliceFile.createFileIfNotExists(createParents = true)
-    outFile.write(findings.asJson.noSpaces)
+    val document =
+        if format == "sarif" then
+          MemorySafetySarif.document(
+            findings,
+            config.inputPath.pathAsString,
+            MemorySafetySarif.toolVersion
+          )
+        else findings.asJson
+    outFile.write(document.noSpaces)
     println(
       s"Memory-safety analysis complete. ${findings.size} findings written to ${outFile.pathAsString}"
     )
