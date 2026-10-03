@@ -1,0 +1,44 @@
+specification/schemas/UsageSlice.json.md
+  s_b9f6f98e1c3bda::t_620c0a99e35e99 10-11,97-102
+docs/docs/slicing.md
+  s_b9f6f98e1c3bda::t_ab59b3173c8e3c 61-73
+src/main/scala/io/appthreat/atom/slicing/package.scala
+  s_b9f6f98e1c3bda::t_42d0a3f07d3309 897
+  s_b9f6f98e1c3bda::t_ac82c386cd8e8b 825-857,864-865,869-870,890-894,905-906,908-913
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_b9f6f98e1c3bda::t_d4d0e5b8f6f445 49,1576-1578
+  s_b9f6f98e1c3bda::t_3dfd8c9c2db3a6 1579
+src/test/scala/io/appthreat/atom/SourceIntegrityUsageSliceTests.scala
+  s_b9f6f98e1c3bda::t_d2e1e229ebd383 1-59
+src/main/scala/io/appthreat/atom/slicing/UsageSlicing.scala
+  s_b9f6f98e1c3bda::t_ac82c386cd8e8b 374
+  s_b9f6f98e1c3bda::t_092a5bef52a2e1 389-396
+  s_b9f6f98e1c3bda::t_42d0a3f07d3309 382-386,388,399-419
+  s_b9f6f98e1c3bda::t_d4d0e5b8f6f445 377-381,387,397-398,420-424
+src/main/resources/META-INF/native-image/reflect-config.json
+  s_b9f6f98e1c3bda::t_18293c4cfb0aaa 2122-2129
+specification/schemas/UsageSlice.json
+  s_b9f6f98e1c3bda::t_b613ead05fc584 20-27,429-456,459
+src/main/resources/META-INF/native-image/resource-config.json
+  s_b9f6f98e1c3bda::t_70d64b45c3de4e 1
+specification/atom.proto
+  s_b9f6f98e1c3bda::t_b613ead05fc584 933-947,950-951
+src/test/scala/io/appthreat/atom/NativeImageResourcesTests.scala
+  s_b9f6f98e1c3bda::t_f60b087e552165 92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "acc443f1b845f1f0b0921321accaa6c20a27607b",
+  "prompts": {},
+  "sessions": {
+    "s_b9f6f98e1c3bda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eb6bce3d-1e28-48ad-a820-e339060a0abd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
