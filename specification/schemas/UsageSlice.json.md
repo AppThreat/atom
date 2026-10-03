@@ -44,12 +44,15 @@
   - <a id="definitions/atom.UsageSlice.InvokedCalls/properties/isExternal"></a>**`isExternal`** *(boolean)*: Boolean to indicate if the call belongs to an external method.
   - <a id="definitions/atom.UsageSlice.InvokedCalls/properties/lineNumber"></a>**`lineNumber`** *(integer)*: Line number.
   - <a id="definitions/atom.UsageSlice.InvokedCalls/properties/columnNumber"></a>**`columnNumber`** *(integer)*: Column number.
-- <a id="definitions/atom.UsageSlice.MethodUsageSlice"></a>**`atom.UsageSlice.MethodUsageSlice`** *(object)*: Packages the object usage slices along with location and an optional method source code. Cannot contain additional properties.
+- <a id="definitions/atom.UsageSlice.MethodUsageSlice"></a>**`atom.UsageSlice.MethodUsageSlice`** *(object)*: Packages the object usage slices along with location and an optional method source code. For a C/C++ #include, fullName is the header as written, fileName the including file, and resolvedPath and isSystem say where the include resolved and whether it named a system header. Cannot contain additional properties.
   - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/code"></a>**`code`** *(string)*: Raw source code of the method.
   - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/fullName"></a>**`fullName`** *(string)*: Method full name.
+  - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/signature"></a>**`signature`** *(string)*: Method signature.
   - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/fileName"></a>**`fileName`** *(string)*: File name.
   - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/lineNumber"></a>**`lineNumber`** *(integer)*: Line number.
   - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/columnNumber"></a>**`columnNumber`** *(integer)*: Column number.
+  - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/resolvedPath"></a>**`resolvedPath`** *(string)*: C/C++ include only: the file the include resolved to.
+  - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/isSystem"></a>**`isSystem`** *(boolean)*: C/C++ include only: true for a system include (<...>).
   - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/usages"></a>**`usages`** *(array)*: Cannot contain additional properties.
     - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/usages/items"></a>**Items**: Refer to *[#/definitions/atom.UsageSlice.ObjectUsageSlice](#definitions/atom.UsageSlice.ObjectUsageSlice)*.
 - <a id="definitions/atom.UsageSlice.ObjectUsageSlice"></a>**`atom.UsageSlice.ObjectUsageSlice`** *(object)*: Describes where and how the given external object/type is used. Cannot contain additional properties.

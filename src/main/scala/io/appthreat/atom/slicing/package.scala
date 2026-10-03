@@ -308,6 +308,10 @@ package object slicing:
     * @param slices
     *   the object usage slices.
     */
+  /** The usages in a method, or for a C/C++ `#include`, the include: `fullName` is the header as
+    * written, `fileName` the file that includes it, `resolvedPath` the file it resolved to and
+    * `isSystem` whether it was written as a system include (`<...>`).
+    */
   case class MethodUsageSlice(
     code: String,
     fullName: String,
@@ -315,7 +319,9 @@ package object slicing:
     fileName: String,
     slices: Set[ObjectUsageSlice],
     lineNumber: Option[Int] = None,
-    columnNumber: Option[Int] = None
+    columnNumber: Option[Int] = None,
+    resolvedPath: Option[String] = None,
+    isSystem: Option[Boolean] = None
   )
 
   implicit val decodeMethodUsageSlice: Decoder[MethodUsageSlice] =
@@ -325,20 +331,28 @@ package object slicing:
             fn        <- c.downField("fullName").as[String]
             signature <- c.downField("signature").as[String]
             fln       <- c.downField("fileName").as[String]
-            ss        <- c.downField("slices").as[Set[ObjectUsageSlice]]
-            lin       <- c.downField("lineNumber").as[Option[Int]]
-            col       <- c.downField("columnNumber").as[Option[Int]]
-          yield MethodUsageSlice(code, fn, signature, fln, ss, lin, col)
+            // written as "usages"; "slices" is the field's name
+            ss <- c.downField("usages").as[Set[ObjectUsageSlice]]
+                .orElse(c.downField("slices").as[Set[ObjectUsageSlice]])
+            lin      <- c.downField("lineNumber").as[Option[Int]]
+            col      <- c.downField("columnNumber").as[Option[Int]]
+            resolved <- c.downField("resolvedPath").as[Option[String]]
+            system   <- c.downField("isSystem").as[Option[Boolean]]
+          yield MethodUsageSlice(code, fn, signature, fln, ss, lin, col, resolved, system)
   implicit val encodeMethodUsageSlice: Encoder[MethodUsageSlice] =
-      Encoder.instance { case MethodUsageSlice(a, b, signature, c, d, e, f) =>
-          Json.obj(
-            "code"         -> a.asJson,
-            "fullName"     -> b.asJson,
-            "signature"    -> signature.asJson,
-            "fileName"     -> c.asJson,
-            "lineNumber"   -> e.asJson,
-            "columnNumber" -> f.asJson,
-            "usages"       -> d.asJson
+      Encoder.instance { case MethodUsageSlice(a, b, signature, c, d, e, f, resolved, system) =>
+          // the include fields only appear on include slices
+          val include = resolved.map(p => "resolvedPath" -> p.asJson).toList ++
+              system.map(v => "isSystem" -> v.asJson).toList
+          Json.fromFields(
+            List(
+              "code"         -> a.asJson,
+              "fullName"     -> b.asJson,
+              "signature"    -> signature.asJson,
+              "fileName"     -> c.asJson,
+              "lineNumber"   -> e.asJson,
+              "columnNumber" -> f.asJson
+            ) ++ include :+ ("usages" -> d.asJson)
           )
       }
 
@@ -447,14 +461,25 @@ package object slicing:
       case unknown @ UnknownDef(_, _, _, _, _) => unknown.asJson
   }
 
-  implicit val decodeDefComponent: Decoder[DefComponent] =
-      List[Decoder[DefComponent]](
-        Decoder[LocalDef].widen,
-        Decoder[LiteralDef].widen,
-        Decoder[CallDef].widen,
-        Decoder[ParamDef].widen,
-        Decoder[UnknownDef].widen
-      ).reduceLeft(_.or(_))
+  // The label names the kind. Trying each kind in turn would read every kind as a LocalDef, whose
+  // fields every kind has, and drop the rest (a call's resolved method, a parameter's position).
+  implicit val decodeDefComponent: Decoder[DefComponent] = Decoder.instance { c =>
+      c.downField("label").as[Option[String]].flatMap {
+          case Some("LOCAL")   => c.as[LocalDef]
+          case Some("LITERAL") => c.as[LiteralDef]
+          case Some("CALL")    => c.as[CallDef]
+          case Some("PARAM")   => c.as[ParamDef]
+          case Some("UNKNOWN") => c.as[UnknownDef]
+          case _ =>
+              List[Decoder[DefComponent]](
+                Decoder[CallDef].widen,
+                Decoder[ParamDef].widen,
+                Decoder[LocalDef].widen,
+                Decoder[LiteralDef].widen,
+                Decoder[UnknownDef].widen
+              ).reduceLeft(_.or(_)).apply(c)
+      }
+  }
 
   object DefComponent:
 

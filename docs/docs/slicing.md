@@ -36,6 +36,25 @@ The mind map below offers an overview.
 1. Parse the usages json.
 2. Iterate over the `objectSlices` array. For each slice store its fileName and lineNumber.
 
+For C and C++, each `#include` also appears in `objectSlices`, with no usages: `fullName` is the
+header as written, `fileName` the file that includes it, `resolvedPath` the file the include
+resolved to (absent when it did not resolve) and `isSystem` `true` for a system include (`<...>`).
+The resolved file says which package provides the header, which its name alone often cannot.
+
+```json
+{
+  "code": "#include <zlib.h>",
+  "fullName": "zlib.h",
+  "signature": "zlib.h",
+  "fileName": "src/compress.c",
+  "lineNumber": 3,
+  "columnNumber": 1,
+  "resolvedPath": "/usr/include/zlib.h",
+  "isSystem": true,
+  "usages": []
+}
+```
+
 ```json
 {
   "objectSlices": [

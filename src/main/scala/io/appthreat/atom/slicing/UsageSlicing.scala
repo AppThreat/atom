@@ -396,14 +396,24 @@ object UsageSlicing:
     )
   end createMethodUsageSlice
 
+  /** A C/C++ include's IMPORT node carries the file it resolved to and whether it is a system
+    * include as tags (written by the C/C++ frontend).
+    */
+  private val IncludeResolvedPathTag = "include-resolved-path"
+  private val IncludeSystemTag       = "include-system"
+
   private def importsAsSlices(atom: Cpg): List[MethodUsageSlice] =
-      // Deduplicate by (importedEntity, importedAs): in multi-TU languages (e.g. C/C++) the same
-      // header can be included once per translation unit, flooding the output with hundreds of
-      // identical import slices.  A single representative entry per unique import identity is kept.
+      // Deduplicate by (importedEntity, importedAs, resolved file): in multi-TU languages (e.g.
+      // C/C++) the same header can be included once per translation unit, flooding the output with
+      // hundreds of identical import slices. A single representative entry per unique import
+      // identity is kept; the same name resolved to two different files is two imports.
       atom.imports
-          .distinctBy(i => (i.importedEntity.getOrElse(""), i.importedAs.getOrElse("")))
+          .map(i => (i, i.tag.nameExact(IncludeResolvedPathTag).value.headOption))
+          .distinctBy((i, resolved) =>
+              (i.importedEntity.getOrElse(""), i.importedAs.getOrElse(""), resolved.getOrElse(""))
+          )
           .l
-          .map(i =>
+          .map((i, resolved) =>
               createSlice(
                 i.importedEntity.getOrElse(""),
                 i.importedAs.getOrElse(""),
@@ -412,6 +422,9 @@ object UsageSlicing:
                 Set.empty,
                 i.lineNumber,
                 i.columnNumber
+              ).copy(
+                resolvedPath = resolved,
+                isSystem = Option.when(i.tag.nameExact(IncludeSystemTag).nonEmpty)(true)
               )
           )
 

@@ -210,6 +210,10 @@
                     "type": "string",
                     "description": "Method full name"
                 },
+                "signature": {
+                    "type": "string",
+                    "description": "Method signature"
+                },
                 "fileName": {
                     "type": "string",
                     "description": "File name"
@@ -222,6 +226,14 @@
                     "type": "integer",
                     "description": "Column number"
                 },
+                "resolvedPath": {
+                    "type": "string",
+                    "description": "C/C++ include only: the file the include resolved to"
+                },
+                "isSystem": {
+                    "type": "boolean",
+                    "description": "C/C++ include only: true for a system include (<...>)"
+                },
                 "usages": {
                     "items": {
                         "$ref": "#/definitions/atom.UsageSlice.ObjectUsageSlice"
@@ -233,7 +245,7 @@
             "additionalProperties": false,
             "type": "object",
             "title": "Method Usage Slice",
-            "description": "Packages the object usage slices along with location and an optional method source code."
+            "description": "Packages the object usage slices along with location and an optional method source code. For a C/C++ #include, fullName is the header as written, fileName the including file, and resolvedPath and isSystem say where the include resolved and whether it named a system header."
         },
         "atom.UsageSlice.ObjectUsageSlice": {
             "properties": {
