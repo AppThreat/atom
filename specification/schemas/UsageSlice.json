@@ -234,6 +234,13 @@
                     "type": "boolean",
                     "description": "C/C++ include only: true for a system include (<...>)"
                 },
+                "importedSymbols": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "description": "C/C++ include only: the functions the including file calls that the header declares"
+                },
                 "usages": {
                     "items": {
                         "$ref": "#/definitions/atom.UsageSlice.ObjectUsageSlice"

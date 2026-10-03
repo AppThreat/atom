@@ -882,6 +882,8 @@ message UsageSlice {
         string resolvedPath = 8;
         // C/C++ include only: true for a system include (<...>)
         bool isSystem = 9;
+        // C/C++ include only: the functions the including file calls that the header declares
+        repeated string importedSymbols = 10;
     }
 
     // Represents a local transfer of data via aliasing. The data defined is via some alias.

@@ -38,8 +38,10 @@ The mind map below offers an overview.
 
 For C and C++, each `#include` also appears in `objectSlices`, with no usages: `fullName` is the
 header as written, `fileName` the file that includes it, `resolvedPath` the file the include
-resolved to (absent when it did not resolve) and `isSystem` `true` for a system include (`<...>`).
-The resolved file says which package provides the header, which its name alone often cannot.
+resolved to (absent when it did not resolve), `isSystem` `true` for a system include (`<...>`), and
+`importedSymbols` the functions the including file calls that the header declares (with function
+bodies parsed: not in header mode). The resolved file says which package provides the header, which
+its name alone often cannot, and the symbols which of its API the code uses.
 
 ```json
 {
@@ -51,6 +53,7 @@ The resolved file says which package provides the header, which its name alone o
   "columnNumber": 1,
   "resolvedPath": "/usr/include/zlib.h",
   "isSystem": true,
+  "importedSymbols": ["deflate", "deflateInit_"],
   "usages": []
 }
 ```

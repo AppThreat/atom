@@ -309,8 +309,9 @@ package object slicing:
     *   the object usage slices.
     */
   /** The usages in a method, or for a C/C++ `#include`, the include: `fullName` is the header as
-    * written, `fileName` the file that includes it, `resolvedPath` the file it resolved to and
-    * `isSystem` whether it was written as a system include (`<...>`).
+    * written, `fileName` the file that includes it, `resolvedPath` the file it resolved to,
+    * `isSystem` whether it was written as a system include (`<...>`) and `importedSymbols` the
+    * functions the including file calls that the resolved header declares.
     */
   case class MethodUsageSlice(
     code: String,
@@ -321,7 +322,8 @@ package object slicing:
     lineNumber: Option[Int] = None,
     columnNumber: Option[Int] = None,
     resolvedPath: Option[String] = None,
-    isSystem: Option[Boolean] = None
+    isSystem: Option[Boolean] = None,
+    importedSymbols: Option[List[String]] = None
   )
 
   implicit val decodeMethodUsageSlice: Decoder[MethodUsageSlice] =
@@ -338,22 +340,25 @@ package object slicing:
             col      <- c.downField("columnNumber").as[Option[Int]]
             resolved <- c.downField("resolvedPath").as[Option[String]]
             system   <- c.downField("isSystem").as[Option[Boolean]]
-          yield MethodUsageSlice(code, fn, signature, fln, ss, lin, col, resolved, system)
+            symbols  <- c.downField("importedSymbols").as[Option[List[String]]]
+          yield MethodUsageSlice(code, fn, signature, fln, ss, lin, col, resolved, system, symbols)
   implicit val encodeMethodUsageSlice: Encoder[MethodUsageSlice] =
-      Encoder.instance { case MethodUsageSlice(a, b, signature, c, d, e, f, resolved, system) =>
-          // the include fields only appear on include slices
-          val include = resolved.map(p => "resolvedPath" -> p.asJson).toList ++
-              system.map(v => "isSystem" -> v.asJson).toList
-          Json.fromFields(
-            List(
-              "code"         -> a.asJson,
-              "fullName"     -> b.asJson,
-              "signature"    -> signature.asJson,
-              "fileName"     -> c.asJson,
-              "lineNumber"   -> e.asJson,
-              "columnNumber" -> f.asJson
-            ) ++ include :+ ("usages" -> d.asJson)
-          )
+      Encoder.instance {
+          case MethodUsageSlice(a, b, signature, c, d, e, f, resolved, system, symbols) =>
+              // the include fields only appear on include slices
+              val include = resolved.map(p => "resolvedPath" -> p.asJson).toList ++
+                  system.map(v => "isSystem" -> v.asJson).toList ++
+                  symbols.filter(_.nonEmpty).map(v => "importedSymbols" -> v.asJson).toList
+              Json.fromFields(
+                List(
+                  "code"         -> a.asJson,
+                  "fullName"     -> b.asJson,
+                  "signature"    -> signature.asJson,
+                  "fileName"     -> c.asJson,
+                  "lineNumber"   -> e.asJson,
+                  "columnNumber" -> f.asJson
+                ) ++ include :+ ("usages" -> d.asJson)
+              )
       }
 
   /** Represents a source of data-generation, i.e., where data is defined and can be assigned to

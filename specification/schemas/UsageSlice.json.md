@@ -53,6 +53,8 @@
   - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/columnNumber"></a>**`columnNumber`** *(integer)*: Column number.
   - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/resolvedPath"></a>**`resolvedPath`** *(string)*: C/C++ include only: the file the include resolved to.
   - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/isSystem"></a>**`isSystem`** *(boolean)*: C/C++ include only: true for a system include (<...>).
+  - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/importedSymbols"></a>**`importedSymbols`** *(array)*: C/C++ include only: the functions the including file calls that the header declares.
+    - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/importedSymbols/items"></a>**Items** *(string)*
   - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/usages"></a>**`usages`** *(array)*: Cannot contain additional properties.
     - <a id="definitions/atom.UsageSlice.MethodUsageSlice/properties/usages/items"></a>**Items**: Refer to *[#/definitions/atom.UsageSlice.ObjectUsageSlice](#definitions/atom.UsageSlice.ObjectUsageSlice)*.
 - <a id="definitions/atom.UsageSlice.ObjectUsageSlice"></a>**`atom.UsageSlice.ObjectUsageSlice`** *(object)*: Describes where and how the given external object/type is used. Cannot contain additional properties.

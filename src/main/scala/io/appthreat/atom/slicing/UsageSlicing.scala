@@ -402,31 +402,47 @@ object UsageSlicing:
   private val IncludeResolvedPathTag = "include-resolved-path"
   private val IncludeSystemTag       = "include-system"
 
+  /** On a C/C++ call to a function only a header declares: that header. */
+  private val CalleeDeclaredInTag = "callee-declared-in"
+
   private def importsAsSlices(atom: Cpg): List[MethodUsageSlice] =
-      // Deduplicate by (importedEntity, importedAs, resolved file): in multi-TU languages (e.g.
-      // C/C++) the same header can be included once per translation unit, flooding the output with
-      // hundreds of identical import slices. A single representative entry per unique import
-      // identity is kept; the same name resolved to two different files is two imports.
-      atom.imports
-          .map(i => (i, i.tag.nameExact(IncludeResolvedPathTag).value.headOption))
-          .distinctBy((i, resolved) =>
-              (i.importedEntity.getOrElse(""), i.importedAs.getOrElse(""), resolved.getOrElse(""))
-          )
-          .l
-          .map((i, resolved) =>
-              createSlice(
-                i.importedEntity.getOrElse(""),
-                i.importedAs.getOrElse(""),
-                i.file.map(_.name).headOption.getOrElse(""),
-                if i.code.nonEmpty then i.code.replaceFirst("^use", "").trim else "",
-                Set.empty,
-                i.lineNumber,
-                i.columnNumber
-              ).copy(
-                resolvedPath = resolved,
-                isSystem = Option.when(i.tag.nameExact(IncludeSystemTag).nonEmpty)(true)
+    // the functions each file calls, by the header that declares them
+    val calleesByFileAndHeader: Map[(String, String), List[String]] =
+        atom.call.where(_.tag.nameExact(CalleeDeclaredInTag)).l
+            .flatMap(call =>
+                call.tag.nameExact(CalleeDeclaredInTag).value.headOption.map(header =>
+                    ((call.method.filename, header), call.name)
+                )
+            )
+            .groupMap(_._1)(_._2).view.mapValues(_.distinct.sorted).toMap
+    // Deduplicate by (importedEntity, importedAs, resolved file): in multi-TU languages (e.g.
+    // C/C++) the same header can be included once per translation unit, flooding the output with
+    // hundreds of identical import slices. A single representative entry per unique import
+    // identity is kept; the same name resolved to two different files is two imports.
+    atom.imports
+        .map(i => (i, i.tag.nameExact(IncludeResolvedPathTag).value.headOption))
+        .distinctBy((i, resolved) =>
+            (i.importedEntity.getOrElse(""), i.importedAs.getOrElse(""), resolved.getOrElse(""))
+        )
+        .l
+        .map((i, resolved) =>
+            createSlice(
+              i.importedEntity.getOrElse(""),
+              i.importedAs.getOrElse(""),
+              i.file.map(_.name).headOption.getOrElse(""),
+              if i.code.nonEmpty then i.code.replaceFirst("^use", "").trim else "",
+              Set.empty,
+              i.lineNumber,
+              i.columnNumber
+            ).copy(
+              resolvedPath = resolved,
+              isSystem = Option.when(i.tag.nameExact(IncludeSystemTag).nonEmpty)(true),
+              importedSymbols = resolved.flatMap(header =>
+                  calleesByFileAndHeader.get((i.file.map(_.name).headOption.getOrElse(""), header))
               )
-          )
+            )
+        )
+  end importsAsSlices
 
   private def unusedTypeDeclAsSlices(atom: Cpg): List[MethodUsageSlice] =
       atom.typeDecl.annotation.filter(_.method.isEmpty).l.map(a =>
