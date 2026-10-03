@@ -2119,5 +2119,13 @@
 {
   "name":"sun.security.x509.SubjectKeyIdentifierExtension",
   "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"java.text.Normalizer",
+  "methods":[{"name":"normalize","parameterTypes":["java.lang.CharSequence","java.text.Normalizer$Form"] }]
+},
+{
+  "name":"java.text.Normalizer$Form",
+  "fields":[{"name":"NFD"}]
 }
 ]

@@ -17,6 +17,14 @@
                     },
                     "additionalProperties": false,
                     "type": "array"
+                },
+                "sourceIntegrity": {
+                    "items": {
+                        "$ref": "#/definitions/atom.UsageSlice.SourceIntegrityFinding"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "Present only when there are findings"
                 }
             },
             "additionalProperties": false,
@@ -418,6 +426,34 @@
             "type": "object",
             "title": "User Defined Types",
             "description": "Describes custom types defined within the application."
+        },
+        "atom.UsageSlice.SourceIntegrityFinding": {
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "description": "unicode-confusable: a name that looks like another name of its file; unicode-bidi-control: bidirectional formatting characters in a string or comment"
+                },
+                "fileName": {
+                    "type": "string",
+                    "description": "File name"
+                },
+                "lineNumber": {
+                    "type": "integer",
+                    "description": "Line number"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The name, the literal, or \"comment\""
+                },
+                "detail": {
+                    "type": "string",
+                    "description": "The look-alike names, or the code points (U+202E)"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Source Integrity Finding",
+            "description": "Unicode in the source that hides what the code does"
         }
     }
 }

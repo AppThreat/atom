@@ -930,8 +930,25 @@ message UsageSlice {
         uint32 columnNumber = 6;
     }
 
+    // Unicode in the source that hides what the code does
+    message SourceIntegrityFinding {
+        // unicode-confusable: a name that looks like another name of its file;
+        // unicode-bidi-control: bidirectional formatting characters in a string or comment
+        string kind = 1;
+        // File name
+        string fileName = 2;
+        // Line number
+        uint32 lineNumber = 3;
+        // The name, the literal, or "comment"
+        string name = 4;
+        // The look-alike names, or the code points (U+202E)
+        string detail = 5;
+    }
+
     repeated MethodUsageSlice objectSlices = 1;
     repeated UserDefinedTypes userDefinedTypes = 2;
+    // Present only when there are findings
+    repeated SourceIntegrityFinding sourceIntegrity = 3;
 }
 
 message Nodes {

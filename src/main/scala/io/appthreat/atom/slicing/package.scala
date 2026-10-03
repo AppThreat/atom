@@ -822,16 +822,52 @@ package object slicing:
           )
       }
 
+  /** Unicode in the source that hides what the code does: a name that looks like another name of
+    * its file (`unicode-confusable`, `detail` naming the look-alikes), or bidirectional formatting
+    * characters in a string or comment (`unicode-bidi-control`, `detail` the code points).
+    */
+  case class SourceIntegrityFinding(
+    kind: String,
+    fileName: String,
+    lineNumber: Option[Int],
+    name: String,
+    detail: String
+  )
+
+  implicit val encodeSourceIntegrityFinding: Encoder[SourceIntegrityFinding] =
+      Encoder.instance { f =>
+          Json.obj(
+            "kind"       -> f.kind.asJson,
+            "fileName"   -> f.fileName.asJson,
+            "lineNumber" -> f.lineNumber.asJson,
+            "name"       -> f.name.asJson,
+            "detail"     -> f.detail.asJson
+          )
+      }
+
+  implicit val decodeSourceIntegrityFinding: Decoder[SourceIntegrityFinding] =
+      (c: HCursor) =>
+          for
+            kind   <- c.downField("kind").as[String]
+            file   <- c.downField("fileName").as[String]
+            line   <- c.downField("lineNumber").as[Option[Int]]
+            name   <- c.downField("name").as[String]
+            detail <- c.downField("detail").as[String]
+          yield SourceIntegrityFinding(kind, file, line, name, detail)
+
   /** The program usage slices and UDTs.
     *
     * @param objectSlices
     *   the object slices under each procedure
     * @param userDefinedTypes
     *   the UDTs.
+    * @param sourceIntegrity
+    *   Unicode that hides what the code does; written only when there is some
     */
   case class ProgramUsageSlice(
     objectSlices: List[MethodUsageSlice],
-    userDefinedTypes: List[UserDefinedType]
+    userDefinedTypes: List[UserDefinedType],
+    sourceIntegrity: List[SourceIntegrityFinding] = Nil
   ) extends ProgramSlice:
 
     def toJson: String = this.asJson.noSpaces
@@ -851,9 +887,14 @@ package object slicing:
             if i > 0 then writer.write(",")
             writer.write(udt.asJson.noSpaces)
         }
-        writer.write("]}")
+        writer.write("]")
+        if sourceIntegrity.nonEmpty then
+          writer.write(""","sourceIntegrity":""")
+          writer.write(sourceIntegrity.asJson.noSpaces)
+        writer.write("}")
       finally
         writer.close()
+    end toJsonFile
   end ProgramUsageSlice
 
   implicit val decodeProgramUsageSlice: Decoder[ProgramUsageSlice] =
@@ -861,9 +902,14 @@ package object slicing:
           for
             o <- c.downField("objectSlices").as[List[MethodUsageSlice]]
             u <- c.downField("userDefinedTypes").as[List[UserDefinedType]]
-          yield ProgramUsageSlice(o, u)
+            s <- c.downField("sourceIntegrity").as[Option[List[SourceIntegrityFinding]]]
+          yield ProgramUsageSlice(o, u, s.getOrElse(Nil))
   implicit val encodeProgramUsageSlice: Encoder[ProgramUsageSlice] = Encoder.instance {
-      case ProgramUsageSlice(os, udts) =>
-          Json.obj("objectSlices" -> os.asJson, "userDefinedTypes" -> udts.asJson)
+      case ProgramUsageSlice(os, udts, integrity) =>
+          val base = List("objectSlices" -> os.asJson, "userDefinedTypes" -> udts.asJson)
+          Json.obj(
+            (if integrity.isEmpty then base
+             else base :+ ("sourceIntegrity" -> integrity.asJson))*
+          )
   }
 end slicing

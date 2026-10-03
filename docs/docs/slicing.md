@@ -58,6 +58,19 @@ its name alone often cannot, and the symbols which of its API the code uses.
 }
 ```
 
+When the source holds Unicode that hides what the code does, a `sourceIntegrity` list follows the
+other two (it is absent otherwise): a name that looks like another name of its file
+(`unicode-confusable`, the UTS #39 skeletons are equal and at least one name is not ASCII, with
+`detail` naming the look-alikes), and bidirectional formatting characters in a string or comment
+(`unicode-bidi-control`, `detail` the code points; CVE-2021-42574).
+
+```json
+"sourceIntegrity": [
+  {"kind": "unicode-confusable", "fileName": "auth.c", "lineNumber": 12, "name": "isAdmіn", "detail": "isAdmin"},
+  {"kind": "unicode-bidi-control", "fileName": "auth.c", "lineNumber": 30, "name": "comment", "detail": "U+202E,U+2066"}
+]
+```
+
 ```json
 {
   "objectSlices": [

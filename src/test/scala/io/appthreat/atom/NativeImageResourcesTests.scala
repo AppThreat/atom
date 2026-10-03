@@ -89,5 +89,6 @@ class NativeImageResourcesTests extends AnyFunSuite with Matchers:
     val files = chenArtifacts.flatMap(dataFiles).distinct
     files should contain("memory-apis.json")
     files should contain("predefined-macros/gcc-linux-x86_64.txt")
+    files should contain("unicode/confusables.txt")
     files.filterNot(covered) shouldBe empty
 end NativeImageResourcesTests

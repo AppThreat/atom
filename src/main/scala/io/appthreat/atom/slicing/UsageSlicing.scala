@@ -371,8 +371,56 @@ object UsageSlicing:
       case _ =>
           (unusedTypeDeclAsSlices(atom), Nil)
 
-    ProgramUsageSlice(slices ++ extraSlices, userDefTypes ++ extraTypes)
+    ProgramUsageSlice(slices ++ extraSlices, userDefTypes ++ extraTypes, sourceIntegrityOf(atom))
   end createProgramUsageSlice
+
+  /** The source-integrity tags of the atom as findings, one per file, line, kind and name. */
+  private def sourceIntegrityOf(atom: Cpg): List[SourceIntegrityFinding] =
+    val confusable = io.appthreat.x2cpg.Defines.UnicodeConfusableTag
+    val bidi       = io.appthreat.x2cpg.Defines.UnicodeBidiControlTag
+    def fileOf(n: StoredNode): String = n match
+      case m: Method            => m.filename
+      case t: TypeDecl          => t.filename
+      case mb: Member           => mb.typeDecl.filename
+      case e: Expression        => Option(e.method).map(_.filename).getOrElse("")
+      case l: Local             => l.method.filename.headOption.getOrElse("")
+      case p: MethodParameterIn => p.method.filename
+      case _                    => ""
+    def lineOf(n: StoredNode): Option[Int] =
+        Option(n.propertiesMap.get(PropertyNames.LINE_NUMBER)).collect { case i: Integer =>
+            i.toInt
+        }
+    def nameOf(n: StoredNode): String =
+        Option(n.propertiesMap.get(PropertyNames.NAME)).orElse(
+          Option(n.propertiesMap.get(PropertyNames.CODE))
+        ).map(_.toString).getOrElse("")
+    val findings = atom.tag.nameExact(confusable, bidi).l.flatMap { t =>
+        t._taggedByIn.collectAll[StoredNode].l.map { n =>
+            (t.name, n) match
+              // a comment's controls are on its method, valued `<line>:<code points>`
+              case (`bidi`, m: Method) =>
+                  val (line, points) = t.value.span(_ != ':')
+                  SourceIntegrityFinding(
+                    bidi,
+                    m.filename,
+                    line.toIntOption,
+                    "comment",
+                    points.drop(1)
+                  )
+              case (`bidi`, other) =>
+                  SourceIntegrityFinding(bidi, fileOf(other), lineOf(other), nameOf(other), t.value)
+              case (_, other) =>
+                  SourceIntegrityFinding(
+                    confusable,
+                    fileOf(other),
+                    lineOf(other),
+                    nameOf(other),
+                    t.value
+                  )
+        }
+    }
+    findings.distinct.sortBy(f => (f.fileName, f.lineNumber.getOrElse(0), f.kind, f.name))
+  end sourceIntegrityOf
 
   private def createMethodUsageSlice(
     method: Method,

@@ -46,6 +46,7 @@ import io.appthreat.x2cpg.passes.taggers.{
     CdxPass,
     ChennaiTagsPass,
     EasyTagsPass,
+    SourceIntegrityPass,
     ExtentPass,
     GuardPass,
     IntegerWidthPass,
@@ -1571,6 +1572,10 @@ object Atom:
               }
               PerfReporter.stage("taggers.EasyTagsPass", "analysis") {
                   new EasyTagsPass(atom).createAndApply()
+              }
+              // Unicode that hides what the code does (look-alike names, bidi controls)
+              PerfReporter.stage("taggers.SourceIntegrityPass", "analysis") {
+                  new SourceIntegrityPass(atom).createAndApply()
               }
               PerfReporter.stage("taggers.PythonFrameworkRecognizersPass", "analysis") {
                   new PythonFrameworkRecognizersPass(atom).createAndApply()
