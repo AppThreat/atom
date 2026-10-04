@@ -8,8 +8,8 @@ title: C/C++ frontends
 atom builds the graph of C and C++ code with one of two frontends:
 
 - **CDT** (the default): the Eclipse CDT parser, bundled with atom.
-- **EDG**: the [EDG C/C++ front end](https://github.com/edgcpp/compiler), through the
-  [edga](https://github.com/AppThreat/edga) exporter, a separate binary. EDG is the front end of
+- **EDG** (experimental, opt-in): the [EDG C/C++ front end](https://github.com/edgcpp/compiler),
+  through the [edga](https://github.com/AppThreat/edga) exporter, a separate binary. EDG is the front end of
   several production compilers: it resolves every name, overload, template and implicit
   operation the way the compiler does.
 
@@ -69,17 +69,19 @@ another edga build exported is not reused.
 
 ## Getting edga
 
-cdxgen passes atom the edga it is given (`EDGA_CMD`, `EDGA_PATH`) or the one among its
-plugins (`cdxgen-plugins-bin`), with `CDXGEN_C_FRONTEND=edg` or `edg-fallback`. To build edga,
-see the [edga README](https://github.com/AppThreat/edga): it compiles the EDG sources
-unmodified.
+The atom container images include edga. Elsewhere, download it from the
+[edga releases](https://github.com/AppThreat/edga/releases) - static Linux binaries (glibc and
+musl, amd64 and arm64) and macOS arm64, each with its SHA-256 - and put it on the `PATH`, or
+point `EDGA_PATH` or `--edga-path` at it. To build it, see the
+[edga README](https://github.com/AppThreat/edga): it compiles the EDG sources unmodified.
 
 ## Hosts
 
 - **macOS (libc++).** libc++'s vectorised algorithms use clang vector types the front end
   cannot instantiate; they are left out (`__OPTIMIZE_SIZE__`), as when optimising for size.
   The NEON intrinsics' macros are not passed on.
-- **Linux on aarch64.** edga is built there without float128 support, so glibc's
-  `_Float128` is named as `long double` (the same type on aarch64) with GCC 7 and later.
+- **Linux on aarch64, and the musl builds.** These edga builds have no float128 support, so
+  glibc's `_Float128` is named as `long double` (the same type on aarch64, the same size on
+  x86_64) with GCC 7 and later.
 - **Windows and MSVC.** The front end emulates MSVC from a compilation database that names
   `cl.exe`, but this has not been tested; use CDT there.

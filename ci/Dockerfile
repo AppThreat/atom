@@ -108,6 +108,22 @@ RUN set -e; \
     && rbastgen --help \
     && microdnf clean all
 
+# edga, for the opt-in EDG C/C++ frontend (`--c-frontend edg`): a static binary from its release
+ARG EDGA_VERSION=0.1.1
+ARG EDGA_SHA256_AMD64=9480118ac295ddee3321e30394765cb47c0e7272d740af9ffca2d032d25c7c51
+ARG EDGA_SHA256_ARM64=b704071b76ed03e06b7cded7219ebce4cec1842404f3db60723b14333aaaf327
+RUN set -e; \
+    case "$(uname -m)" in \
+        x86_64) EDGA_PLATFORM=linux-amd64; EDGA_SHA256="${EDGA_SHA256_AMD64}" ;; \
+        aarch64) EDGA_PLATFORM=linux-arm64; EDGA_SHA256="${EDGA_SHA256_ARM64}" ;; \
+        *) echo >&2 "edga: unsupported architecture $(uname -m)"; exit 1 ;; \
+    esac; \
+    curl -fsSL -o /usr/local/bin/edga \
+        "https://github.com/AppThreat/edga/releases/download/v${EDGA_VERSION}/edga-${EDGA_PLATFORM}"; \
+    echo "${EDGA_SHA256}  /usr/local/bin/edga" | sha256sum -c -; \
+    chmod 0755 /usr/local/bin/edga; \
+    edga --version
+
 ENV LC_ALL=en_US.UTF-8 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
