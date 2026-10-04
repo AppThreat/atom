@@ -166,6 +166,8 @@ graalVMNativeImageOptions := Seq(
   niOpt,
   s"-march=$niMarch",
   "--initialize-at-build-time=io.appthreat.*",
+  // CDT's bundle lookup outside OSGi: the framework loads this service while the image is built
+  "--initialize-at-build-time=io.appthreat.c2cpg.parser.CdtBundleLocator,io.appthreat.c2cpg.parser.CdtCoreBundle$",
   "--no-fallback"
 ) ++ libcOptions
 
