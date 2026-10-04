@@ -5,7 +5,7 @@ title: Languages supported
 
 # Languages supported
 
-- C/C++
+- C/C++, with the Eclipse CDT parser or the EDG front end (see [C/C++ frontends](c-frontends.md))
 - H (C/C++ Header and pre-processed .i files alone)
 - Java (Requires compilation)
 - Jar

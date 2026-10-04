@@ -26,6 +26,7 @@ const sidebars: SidebarsConfig = {
     'cli',
     'samples',
     'languages',
+    'c-frontends',
     'atom-spec',
     'gen-atom',
     'development',
