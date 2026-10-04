@@ -411,6 +411,10 @@
   "fields":[{"name":"io$appthreat$x2cpg$AstNodeBuilder$$MaxCodeLength$lzy1"}]
 },
 {
+  "name":"io.appthreat.c2cpg.parser.CdtBundleLocator",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"io.appthreat.dataflowengineoss.language.Path$",
   "fields":[{"name":"maxTrackedWidth$lzy1"}]
 },
@@ -1964,6 +1968,10 @@
   "allDeclaredFields":true
 },
 {
+  "name":"org.eclipse.core.runtime.Plugin",
+  "fields":[{"name":"bundle", "allowWrite":true}]
+},
+{
   "name":"org.h2.mvstore.MVStore$TxCounter",
   "fields":[{"name":"counter"}]
 },
@@ -2111,5 +2119,13 @@
 {
   "name":"sun.security.x509.SubjectKeyIdentifierExtension",
   "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"java.text.Normalizer",
+  "methods":[{"name":"normalize","parameterTypes":["java.lang.CharSequence","java.text.Normalizer$Form"] }]
+},
+{
+  "name":"java.text.Normalizer$Form",
+  "fields":[{"name":"NFD"}]
 }
 ]

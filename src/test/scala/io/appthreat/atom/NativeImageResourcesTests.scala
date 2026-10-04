@@ -12,7 +12,7 @@ import scala.util.Using
 
 /** A native image only carries the classpath resources its resource config names; a resource a pass
   * loads but the config misses is silently absent from the native binary (the loaders fall back to
-  * an empty vocabulary). Every data file at the root of the chen jars atom ships must be covered.
+  * an empty vocabulary). Every data file of the chen jars atom ships must be covered.
   */
 class NativeImageResourcesTests extends AnyFunSuite with Matchers:
 
@@ -40,18 +40,24 @@ class NativeImageResourcesTests extends AnyFunSuite with Matchers:
 
   private val DataExtensions = Seq(".json", ".txt", ".conf", ".properties")
 
-  private def rootDataFiles(cls: Class[?]): List[String] =
+  /** Directories of code and metadata, whose files are not data a pass loads. */
+  private val CodeDirectories = Set("META-INF", "io", "org", "com", "scala")
+
+  /** The data files of an artifact: at its root, and in its data directories
+    * (`predefined-macros/`).
+    */
+  private def dataFiles(cls: Class[?]): List[String] =
     val location = Paths.get(cls.getProtectionDomain.getCodeSource.getLocation.toURI)
+    def isData(name: String): Boolean =
+        DataExtensions.exists(name.endsWith) && !CodeDirectories.contains(name.takeWhile(_ != '/'))
     if location.toString.endsWith(".jar") then
       Using.resource(ZipFile(location.toFile)) { zip =>
-          zip.entries.asScala.map(_.getName)
-              .filter(n => !n.contains("/") && DataExtensions.exists(n.endsWith))
-              .toList
+          zip.entries.asScala.map(_.getName).filter(isData).toList
       }
     else
-      File(location).list.filter(_.isRegularFile).map(_.name)
-          .filter(n => DataExtensions.exists(n.endsWith))
-          .toList
+      val root = File(location)
+      root.listRecursively.filter(_.isRegularFile).map(f => root.relativize(f).toString)
+          .filter(isData).toList
 
   private def covered(name: String): Boolean =
       globs.exists(g => FileSystems.getDefault.getPathMatcher(s"glob:$g").matches(Paths.get(name)))
@@ -59,8 +65,30 @@ class NativeImageResourcesTests extends AnyFunSuite with Matchers:
   test("the resource config parses and lists the chen vocabularies"):
     (globs should contain).allOf("component-tags.json", "memory-apis.json", "trackers.json")
 
-  test("every data file at the root of a bundled chen jar is in the native resource config"):
-    val files = chenArtifacts.flatMap(rootDataFiles).distinct
+  /** The service registrations of an artifact (`META-INF/services/<interface>`). */
+  private def serviceFiles(cls: Class[?]): List[String] =
+    val location = Paths.get(cls.getProtectionDomain.getCodeSource.getLocation.toURI)
+    def isService(name: String): Boolean =
+        name.startsWith("META-INF/services/") && !name.endsWith("/")
+    if location.toString.endsWith(".jar") then
+      Using.resource(ZipFile(location.toFile)) { zip =>
+          zip.entries.asScala.map(_.getName).filter(isService).toList
+      }
+    else
+      val root = File(location)
+      root.listRecursively.filter(_.isRegularFile).map(f => root.relativize(f).toString)
+          .filter(isService).toList
+
+  test("every service a bundled chen jar registers is in the native resource config"):
+    val files = chenArtifacts.flatMap(serviceFiles).distinct
+    // CDT's plugin finds its bundle through this service outside an OSGi runtime
+    files should contain("META-INF/services/org.osgi.framework.connect.FrameworkUtilHelper")
+    files.filterNot(covered) shouldBe empty
+
+  test("every data file of a bundled chen jar is in the native resource config"):
+    val files = chenArtifacts.flatMap(dataFiles).distinct
     files should contain("memory-apis.json")
+    files should contain("predefined-macros/gcc-linux-x86_64.txt")
+    files should contain("unicode/confusables.txt")
     files.filterNot(covered) shouldBe empty
 end NativeImageResourcesTests

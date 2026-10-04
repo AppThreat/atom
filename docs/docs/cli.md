@@ -30,6 +30,12 @@ Usage: atom [parsedeps|data-flow|usages|reachables|memory-safety|export|algorith
   --suggest-defines <file>
                            Write the macro census to <file>.json and a reviewable --macro-files header to <file>.h, then exit; with --auto-defines, write it and continue. (C/C++ only)
   --include-path <value>   Header include path. Repeatable. (C/C++ only)
+  --compile-commands <file|dir>
+                           Parse the translation units of a JSON compilation database (compile_commands.json, or a directory holding one) with their own flags. (C/C++ only)
+  --compile-commands-only  With --compile-commands, parse only the database's translation units. (C/C++ only)
+  --c-frontend <cdt|edg|edg-fallback>
+                           The C/C++ frontend: cdt (default, the Eclipse CDT parser), edg (the EDG front end, through the edga exporter), or edg-fallback (edg, with cdt for the files edga cannot export). (C/C++ only)
+  --edga-path <file>       The edga binary for the edg frontends (default: EDGA_PATH, then the PATH). (C/C++ only)
   --delombok-mode <value>  Delombok strategy: no-delombok|default|types-only|run-delombok. (Java only)
   --jdk-path <value>       JDK used to resolve builtin Java types. (Java only)
   --fetch-deps             Fetch dependency jars for extra type information. (Java only)
@@ -82,10 +88,10 @@ Extract reachable data-flow slices based on automated framework tags
   --include-crypto         includes crypto library flows - defaults to false.
   --profile <value>        reduce false positives with a flow-filtering profile: appsec, generic. Defaults to generic (no extra filtering).
 Command: memory-safety [options]
-Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON
+Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF
   --min-confidence <value>
                            drop findings below this confidence: high, medium or low. Defaults to keeping all.
-  --format <value>         output format: json (sarif is planned). Default: json.
+  --format <value>         output format: json or sarif (SARIF 2.1.0). Default: json.
 Command: export [options]
 Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)
   --format <value>         export format: dot, graphml, gexf, graphson, neo4jcsv or gnn
@@ -99,6 +105,18 @@ Run a graph algorithm over the atom and write the result as JSON
   --max-depth <value>      maximum path depth for the paths algorithm
   --help                   display this help message
 ```
+
+## Memory-safety findings as SARIF
+
+`memory-safety --format sarif` writes the findings as a SARIF 2.1.0 log, for code-scanning tools and IDEs that read SARIF:
+
+```bash
+atom memory-safety -l c --format sarif -s findings.sarif /path/to/project
+```
+
+- each rule that has a finding is listed under `runs[0].tool.driver.rules`, with its CWE as a tag and `helpUri`, its severity as the default `level`, and its confidence as `precision`;
+- each finding is a result with its rule, its level, and its location. A path inside the project is relative to `%SRCROOT%` (the analysed directory), and a path outside it (a system header) is an absolute `file:` URI;
+- the evidence the rule read becomes the result's `codeFlows`, one location per fact.
 
 ## Environment variables
 
@@ -188,6 +206,8 @@ default.
 | `include-files`          | List    | Header files to include in every translation unit.                                        | `include-files=config.h`          |
 | `macro-files`            | List    | Files whose macro definitions apply to every translation unit.                            | `macro-files=build/defs.h`        |
 | `cpp-standard`           | String  | The C++ standard version to use.                                                          | `cpp-standard=c++17`              |
+| `compile-commands`       | String  | A JSON compilation database (or a directory holding `compile_commands.json`): each translation unit is parsed with its own flags, and only its units and the project's headers are parsed. | `compile-commands=build`          |
+| `compile-commands-only`  | Boolean | With `compile-commands`, parse only the database's translation units.                     | `compile-commands-only=true`      |
 | `auto-defines`           | Boolean | Run the macro census and define the build-option macros it finds before parsing.          | `auto-defines=true`               |
 | `macro-census`           | String  | Write the macro census to `<file>.json` and `<file>.h`.                                   | `macro-census=/tmp/census`        |
 | `include-auto-discovery` | Boolean | Ask `gcc` and `clang` for the system include paths and guess the project's include dirs.  | `include-auto-discovery=true`     |

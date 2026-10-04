@@ -371,8 +371,56 @@ object UsageSlicing:
       case _ =>
           (unusedTypeDeclAsSlices(atom), Nil)
 
-    ProgramUsageSlice(slices ++ extraSlices, userDefTypes ++ extraTypes)
+    ProgramUsageSlice(slices ++ extraSlices, userDefTypes ++ extraTypes, sourceIntegrityOf(atom))
   end createProgramUsageSlice
+
+  /** The source-integrity tags of the atom as findings, one per file, line, kind and name. */
+  private def sourceIntegrityOf(atom: Cpg): List[SourceIntegrityFinding] =
+    val confusable = io.appthreat.x2cpg.Defines.UnicodeConfusableTag
+    val bidi       = io.appthreat.x2cpg.Defines.UnicodeBidiControlTag
+    def fileOf(n: StoredNode): String = n match
+      case m: Method            => m.filename
+      case t: TypeDecl          => t.filename
+      case mb: Member           => mb.typeDecl.filename
+      case e: Expression        => Option(e.method).map(_.filename).getOrElse("")
+      case l: Local             => l.method.filename.headOption.getOrElse("")
+      case p: MethodParameterIn => p.method.filename
+      case _                    => ""
+    def lineOf(n: StoredNode): Option[Int] =
+        Option(n.propertiesMap.get(PropertyNames.LINE_NUMBER)).collect { case i: Integer =>
+            i.toInt
+        }
+    def nameOf(n: StoredNode): String =
+        Option(n.propertiesMap.get(PropertyNames.NAME)).orElse(
+          Option(n.propertiesMap.get(PropertyNames.CODE))
+        ).map(_.toString).getOrElse("")
+    val findings = atom.tag.nameExact(confusable, bidi).l.flatMap { t =>
+        t._taggedByIn.collectAll[StoredNode].l.map { n =>
+            (t.name, n) match
+              // a comment's controls are on its method, valued `<line>:<code points>`
+              case (`bidi`, m: Method) =>
+                  val (line, points) = t.value.span(_ != ':')
+                  SourceIntegrityFinding(
+                    bidi,
+                    m.filename,
+                    line.toIntOption,
+                    "comment",
+                    points.drop(1)
+                  )
+              case (`bidi`, other) =>
+                  SourceIntegrityFinding(bidi, fileOf(other), lineOf(other), nameOf(other), t.value)
+              case (_, other) =>
+                  SourceIntegrityFinding(
+                    confusable,
+                    fileOf(other),
+                    lineOf(other),
+                    nameOf(other),
+                    t.value
+                  )
+        }
+    }
+    findings.distinct.sortBy(f => (f.fileName, f.lineNumber.getOrElse(0), f.kind, f.name))
+  end sourceIntegrityOf
 
   private def createMethodUsageSlice(
     method: Method,
@@ -396,24 +444,53 @@ object UsageSlicing:
     )
   end createMethodUsageSlice
 
+  /** A C/C++ include's IMPORT node carries the file it resolved to and whether it is a system
+    * include as tags (written by the C/C++ frontend).
+    */
+  private val IncludeResolvedPathTag = "include-resolved-path"
+  private val IncludeSystemTag       = "include-system"
+
+  /** On a C/C++ call to a function only a header declares: that header. */
+  private val CalleeDeclaredInTag = "callee-declared-in"
+
   private def importsAsSlices(atom: Cpg): List[MethodUsageSlice] =
-      // Deduplicate by (importedEntity, importedAs): in multi-TU languages (e.g. C/C++) the same
-      // header can be included once per translation unit, flooding the output with hundreds of
-      // identical import slices.  A single representative entry per unique import identity is kept.
-      atom.imports
-          .distinctBy(i => (i.importedEntity.getOrElse(""), i.importedAs.getOrElse("")))
-          .l
-          .map(i =>
-              createSlice(
-                i.importedEntity.getOrElse(""),
-                i.importedAs.getOrElse(""),
-                i.file.map(_.name).headOption.getOrElse(""),
-                if i.code.nonEmpty then i.code.replaceFirst("^use", "").trim else "",
-                Set.empty,
-                i.lineNumber,
-                i.columnNumber
+    // the functions each file calls, by the header that declares them
+    val calleesByFileAndHeader: Map[(String, String), List[String]] =
+        atom.call.where(_.tag.nameExact(CalleeDeclaredInTag)).l
+            .flatMap(call =>
+                call.tag.nameExact(CalleeDeclaredInTag).value.headOption.map(header =>
+                    ((call.method.filename, header), call.name)
+                )
+            )
+            .groupMap(_._1)(_._2).view.mapValues(_.distinct.sorted).toMap
+    // Deduplicate by (importedEntity, importedAs, resolved file): in multi-TU languages (e.g.
+    // C/C++) the same header can be included once per translation unit, flooding the output with
+    // hundreds of identical import slices. A single representative entry per unique import
+    // identity is kept; the same name resolved to two different files is two imports.
+    atom.imports
+        .map(i => (i, i.tag.nameExact(IncludeResolvedPathTag).value.headOption))
+        .distinctBy((i, resolved) =>
+            (i.importedEntity.getOrElse(""), i.importedAs.getOrElse(""), resolved.getOrElse(""))
+        )
+        .l
+        .map((i, resolved) =>
+            createSlice(
+              i.importedEntity.getOrElse(""),
+              i.importedAs.getOrElse(""),
+              i.file.map(_.name).headOption.getOrElse(""),
+              if i.code.nonEmpty then i.code.replaceFirst("^use", "").trim else "",
+              Set.empty,
+              i.lineNumber,
+              i.columnNumber
+            ).copy(
+              resolvedPath = resolved,
+              isSystem = Option.when(i.tag.nameExact(IncludeSystemTag).nonEmpty)(true),
+              importedSymbols = resolved.flatMap(header =>
+                  calleesByFileAndHeader.get((i.file.map(_.name).headOption.getOrElse(""), header))
               )
-          )
+            )
+        )
+  end importsAsSlices
 
   private def unusedTypeDeclAsSlices(atom: Cpg): List[MethodUsageSlice] =
       atom.typeDecl.annotation.filter(_.method.isEmpty).l.map(a =>

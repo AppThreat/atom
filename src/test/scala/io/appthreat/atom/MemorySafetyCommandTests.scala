@@ -249,9 +249,92 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
       }
 
       "reject a format or confidence it does not implement rather than ignoring it" in {
-          render(AtomMemorySafetyConfig().withFormat("sarif")).isLeft shouldBe true
+          render(AtomMemorySafetyConfig().withFormat("xml")).isLeft shouldBe true
           render(AtomMemorySafetyConfig().withMinConfidence("very-high")).isLeft shouldBe true
           render(AtomMemorySafetyConfig().withMinConfidence("HIGH")).isRight shouldBe true
+      }
+
+      "write SARIF 2.1.0 the official schema accepts, with rules, locations and code flows" in {
+          val out = File.newTemporaryFile("memory-safety", ".sarif")
+          out.deleteOnExit()
+          val config = AtomMemorySafetyConfig().withFormat("sarif")
+          config.outputSliceFile = out
+          MemorySafetyCommands.runMemorySafety(cpg, config, out).isRight shouldBe true
+          val text = out.contentAsString
+          val factory = com.networknt.schema.JsonSchemaFactory.getInstance(
+            com.networknt.schema.SpecVersion.VersionFlag.V4
+          )
+          val schema = factory.getSchema(
+            getClass.getResourceAsStream("/sarif/sarif-schema-2.1.0.json")
+          )
+          val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
+          val errors = schema.validate(mapper.readTree(text))
+          errors.isEmpty shouldBe true
+          // and the schema does reject what is not SARIF: a log without a version
+          schema.validate(mapper.readTree("""{"runs": []}""")).isEmpty shouldBe false
+
+          val sarif = parse(text).toOption.get
+          val run   = sarif.hcursor.downField("runs").downArray
+          val rules = run.downField("tool").downField("driver").downField("rules").as[List[
+            io.circe.Json
+          ]].toOption.get
+          val results = run.downField("results").as[List[io.circe.Json]].toOption.get
+          val json    = render(AtomMemorySafetyConfig()).toOption.get
+          results.size shouldBe json.size
+          val ruleIds = rules.flatMap(_.hcursor.get[String]("id").toOption)
+          ruleIds should contain(MemorySafetyFindingPass.RuleSizeParamContract)
+          // each result names its rule by id and index, and carries the CWE
+          results.foreach { r =>
+            val id = r.hcursor.get[String]("ruleId").toOption.get
+            r.hcursor.get[Int]("ruleIndex").toOption shouldBe Some(ruleIds.indexOf(id))
+            r.hcursor.downField("properties").get[String]("cwe").toOption.get should startWith(
+              "CWE-"
+            )
+          }
+          val sizeParam = results.find(
+            _.hcursor.get[String]("ruleId").toOption.contains(
+              MemorySafetyFindingPass.RuleSizeParamContract
+            )
+          ).get
+          val location =
+              sizeParam.hcursor.downField("locations").downArray.downField("physicalLocation")
+          location.downField("artifactLocation").get[String]("uri").toOption.get should endWith(
+            "copy.c"
+          )
+          location.downField("region").get[Int]("startLine").toOption.get should be > 0
+          sizeParam.hcursor.downField("codeFlows").downArray.downField("threadFlows").downArray
+              .downField("locations").as[List[io.circe.Json]].toOption.get should not be empty
+      }
+
+      "index SARIF results into the rules listed, and keep a file outside the input absolute" in {
+          val known = MemorySafetyFindingPass.RuleSizeParamContract
+          def finding(rule: String, file: String) = io.circe.Json.obj(
+            "rule"     -> io.circe.Json.fromString(rule),
+            "file"     -> io.circe.Json.fromString(file),
+            "line"     -> io.circe.Json.fromInt(3),
+            "severity" -> io.circe.Json.fromString("high")
+          )
+          // "MS-AAA-000" sorts before every registered id and is not one
+          val sarif = MemorySafetySarif.document(
+            List(finding("MS-AAA-000", "src/a.c"), finding(known, "/usr/include/string.h")),
+            "/work/project",
+            None
+          )
+          val run = sarif.hcursor.downField("runs").downArray
+          val ruleIds = run.downField("tool").downField("driver").downField("rules")
+              .as[List[io.circe.Json]].toOption.get.flatMap(_.hcursor.get[String]("id").toOption)
+          ruleIds shouldBe List(known)
+          val results = run.downField("results").as[List[io.circe.Json]].toOption.get
+          results.map(_.hcursor.get[Int]("ruleIndex").toOption.get) shouldBe List(-1, 0)
+          def artifact(r: io.circe.Json) = r.hcursor.downField("locations").downArray
+              .downField("physicalLocation").downField("artifactLocation")
+          artifact(results.head).get[String]("uri").toOption shouldBe Some("src/a.c")
+          artifact(results.head).get[String]("uriBaseId").toOption shouldBe Some("%SRCROOT%")
+          artifact(results.last).get[String]("uri").toOption.get should startWith("file:/")
+          artifact(results.last).get[String]("uri").toOption.get should endWith(
+            "/usr/include/string.h"
+          )
+          artifact(results.last).get[String]("uriBaseId").toOption shouldBe None
       }
 
       "keep the flags set before it: a command option must not reset the config" in {

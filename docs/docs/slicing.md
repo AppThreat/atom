@@ -36,6 +36,41 @@ The mind map below offers an overview.
 1. Parse the usages json.
 2. Iterate over the `objectSlices` array. For each slice store its fileName and lineNumber.
 
+For C and C++, each `#include` also appears in `objectSlices`, with no usages: `fullName` is the
+header as written, `fileName` the file that includes it, `resolvedPath` the file the include
+resolved to (absent when it did not resolve), `isSystem` `true` for a system include (`<...>`), and
+`importedSymbols` the functions the including file calls that the header declares (with function
+bodies parsed: not in header mode). The resolved file says which package provides the header, which
+its name alone often cannot, and the symbols which of its API the code uses.
+
+```json
+{
+  "code": "#include <zlib.h>",
+  "fullName": "zlib.h",
+  "signature": "zlib.h",
+  "fileName": "src/compress.c",
+  "lineNumber": 3,
+  "columnNumber": 1,
+  "resolvedPath": "/usr/include/zlib.h",
+  "isSystem": true,
+  "importedSymbols": ["deflate", "deflateInit_"],
+  "usages": []
+}
+```
+
+When the source holds Unicode that hides what the code does, a `sourceIntegrity` list follows the
+other two (it is absent otherwise): a name that looks like another name of its file
+(`unicode-confusable`, the UTS #39 skeletons are equal and at least one name is not ASCII, with
+`detail` naming the look-alikes), and bidirectional formatting characters in a string or comment
+(`unicode-bidi-control`, `detail` the code points; CVE-2021-42574).
+
+```json
+"sourceIntegrity": [
+  {"kind": "unicode-confusable", "fileName": "auth.c", "lineNumber": 12, "name": "isAdmіn", "detail": "isAdmin"},
+  {"kind": "unicode-bidi-control", "fileName": "auth.c", "lineNumber": 30, "name": "comment", "detail": "U+202E,U+2066"}
+]
+```
+
 ```json
 {
   "objectSlices": [

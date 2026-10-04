@@ -308,6 +308,11 @@ package object slicing:
     * @param slices
     *   the object usage slices.
     */
+  /** The usages in a method, or for a C/C++ `#include`, the include: `fullName` is the header as
+    * written, `fileName` the file that includes it, `resolvedPath` the file it resolved to,
+    * `isSystem` whether it was written as a system include (`<...>`) and `importedSymbols` the
+    * functions the including file calls that the resolved header declares.
+    */
   case class MethodUsageSlice(
     code: String,
     fullName: String,
@@ -315,7 +320,10 @@ package object slicing:
     fileName: String,
     slices: Set[ObjectUsageSlice],
     lineNumber: Option[Int] = None,
-    columnNumber: Option[Int] = None
+    columnNumber: Option[Int] = None,
+    resolvedPath: Option[String] = None,
+    isSystem: Option[Boolean] = None,
+    importedSymbols: Option[List[String]] = None
   )
 
   implicit val decodeMethodUsageSlice: Decoder[MethodUsageSlice] =
@@ -325,21 +333,32 @@ package object slicing:
             fn        <- c.downField("fullName").as[String]
             signature <- c.downField("signature").as[String]
             fln       <- c.downField("fileName").as[String]
-            ss        <- c.downField("slices").as[Set[ObjectUsageSlice]]
-            lin       <- c.downField("lineNumber").as[Option[Int]]
-            col       <- c.downField("columnNumber").as[Option[Int]]
-          yield MethodUsageSlice(code, fn, signature, fln, ss, lin, col)
+            // written as "usages"; "slices" is the field's name
+            ss <- c.downField("usages").as[Set[ObjectUsageSlice]]
+                .orElse(c.downField("slices").as[Set[ObjectUsageSlice]])
+            lin      <- c.downField("lineNumber").as[Option[Int]]
+            col      <- c.downField("columnNumber").as[Option[Int]]
+            resolved <- c.downField("resolvedPath").as[Option[String]]
+            system   <- c.downField("isSystem").as[Option[Boolean]]
+            symbols  <- c.downField("importedSymbols").as[Option[List[String]]]
+          yield MethodUsageSlice(code, fn, signature, fln, ss, lin, col, resolved, system, symbols)
   implicit val encodeMethodUsageSlice: Encoder[MethodUsageSlice] =
-      Encoder.instance { case MethodUsageSlice(a, b, signature, c, d, e, f) =>
-          Json.obj(
-            "code"         -> a.asJson,
-            "fullName"     -> b.asJson,
-            "signature"    -> signature.asJson,
-            "fileName"     -> c.asJson,
-            "lineNumber"   -> e.asJson,
-            "columnNumber" -> f.asJson,
-            "usages"       -> d.asJson
-          )
+      Encoder.instance {
+          case MethodUsageSlice(a, b, signature, c, d, e, f, resolved, system, symbols) =>
+              // the include fields only appear on include slices
+              val include = resolved.map(p => "resolvedPath" -> p.asJson).toList ++
+                  system.map(v => "isSystem" -> v.asJson).toList ++
+                  symbols.filter(_.nonEmpty).map(v => "importedSymbols" -> v.asJson).toList
+              Json.fromFields(
+                List(
+                  "code"         -> a.asJson,
+                  "fullName"     -> b.asJson,
+                  "signature"    -> signature.asJson,
+                  "fileName"     -> c.asJson,
+                  "lineNumber"   -> e.asJson,
+                  "columnNumber" -> f.asJson
+                ) ++ include :+ ("usages" -> d.asJson)
+              )
       }
 
   /** Represents a source of data-generation, i.e., where data is defined and can be assigned to
@@ -447,14 +466,25 @@ package object slicing:
       case unknown @ UnknownDef(_, _, _, _, _) => unknown.asJson
   }
 
-  implicit val decodeDefComponent: Decoder[DefComponent] =
-      List[Decoder[DefComponent]](
-        Decoder[LocalDef].widen,
-        Decoder[LiteralDef].widen,
-        Decoder[CallDef].widen,
-        Decoder[ParamDef].widen,
-        Decoder[UnknownDef].widen
-      ).reduceLeft(_.or(_))
+  // The label names the kind. Trying each kind in turn would read every kind as a LocalDef, whose
+  // fields every kind has, and drop the rest (a call's resolved method, a parameter's position).
+  implicit val decodeDefComponent: Decoder[DefComponent] = Decoder.instance { c =>
+      c.downField("label").as[Option[String]].flatMap {
+          case Some("LOCAL")   => c.as[LocalDef]
+          case Some("LITERAL") => c.as[LiteralDef]
+          case Some("CALL")    => c.as[CallDef]
+          case Some("PARAM")   => c.as[ParamDef]
+          case Some("UNKNOWN") => c.as[UnknownDef]
+          case _ =>
+              List[Decoder[DefComponent]](
+                Decoder[CallDef].widen,
+                Decoder[ParamDef].widen,
+                Decoder[LocalDef].widen,
+                Decoder[LiteralDef].widen,
+                Decoder[UnknownDef].widen
+              ).reduceLeft(_.or(_)).apply(c)
+      }
+  }
 
   object DefComponent:
 
@@ -792,16 +822,52 @@ package object slicing:
           )
       }
 
+  /** Unicode in the source that hides what the code does: a name that looks like another name of
+    * its file (`unicode-confusable`, `detail` naming the look-alikes), or bidirectional formatting
+    * characters in a string or comment (`unicode-bidi-control`, `detail` the code points).
+    */
+  case class SourceIntegrityFinding(
+    kind: String,
+    fileName: String,
+    lineNumber: Option[Int],
+    name: String,
+    detail: String
+  )
+
+  implicit val encodeSourceIntegrityFinding: Encoder[SourceIntegrityFinding] =
+      Encoder.instance { f =>
+          Json.obj(
+            "kind"       -> f.kind.asJson,
+            "fileName"   -> f.fileName.asJson,
+            "lineNumber" -> f.lineNumber.asJson,
+            "name"       -> f.name.asJson,
+            "detail"     -> f.detail.asJson
+          )
+      }
+
+  implicit val decodeSourceIntegrityFinding: Decoder[SourceIntegrityFinding] =
+      (c: HCursor) =>
+          for
+            kind   <- c.downField("kind").as[String]
+            file   <- c.downField("fileName").as[String]
+            line   <- c.downField("lineNumber").as[Option[Int]]
+            name   <- c.downField("name").as[String]
+            detail <- c.downField("detail").as[String]
+          yield SourceIntegrityFinding(kind, file, line, name, detail)
+
   /** The program usage slices and UDTs.
     *
     * @param objectSlices
     *   the object slices under each procedure
     * @param userDefinedTypes
     *   the UDTs.
+    * @param sourceIntegrity
+    *   Unicode that hides what the code does; written only when there is some
     */
   case class ProgramUsageSlice(
     objectSlices: List[MethodUsageSlice],
-    userDefinedTypes: List[UserDefinedType]
+    userDefinedTypes: List[UserDefinedType],
+    sourceIntegrity: List[SourceIntegrityFinding] = Nil
   ) extends ProgramSlice:
 
     def toJson: String = this.asJson.noSpaces
@@ -821,9 +887,14 @@ package object slicing:
             if i > 0 then writer.write(",")
             writer.write(udt.asJson.noSpaces)
         }
-        writer.write("]}")
+        writer.write("]")
+        if sourceIntegrity.nonEmpty then
+          writer.write(""","sourceIntegrity":""")
+          writer.write(sourceIntegrity.asJson.noSpaces)
+        writer.write("}")
       finally
         writer.close()
+    end toJsonFile
   end ProgramUsageSlice
 
   implicit val decodeProgramUsageSlice: Decoder[ProgramUsageSlice] =
@@ -831,9 +902,14 @@ package object slicing:
           for
             o <- c.downField("objectSlices").as[List[MethodUsageSlice]]
             u <- c.downField("userDefinedTypes").as[List[UserDefinedType]]
-          yield ProgramUsageSlice(o, u)
+            s <- c.downField("sourceIntegrity").as[Option[List[SourceIntegrityFinding]]]
+          yield ProgramUsageSlice(o, u, s.getOrElse(Nil))
   implicit val encodeProgramUsageSlice: Encoder[ProgramUsageSlice] = Encoder.instance {
-      case ProgramUsageSlice(os, udts) =>
-          Json.obj("objectSlices" -> os.asJson, "userDefinedTypes" -> udts.asJson)
+      case ProgramUsageSlice(os, udts, integrity) =>
+          val base = List("objectSlices" -> os.asJson, "userDefinedTypes" -> udts.asJson)
+          Json.obj(
+            (if integrity.isEmpty then base
+             else base :+ ("sourceIntegrity" -> integrity.asJson))*
+          )
   }
 end slicing

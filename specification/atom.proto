@@ -862,6 +862,8 @@ message UsageSlice {
     }
 
     // Packages the object usage slices along with location and an optional method source code.
+    // For a C/C++ #include, fullName is the header as written, fileName the including file, and
+    // resolvedPath and isSystem say where the include resolved and whether it named a system header.
     message MethodUsageSlice {
         // Raw source code of the method
         string code = 1;
@@ -874,6 +876,14 @@ message UsageSlice {
         // Column number
         uint32 columnNumber = 5;
         repeated ObjectUsageSlice usages = 6;
+        // Method signature
+        string signature = 7;
+        // C/C++ include only: the file the include resolved to
+        string resolvedPath = 8;
+        // C/C++ include only: true for a system include (<...>)
+        bool isSystem = 9;
+        // C/C++ include only: the functions the including file calls that the header declares
+        repeated string importedSymbols = 10;
     }
 
     // Represents a local transfer of data via aliasing. The data defined is via some alias.
@@ -920,8 +930,25 @@ message UsageSlice {
         uint32 columnNumber = 6;
     }
 
+    // Unicode in the source that hides what the code does
+    message SourceIntegrityFinding {
+        // unicode-confusable: a name that looks like another name of its file;
+        // unicode-bidi-control: bidirectional formatting characters in a string or comment
+        string kind = 1;
+        // File name
+        string fileName = 2;
+        // Line number
+        uint32 lineNumber = 3;
+        // The name, the literal, or "comment"
+        string name = 4;
+        // The look-alike names, or the code points (U+202E)
+        string detail = 5;
+    }
+
     repeated MethodUsageSlice objectSlices = 1;
     repeated UserDefinedTypes userDefinedTypes = 2;
+    // Present only when there are findings
+    repeated SourceIntegrityFinding sourceIntegrity = 3;
 }
 
 message Nodes {

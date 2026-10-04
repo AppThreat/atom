@@ -10,6 +10,7 @@ import io.appthreat.atom.frontends.clike.C2Atom
 import io.appthreat.atom.parsedeps.parseDependencies
 import io.appthreat.atom.passes.TypeHintPass
 import io.appthreat.atom.slicing.*
+import io.appthreat.edg2atom.Edg2Atom
 import io.appthreat.c2cpg.{C2Cpg, Config as CConfig}
 import io.appthreat.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.appthreat.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
@@ -46,6 +47,7 @@ import io.appthreat.x2cpg.passes.taggers.{
     CdxPass,
     ChennaiTagsPass,
     EasyTagsPass,
+    SourceIntegrityPass,
     ExtentPass,
     GuardPass,
     IntegerWidthPass,
@@ -457,6 +459,43 @@ object Atom:
               case config: AtomConfig => config.withAppendedFrontendArg("includes", x)
               case _                  => c
         )
+    opt[String]("compile-commands")
+        .valueName("<file|dir>")
+        .text(
+          "Parse the translation units of a JSON compilation database (compile_commands.json, or a directory holding one) with their own flags. (C/C++ only)"
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("compile-commands", x)
+              case _                  => c
+        )
+    opt[Unit]("compile-commands-only")
+        .text("With --compile-commands, parse only the database's translation units. (C/C++ only)")
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("compile-commands-only", "true")
+              case _                  => c
+        )
+    opt[String]("c-frontend")
+        .valueName("<cdt|edg|edg-fallback>")
+        .text(
+          "The C/C++ frontend: cdt (default, the Eclipse CDT parser), edg (the EDG front end, through the edga exporter), or edg-fallback (edg, with cdt for the files edga cannot export). (C/C++ only)"
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("c-frontend", x)
+              case _                  => c
+        )
+    opt[String]("edga-path")
+        .valueName("<file>")
+        .text(
+          "The edga binary for the edg frontends (default: EDGA_PATH, then the PATH). (C/C++ only)"
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("edga-path", x)
+              case _                  => c
+        )
     opt[String]("delombok-mode")
         .text("Delombok strategy: no-delombok|default|types-only|run-delombok. (Java only)")
         .action((x, c) =>
@@ -765,7 +804,7 @@ object Atom:
         )
     cmd("memory-safety")
         .text(
-          "Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON"
+          "Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF"
         )
         .action((_, _) => AtomMemorySafetyConfig().withDataDependencies(true))
         .children(
@@ -779,7 +818,7 @@ object Atom:
                     case _                         => c
               ),
           opt[String]("format")
-              .text("output format: json (sarif is planned). Default: json.")
+              .text("output format: json or sarif (SARIF 2.1.0). Default: json.")
               .action((x, c) =>
                   c match
                     case c: AtomMemorySafetyConfig => c.withFormat(x)
@@ -1280,7 +1319,21 @@ object Atom:
     new C2Atom().createCpg(C2Cpg.withCensusDefines(finalConfig))
 
   private def createC2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-      new C2Cpg().createCpgWithOverlays(c2CpgConfig(config, outputAtomFile))
+      config.frontendArgs.get("c-frontend").map(_.trim.toLowerCase) match
+        case Some(frontend @ ("edg" | "edg-fallback")) =>
+            config.frontendArgs.get("edga-path").filter(_.nonEmpty).foreach(p =>
+                sys.props("edga.path") = p
+            )
+            new Edg2Atom(fallbackToCdt = frontend == "edg-fallback")
+                .createCpgWithOverlays(c2CpgConfig(config, outputAtomFile))
+        case None | Some("cdt") | Some("") =>
+            new C2Cpg().createCpgWithOverlays(c2CpgConfig(config, outputAtomFile))
+        case Some(other) =>
+            scala.util.Failure(
+              new IllegalArgumentException(
+                s"unknown --c-frontend `$other`; expected cdt, edg or edg-fallback"
+              )
+            )
 
   private def c2CpgConfig(config: AtomConfig, outputAtomFile: String): CConfig =
     val cIgnoreDirEnvVars =
@@ -1554,6 +1607,10 @@ object Atom:
               }
               PerfReporter.stage("taggers.EasyTagsPass", "analysis") {
                   new EasyTagsPass(atom).createAndApply()
+              }
+              // Unicode that hides what the code does (look-alike names, bidi controls)
+              PerfReporter.stage("taggers.SourceIntegrityPass", "analysis") {
+                  new SourceIntegrityPass(atom).createAndApply()
               }
               PerfReporter.stage("taggers.PythonFrameworkRecognizersPass", "analysis") {
                   new PythonFrameworkRecognizersPass(atom).createAndApply()

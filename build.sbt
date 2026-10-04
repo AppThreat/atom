@@ -17,6 +17,7 @@ libraryDependencies ++= Seq(
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface.text")
   ),
+  "io.appthreat"  %% "edg2atom"          % Versions.chen,
   "io.appthreat"  %% "dataflowengineoss" % Versions.chen,
   "io.appthreat"  %% "pysrc2cpg"         % Versions.chen,
   "io.appthreat"  %% "javasrc2cpg"       % Versions.chen,
@@ -29,7 +30,9 @@ libraryDependencies ++= Seq(
   ("io.appthreat" %% "pysrc2cpg"         % Versions.chen % Test).classifier("tests"),
   // the memory-safety overlay is C/C++ only, so its command needs a C fixture to test against
   ("io.appthreat" %% "c2cpg"             % Versions.chen % Test).classifier("tests"),
-  "org.scalatest" %% "scalatest"         % "3.2.20"      % Test
+  "org.scalatest" %% "scalatest"         % "3.2.20"      % Test,
+  // validates the SARIF the memory-safety command writes against the official schema
+  "com.networknt"  % "json-schema-validator" % "1.5.9"   % Test
 )
 
 excludeDependencies ++= Seq(
@@ -163,6 +166,8 @@ graalVMNativeImageOptions := Seq(
   niOpt,
   s"-march=$niMarch",
   "--initialize-at-build-time=io.appthreat.*",
+  // CDT's bundle lookup outside OSGi: the framework loads this service while the image is built
+  "--initialize-at-build-time=io.appthreat.c2cpg.parser.CdtBundleLocator,io.appthreat.c2cpg.parser.CdtCoreBundle$",
   "--no-fallback"
 ) ++ libcOptions
 

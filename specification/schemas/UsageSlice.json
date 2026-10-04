@@ -17,6 +17,14 @@
                     },
                     "additionalProperties": false,
                     "type": "array"
+                },
+                "sourceIntegrity": {
+                    "items": {
+                        "$ref": "#/definitions/atom.UsageSlice.SourceIntegrityFinding"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "Present only when there are findings"
                 }
             },
             "additionalProperties": false,
@@ -210,6 +218,10 @@
                     "type": "string",
                     "description": "Method full name"
                 },
+                "signature": {
+                    "type": "string",
+                    "description": "Method signature"
+                },
                 "fileName": {
                     "type": "string",
                     "description": "File name"
@@ -222,6 +234,21 @@
                     "type": "integer",
                     "description": "Column number"
                 },
+                "resolvedPath": {
+                    "type": "string",
+                    "description": "C/C++ include only: the file the include resolved to"
+                },
+                "isSystem": {
+                    "type": "boolean",
+                    "description": "C/C++ include only: true for a system include (<...>)"
+                },
+                "importedSymbols": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "description": "C/C++ include only: the functions the including file calls that the header declares"
+                },
                 "usages": {
                     "items": {
                         "$ref": "#/definitions/atom.UsageSlice.ObjectUsageSlice"
@@ -233,7 +260,7 @@
             "additionalProperties": false,
             "type": "object",
             "title": "Method Usage Slice",
-            "description": "Packages the object usage slices along with location and an optional method source code."
+            "description": "Packages the object usage slices along with location and an optional method source code. For a C/C++ #include, fullName is the header as written, fileName the including file, and resolvedPath and isSystem say where the include resolved and whether it named a system header."
         },
         "atom.UsageSlice.ObjectUsageSlice": {
             "properties": {
@@ -399,6 +426,34 @@
             "type": "object",
             "title": "User Defined Types",
             "description": "Describes custom types defined within the application."
+        },
+        "atom.UsageSlice.SourceIntegrityFinding": {
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "description": "unicode-confusable: a name that looks like another name of its file; unicode-bidi-control: bidirectional formatting characters in a string or comment"
+                },
+                "fileName": {
+                    "type": "string",
+                    "description": "File name"
+                },
+                "lineNumber": {
+                    "type": "integer",
+                    "description": "Line number"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The name, the literal, or \"comment\""
+                },
+                "detail": {
+                    "type": "string",
+                    "description": "The look-alike names, or the code points (U+202E)"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Source Integrity Finding",
+            "description": "Unicode in the source that hides what the code does"
         }
     }
 }
