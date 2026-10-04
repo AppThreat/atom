@@ -32,7 +32,7 @@ ENV PATH=/opt/bin:/opt/vendor/bin:${PATH}:/usr/local/bin/:/root/.local/bin:${AND
 
 WORKDIR /opt
 
-RUN zypper --non-interactive install -l --no-recommends php8 php8-cli php8-curl php8-zip php8-bcmath php8-pear php8-mbstring php8-devel rust1.85 \
+RUN zypper --non-interactive install -l --no-recommends gcc-c++ php8 php8-cli php8-curl php8-zip php8-bcmath php8-pear php8-mbstring php8-devel rust1.85 \
         libopenssl-devel libffi-devel readline-devel libyaml-devel zlib-devel libncurses6 ncurses-devel jemalloc-devel \
     && source /root/.nvm/nvm.sh \
     && python3 --version \

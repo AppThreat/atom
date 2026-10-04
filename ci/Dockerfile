@@ -50,7 +50,7 @@ RUN set -e; \
             ;; \
         *) echo >&2 "error: unsupported architecture: '$ARCH_NAME'"; exit 1 ;; \
     esac; \
-    microdnf install -y gcc git-core php php-cli php-curl php-zip php-bcmath php-json php-pear php-mbstring php-devel make \
+    microdnf install -y gcc gcc-c++ git-core php php-cli php-curl php-zip php-bcmath php-json php-pear php-mbstring php-devel make \
         python3 python3-devel python3-pip \
         wget bash glibc-common glibc-all-langpacks \
         openssl-devel libffi-devel readline-devel libyaml zlib-devel ncurses ncurses-devel \
