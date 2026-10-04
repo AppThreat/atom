@@ -294,6 +294,22 @@ object FrontendArgsApplier:
       "With `compile-commands`, parse only the database's translation units.",
       CLike
     ),
+    KeyDoc(
+      "c-frontend",
+      "string",
+      "cdt",
+      "The C/C++ frontend: `cdt` (the Eclipse CDT parser), `edg` (the EDG front end, through " +
+          "the `edga` exporter), or `edg-fallback` (`edg`, with `cdt` for the files `edga` cannot " +
+          "export, and for the whole project when `edga` is not installed).",
+      CLike
+    ),
+    KeyDoc(
+      "edga-path",
+      "string",
+      "",
+      "The `edga` binary for the `edg` frontends (default: `EDGA_PATH`, then the `PATH`).",
+      CLike
+    ),
     KeyDoc("include-comments", "bool", "false", "Embed comments into the graph.", CLike),
     KeyDoc("log-problems", "bool", "false", "Log every parse problem.", CLike),
     KeyDoc("log-preprocessor", "bool", "false", "Log every preprocessor statement.", CLike),

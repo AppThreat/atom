@@ -33,6 +33,9 @@ Usage: atom [parsedeps|data-flow|usages|reachables|memory-safety|export|algorith
   --compile-commands <file|dir>
                            Parse the translation units of a JSON compilation database (compile_commands.json, or a directory holding one) with their own flags. (C/C++ only)
   --compile-commands-only  With --compile-commands, parse only the database's translation units. (C/C++ only)
+  --c-frontend <cdt|edg|edg-fallback>
+                           The C/C++ frontend: cdt (default, the Eclipse CDT parser), edg (the EDG front end, through the edga exporter), or edg-fallback (edg, with cdt for the files edga cannot export). (C/C++ only)
+  --edga-path <file>       The edga binary for the edg frontends (default: EDGA_PATH, then the PATH). (C/C++ only)
   --delombok-mode <value>  Delombok strategy: no-delombok|default|types-only|run-delombok. (Java only)
   --jdk-path <value>       JDK used to resolve builtin Java types. (Java only)
   --fetch-deps             Fetch dependency jars for extra type information. (Java only)

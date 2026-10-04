@@ -17,6 +17,7 @@ libraryDependencies ++= Seq(
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface"),
     ExclusionRule(organization = "org.eclipse.platform", name = "org.eclipse.jface.text")
   ),
+  "io.appthreat"  %% "edg2atom"          % Versions.chen,
   "io.appthreat"  %% "dataflowengineoss" % Versions.chen,
   "io.appthreat"  %% "pysrc2cpg"         % Versions.chen,
   "io.appthreat"  %% "javasrc2cpg"       % Versions.chen,
