@@ -67,6 +67,11 @@ curl -LO https://github.com/AppThreat/atom/releases/latest/download/atom.exe
 .\atom.exe --help
 ```
 
+The JVM bytecode languages (`jar`, `jimple`, `android`, `apk`, `dex`, `scala`, `tasty`, `sbt`) read the
+JDK classes from an installed JDK 8 or later. The native image looks in `--jdk-path`, `ATOM_JAVA_HOME`,
+`JAVA_HOME`, `JDK_HOME`, the `java` on `PATH` and common install locations, in that order. Without a JDK
+the atom is still built, with the JDK types left as phantoms, and atom prints a notice.
+
 NOTE: Commands such as astgen, rbastgen, phpastgen, etc. are not bundled into this native image. Install the npm package `@appthreat/atom-parsetools` to get these commands.
 
 ```shell
@@ -136,7 +141,7 @@ Usage: atom [parsedeps|data-flow|usages|reachables|memory-safety|export|algorith
                            The C/C++ frontend: cdt (default, the Eclipse CDT parser), edg (the EDG front end, through the edga exporter), or edg-fallback (edg, with cdt for the files edga cannot export). (C/C++ only)
   --edga-path <file>       The edga binary for the edg frontends (default: EDGA_PATH, then the PATH). (C/C++ only)
   --delombok-mode <value>  Delombok strategy: no-delombok|default|types-only|run-delombok. (Java only)
-  --jdk-path <value>       JDK used to resolve builtin Java types. (Java only)
+  --jdk-path <value>       JDK used to resolve builtin Java types. (Java, JVM bytecode and Scala)
   --fetch-deps             Fetch dependency jars for extra type information. (Java only)
   --ts-types <value>       Resolve types from TypeScript declarations (default: true). (JS/TS only)
   --flow                   Enable Flow mode. (JS only)
@@ -534,6 +539,7 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 | **CHEN_PYTHON_IGNORE_DIRS**             | Comma-separated list of directories to ignore for Python. If unset, Atom uses Python's default ignored directories.                                        |
 | **CHEN_PHP_IGNORE_DIRS**                | Comma-separated list of additional directories to ignore for the PHP frontend.                                                                             |
 | **CHEN_RUBY_IGNORE_DIRS**               | Comma-separated list of additional directories to ignore for the Ruby frontend.                                                                            |
+| **CHEN_JIMPLE_JDK_CLASSES**             | Where the JVM bytecode frontends read JDK classes from: `auto` (default: the running JVM, or an installed JDK in the native image), `image` (always an installed JDK), `platform` (the running JVM) or `none`. Also `-Dchen.jimple.jdk-classes`. |
 | **CHEN_DELOMBOK_MODE**                  | Delombok mode for the Java frontend (`no-delombok`, `default`, `types-only`, `run-delombok`).                                                              |
 | **CHEN_INCLUDE_PATH**                   | Include directories for the C frontend. Separate paths with `:` or `;` (only `;` on Windows).                                                              |
 | **CHEN_ASTGEN_OUT**                     | Existing astgen output directory. Improves performance for JavaScript, TypeScript, and Flow during repeated invocations by reusing existing AST json data. |

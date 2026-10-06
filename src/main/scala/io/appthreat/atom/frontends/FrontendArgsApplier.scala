@@ -169,6 +169,7 @@ object FrontendArgsApplier:
     r = r.withDynamicPkgs(r.dynamicPkgs ++ csv(args, "dynamic-pkgs").toSeq)
     strOpt(args, "android").foreach(v => r = r.withAndroid(v))
     strOpt(args, "scala-sdk").foreach(v => r = r.withScalaSdk(v))
+    strOpt(args, "jdk-path").foreach(v => r = r.withJdkPath(v))
     applyUniversal(r, args)
     r
 
@@ -385,7 +386,13 @@ object FrontendArgsApplier:
       Seq("java")
     ),
     KeyDoc("enable-type-recovery", "bool", "false", "Enable generic type recovery.", Seq("java")),
-    KeyDoc("jdk-path", "string", "", "JDK used to resolve builtin Java types.", Seq("java")),
+    KeyDoc(
+      "jdk-path",
+      "string",
+      "",
+      "JDK used to resolve builtin Java types. The native image otherwise searches ATOM_JAVA_HOME, JAVA_HOME, JDK_HOME, PATH and common install locations.",
+      Seq("java", "jimple", "scala")
+    ),
     KeyDoc("show-env", "bool", "false", "Print the resolved environment and exit.", Seq("java")),
     KeyDoc("skip-type-inf-pass", "bool", "false", "Skip the type-inference pass.", Seq("java")),
     KeyDoc("dump-javaparser-asts", "bool", "false", "Dump JavaParser ASTs and exit.", Seq("java")),
@@ -513,6 +520,11 @@ object FrontendArgsApplier:
     "hpp"        -> "h",
     "i"          -> "h",
     "javasrc"    -> "java",
+    "jar"        -> "jimple",
+    "android"    -> "jimple",
+    "apk"        -> "jimple",
+    "dex"        -> "jimple",
+    "sbt"        -> "scala",
     "tasty"      -> "scala",
     "jssrc"      -> "js",
     "javascript" -> "js",
