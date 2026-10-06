@@ -37,7 +37,7 @@ Usage: atom [parsedeps|data-flow|usages|reachables|memory-safety|export|algorith
                            The C/C++ frontend: cdt (default, the Eclipse CDT parser), edg (the EDG front end, through the edga exporter), or edg-fallback (edg, with cdt for the files edga cannot export). (C/C++ only)
   --edga-path <file>       The edga binary for the edg frontends (default: EDGA_PATH, then the PATH). (C/C++ only)
   --delombok-mode <value>  Delombok strategy: no-delombok|default|types-only|run-delombok. (Java only)
-  --jdk-path <value>       JDK used to resolve builtin Java types. (Java only)
+  --jdk-path <value>       JDK used to resolve builtin Java types. (Java, JVM bytecode and Scala)
   --fetch-deps             Fetch dependency jars for extra type information. (Java only)
   --ts-types <value>       Resolve types from TypeScript declarations (default: true). (JS/TS only)
   --flow                   Enable Flow mode. (JS only)
@@ -316,7 +316,7 @@ spelling of the equivalent key.
 | `--define NAME`        | C/C++ (repeat) | Preprocessor define.                                          |
 | `--include-path <dir>` | C/C++ (repeat) | Header include path.                                          |
 | `--delombok-mode <m>`  | Java           | `no-delombok` \| `default` \| `types-only` \| `run-delombok`. |
-| `--jdk-path <path>`    | Java           | JDK used to resolve builtin Java types.                       |
+| `--jdk-path <path>`    | Java, JVM      | JDK used to resolve builtin Java types (also jar/scala/apk).  |
 | `--fetch-deps`         | Java           | Fetch dependency jars for type information.                   |
 | `--ts-types <bool>`    | JS/TS          | Resolve types from TypeScript declarations (default: true).   |
 | `--flow`               | JS             | Enable Flow mode.                                             |

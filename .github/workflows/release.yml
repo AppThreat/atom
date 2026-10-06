@@ -148,6 +148,7 @@ jobs:
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-amd64
           /usr/local/bin/upx -9 --lzma target/graalvm-native-image/atom-amd64
           target/graalvm-native-image/atom-amd64 --help
+          bash ci/native-smoke.sh target/graalvm-native-image/atom-amd64
           sha512sum target/graalvm-native-image/atom-amd64 > target/graalvm-native-image/atom-amd64.sha512
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -230,6 +231,7 @@ jobs:
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-arm64
           /usr/local/bin/upx -9 --lzma target/graalvm-native-image/atom-arm64
           target/graalvm-native-image/atom-arm64 --help
+          bash ci/native-smoke.sh target/graalvm-native-image/atom-arm64
           sha512sum target/graalvm-native-image/atom-arm64 > target/graalvm-native-image/atom-arm64.sha512
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -290,6 +292,7 @@ jobs:
           sbt stage createDistribution
           bash ci/native-image.sh
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-darwin-arm64
+          bash ci/native-smoke.sh target/graalvm-native-image/atom-darwin-arm64
           sha512sum target/graalvm-native-image/atom-darwin-arm64 > target/graalvm-native-image/atom-darwin-arm64.sha512
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -14,6 +14,7 @@ import io.appthreat.edg2atom.Edg2Atom
 import io.appthreat.c2cpg.{C2Cpg, Config as CConfig}
 import io.appthreat.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.appthreat.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
+import io.appthreat.jimple2cpg.util.{JdkClassSource, JdkClasses}
 import io.appthreat.jssrc2cpg.passes.{
     ConstClosurePass,
     ImportResolverPass,
@@ -504,7 +505,7 @@ object Atom:
               case _                  => c
         )
     opt[String]("jdk-path")
-        .text("JDK used to resolve builtin Java types. (Java only)")
+        .text("JDK used to resolve builtin Java types. (Java, JVM bytecode and Scala)")
         .action((x, c) =>
             c match
               case config: AtomConfig => config.withFrontendArg("jdk-path", x)
@@ -986,7 +987,7 @@ object Atom:
         end match
       catch
         case err: Throwable =>
-            Left(s"${err.toString}\n${err.getStackTrace.take(20).mkString("\n")}")
+            Left(describeFailure(err))
 
   private def runGraphExport(config: AtomExportConfig, ag: Cpg): Either[String, String] =
       GraphCommands.runExport(ag, config)
@@ -1226,7 +1227,7 @@ object Atom:
       case Failure(exception) =>
           // The message first: a frontend failure a script can grep for - the
           // no-source diagnostic lives in the message, and a bare stack trace hides it.
-          Left(s"${exception.getMessage}\n${exception.getStackTrace.take(20).mkString("\n")}")
+          Left(describeFailure(exception))
       case Success(ag) =>
           if onlyAstCache then
             closeCpg(ag)
@@ -1384,7 +1385,22 @@ object Atom:
       case Some(regex) => baseConfig.withIgnoredFilesRegex(regex)
       case None        => baseConfig
     val finalConfig = FrontendArgsApplier.applyJimple(withIgnore, config.frontendArgs)
+    reportJdkClasses(finalConfig)
     new Jimple2Cpg().createCpgWithOverlays(finalConfig)
+
+  /** The JVM bytecode frontends read the JDK classes through jrt:/ on the JVM and from an installed
+    * JDK in the native image (#271). Say so on stderr when no JDK was found: the atom is still
+    * built, but the JDK types in it are phantom, and atom's log level hides the frontend's own
+    * warning.
+    */
+  private def reportJdkClasses(config: JimpleConfig): Unit =
+      JdkClassSource.resolve(config.jdkPath) match
+        case missing: JdkClasses.Missing =>
+            System.err.println(
+              s"atom: no JDK found to resolve the JDK types (${missing.describe}). The atom is " +
+                  "built with phantom JDK types. Set JAVA_HOME or pass --jdk-path <JDK home>."
+            )
+        case _ =>
 
   private def createJavaSrc2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
     val baseConfig = JavaConfig(
@@ -1410,6 +1426,7 @@ object Atom:
         .withDepth(1)
         .withRecurse(true)
     val finalConfig = FrontendArgsApplier.applyJimple(baseConfig, config.frontendArgs)
+    reportJdkClasses(finalConfig)
     new Jimple2Cpg().createCpgWithOverlays(finalConfig)
 
   private def handleScalaSemantics(config: AtomConfig): Unit =
@@ -1678,9 +1695,8 @@ object Atom:
                   var rootCause: Throwable = ex
                   while rootCause.getCause != null && rootCause.getCause != rootCause do
                     rootCause = rootCause.getCause
-                  Left(
-                    s"Failed to enhance CPG: ${rootCause.getClass.getName}: ${rootCause.getMessage}"
-                  )
+                  // The stack of the root cause follows: without it a failing pass is anonymous.
+                  Left(s"Failed to enhance CPG: ${describeFailure(rootCause)}")
             end try
         case _ if reusing =>
             // A reused atom already carries the tags these passes wrote when it was first
@@ -1739,7 +1755,24 @@ object Atom:
         Right(())
       catch
         case err: Throwable =>
-            Left(err.getStackTrace.take(20).mkString("\n"))
+            Left(describeFailure(err))
+
+  /** A failure as printed after `Failure:`: the exception class and message of the failure and of
+    * each of its causes, then the top of the stack. A message may be null or empty (an NPE, or a
+    * FileSystemNotFoundException wrapped by a frontend), so the class always comes first.
+    */
+  private[atom] def describeFailure(err: Throwable, frames: Int = 20): String =
+    val chain = Iterator.iterate(err)(_.getCause).takeWhile(_ != null).take(8).toList
+        .foldLeft(List.empty[Throwable])((seen, t) =>
+            if seen.exists(_ eq t) then seen else seen :+ t
+        )
+    val headline = chain.map { t =>
+        Option(t.getMessage).map(_.trim).filter(_.nonEmpty) match
+          case Some(msg) => s"${t.getClass.getName}: $msg"
+          case None      => t.getClass.getName
+    }
+    (headline.head +: headline.tail.map(h => s"Caused by: $h") ++:
+        err.getStackTrace.take(frames).map(f => s"  at $f").toList).mkString("\n")
 
   /** The `--help` text, as printed. */
   private[atom] def usage: String = optionParser.usage
