@@ -150,6 +150,30 @@ class FrontendArgsApplierTests extends AnyFunSuite with Matchers with Inside:
     result.fullResolver shouldBe true
     result.android shouldBe Some("/opt/android.jar")
 
+  test("applyJimple forwards jdk-path, which picks the JDK classes in a native image"):
+    val result = FrontendArgsApplier.applyJimple(
+      JimpleConfig().withInputPath(inputPath),
+      Map("jdk-path" -> "/opt/jdk21", "scala-sdk" -> "/opt/scala3-library.jar")
+    )
+    result.jdkPath shouldBe Some("/opt/jdk21")
+    result.scalaSdk shouldBe Some("/opt/scala3-library.jar")
+    FrontendArgsApplier.applyJimple(JimpleConfig().withInputPath(inputPath), Map.empty)
+        .jdkPath shouldBe None
+
+  test("the --jdk-path flag reaches the jimple and scala frontends"):
+    for lang <- List("jar", "jimple", "scala", "apk") do
+      inside(Atom.parseConfig(List("-l", lang, "--jdk-path", "/opt/jdk25", inputPath))) {
+          case Right(c: AtomConfig) => c.frontendArgs.get("jdk-path") shouldBe Some("/opt/jdk25")
+      }
+
+  test("--frontend-args-keys lists jdk-path for every JVM bytecode language"):
+    for lang <- List("jar", "jimple", "android", "apk", "dex", "scala", "tasty", "sbt", "java") do
+      withClue(lang) {
+          FrontendArgsApplier.keysForLanguage(lang).map(_.name) should contain("jdk-path")
+      }
+    FrontendArgsApplier.keysForLanguage("jar").map(_.name) should contain("full-resolver")
+    FrontendArgsApplier.keysForLanguage("python").map(_.name) should not contain "jdk-path"
+
   test("applyPython forwards venv-dir and ignore paths"):
     val args   = Map("venv-dir" -> ".venv-2", "ignore-paths" -> "build/, dist/")
     val result = FrontendArgsApplier.applyPython(PyConfig().withInputPath(inputPath), args)
