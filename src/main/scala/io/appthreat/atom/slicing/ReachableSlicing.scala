@@ -444,7 +444,7 @@ object ReachableSlicing:
     * Deterministic regardless of collector/iterator order: candidates are processed longest-first
     * with the id-signature as tie-break, and entries with equal signatures render identically.
     */
-  private def deduplicateFlows(
+  private[slicing] def deduplicateFlows(
     entries: Vector[ReachableFlows],
     sinkTagPattern: Pattern
   ): Vector[ReachableFlows] =
@@ -453,41 +453,57 @@ object ReachableSlicing:
             entry.flows.lengthCompare(1) > 0 && entry.flows.head.id != entry.flows.last.id
         }
     if normalised.lengthCompare(2) < 0 then return normalised
-
-    // "#id1#id2#" - the delimiters make `contains` a contiguous-node-subsequence test.
-    def signature(entry: ReachableFlows): String =
-        entry.flows.map(n => s"#${n.id}").mkString + "#"
-
-    val signatures = normalised.map(signature)
-
-    // A container of entry B necessarily contains B's head and terminus nodes, so indexing every
-    // entry by every node id lets the containment check only consider entries reachable from B's
-    // endpoints - without restricting where in the container the subsequence may sit.
-    val entriesByNode = scala.collection.mutable.HashMap.empty[Long, List[Int]]
-    normalised.indices.foreach { i =>
-        entryNodeIds(normalised(i)).foreach { nodeId =>
-            entriesByNode.update(nodeId, i :: entriesByNode.getOrElse(nodeId, Nil))
-        }
-    }
-
-    val keep  = Array.fill(normalised.size)(false)
-    val order = normalised.indices.sortBy(i => (-signatures(i).length, signatures(i)))
-    order.foreach { i =>
-      val flows        = normalised(i).flows
-      val candidateSig = signatures(i)
-      val candidates =
-          entriesByNode.getOrElse(flows.head.id, Nil) ++
-              entriesByNode.getOrElse(flows.last.id, Nil)
-      keep(i) = !candidates.exists { j =>
-          j != i && keep(j) && (
-            signatures(j) == candidateSig ||
-                (signatures(j).length > candidateSig.length &&
-                    signatures(j).contains(candidateSig))
-          )
-      }
-    }
+    val keep = dedupKeepMask(normalised.map(_.flows.iterator.map(_.id).toArray))
     normalised.indices.filter(keep(_)).map(normalised).toVector
   end deduplicateFlows
+
+  /** The containment dedup of [[deduplicateFlows]] over node-id sequences (each at least two
+    * long): `keep(i)` is false exactly when an earlier-processed kept sequence contains sequence
+    * `i` as a contiguous run (equality included).
+    *
+    * The processing order is that of the canonical `#id1#id2#...#` signature string - longest
+    * string first, then lexicographic - so the survivors are those of the string-based
+    * formulation, which is what fixes the output as deterministic. The test itself runs on the id
+    * arrays: kept sequences are indexed by each adjacent id pair, so a candidate is only compared
+    * with the kept sequences in which its own first two ids occur next to each other, at those
+    * offsets. Formerly every candidate concatenated the entry lists of its endpoint nodes and ran a
+    * `String.contains` over each - with hub nodes in thousands of flows that was a tenth of the
+    * whole reachables stage.
+    */
+  private[slicing] def dedupKeepMask(ids: IndexedSeq[Array[Long]]): Array[Boolean] =
+    def signature(seq: Array[Long]): String =
+      val sb = new java.lang.StringBuilder(seq.length * 8)
+      seq.foreach(id => sb.append('#').append(id))
+      sb.append('#').toString
+    val signatures = ids.map(signature)
+    val order      = ids.indices.sortBy(i => (-signatures(i).length, signatures(i)))
+
+    // (first id, second id) -> (kept sequence, offset of the pair in it)
+    val byBigram = scala.collection.mutable.HashMap.empty[(Long, Long), scala.collection.mutable.ArrayBuffer[Long]]
+    def pack(j: Int, offset: Int): Long = (j.toLong << 32) | (offset.toLong & 0xffffffffL)
+
+    def containsAt(container: Array[Long], offset: Int, seq: Array[Long]): Boolean =
+      if container.length - offset < seq.length then return false
+      var k = 2 // the bigram already matched
+      while k < seq.length && container(offset + k) == seq(k) do k += 1
+      k == seq.length
+
+    val keep = Array.fill(ids.size)(false)
+    order.foreach { i =>
+      val seq = ids(i)
+      val contained = byBigram.get((seq(0), seq(1))).exists(_.exists { packed =>
+        containsAt(ids((packed >>> 32).toInt), packed.toInt, seq)
+      })
+      if !contained then
+        keep(i) = true
+        var p = 0
+        while p + 1 < seq.length do
+          byBigram.getOrElseUpdate((seq(p), seq(p + 1)), scala.collection.mutable.ArrayBuffer.empty) +=
+              pack(i, p)
+          p += 1
+    }
+    keep
+  end dedupKeepMask
 
   /** A flow terminates at its sink: when an entry's last node is not itself sink-tagged but the
     * path traverses a sink-tagged call, everything after that call is a continuation into the
@@ -506,9 +522,6 @@ object ReachableSlicing:
       val cutAt = flows.lastIndexWhere { n => n.label == "CALL" && carriesSinkTag(n) }
       if cutAt <= 0 then Some(entry)
       else Some(entry.copy(flows = flows.take(cutAt + 1)))
-
-  private def entryNodeIds(entry: ReachableFlows): Set[Long] =
-      entry.flows.map(_.id).toSet
 
   /** Collects the ids of nodes that act as profile neutraliser barriers: calls carrying any of the
     * profile's tags, calls to methods carrying them, and the parameters/identifiers/returns of such
