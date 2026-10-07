@@ -297,12 +297,20 @@ object Atom:
         .text("output filename. Default app.⚛ or app.atom in windows")
         .action((x, c) =>
             c match
-              case config: AtomConfig => config.withOutputAtomFile(File(x))
-              case _                  => c
+              case config: AtomConfig =>
+                  config.outputAtomFileGiven = true
+                  config.withOutputAtomFile(File(x))
+              case _ => c
         )
     opt[String]('s', "slice-outfile")
         .text("export intra-procedural slices as json")
-        .action((x, c) => c.withOutputSliceFile(File(x)))
+        .action((x, c) =>
+            c match
+              case config: AtomConfig =>
+                  config.outputSliceFileGiven = true
+                  config.withOutputSliceFile(File(x))
+              case _ => c
+        )
     opt[String]('l', "language")
         .text("source language")
         .required()
@@ -1065,14 +1073,22 @@ object Atom:
         val openapiFormat = sys.env.getOrElse("ATOM_TOOLS_OPENAPI_FORMAT", "openapi3.1.0")
         val atomToolsWorkDir =
             sys.env.getOrElse("ATOM_TOOLS_WORK_DIR", config.inputPath.pathAsString)
-        val semanticsSlices = File(atomToolsWorkDir).glob(
-          "*semantics.slices.json",
-          includePath = true,
-          maxDepth = 1
-        )
-        val extraArgs = if semanticsSlices.nonEmpty then
-          s" -e ${semanticsSlices.head.pathAsString}"
-        else ""
+        // The scalasem report is where handleScalaSemantics wrote it. Only a
+        // run that names no output location falls back to a report kept in
+        // the atom-tools work directory.
+        val semanticsCandidate = File(scalaSemanticsSlicesFile(config))
+        val semanticsPath =
+            if semanticsCandidate.exists then Some(semanticsCandidate.pathAsString)
+            else if hasOutputLocation(config) then None
+            else
+              File(atomToolsWorkDir)
+                  .glob("*semantics.slices.json", includePath = true, maxDepth = 1)
+                  .toSeq
+                  .headOption
+                  .map(_.pathAsString)
+        val extraArgs = semanticsPath match
+          case Some(path) => s" -e $path"
+          case None       => ""
 
         println(
           s"atom-tools convert -i ${config.outputSliceFile}$extraArgs -t ${config
@@ -1430,28 +1446,81 @@ object Atom:
     new Jimple2Cpg().createCpgWithOverlays(finalConfig)
 
   private def handleScalaSemantics(config: AtomConfig): Unit =
-    val workDir = sys.env.getOrElse("ATOM_SCALASEM_WORK_DIR", config.inputPath.pathAsString)
-    val defaultSemanticSlicesFiles = config.inputPath / "semantics.slices.json"
-    var semanticSlicesFile = sys.env.getOrElse(
-      "ATOM_SCALASEM_SLICES_FILE",
-      defaultSemanticSlicesFiles.pathAsString
-    )
+    val workDir            = scalaSemanticsWorkDir(config)
+    val semanticSlicesFile = scalaSemanticsSlicesFile(config)
 
-    if !semanticSlicesFile.endsWith("semantics.slices.json") then
-      semanticSlicesFile = defaultSemanticSlicesFiles.pathAsString
+    if isScalaSemanticsSliceReusable(semanticSlicesFile, workDir) then
+      println(s"Semantic slices file '$semanticSlicesFile' reused.")
+    else
+      ExternalCommand.run(s"scalasem $workDir $semanticSlicesFile", workDir) match
+        case Success(_) =>
+            if File(semanticSlicesFile).exists then
+              println(s"Semantic slices file '$semanticSlicesFile' created successfully.")
+            else
+              println(s"scalasem $workDir $semanticSlicesFile")
+              println("scalasem command did not produce the semantic slices file.")
+        case Failure(exception) =>
+            println(
+              s"Failed to run scalasem. Use the atom container image and re-run this command. Exception: ${exception.getMessage}"
+            )
 
-    ExternalCommand.run(s"scalasem $workDir $semanticSlicesFile", workDir) match
-      case Success(_) =>
-          if File(semanticSlicesFile).exists then
-            println(s"Semantic slices file '$semanticSlicesFile' created successfully.")
-          else
-            println(s"scalasem $workDir $semanticSlicesFile")
-            println("scalasem command did not produce the semantic slices file.")
-      case Failure(exception) =>
-          println(
-            s"Failed to run scalasem. Use the atom container image and re-run this command. Exception: ${exception.getMessage}"
-          )
-  end handleScalaSemantics
+  private def scalaSemanticsWorkDir(config: BaseConfig): String =
+      sys.env.getOrElse("ATOM_SCALASEM_WORK_DIR", config.inputPath.pathAsString)
+
+  /** Where the scalasem report is written. ATOM_SCALASEM_SLICES_FILE wins; a relative value is
+    * resolved against the scalasem work directory, where scalasem itself resolves it. Without it
+    * the report sits beside the -s slice file, or else beside the -o atom file, and only when the
+    * run names neither inside the scanned project, where a build would treat it as a source.
+    */
+  private[atom] def scalaSemanticsSlicesFile(
+    config: BaseConfig,
+    envValue: Option[String] = sys.env.get("ATOM_SCALASEM_SLICES_FILE")
+  ): String =
+      envValue.map(_.trim).filter(_.nonEmpty) match
+        case Some(file) =>
+            val requested = File(file)
+            if java.nio.file.Paths.get(file).isAbsolute then requested.pathAsString
+            else (File(scalaSemanticsWorkDir(config)) / file).pathAsString
+        case None => (scalaSemanticsSliceDir(config) / "semantics.slices.json").pathAsString
+
+  private def hasOutputLocation(config: BaseConfig): Boolean =
+      config match
+        case atomConfig: AtomConfig =>
+            atomConfig.outputSliceFileGiven || atomConfig.outputAtomFileGiven
+        case _ => false
+
+  private def scalaSemanticsSliceDir(config: BaseConfig): File =
+      config match
+        case atomConfig: AtomConfig =>
+            val sliceDir =
+                if atomConfig.outputSliceFileGiven then
+                  Some(atomConfig.outputSliceFile.parentOption.getOrElse(File(".")))
+                else None
+            val atomDir =
+                if atomConfig.outputAtomFileGiven then
+                  Some(atomConfig.outputAtomFile.parentOption.getOrElse(File(".")))
+                else None
+            sliceDir.orElse(atomDir).getOrElse(atomConfig.inputPath)
+        case _ => config.inputPath
+
+  /** With ATOM_SCALASEM_REUSE=true an existing report is reused instead of rerunning scalasem, but
+    * only a version 2 report of this same project.
+    */
+  private[atom] def isScalaSemanticsSliceReusable(
+    semanticSlicesFile: String,
+    workDir: String,
+    enabled: Boolean = sys.env.get("ATOM_SCALASEM_REUSE").contains("true")
+  ): Boolean =
+    val slice = File(semanticSlicesFile)
+    enabled && slice.isRegularFile && Try {
+        val meta =
+            io.circe.parser.parse(slice.contentAsString).toOption.map(_.hcursor.downField("_meta"))
+        val schema = meta.flatMap(_.get[String]("schemaVersion").toOption)
+        val path   = meta.flatMap(_.get[String]("projectPath").toOption)
+        schema.contains("scalasem/2") && path.exists(p =>
+            File(p).path.toAbsolutePath.normalize == File(workDir).path.toAbsolutePath.normalize
+        )
+    }.getOrElse(false)
 
   private def createJsSrc2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
     val initialConfig = JSConfig()

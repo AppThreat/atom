@@ -134,7 +134,10 @@ object AtomConfigLoader:
     if config.maxDepth == -1 then
       json.hcursor.get[Int]("maxDepth").toOption.foreach(config.withMaxDepth)
     if config.outputSliceFile.name == DEFAULT_SLICE_OUT_FILE then
-      strOpt(json, "out").foreach(out => config.withOutputSliceFile(File(out)))
+      strOpt(json, "out").foreach(out =>
+        config.outputSliceFileGiven = true
+        config.withOutputSliceFile(File(out))
+      )
 
   private def strOpt(json: Json, key: String): Option[String] =
       json.hcursor.get[String](key).toOption.map(_.trim).filter(_.nonEmpty)

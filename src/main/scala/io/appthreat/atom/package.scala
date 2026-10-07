@@ -27,6 +27,11 @@ package object atom:
     var exportDir: String                 = DEFAULT_EXPORT_DIR
     var exportFormat: String              = DEFAULT_EXPORT_FORMAT
     var frontendArgs: Map[String, String] = Map.empty
+    // Whether the run was told where to write its outputs. The scalasem
+    // report follows the usages slice only when a location was actually
+    // given, and a default-named file in another directory still counts.
+    var outputSliceFileGiven: Boolean = false
+    var outputAtomFileGiven: Boolean  = false
     // When set, atom prints the supported `--frontend-args` keys for the selected language and
     // exits without building an atom. Driven by the `--frontend-args-keys` flag.
     var frontendArgsKeys: Boolean = false
