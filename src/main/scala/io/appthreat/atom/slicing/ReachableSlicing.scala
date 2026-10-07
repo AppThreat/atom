@@ -455,20 +455,19 @@ object ReachableSlicing:
     if normalised.lengthCompare(2) < 0 then return normalised
     val keep = dedupKeepMask(normalised.map(_.flows.iterator.map(_.id).toArray))
     normalised.indices.filter(keep(_)).map(normalised).toVector
-  end deduplicateFlows
 
-  /** The containment dedup of [[deduplicateFlows]] over node-id sequences (each at least two
-    * long): `keep(i)` is false exactly when an earlier-processed kept sequence contains sequence
-    * `i` as a contiguous run (equality included).
+  /** The containment dedup of [[deduplicateFlows]] over node-id sequences (each at least two long):
+    * `keep(i)` is false exactly when an earlier-processed kept sequence contains sequence `i` as a
+    * contiguous run (equality included).
     *
     * The processing order is that of the canonical `#id1#id2#...#` signature string - longest
-    * string first, then lexicographic - so the survivors are those of the string-based
-    * formulation, which is what fixes the output as deterministic. The test itself runs on the id
-    * arrays: kept sequences are indexed by each adjacent id pair, so a candidate is only compared
-    * with the kept sequences in which its own first two ids occur next to each other, at those
-    * offsets. Formerly every candidate concatenated the entry lists of its endpoint nodes and ran a
-    * `String.contains` over each - with hub nodes in thousands of flows that was a tenth of the
-    * whole reachables stage.
+    * string first, then lexicographic - so the survivors are those of the string-based formulation,
+    * which is what fixes the output as deterministic. The test itself runs on the id arrays: kept
+    * sequences are indexed by each adjacent id pair, so a candidate is only compared with the kept
+    * sequences in which its own first two ids occur next to each other, at those offsets. Formerly
+    * every candidate concatenated the entry lists of its endpoint nodes and ran a `String.contains`
+    * over each - with hub nodes in thousands of flows that was a tenth of the whole reachables
+    * stage.
     */
   private[slicing] def dedupKeepMask(ids: IndexedSeq[Array[Long]]): Array[Boolean] =
     def signature(seq: Array[Long]): String =
@@ -479,7 +478,10 @@ object ReachableSlicing:
     val order      = ids.indices.sortBy(i => (-signatures(i).length, signatures(i)))
 
     // (first id, second id) -> (kept sequence, offset of the pair in it)
-    val byBigram = scala.collection.mutable.HashMap.empty[(Long, Long), scala.collection.mutable.ArrayBuffer[Long]]
+    val byBigram = scala.collection.mutable.HashMap.empty[
+      (Long, Long),
+      scala.collection.mutable.ArrayBuffer[Long]
+    ]
     def pack(j: Int, offset: Int): Long = (j.toLong << 32) | (offset.toLong & 0xffffffffL)
 
     def containsAt(container: Array[Long], offset: Int, seq: Array[Long]): Boolean =
@@ -492,13 +494,16 @@ object ReachableSlicing:
     order.foreach { i =>
       val seq = ids(i)
       val contained = byBigram.get((seq(0), seq(1))).exists(_.exists { packed =>
-        containsAt(ids((packed >>> 32).toInt), packed.toInt, seq)
+          containsAt(ids((packed >>> 32).toInt), packed.toInt, seq)
       })
       if !contained then
         keep(i) = true
         var p = 0
         while p + 1 < seq.length do
-          byBigram.getOrElseUpdate((seq(p), seq(p + 1)), scala.collection.mutable.ArrayBuffer.empty) +=
+          byBigram.getOrElseUpdate(
+            (seq(p), seq(p + 1)),
+            scala.collection.mutable.ArrayBuffer.empty
+          ) +=
               pack(i, p)
           p += 1
     }
