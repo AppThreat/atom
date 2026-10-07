@@ -1,0 +1,46 @@
+src/main/scala/io/appthreat/atom/AtomConfigLoader.scala
+  s_e5cdcabab7af64::t_7ab9a2bad5bdf1 137-140
+wrapper/nodejs/README.md
+  s_5e2537d4d8b695::t_6c7d03e8852bb5 133-134
+wrapper/nodejs/packages/atom/README.md
+  s_5e2537d4d8b695::t_6c7d03e8852bb5 133-134
+docs/docs/cli.md
+  s_5e2537d4d8b695::t_6c7d03e8852bb5 144-145
+README.md
+  s_5e2537d4d8b695::t_6c7d03e8852bb5 549-550
+src/test/scala/io/appthreat/atom/ScalasemSlicesTests.scala
+  s_5e2537d4d8b695::t_7e958de6208a17 7-16,19-21,30-31,42-46,51-56,61-63,68-105
+  s_5e2537d4d8b695::t_e9a26628e50df7 18,23-29,32-41,47-50,57-60,64-67,106-107
+  s_5e2537d4d8b695::t_4b4cc31b5e03de 1-6,17,22
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_5e2537d4d8b695::t_7e958de6208a17 303,1470-1473,1506-1507,1514-1523
+  s_5e2537d4d8b695::t_947beb7a59bc84 1076-1078,1081-1088,1449,1452,1467-1469,1476-1477,1479-1490,1493-1505,1510-1512
+  s_e5cdcabab7af64::t_c101762bed974d 300-302,307-313,1079-1080,1089-1091,1450,1453-1465,1474-1475,1478,1491-1492,1508-1509,1513
+src/main/scala/io/appthreat/atom/package.scala
+  s_e5cdcabab7af64::t_d3d74a5ee456dd 30-32
+  s_5e2537d4d8b695::t_7e958de6208a17 33-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c15c08cb73f277e4d1d795606c2a7edeeb09004c",
+  "prompts": {},
+  "sessions": {
+    "s_5e2537d4d8b695": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f7efc66-79d8-4800-a24c-ed735a57590d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    },
+    "s_e5cdcabab7af64": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "800fb68c-a91f-49e2-905e-2d8f906cc1cc",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
