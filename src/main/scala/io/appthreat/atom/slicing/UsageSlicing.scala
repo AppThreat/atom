@@ -393,7 +393,7 @@ object UsageSlicing:
     def nameOf(n: StoredNode): String =
         Option(n.propertiesMap.get(PropertyNames.NAME)).orElse(
           Option(n.propertiesMap.get(PropertyNames.CODE))
-        ).map(_.toString).getOrElse("")
+        ).collect { case s: String => s }.getOrElse("")
     val findings = atom.tag.nameExact(confusable, bidi).l.flatMap { t =>
         t._taggedByIn.collectAll[StoredNode].l.map { n =>
             (t.name, n) match
