@@ -197,6 +197,10 @@ object ReachableSlicing:
       (target / "collected-sigs.txt").write(keyed.map(_._2).sorted.mkString("\n"))
     }
     val seenSignatures = scala.collection.mutable.HashSet.empty[String]
+    // The rendering of a node depends on the node and the run's tag pattern only, and the same
+    // nodes recur across thousands of flows (every flow from one entrypoint shares its source).
+    // Rendered once per node: rendering walks tags, the file, the method and the callee each time.
+    val renderedNodes = scala.collection.mutable.HashMap.empty[Long, RenderedNode]
     val flowIterator = keyed.iterator
         .filter { case (keyOpt, signature, _) =>
             // Keep the canonical representative of each endpoint group, once. `seenSignatures`
@@ -205,7 +209,7 @@ object ReachableSlicing:
             keyOpt.exists(key => canonicalSurvivor.get(key).contains(signature)) &&
             seenSignatures.add(signature)
         }
-        .map { case (_, _, path) => toSlice(path, sourceSinkTagPattern) }
+        .map { case (_, _, path) => toSlice(path, sourceSinkTagPattern, renderedNodes) }
         // Backstop: never emit an entry with no evidence. A path whose every element renders to
         // None (untagged operator calls, bare identifiers) carries a purl attribution at best and
         // no flow at all - consumers that count entries would count it as a real finding.
@@ -882,13 +886,31 @@ object ReachableSlicing:
     val purls = effectiveTags.map(_.name).filter(_.startsWith("pkg:")).toSet
     (tagStr, purls)
 
-  private def toSlice(path: Path, sourceSinkTagPattern: Pattern): ReachableFlows =
+  /** What [[toSlice]] needs of one path element, which is a function of the node alone. */
+  private final case class RenderedNode(
+    node: Option[SliceNode],
+    purls: Set[String],
+    fileLoc: String
+  )
+
+  private def renderNode(astNode: AstNode, sourceSinkTagPattern: Pattern): RenderedNode =
+    val (nodeOpt, nodePurls) = createSliceNode(astNode, sourceSinkTagPattern)
+    val fileLoc = s"${astNode.file.name.headOption.getOrElse("")}#${astNode.lineNumber
+            .map(_.intValue()).getOrElse(0)}"
+    RenderedNode(nodeOpt, nodePurls, fileLoc)
+
+  private def toSlice(
+    path: Path,
+    sourceSinkTagPattern: Pattern,
+    renderedNodes: scala.collection.mutable.Map[Long, RenderedNode]
+  ): ReachableFlows =
     val (sliceNodes, purls, _) =
         path.elements.foldLeft((Vector.empty[SliceNode], Set.empty[String], Set.empty[String])) {
             case ((nodes, accPurls, visited), astNode) =>
-                val (nodeOpt, nodePurls) = createSliceNode(astNode, sourceSinkTagPattern)
-                val fileLoc = s"${astNode.file.name.headOption.getOrElse("")}#${astNode.lineNumber
-                        .map(_.intValue()).getOrElse(0)}"
+                val RenderedNode(nodeOpt, nodePurls, fileLoc) = renderedNodes.getOrElseUpdate(
+                  astNode.id(),
+                  renderNode(astNode, sourceSinkTagPattern)
+                )
 
                 val shouldAdd = nodeOpt.isDefined && (astNode match
                   case _: Literal | _: Identifier => !visited.contains(fileLoc)
@@ -899,6 +921,7 @@ object ReachableSlicing:
                 (newNodes, accPurls ++ nodePurls, visited + fileLoc)
         }
     ReachableFlows(flows = sliceNodes.toList, purls = purls)
+  end toSlice
 
   /** True when the node carries a tag matching the run's source or sink tag patterns. Language
     * neutral: an operator call a tagger deliberately marked is by definition a meaningful flow
