@@ -491,6 +491,16 @@ package object slicing:
     val unresolvedCallPattern: Pattern = Pattern.compile("^(<unknown|ANY).*$")
     private val unknownMethodDeclCache = new TrieMap[String, DefComponent]()
 
+    def fromMethodCall(method: Method, call: Call): DefComponent =
+        CallDef(
+          call.name,
+          call.typeFullName,
+          Option(method.fullName),
+          Option(method.isExternal),
+          call.lineNumber.map(_.intValue()),
+          call.columnNumber.map(_.intValue())
+        )
+
     /** Attempts to generate an [[DefComponent]] from the given CPG node.
       *
       * @param node
@@ -566,16 +576,7 @@ package object slicing:
         case x: Local      => LocalDef(x.name, typeFullName, lineNumber, columnNumber)
         case x: Literal    => LiteralDef(x.code, typeFullName, lineNumber, columnNumber)
         case x: Member     => LocalDef(x.name, typeFullName, lineNumber, columnNumber)
-        case x: Method if x.callIn.nonEmpty =>
-            val lastCall = x.callIn.last
-            CallDef(
-              lastCall.name,
-              lastCall.typeFullName,
-              Option(x.fullName),
-              isExternal,
-              lastCall.lineNumber.map(_.intValue()),
-              lastCall.columnNumber.map(_.intValue())
-            )
+        case x: Method if x.callIn.nonEmpty => fromMethodCall(x, x.callIn.last)
         case x: Method if x.annotation.nonEmpty =>
             val annotation = x.annotation.last
             CallDef(

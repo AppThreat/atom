@@ -73,6 +73,30 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
     chunks.flatMap(f => ujson.read(f.contentAsString).arr.toSeq)
   end runReachables
 
+  private def runUsages(projectName: String, writeProject: BFile => Unit): Seq[ujson.Value] =
+    val projectDir = workspace / projectName
+    projectDir.createDirectories()
+    writeProject(projectDir)
+    val atomFile  = workspace / s"$projectName.atom"
+    val sliceFile = workspace / s"$projectName-usages.json"
+    val result = Atom.run(
+      Seq(
+        "usages",
+        "--cache",
+        "none",
+        "-l",
+        "javascript",
+        "-o",
+        atomFile.pathAsString,
+        "-s",
+        sliceFile.pathAsString,
+        projectDir.pathAsString
+      ).toArray
+    )
+    result.isRight shouldBe true
+    ujson.read(sliceFile.contentAsString).obj("objectSlices").arr.toSeq
+  end runUsages
+
   /** The nodes of one flow entry, for identity assertions. */
   private def nodesOf(entry: ujson.Value): Seq[ujson.Value] =
       entry.obj.get("flows").map(_.arr.toSeq).getOrElse(Seq.empty)
@@ -245,6 +269,43 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
           // The JSX Route path literal sits under a TEMPLATE_DOM node, not a call argument, so
           // only the template-literal branch of routesAsUDT can surface it.
           udtNames should contain("/profile")
+      }
+
+      "place each call of an imported function in the slice of the method making it" in {
+          requireAstgen()
+          val slices = runUsages(
+            "js-usage-position-project",
+            dir =>
+              (dir / "src").createDirectories()
+              (dir / "src" / "first.ts").write(
+                """import { signal } from "@angular/core";
+                    |
+                    |export function first() {
+                    |  return signal(1);
+                    |}
+                    |""".stripMargin
+              )
+              (dir / "src" / "second.ts").write(
+                """import { signal } from "@angular/core";
+                    |
+                    |export const label = "second";
+                    |
+                    |export function second() {
+                    |  return signal(2);
+                    |}
+                    |""".stripMargin
+              )
+          )
+          val signal = "@angular/core:signal"
+          def signalLines(fullName: String): Seq[Int] =
+              slices
+                  .filter(_.obj("fullName").str.replace('\\', '/') == fullName)
+                  .flatMap(_.obj("usages").arr)
+                  .map(_.obj("targetObj"))
+                  .filter(_.obj.get("resolvedMethod").flatMap(_.strOpt).contains(signal))
+                  .map(_.obj("lineNumber").num.toInt)
+          signalLines("src/first.ts::program:first") shouldBe Seq(4)
+          signalLines("src/second.ts::program:second") shouldBe Seq(6)
       }
   }
 

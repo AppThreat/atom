@@ -64,7 +64,7 @@ object UsageSlicing:
         .map { decl =>
             exec.submit(() => computeUsageSlice(atom, decl, typeMap, config.excludeOperatorCalls))
         }
-        .flatMap(f => Try(f.get(5, TimeUnit.SECONDS)).toOption.flatten)
+        .flatMap(f => Try(f.get(5, TimeUnit.SECONDS)).getOrElse(Nil))
 
     val annotationSlices = filteredDecls.collect {
         case param: MethodParameterIn if !param.name.matches("(this|self)") => param
@@ -86,21 +86,21 @@ object UsageSlicing:
     tgt: Declaration,
     typeMap: Map[String, String],
     excludeOperatorCalls: Boolean
-  ): Option[(Method, ObjectUsageSlice)] =
+  ): List[(Method, ObjectUsageSlice)] =
     val defNode = getDefNode(tgt)
     val (invokedCalls, argToCalls) =
         partitionInvolvementInCalls(atom, tgt, typeMap, excludeOperatorCalls)
 
     (tgt, defNode) match
       case (local: Local, Some(genCall: Call)) =>
-          Some(local.method.head -> ObjectUsageSlice(
+          List(local.method.head -> ObjectUsageSlice(
             targetObj = DefComponent.fromNode(local, genCall, typeMap),
             definedBy = Some(DefComponent.fromNode(genCall, null, typeMap)),
             invokedCalls = invokedCalls,
             argToCalls = argToCalls
           ))
       case (param: MethodParameterIn, _) if !param.name.matches("(this|self)") =>
-          Some(param.method -> ObjectUsageSlice(
+          List(param.method -> ObjectUsageSlice(
             targetObj = DefComponent.fromNode(param, null, typeMap),
             definedBy = Some(DefComponent.fromNode(param, null, typeMap)),
             invokedCalls = invokedCalls,
@@ -108,7 +108,7 @@ object UsageSlicing:
           ))
       case (m: Method, _) =>
           createMethodObjectUsageSlice(m, invokedCalls, argToCalls, typeMap)
-      case _ => None
+      case _ => Nil
   end computeUsageSlice
 
   private def paramAnnotationSlices(
@@ -148,10 +148,7 @@ object UsageSlicing:
     invokedCalls: List[ObservedCall],
     argToCalls: List[ObservedCallWithArgPos],
     typeMap: Map[String, String]
-  ): Option[(Method, ObjectUsageSlice)] =
-    val method  = if m.filename == "<empty>" && m.callIn.nonEmpty then m.callIn.head.method else m
-    val defComp = DefComponent.fromNode(m, null, typeMap)
-
+  ): List[(Method, ObjectUsageSlice)] =
     val annotationCalls = m.annotation.map { a =>
         ObservedCall(
           if a.fullName.nonEmpty then a.fullName else a.name,
@@ -164,12 +161,33 @@ object UsageSlicing:
         )
     }.toList
 
-    Some(method -> ObjectUsageSlice(
-      targetObj = defComp,
-      definedBy = Some(defComp),
-      invokedCalls = invokedCalls ++ annotationCalls,
-      argToCalls = argToCalls
-    ))
+    if m.filename == "<empty>" && m.callIn.nonEmpty then
+      val firstCaller = m.callIn.head.method
+      m.callIn.l.groupBy(_.method).toList.map { case (caller, calls) =>
+          val firstCall = calls.minBy(c =>
+              (
+                c.lineNumber.fold(Int.MaxValue)(_.intValue()),
+                c.columnNumber.fold(Int.MaxValue)(_.intValue())
+              )
+          )
+          val defComp       = DefComponent.fromMethodCall(m, firstCall)
+          val isFirstCaller = caller == firstCaller
+          caller -> ObjectUsageSlice(
+            targetObj = defComp,
+            definedBy = Some(defComp),
+            invokedCalls = if isFirstCaller then invokedCalls ++ annotationCalls else Nil,
+            argToCalls = if isFirstCaller then argToCalls else Nil
+          )
+      }
+    else
+      val defComp = DefComponent.fromNode(m, null, typeMap)
+      List(m -> ObjectUsageSlice(
+        targetObj = defComp,
+        definedBy = Some(defComp),
+        invokedCalls = invokedCalls ++ annotationCalls,
+        argToCalls = argToCalls
+      ))
+    end if
   end createMethodObjectUsageSlice
 
   private def partitionInvolvementInCalls(
