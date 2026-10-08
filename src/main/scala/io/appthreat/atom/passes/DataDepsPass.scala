@@ -25,9 +25,6 @@ class DataDepsPass(
   // If there are any regex method full names, load them early
   s.loadRegexSemantics(atom)
 
-  // One per pass, shared by all of its (concurrent) parts: see DdgSharedCache.
-  private val ddgSharedCache = new DdgSharedCache()
-
   override def generateParts(): Array[Method] = atom.method.toArray
 
   override def runOnPart(dstGraph: DiffGraphBuilder, method: Method): Unit =
@@ -38,7 +35,7 @@ class DataDepsPass(
     val solution =
         if useFluxEngine then new FluxSolver().calculateMopSolutionForwards(problem)
         else new DataFlowSolver().calculateMopSolutionForwards(problem)
-    val ddgGenerator = new DdgGenerator(s, ddgSharedCache)
+    val ddgGenerator = new DdgGenerator(s)
     ddgGenerator.addReachingDefEdges(dstGraph, method, problem, solution)
 
   /** Before we start propagating definitions in the graph, which is the bulk of the work, we check
