@@ -53,6 +53,24 @@ class Python315WorkflowTests extends AnyWordSpec with Matchers with BeforeAndAft
          |    return $EvalFullwidth(request.args["q"])
          |""".stripMargin
     )
+    // keyword arguments bind by name, unknown ones land in **kwargs
+    (dir / "args.py").write(
+      """import subprocess
+        |from flask import request
+        |
+        |def run(cmd, *, shell=False):
+        |    return subprocess.getoutput(cmd)
+        |
+        |def run_opts(**opts):
+        |    return subprocess.getoutput(opts["cmd"])
+        |
+        |def by_keyword():
+        |    return run(shell=True, cmd=request.args["c"])
+        |
+        |def by_kwargs():
+        |    return run_opts(cmd=request.args["k"])
+        |""".stripMargin
+    )
     // cafe with an e-acute (0xE9) in Latin-1, as its coding cookie declares
     (dir / "legacy.py").writeByteArray(
       "# -*- coding: latin-1 -*-\ndef caf\u00e9():\n    return json_loads\n"
@@ -116,6 +134,10 @@ class Python315WorkflowTests extends AnyWordSpec with Matchers with BeforeAndAft
       "carry request data through unpacking comprehensions and nested format specs" in {
           val reached = flows.flatMap(methodsOf).toSet
           (reached should contain).allOf("flatten", "padded", "merged")
+      }
+
+      "follow keyword arguments into the parameter of that name and into **kwargs" in {
+          (flows.flatMap(methodsOf).toSet should contain).allOf("run", "run_opts")
       }
 
       "reach eval when the file spells it in fullwidth letters" in {
