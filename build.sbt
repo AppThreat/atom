@@ -29,10 +29,10 @@ libraryDependencies ++= Seq(
   ("io.appthreat" %% "x2cpg"             % Versions.chen % Test).classifier("tests"),
   ("io.appthreat" %% "pysrc2cpg"         % Versions.chen % Test).classifier("tests"),
   // the memory-safety overlay is C/C++ only, so its command needs a C fixture to test against
-  ("io.appthreat" %% "c2cpg"             % Versions.chen % Test).classifier("tests"),
-  "org.scalatest" %% "scalatest"         % "3.2.20"      % Test,
+  ("io.appthreat" %% "c2cpg"     % Versions.chen % Test).classifier("tests"),
+  "org.scalatest" %% "scalatest" % "3.2.20"      % Test,
   // validates the SARIF the memory-safety command writes against the official schema
-  "com.networknt"  % "json-schema-validator" % "1.5.9"   % Test
+  "com.networknt" % "json-schema-validator" % "1.5.9" % Test
 )
 
 excludeDependencies ++= Seq(
@@ -121,7 +121,7 @@ ThisBuild / resolvers ++= Seq(
 
 ThisBuild / versionScheme := Some("semver-spec")
 
-ThisBuild / Test / fork                := true
+ThisBuild / Test / fork := true
 // The PHP/Ruby frontends run in-process inside the forked test JVM and resolve their generator
 // binary from the environment, so propagate the generator overrides from the launching shell.
 ThisBuild / Test / envVars ++=
