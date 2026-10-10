@@ -4,7 +4,11 @@ import better.files.File
 import io.appthreat.atom.Atom.{DEFAULT_SINK_TAGS, DEFAULT_SOURCE_TAGS, FRAMEWORK_INPUT_TAG}
 import io.appthreat.dataflowengineoss.DefaultSemantics
 import io.appthreat.dataflowengineoss.language.*
-import io.appthreat.dataflowengineoss.queryengine.{EngineConfig, EngineContext}
+import io.appthreat.dataflowengineoss.queryengine.{
+    EngineConfig,
+    EngineContext,
+    SourcesToStartingPoints
+}
 import io.appthreat.dataflowengineoss.queryengine.summaries.{FlowSummaryComputer, FlowSummaryTags}
 import io.appthreat.dataflowengineoss.semanticsloader.Semantics
 import io.shiftleft.codepropertygraph.Cpg
@@ -666,11 +670,18 @@ object ReachableSlicing:
     sourceTagRegex: String,
     sinkTagRegex: String
   ): Iterator[Path] =
-    def sourcesP = atom.tag.name(sourceTagRegex).parameter
-    def sourcesI = atom.tag.name(sourceTagRegex).identifier
-    def sourcesC = atom.tag.name(sourceTagRegex).call
+    // The same three source traversals serve all five sink kinds below. They are expanded once
+    // and the list handed to each query: the expansion is deterministic in the graph and the
+    // sources, so this yields the same flows, in the same order, as expanding per call did -
+    // minus four of the five source traversals, starting-point tasks and their pools.
+    val startingPoints = SourcesToStartingPoints.sourceTravsToStartingPoints(
+      atom.tag.name(sourceTagRegex).parameter,
+      atom.tag.name(sourceTagRegex).identifier,
+      atom.tag.name(sourceTagRegex).call
+    )
 
-    def flowsFrom(sinks: Traversal[CfgNode]) = sinks.reachableByFlows(sourcesP, sourcesI, sourcesC)
+    def flowsFrom(sinks: Traversal[CfgNode]) =
+        sinks.reachableByFlowsFromStartingPoints(startingPoints)
 
     Iterator(
       flowsFrom(atom.tag.name(sinkTagRegex).call),
@@ -679,6 +690,7 @@ object ReachableSlicing:
       flowsFrom(atom.tag.name(sinkTagRegex).parameter),
       flowsFrom(atom.ret.where(_.tag.name(sinkTagRegex)))
     ).flatten
+  end collectBasicFlows
 
   private def collectDefaultTagFlows(atom: Cpg, sourceTagRegex: String): List[Iterator[Path]] =
       List(
