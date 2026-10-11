@@ -74,6 +74,8 @@ object ReachableSlicing:
       Set(Languages.PHP, Languages.RUBYSRC)
   private val C_LANGUAGES =
       Set(Languages.NEWC, Languages.C)
+  private val JS_LANGUAGES =
+      Set(Languages.JSSRC, Languages.JAVASCRIPT)
   private val PYTHON_LANGUAGES =
       Set(Languages.PYTHON, Languages.PYTHONSRC)
 
@@ -168,6 +170,7 @@ object ReachableSlicing:
         .filterNot(passesThroughNeutralizer(_, neutralizerNodeIds))
         .filterNot(isMetaClassAdapterFlow)
         .filterNot(endsAtNonSink)
+        .filterNot(path => JS_LANGUAGES.contains(language) && isUnsunkFlow(path, sinkTagPattern))
         .toVector
     // Each path's endpoint key and signature, computed ONCE. Both are O(path length) string
     // builds over every collected path, and the group fold plus the emit filter each need both -
@@ -604,6 +607,31 @@ object ReachableSlicing:
           case _             => ""
         NON_SINK_NAMES.contains(name)
       }
+
+  /** JavaScript only: a flow that is no finding at all.
+    *
+    * The dynamic-language collectors also query flows whose end is not a sink of their own - into
+    * the arguments of input-tagged calls, into calls of sink-tagged methods - and every collector
+    * that sinks on `call.argument` includes the call's receiver. Without an SBOM there are no purl
+    * tags for such flows to reach, and what remains are paths that end on `this`, on a lowering
+    * temporary, or on a node no sink tag is anywhere near. A flow is kept when it ends on a value
+    * the sink consumes and some node of it - or the call its last node is an argument of - carries
+    * a sink tag.
+    */
+  private def isUnsunkFlow(path: Path, sinkTagPattern: Pattern): Boolean =
+    def isSink(node: AstNode): Boolean =
+        node.tag.name.exists(sinkTagPattern.matcher(_).matches)
+    path.elements.lastOption.forall { last =>
+      val endsOnReceiver = last match
+        case id: Identifier =>
+            id.name == "this" || id.name.startsWith("_tmp_") || id.argumentIndex == 0
+        case p: MethodParameterIn => p.name == "this"
+        case _                    => false
+      val enclosingSink = last match
+        case e: Expression => e.inCall.exists(isSink)
+        case _             => false
+      endsOnReceiver || !(enclosingSink || path.elements.exists(isSink))
+    }
 
   private def isMetaClassAdapterFlow(path: Path): Boolean =
       path.elements.headOption.exists { head =>
