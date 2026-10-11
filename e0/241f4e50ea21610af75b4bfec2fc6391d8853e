@@ -1,0 +1,21 @@
+src/main/scala/io/appthreat/atom/slicing/UsageSlicing.scala
+  s_63c1cb61808304::t_6972cc8e33840c 18
+  s_63c1cb61808304::t_ada269c4543144 67-70
+  s_63c1cb61808304::t_a7060582d97943 62-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e0241f4e50ea21610af75b4bfec2fc6391d8853e",
+  "prompts": {},
+  "sessions": {
+    "s_63c1cb61808304": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1ced2510-d837-4ffd-b689-82e442b358ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
