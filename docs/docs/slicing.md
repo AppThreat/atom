@@ -59,15 +59,23 @@ its name alone often cannot, and the symbols which of its API the code uses.
 ```
 
 When the source holds Unicode that hides what the code does, a `sourceIntegrity` list follows the
-other two (it is absent otherwise): a name that looks like another name of its file
-(`unicode-confusable`, the UTS #39 skeletons are equal and at least one name is not ASCII, with
-`detail` naming the look-alikes), and bidirectional formatting characters in a string or comment
-(`unicode-bidi-control`, `detail` the code points; CVE-2021-42574).
+other two (it is absent otherwise):
+
+- `unicode-confusable`: a name that looks like another name of its file (the UTS #39 skeletons are
+  equal and at least one name is not ASCII), with `detail` naming the look-alikes; or a name the file
+  spells differently from what it means, with `detail` the spelling - Python's `ｅｖａｌ(x)` calls
+  `eval`, as JavaScript's and Java's `\u0065val(x)` do.
+- `unicode-bidi-control`: bidirectional formatting characters in a string or comment, `detail` the
+  code points (CVE-2021-42574).
+- `unicode-hidden-code`: a Java Unicode escape that ends a line, a comment or a literal, so that what
+  reads as a comment is compiled (`// \u000a run();` runs `run()`). `name` is the method, `detail`
+  the escapes.
 
 ```json
 "sourceIntegrity": [
   {"kind": "unicode-confusable", "fileName": "auth.c", "lineNumber": 12, "name": "isAdmіn", "detail": "isAdmin"},
-  {"kind": "unicode-bidi-control", "fileName": "auth.c", "lineNumber": 30, "name": "comment", "detail": "U+202E,U+2066"}
+  {"kind": "unicode-bidi-control", "fileName": "auth.c", "lineNumber": 30, "name": "comment", "detail": "U+202E,U+2066"},
+  {"kind": "unicode-hidden-code", "fileName": "Auth.java", "lineNumber": 14, "name": "check", "detail": "\\u000a"}
 ]
 ```
 

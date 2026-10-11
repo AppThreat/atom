@@ -823,8 +823,11 @@ package object slicing:
       }
 
   /** Unicode in the source that hides what the code does: a name that looks like another name of
-    * its file (`unicode-confusable`, `detail` naming the look-alikes), or bidirectional formatting
-    * characters in a string or comment (`unicode-bidi-control`, `detail` the code points).
+    * its file, or that the file spells differently from what it means (`unicode-confusable`,
+    * `detail` naming the look-alikes or the spelling), bidirectional formatting characters in a
+    * string or comment (`unicode-bidi-control`, `detail` the code points), or a Java Unicode escape
+    * that ends a line, comment or literal (`unicode-hidden-code`, `name` the method, `detail` the
+    * escapes).
     */
   case class SourceIntegrityFinding(
     kind: String,

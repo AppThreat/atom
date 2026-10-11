@@ -381,6 +381,7 @@ object UsageSlicing:
   private def sourceIntegrityOf(atom: Cpg): List[SourceIntegrityFinding] =
     val confusable = io.appthreat.x2cpg.Defines.UnicodeConfusableTag
     val bidi       = io.appthreat.x2cpg.Defines.UnicodeBidiControlTag
+    val hidden     = io.appthreat.x2cpg.Defines.UnicodeHiddenCodeTag
     def fileOf(n: StoredNode): String = n match
       case m: Method            => m.filename
       case t: TypeDecl          => t.filename
@@ -397,7 +398,7 @@ object UsageSlicing:
         Option(n.propertiesMap.get(PropertyNames.NAME)).orElse(
           Option(n.propertiesMap.get(PropertyNames.CODE))
         ).collect { case s: String => s }.getOrElse("")
-    val findings = atom.tag.nameExact(confusable, bidi).l.flatMap { t =>
+    val findings = atom.tag.nameExact(confusable, bidi, hidden).l.flatMap { t =>
         t._taggedByIn.collectAll[StoredNode].l.map { n =>
             (t.name, n) match
               // a comment's controls are on its method, valued `<line>:<code points>`
@@ -409,6 +410,17 @@ object UsageSlicing:
                     line.toIntOption,
                     "comment",
                     points.drop(1)
+                  )
+              // Java escapes that end a line, comment or literal are on their method, valued
+              // `<line>:<escapes>`
+              case (`hidden`, m: Method) =>
+                  val (line, escapes) = t.value.span(_ != ':')
+                  SourceIntegrityFinding(
+                    hidden,
+                    m.filename,
+                    line.toIntOption,
+                    m.name,
+                    escapes.drop(1)
                   )
               case (`bidi`, other) =>
                   SourceIntegrityFinding(bidi, fileOf(other), lineOf(other), nameOf(other), t.value)

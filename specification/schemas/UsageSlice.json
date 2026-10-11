@@ -431,7 +431,7 @@
             "properties": {
                 "kind": {
                     "type": "string",
-                    "description": "unicode-confusable: a name that looks like another name of its file; unicode-bidi-control: bidirectional formatting characters in a string or comment"
+                    "description": "unicode-confusable: a name that looks like another name of its file, or that the file spells differently from what it means; unicode-bidi-control: bidirectional formatting characters in a string or comment; unicode-hidden-code: a Java Unicode escape that ends a line, comment or literal"
                 },
                 "fileName": {
                     "type": "string",
