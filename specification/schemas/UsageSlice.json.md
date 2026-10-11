@@ -95,7 +95,7 @@
   - <a id="definitions/atom.UsageSlice.UserDefinedTypes/properties/lineNumber"></a>**`lineNumber`** *(integer)*: Line number.
   - <a id="definitions/atom.UsageSlice.UserDefinedTypes/properties/columnNumber"></a>**`columnNumber`** *(integer)*: Column number.
 - <a id="definitions/atom.UsageSlice.SourceIntegrityFinding"></a>**`atom.UsageSlice.SourceIntegrityFinding`** *(object)*: Unicode in the source that hides what the code does. Cannot contain additional properties.
-  - <a id="definitions/atom.UsageSlice.SourceIntegrityFinding/properties/kind"></a>**`kind`** *(string)*: unicode-confusable: a name that looks like another name of its file; unicode-bidi-control: bidirectional formatting characters in a string or comment.
+  - <a id="definitions/atom.UsageSlice.SourceIntegrityFinding/properties/kind"></a>**`kind`** *(string)*: unicode-confusable: a name that looks like another name of its file, or that the file spells differently from what it means; unicode-bidi-control: bidirectional formatting characters in a string or comment; unicode-hidden-code: a Java Unicode escape that ends a line, comment or literal.
   - <a id="definitions/atom.UsageSlice.SourceIntegrityFinding/properties/fileName"></a>**`fileName`** *(string)*: File name.
   - <a id="definitions/atom.UsageSlice.SourceIntegrityFinding/properties/lineNumber"></a>**`lineNumber`** *(integer)*: Line number.
   - <a id="definitions/atom.UsageSlice.SourceIntegrityFinding/properties/name"></a>**`name`** *(string)*: The name, the literal, or "comment".

@@ -3,9 +3,13 @@ package io.appthreat.atom
 import io.appthreat.atom.slicing.*
 import io.appthreat.c2cpg.Config
 import io.appthreat.c2cpg.testfixtures.CCodeToCpgSuite
+import io.appthreat.javasrc2cpg.JavaSrc2Cpg
+import io.appthreat.x2cpg.X2Cpg
 import io.appthreat.x2cpg.passes.taggers.SourceIntegrityPass
 import io.circe.parser.decode
 import io.circe.syntax.*
+
+import java.nio.file.{Files, Path}
 
 /** The usages output reports Unicode that hides what the code does, and says nothing of it when
   * there is none.
@@ -42,6 +46,37 @@ class SourceIntegrityUsageSliceTests extends CCodeToCpgSuite:
               Some(slice.sourceIntegrity)
           decode[ProgramUsageSlice](json.noSpaces).toOption.map(_.sourceIntegrity) shouldBe
               Some(slice.sourceIntegrity)
+      }
+  }
+
+  "the usages output of a Java file whose Unicode escapes hide code" should {
+      // Java translates escapes before it lexes: the comment's `\u000a` ends it, and javac
+      // compiles `admin = true;`
+      val bs  = "\\"
+      val dir = Files.createTempDirectory("atomUnicodeEscapes")
+      Files.writeString(
+        dir.resolve("Auth.java"),
+        s"class Auth {\n  boolean check(boolean admin) {\n    // ${bs}u000a admin = true;\n    return admin;\n  }\n}\n"
+      )
+      val cpg =
+          try
+            val built =
+                new JavaSrc2Cpg().createCpg(dir.toString)(using JavaSrc2Cpg.DefaultConfig).get
+            X2Cpg.applyDefaultOverlays(built)
+            new SourceIntegrityPass(built).createAndApply()
+            built
+          finally
+            Files.walk(dir).sorted(java.util.Comparator.reverseOrder[Path]()).forEach(Files.delete(
+              _
+            ))
+      val slice =
+          UsageSlicing.calculateUsageSlice(cpg, UsagesConfig()).asInstanceOf[ProgramUsageSlice]
+
+      "list the method with the line and the escapes" in {
+          slice.sourceIntegrity.map(f =>
+              (f.kind, f.fileName, f.lineNumber, f.name, f.detail)
+          ) shouldBe
+              List(("unicode-hidden-code", "Auth.java", Some(3), "check", s"${bs}u000a"))
       }
   }
 
