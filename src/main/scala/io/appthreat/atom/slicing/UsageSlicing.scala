@@ -8,7 +8,6 @@ import io.shiftleft.semanticcpg.language.*
 import io.shiftleft.semanticcpg.codedumper.CodeDumper.dump
 import overflowdb.PropertyKey
 
-import java.util.concurrent.*
 import java.util.regex.Pattern
 import scala.collection.concurrent.TrieMap
 import scala.util.Try
@@ -16,7 +15,7 @@ import scala.util.Try
 object UsageSlicing:
 
   private val resolver               = NoResolve
-  private val exec: ExecutorService  = Executors.newVirtualThreadPerTaskExecutor()
+  private val logger                 = org.slf4j.LoggerFactory.getLogger(getClass)
   private val constructorTypeMatcher = Pattern.compile(".*new (\\w+)\\(.*")
   private val FRAMEWORK_ROUTE        = "framework-route"
 
@@ -60,11 +59,15 @@ object UsageSlicing:
             )
         )
 
-    val mainSlices = filteredDecls
-        .map { decl =>
-            exec.submit(() => computeUsageSlice(atom, decl, typeMap, config.excludeOperatorCalls))
-        }
-        .flatMap(f => Try(f.get(5, TimeUnit.SECONDS)).toOption.flatten)
+    // One slice at a time, as before (holding them all in flight needs far more heap), and none dropped: a slice
+    // only visits its declaration's references, and skipping those slower than a timeout made the output depend on
+    // the machine's load.
+    val mainSlices = filteredDecls.flatMap { decl =>
+        Try(computeUsageSlice(atom, decl, typeMap, config.excludeOperatorCalls)).recover { case e =>
+            logger.warn(s"Usage slice for ${decl.name} failed", e)
+            None
+        }.toOption.flatten
+    }
 
     val annotationSlices = filteredDecls.collect {
         case param: MethodParameterIn if !param.name.matches("(this|self)") => param
