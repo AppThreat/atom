@@ -169,9 +169,7 @@ object ReachableSlicing:
         .flatten
         .filterNot(isLibrarySourcedFlow)
         .filterNot(isSanitized(_, sanitizerCalls, sinkTagPattern))
-        .filterNot(path =>
-            predicateCalls.nonEmpty && path.elements.exists(e => predicateCalls.contains(e.id()))
-        )
+        .filterNot(passesThroughPredicate(_, predicateCalls))
         .filterNot(passesThroughNeutralizer(_, neutralizerNodeIds))
         .filterNot(isMetaClassAdapterFlow)
         .filterNot(endsAtNonSink)
@@ -645,6 +643,23 @@ object ReachableSlicing:
           case p: MethodParameterIn => p.method.name
           case _                    => ""
         methodName.contains("metaClassAdapter")
+      }
+
+  /** True when the flow reaches the result of a predicate call, or hops from one of its arguments
+    * to another - the engine lets an unknown call's arguments taint each other, so
+    * `hasOwn(ALLOWED, dest)` "taints" `ALLOWED`, which a predicate never does.
+    */
+  private def passesThroughPredicate(path: Path, predicateCalls: Set[Long]): Boolean =
+      predicateCalls.nonEmpty && {
+        val elements = path.elements
+        elements.exists(e => predicateCalls.contains(e.id())) ||
+        elements.iterator.sliding(2).exists {
+          case Seq(a, b) =>
+              (enclosingCallId(a), enclosingCallId(b)) match
+                case (Some(x), Some(y)) => x == y && predicateCalls.contains(x)
+                case _                  => false
+          case _ => false
+        }
       }
 
   private val SANITIZER_TAG             = "sanitizer"
