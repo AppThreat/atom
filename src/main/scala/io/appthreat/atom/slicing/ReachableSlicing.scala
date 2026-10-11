@@ -133,6 +133,8 @@ object ReachableSlicing:
     // Calls tagged as sanitisers/validators (by ChennaiTagsPass) and the sink categories each
     // covers. A flow that passes through such a call is dropped for the matching categories.
     val sanitizerCalls = collectSanitizerCalls(atom)
+    // Calls whose result is a boolean or a number about their arguments (tagged `predicate`).
+    val predicateCalls = atom.call.where(_.tag.nameExact(PREDICATE_TAG)).id.toSet
     // Profile-driven neutraliser barriers (validators, sanitisers, encoders, ORM reads). A flow that
     // passes through any of these node ids is dropped. Empty for the default `generic` profile.
     val neutralizerNodeIds = collectNeutralizerNodeIds(atom, config.profile.neutralizerTags)
@@ -166,7 +168,10 @@ object ReachableSlicing:
         .iterator
         .flatten
         .filterNot(isLibrarySourcedFlow)
-        .filterNot(isSanitized(_, sanitizerCalls))
+        .filterNot(isSanitized(_, sanitizerCalls, sinkTagPattern))
+        .filterNot(path =>
+            predicateCalls.nonEmpty && path.elements.exists(e => predicateCalls.contains(e.id()))
+        )
         .filterNot(passesThroughNeutralizer(_, neutralizerNodeIds))
         .filterNot(isMetaClassAdapterFlow)
         .filterNot(endsAtNonSink)
@@ -643,6 +648,10 @@ object ReachableSlicing:
       }
 
   private val SANITIZER_TAG             = "sanitizer"
+  // A flow through the RESULT of such a call (`allowed.has(x)`, `url.startsWith('/')`) carries a
+  // boolean or a number, not the value. Its arguments pass on unchanged, so - unlike a sanitiser -
+  // only the call itself on the path neutralises a flow, not an argument of it.
+  private val PREDICATE_TAG = "predicate"
   private val SANITIZER_CATEGORY_PREFIX = "sanitizer-"
 
   /** Call sites tagged as sanitisers/validators, mapped to the sink categories each one covers (an
@@ -661,10 +670,14 @@ object ReachableSlicing:
     * sanitised when it touches a sanitiser call (or an argument of one) that either covers every
     * category or shares a category with the flow's sink.
     */
-  private def isSanitized(path: Path, sanitizerCalls: Map[Long, Set[String]]): Boolean =
+  private def isSanitized(
+    path: Path,
+    sanitizerCalls: Map[Long, Set[String]],
+    sinkTagPattern: Pattern
+  ): Boolean =
       if sanitizerCalls.isEmpty then false
       else
-        val sinkCategories = flowSinkCategories(path)
+        val sinkCategories = flowSinkCategories(path, sinkTagPattern)
         path.elements.exists { element =>
             (element.id() :: enclosingCallId(element).toList).exists { id =>
                 sanitizerCalls.get(id).exists { categories =>
@@ -678,11 +691,22 @@ object ReachableSlicing:
         case expr: Expression => expr.inCall.headOption.map(_.id())
         case _                => None
 
-  /** The categories of a flow's sink, taken from the tags on the last path element and its
-    * enclosing call.
+  /** The categories of a flow's sink, taken from the tags on the sink and its enclosing call.
+    *
+    * The sink is the node the flow is reported at. A path the engine continued past a sink - from
+    * `fetch(url)` on to the response it returned - is reported cut back to the last call carrying
+    * a sink tag (see `normaliseTerminus`), so that call is the sink here too: judged by the
+    * untagged node the path happened to end on, a URL encoder before `fetch` covered nothing.
     */
-  private def flowSinkCategories(path: Path): Set[String] =
-      path.elements.lastOption.toList.flatMap { sink =>
+  private def flowSinkCategories(path: Path, sinkTagPattern: Pattern): Set[String] =
+    def carriesSinkTag(node: AstNode): Boolean =
+        node.tag.name.exists(sinkTagPattern.matcher(_).matches)
+    val elements = path.elements
+    val sinkNode =
+        elements.lastOption.filter(carriesSinkTag).orElse(
+          elements.reverseIterator.collectFirst { case c: Call if carriesSinkTag(c) => c }
+        ).orElse(elements.lastOption)
+    sinkNode.toList.flatMap { sink =>
         val callTags = sink match
           case expr: Expression => expr.inCall.tag.name.l
           case _                => Nil
