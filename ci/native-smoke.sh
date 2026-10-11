@@ -101,6 +101,15 @@ check jdk-path jar "$WORK/jarin" "$DIGEST" env -u JAVA_HOME -u ATOM_JAVA_HOME -u
 check path-only jimple "$WORK/classes" 'java.sql.DriverManager.getConnection' \
   env -u JAVA_HOME -u ATOM_JAVA_HOME -u JDK_HOME PATH="$JAVA_HOME/bin:/usr/bin:/bin"
 
+# Python identifiers are NFKC-normalised as CPython does (PEP 3131), which needs the JDK's ICU
+# nfkc.nrm in the image: eval spelled in fullwidth letters (U+FF45 U+FF56 U+FF41 U+FF4C, written
+# as UTF-8 bytes so this script stays ASCII) calls eval, and the usages slice reports the spelling
+# as a source-integrity finding.
+mkdir -p "$WORK/py"
+EVAL_FULLWIDTH="$(printf '\357\275\205\357\275\226\357\275\201\357\275\214')"
+printf 'import os\n\ndef run(cmd):\n    return %s(cmd)\n' "$EVAL_FULLWIDTH" > "$WORK/py/app.py"
+check python python "$WORK/py" "\"name\":\"eval\",\"detail\":\"$EVAL_FULLWIDTH\"" env
+
 # Without any JDK, atom still builds the atom, with phantom JDK types, and says so.
 mkdir -p "$WORK/out/no-jdk"
 rc=0

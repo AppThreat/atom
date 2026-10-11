@@ -85,6 +85,39 @@ class NativeImageResourcesTests extends AnyFunSuite with Matchers:
     files should contain("META-INF/services/org.osgi.framework.connect.FrameworkUtilHelper")
     files.filterNot(covered) shouldBe empty
 
+  /** `module` globs of the config: (module, glob). */
+  private val moduleGlobs: List[(String, String)] =
+      parse(configFile.contentAsString).toOption
+          .flatMap(_.hcursor.downField("globs").as[List[io.circe.Json]].toOption)
+          .getOrElse(Nil)
+          .flatMap { g =>
+              for
+                module <- g.hcursor.downField("module").as[String].toOption
+                glob   <- g.hcursor.downField("glob").as[String].toOption
+              yield (module, glob)
+          }
+
+  test("the running JDK's ICU normalisation data is in the native resource config"):
+    // java.text.Normalizer loads nfc.nrm (NFD, Unicode skeletons) and nfkc.nrm (PEP 3131 identifier
+    // normalisation in pysrc2cpg) from a directory named after the JDK's ICU version: icudt72b
+    // (JDK 21), icudt74b (23), icudt76b (24, 25), icudata (26). A native image without them
+    // normalises nothing.
+    val jrt      = FileSystems.getFileSystem(java.net.URI.create("jrt:/"))
+    val javaBase = jrt.getPath("/modules/java.base")
+    val data     = javaBase.resolve("jdk/internal/icu/impl/data")
+    val files = Using.resource(java.nio.file.Files.walk(data)) { s =>
+        s.iterator.asScala.map(p => javaBase.relativize(p).toString)
+            .filter(n => n.endsWith("/nfc.nrm") || n.endsWith("/nfkc.nrm")).toList
+    }
+    files.map(_.split('/').last).toSet shouldBe Set("nfc.nrm", "nfkc.nrm")
+    for file <- files do
+      withClue(file) {
+          moduleGlobs.exists { (module, glob) =>
+              module == "java.base" &&
+              FileSystems.getDefault.getPathMatcher(s"glob:$glob").matches(Paths.get(file))
+          } shouldBe true
+      }
+
   test("every data file of a bundled chen jar is in the native resource config"):
     val files = chenArtifacts.flatMap(dataFiles).distinct
     files should contain("memory-apis.json")
