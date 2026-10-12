@@ -692,16 +692,19 @@ object ReachableSlicing:
   private val SANITIZER_CATEGORY_PREFIX = "sanitizer-"
 
   /** Call sites tagged as sanitisers/validators, mapped to the sink categories each one covers (an
-    * empty set means it covers every category).
+    * empty set means it covers every category) - and the reads a guard validated (`next` in
+    * `ALLOWED.includes(next) ? next : "/"`, tagged by the JavaScript taggers), which cover every
+    * category.
     */
   private def collectSanitizerCalls(atom: Cpg): Map[Long, Set[String]] =
-      atom.call.where(_.tag.name(SANITIZER_TAG)).map { call =>
+    val calls = atom.call.where(_.tag.name(SANITIZER_TAG)).map { call =>
         val categories = call.tag.name.l.collect {
             case name if name.startsWith(SANITIZER_CATEGORY_PREFIX) =>
                 name.stripPrefix(SANITIZER_CATEGORY_PREFIX)
         }.toSet
         call.id() -> categories
-      }.toMap
+    }.toMap
+    calls ++ atom.identifier.where(_.tag.name(SANITIZER_TAG)).map(_.id() -> Set.empty[String])
 
   /** True if the flow passes through a sanitiser whose categories cover the flow's sink. A flow is
     * sanitised when it touches a sanitiser call (or an argument of one) that either covers every
