@@ -174,6 +174,7 @@ object ReachableSlicing:
         .filterNot(isMetaClassAdapterFlow)
         .filterNot(endsAtNonSink)
         .filterNot(path => JS_LANGUAGES.contains(language) && isUnsunkFlow(path, sinkTagPattern))
+        .filterNot(path => JS_LANGUAGES.contains(language) && isApiChaining(path, sinkTagPattern))
         .toVector
     // Each path's endpoint key and signature, computed ONCE. Both are O(path length) string
     // builds over every collected path, and the group fold plus the emit filter each need both -
@@ -636,6 +637,25 @@ object ReachableSlicing:
       endsOnReceiver || !(enclosingSink || path.elements.exists(isSink))
     }
 
+  // The sink tags of a request whose URL a value decides: client-side path traversal or forgery.
+  private val REQUEST_SINK_TAGS = Set("http-client", "http", "ssrf")
+
+  /** JavaScript only: a flow from data the application received or stored itself - a response, a
+    * WebSocket message, Web Storage, all tagged `service-ingress` - into nothing but the URL of
+    * another request. An id from one response in the path of the next request is how an API is
+    * walked, not a URL the attacker chose. The same data reaching markup or code stays a finding.
+    */
+  private def isApiChaining(path: Path, sinkTagPattern: Pattern): Boolean =
+      path.elements.headOption.exists { head =>
+        val sourceTags = head.tag.name.toSet
+        sourceTags.contains(INGRESS_SOURCE_TAG) && !sourceTags.contains(FRAMEWORK_INPUT_TAG)
+      } && {
+        val sinkTags = flowSinkCategories(path, sinkTagPattern)
+            .filter(sinkTagPattern.matcher(_).matches)
+            .filterNot(_.startsWith("pkg:"))
+        sinkTags.nonEmpty && sinkTags.subsetOf(REQUEST_SINK_TAGS)
+      }
+
   private def isMetaClassAdapterFlow(path: Path): Boolean =
       path.elements.headOption.exists { head =>
         val methodName = head match
@@ -997,6 +1017,20 @@ object ReachableSlicing:
   private def carriesSourceOrSinkTag(node: AstNode, sourceSinkTagPattern: Pattern): Boolean =
       node.tag.name.exists(sourceSinkTagPattern.matcher(_).matches)
 
+  /** The call an identifier is shown with: its own call, or - where that is lowering with a
+    * synthetic code (a template literal is `<operator>.formatString(...)`) - the nearest call
+    * around it written in the source, such as the request the template is the URL of.
+    */
+  private def displayedCall(call: Call): Call =
+    var shown = call
+    var depth = 0
+    while shown.code.startsWith("<operator") && depth < 8 do
+      shown.inCall.headOption match
+        case Some(outer) => shown = outer
+        case None        => depth = 8
+      depth += 1
+    if shown.code.startsWith("<operator") then call else shown
+
   private def createSliceNode(
     astNode: AstNode,
     sourceSinkTagPattern: Pattern
@@ -1070,7 +1104,7 @@ object ReachableSlicing:
             (
               Some(baseNode.copy(
                 name = i.name,
-                code = i.inCall.head.code,
+                code = displayedCall(i.inCall.head).code,
                 parentMethodName = i.method.name,
                 parentMethodSignature = i.method.signature,
                 parentPackageName = i.method.location.packageName,
