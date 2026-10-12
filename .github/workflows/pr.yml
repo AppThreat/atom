@@ -1,7 +1,7 @@
 name: pull_request
-# testing is a required status check on main, so this workflow must trigger
-# on every pull request and on merge-group builds; the heavy language and
-# repo-test matrices skip merge-group builds via their own if:.
+# testing and the pr-tests legs are required status checks on main, so this workflow must
+# trigger on every pull request and on merge-group builds; the heavy language and repo-test
+# matrices skip merge-group builds via their own if:.
 on:
   pull_request:
   merge_group:
@@ -13,6 +13,40 @@ permissions:
   contents: read
 
 jobs:
+  # The unit tests and distribution build on the other operating systems, so a merge cannot
+  # land while Windows or macOS is failing. Ubuntu is covered by `testing` below, which also
+  # carries the full repo-scan battery; these legs stop at build + test to keep the merge
+  # queue fast.
+  pr-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961  # v5.7.0
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+      - uses: sbt/setup-sbt@bfea3c5f48abd221b04a6df4798aa5eb8b6a2baf  # v1.5.6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with:
+          node-version: '25.x'
+          package-manager-cache: false
+      - uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d  # v8.1.1
+      - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
+      # Before `sbt test`: the workflow tests probe for the AST generators and cancel without
+      # them, so a post-test install would silently skip the JavaScript (and Ruby) fixtures.
+      - run: npm install -g @appthreat/atom-parsetools
+      - run: sbt -batch scalafmtCheck test stage createDistribution
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+
   testing:
     runs-on: ubuntu-22.04
     steps:
