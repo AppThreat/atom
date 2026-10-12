@@ -46,7 +46,7 @@ runs:
         git clone --quiet --depth 1 --branch main https://github.com/AppThreat/chen.git "$CHEN_DIR"
         cd "$CHEN_DIR"
         sbt ${IVY_HOME:+"-Dsbt.ivy.home=$IVY_HOME"} -batch \
-          "set ThisBuild / Compile / packageDoc / publishArtifact := false" publishLocal
+          "set ThisBuild / Compile / packageDoc / publishArtifact := false;publishLocal"
         cd "$RUNNER_TEMP"
         rm -rf "$CHEN_DIR"
     - name: Publish chen main locally
@@ -59,7 +59,7 @@ runs:
         git clone --quiet --depth 1 --branch main https://github.com/AppThreat/chen.git "$env:CHEN_DIR"
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         Push-Location "$env:CHEN_DIR"
-        sbt -batch "set ThisBuild / Compile / packageDoc / publishArtifact := false" publishLocal
+        sbt -batch "set ThisBuild / Compile / packageDoc / publishArtifact := false;publishLocal"
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         Pop-Location
         Remove-Item -Recurse -Force "$env:CHEN_DIR"

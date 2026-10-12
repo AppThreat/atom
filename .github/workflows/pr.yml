@@ -50,7 +50,7 @@ jobs:
       # Before `sbt test`: the workflow tests probe for the AST generators and cancel without
       # them, so a post-test install would silently skip the JavaScript (and Ruby) fixtures.
       - run: npm install -g @appthreat/atom-parsetools
-      - run: sbt -batch scalafmtCheck test stage createDistribution
+      - run: sbt -batch "scalafmtCheck;testFull;stage;createDistribution"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
@@ -127,7 +127,7 @@ jobs:
           # workflow tests probe for them and cancel without them, so a post-test install would
           # silently skip the JavaScript (and Ruby) reachables fixtures.
           npm install -g @appthreat/atom-parsetools
-          sbt scalafmtCheck test stage createDistribution
+          sbt "scalafmtCheck;testFull;stage;createDistribution"
           cd wrapper/nodejs
           bash build.sh
           npm install -g .

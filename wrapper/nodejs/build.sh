@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Assemble the local @appthreat/atom JAR packages from a freshly built distribution.
 #
-# Prerequisite: run `sbt stage createDistribution` from the repo root first so that
+# Prerequisite: run `sbt "stage;createDistribution"` from the repo root first so that
 # target/atom.zip exists. This script unzips that distribution and stamps the
 # universal JAR package (@appthreat/atom-jar) plus the JAR-fallback platform
 # packages (darwin-amd64, windows-arm64, linux-arm64-musl).
@@ -17,7 +17,7 @@ DIST_ZIP="../../target/atom.zip"
 PLUGINS_DIR="plugins"
 
 if [ ! -e "${DIST_ZIP}" ]; then
-    echo "Build the atom project using 'sbt stage createDistribution' before running this script" >&2
+    echo "Build the atom project using 'sbt \"stage;createDistribution\"' before running this script" >&2
     exit 1
 fi
 

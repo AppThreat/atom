@@ -1,7 +1,7 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
 ThisBuild / version      := "4.0.0"
-ThisBuild / scalaVersion := "3.9.0"
+ThisBuild / scalaVersion := "3.10.0"
 
 val chenVersion = "4.0.0"
 
@@ -97,7 +97,12 @@ Universal / mappings := (Universal / mappings).value.filterNot {
 
 enablePlugins(JavaAppPackaging, ClasspathJarPlugin, GraalVMNativeImagePlugin)
 
-ThisBuild / licenses := List("MIT" -> url("https://opensource.org/license/MIT"))
+// sbt 2 moves `target` to target/out/jvm/scala-<version>/atom; atom.sh, CI and the release
+// scripts expect the staged app and the native image where sbt 1 put them
+Universal / UniversalPlugin.autoImport.stagingDirectory := baseDirectory.value / "target" / "universal" / "stage"
+GraalVMNativeImage / target := baseDirectory.value / "target" / "graalvm-native-image"
+
+ThisBuild / licenses := List("MIT" -> uri("https://opensource.org/license/MIT"))
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -108,17 +113,18 @@ debianPackageDependencies := Seq("java21-runtime-headless")
 rpmVendor                 := "AppThreat"
 
 lazy val createDistribution = taskKey[File]("Create a complete atom distribution")
-createDistribution := {
+createDistribution := Def.uncached {
     val distributionFile = file("target/atom.zip")
-    val zip              = (atom / Universal / packageBin).value
-    IO.copyFile(zip, distributionFile)
+    val zip              = (atom / (Universal / packageBin)).value
+    // sbt 2 packages to virtual-file refs; materialize via the file converter
+    IO.copyFile(fileConverter.value.toPath(zip).toFile, distributionFile)
     println(s"created distribution - resulting files: $distributionFile")
     distributionFile
 }
 
 ThisBuild / resolvers ++= Seq(
   Resolver.mavenLocal,
-  Resolver.githubPackages("appthreat/chen"),
+  githubPackagesResolver("appthreat", "chen"),
   "Sonatype OSS".at("https://oss.sonatype.org/content/repositories/public"),
   "Atlassian".at("https://packages.atlassian.com/mvn/maven-atlassian-external"),
   "Gradle Releases".at("https://repo.gradle.org/gradle/libs-releases/")
@@ -127,6 +133,14 @@ ThisBuild / resolvers ++= Seq(
 ThisBuild / versionScheme := Some("semver-spec")
 
 ThisBuild / Test / fork := true
+// sbt 2 runs the suites of a forked test JVM in parallel by default; the chen frontends keep
+// JVM-global state (soot's Scene, shared AST caches) that concurrent suites corrupt
+ThisBuild / Test / testForkedParallel := false
+// executeTests reads it through a dynamic task, which lintUnused cannot see
+Global / excludeLintKeys += testForkedParallel
+// sbt 2 packs test classes+resources into jars (exportJars := true); keep exploded dirs so
+// tests can read their fixtures as plain files
+ThisBuild / Test / exportJars := false
 // The PHP/Ruby frontends run in-process inside the forked test JVM and resolve their generator
 // binary from the environment, so propagate the generator overrides from the launching shell.
 ThisBuild / Test / envVars ++=
@@ -146,9 +160,8 @@ wartremoverWarnings ++= Seq(
   Wart.TryPartial
 )
 
-githubOwner                      := "appthreat"
-githubRepository                 := "atom"
-githubSuppressPublicationWarning := true
+githubOwner      := "appthreat"
+githubRepository := "atom"
 credentials +=
     Credentials(
       "GitHub Package Registry",
