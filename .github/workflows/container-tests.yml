@@ -9,9 +9,10 @@ permissions:
   contents: read
   # Google's mirror of Maven Central first, repo1 and every resolver the build declares as
   # fallbacks (Maven Central is rate-limited from CI); drives the sbt launcher too. chen-from-main
-  # writes the GitHub Packages credentials coursier needs for the last entry.
+  # writes the GitHub Packages credentials coursier needs for the last entry. Coursier requires
+  # pipe-separated entries - a ';' separator or unknown alias makes it ignore the whole list.
 env:
-  COURSIER_REPOSITORIES: ivy2-local;maven-local;https://maven-central.storage-download.googleapis.com/maven2;https://repo1.maven.org/maven2;https://maven.google.com;https://oss.sonatype.org/content/repositories/public;https://packages.atlassian.com/mvn/maven-atlassian-external;https://repo.gradle.org/gradle/libs-releases;https://maven.pkg.github.com/appthreat/chen
+  COURSIER_REPOSITORIES: "ivy2Local|https://maven-central.storage-download.googleapis.com/maven2|https://repo1.maven.org/maven2|https://maven.google.com|https://oss.sonatype.org/content/repositories/public|https://packages.atlassian.com/mvn/maven-atlassian-external|https://repo.gradle.org/gradle/libs-releases|https://maven.pkg.github.com/appthreat/chen"
 jobs:
   lang-container-tests:
     strategy:
