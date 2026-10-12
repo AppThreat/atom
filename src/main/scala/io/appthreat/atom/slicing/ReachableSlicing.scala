@@ -741,9 +741,13 @@ object ReachableSlicing:
             sanitizerCalls.get(id).exists { categories =>
                 categories.isEmpty || categories.exists(sinkCategories.contains)
             }
-        path.elements.exists(element =>
-            (element.id() :: enclosingCallId(element).toList).exists(covers)
-        ) ||
+        val elements = path.elements.toIndexedSeq
+        elements.indices.exists { i =>
+          val element = elements(i)
+          covers(element.id()) || enclosingCallId(element).exists(call =>
+              covers(call) && continuesThrough(elements.lift(i + 1), call)
+          )
+        } ||
         // the engine may step from a variable's definition straight to the call using it: the
         // argument that read the variable - a read a guard validated - is not on the path itself
         path.elements.iterator.sliding(2).exists {
@@ -757,6 +761,18 @@ object ReachableSlicing:
                 )
             case _ => false
         }
+
+  /** Whether a flow that reached an argument of the call `callId` goes on through it: to the call,
+    * or to an expression built on its result (`id = Number.parseInt(x)`). A path that only touched
+    * the argument on its way elsewhere - `params.ticket_id` read for a parse, then `params` again
+    * for another member - carries the value past the sanitiser, not through it. The last element of
+    * a path has nowhere further to go.
+    */
+  private def continuesThrough(next: Option[AstNode], callId: Long): Boolean =
+      next match
+        case None                        => true
+        case Some(n) if n.id() == callId => true
+        case Some(n)                     => n.ast.id(callId).nonEmpty
 
   private def enclosingCallId(node: AstNode): Option[Long] =
       node match
