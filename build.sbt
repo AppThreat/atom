@@ -6,7 +6,12 @@ ThisBuild / scalaVersion := "3.9.0"
 val chenVersion = "4.0.0"
 
 lazy val atom = Projects.atom
-resolvers += "Google Maven".at("https://maven.google.com/")
+resolvers ++= Seq(
+  // Google's mirror of Maven Central: resolves the same artifacts without repo1's rate
+  // limiting, which has made CI builds fail while the artifact demonstrably existed.
+  "gcs-maven-central-mirror".at("https://maven-central.storage-download.googleapis.com/maven2"),
+  "Google Maven".at("https://maven.google.com/")
+)
 libraryDependencies ++= Seq(
   "com.github.pathikrit" %% "better-files" % "3.9.2",
   "com.github.scopt"     %% "scopt"        % "4.1.0",
