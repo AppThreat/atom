@@ -175,6 +175,8 @@ object ReachableSlicing:
         .filterNot(endsAtNonSink)
         .filterNot(path => JS_LANGUAGES.contains(language) && isUnsunkFlow(path, sinkTagPattern))
         .filterNot(path => JS_LANGUAGES.contains(language) && isApiChaining(path, sinkTagPattern))
+        .map(path => if JS_LANGUAGES.contains(language) then fromLastSourceVisit(path) else path)
+        .filter(_.elements.size > 1)
         .toVector
     // Each path's endpoint key and signature, computed ONCE. Both are O(path length) string
     // builds over every collected path, and the group fold plus the emit filter each need both -
@@ -628,7 +630,9 @@ object ReachableSlicing:
     path.elements.lastOption.forall { last =>
       val endsOnReceiver = last match
         case id: Identifier =>
-            id.name == "this" || id.name.startsWith("_tmp_") || id.argumentIndex == 0
+            id.name == "this" || id.name.startsWith("_tmp_") || id.argumentIndex == 0 ||
+            // the object a method is looked up on (`alerts` in `alerts.disconnect()`)
+            id.inCall.exists(fa => fa.name == "<operator>.fieldAccess" && fa._receiverIn.nonEmpty)
         case p: MethodParameterIn => p.name == "this"
         case _                    => false
       val enclosingSink = last match
@@ -638,6 +642,18 @@ object ReachableSlicing:
       // reaching a read of itself is no finding
       endsOnReceiver || !(enclosingSink || path.elements.drop(1).exists(isSink))
     }
+
+  /** JavaScript only: a path that comes back to the node it started at - out through a callback's
+    * return and into the callback again, or through the other uses of a variable whose read is the
+    * source - is the path from that node's last visit; the loop before it says nothing. A path
+    * that is nothing but the loop is left with its source alone, and dropped.
+    */
+  private def fromLastSourceVisit(path: Path): Path =
+      path.elements.headOption match
+        case Some(head) =>
+            val last = path.elements.lastIndexWhere(_.id() == head.id())
+            if last > 0 then Path(path.elements.drop(last)) else path
+        case None => path
 
   // The sink tags of a request whose URL a value decides: client-side path traversal or forgery.
   private val REQUEST_SINK_TAGS = Set("http-client", "http", "ssrf")
@@ -718,12 +734,25 @@ object ReachableSlicing:
       if sanitizerCalls.isEmpty then false
       else
         val sinkCategories = flowSinkCategories(path, sinkTagPattern)
-        path.elements.exists { element =>
-            (element.id() :: enclosingCallId(element).toList).exists { id =>
-                sanitizerCalls.get(id).exists { categories =>
-                    categories.isEmpty || categories.exists(sinkCategories.contains)
-                }
+        def covers(id: Long): Boolean =
+            sanitizerCalls.get(id).exists { categories =>
+                categories.isEmpty || categories.exists(sinkCategories.contains)
             }
+        path.elements.exists(element =>
+            (element.id() :: enclosingCallId(element).toList).exists(covers)
+        ) ||
+        // the engine may step from a variable's definition straight to the call using it: the
+        // argument that read the variable - a read a guard validated - is not on the path itself
+        path.elements.iterator.sliding(2).exists {
+            case Seq(from, call: Call) =>
+                val variable = from match
+                  case id: Identifier       => Some(id.name)
+                  case p: MethodParameterIn => Some(p.name)
+                  case _                    => None
+                variable.exists(name =>
+                    call.argument.isIdentifier.nameExact(name).exists(arg => covers(arg.id()))
+                )
+            case _ => false
         }
 
   private def enclosingCallId(node: AstNode): Option[Long] =
