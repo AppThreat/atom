@@ -1,6 +1,10 @@
 name: pull_request
+# testing is a required status check on main, so this workflow must trigger
+# on every pull request and on merge-group builds; the heavy language and
+# repo-test matrices skip merge-group builds via their own if:.
 on:
   pull_request:
+  merge_group:
   workflow_dispatch:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
