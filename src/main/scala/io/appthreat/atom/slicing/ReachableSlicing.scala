@@ -167,6 +167,10 @@ object ReachableSlicing:
     val collectedPaths = collectFlowSlices(atom, config, language)
         .iterator
         .flatten
+        // first, so that every check below judges the path that is reported
+        .flatMap(path =>
+            if JS_LANGUAGES.contains(language) then fromLastSourceVisit(path) else Some(path)
+        )
         .filterNot(isLibrarySourcedFlow)
         .filterNot(isSanitized(_, sanitizerCalls, sinkTagPattern))
         .filterNot(passesThroughPredicate(_, predicateCalls))
@@ -175,8 +179,6 @@ object ReachableSlicing:
         .filterNot(endsAtNonSink)
         .filterNot(path => JS_LANGUAGES.contains(language) && isUnsunkFlow(path, sinkTagPattern))
         .filterNot(path => JS_LANGUAGES.contains(language) && isApiChaining(path, sinkTagPattern))
-        .map(path => if JS_LANGUAGES.contains(language) then fromLastSourceVisit(path) else path)
-        .filter(_.elements.size > 1)
         .toVector
     // Each path's endpoint key and signature, computed ONCE. Both are O(path length) string
     // builds over every collected path, and the group fold plus the emit filter each need both -
@@ -645,15 +647,16 @@ object ReachableSlicing:
 
   /** JavaScript only: a path that comes back to the node it started at - out through a callback's
     * return and into the callback again, or through the other uses of a variable whose read is the
-    * source - is the path from that node's last visit; the loop before it says nothing. A path
-    * that is nothing but the loop is left with its source alone, and dropped.
+    * source - is the path from that node's last visit; the loop before it says nothing. A path that
+    * is nothing but the loop is left with its source alone, and dropped.
     */
-  private def fromLastSourceVisit(path: Path): Path =
+  private def fromLastSourceVisit(path: Path): Option[Path] =
       path.elements.headOption match
         case Some(head) =>
             val last = path.elements.lastIndexWhere(_.id() == head.id())
-            if last > 0 then Path(path.elements.drop(last)) else path
-        case None => path
+            if last <= 0 then Some(path)
+            else Option.when(path.elements.size - last > 1)(Path(path.elements.drop(last)))
+        case None => Some(path)
 
   // The sink tags of a request whose URL a value decides: client-side path traversal or forgery.
   private val REQUEST_SINK_TAGS = Set("http-client", "http", "ssrf")
@@ -714,11 +717,11 @@ object ReachableSlicing:
     */
   private def collectSanitizerCalls(atom: Cpg): Map[Long, Set[String]] =
     val calls = atom.call.where(_.tag.name(SANITIZER_TAG)).map { call =>
-        val categories = call.tag.name.l.collect {
-            case name if name.startsWith(SANITIZER_CATEGORY_PREFIX) =>
-                name.stripPrefix(SANITIZER_CATEGORY_PREFIX)
-        }.toSet
-        call.id() -> categories
+      val categories = call.tag.name.l.collect {
+          case name if name.startsWith(SANITIZER_CATEGORY_PREFIX) =>
+              name.stripPrefix(SANITIZER_CATEGORY_PREFIX)
+      }.toSet
+      call.id() -> categories
     }.toMap
     calls ++ atom.identifier.where(_.tag.name(SANITIZER_TAG)).map(_.id() -> Set.empty[String])
 
