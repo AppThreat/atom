@@ -172,9 +172,13 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
                     |""".stripMargin
               )
           )
-          flows.length should be(4)
-          // The request-derived local must reach the framework output sink.
-          assertSourceToSinkFlow(flows, "javascript", "name", "send", "framework-output")
+          // One flow: req.query.name -> shout(name) -> res.send(...). Three more used to be
+          // reported - the `app.get(...)` registration call was a source and a sink because its
+          // code contained `req.` and `res.`, and one path ended at `shout(name)`, on no sink.
+          flows.length should be(1)
+          // The request data must reach the framework output sink. The flow is rooted at the read
+          // `req.query` that `.name` is taken from: a read of a read now carries the value.
+          assertSourceToSinkFlow(flows, "javascript", "req.query", "send", "framework-output")
       }
 
       "emit source-to-sink flows for a react-router component" in {
@@ -201,6 +205,89 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
           // The URL parameter reaches the raw-HTML render through the props chain: the flow must
           // be rooted at the tagged useParams call and end at the framework-output sink.
           assertSourceToSinkFlow(flows, "javascript", "useParams", "__html", "framework-output")
+      }
+  }
+
+  // Frontend single-page applications, with no SBOM in the project: the sources and sinks come
+  // from chen's JavaScript framework recognizers alone (`taggers/js`), not from purl tags.
+  // RELEASE ORDERING: like the React Router fixture above, these need the chen that ships the
+  // recognizers published before atom's CI runs them.
+  "reachables for frontend applications without an SBOM" should {
+      "find an Angular route parameter reaching a sanitizer bypass" in {
+          requireAstgen()
+          val flows = runReachables(
+            "ts",
+            "ng-spa",
+            dir =>
+              (dir / "src" / "app").createDirectories()
+              (dir / "src" / "app" / "search.component.ts").write(
+                """import { Component, inject } from '@angular/core';
+                    |import { ActivatedRoute } from '@angular/router';
+                    |import { DomSanitizer } from '@angular/platform-browser';
+                    |
+                    |@Component({ selector: 'app-search', template: '<p [innerHTML]="html"></p>' })
+                    |export class SearchComponent {
+                    |  private readonly route = inject(ActivatedRoute);
+                    |  private readonly sanitizer = inject(DomSanitizer);
+                    |  html: unknown;
+                    |  ngOnInit() {
+                    |    const q = this.route.snapshot.queryParams.q;
+                    |    this.html = this.sanitizer.bypassSecurityTrustHtml('<b>' + q + '</b>');
+                    |  }
+                    |}
+                    |""".stripMargin
+              )
+          )
+          assertSourceToSinkFlow(
+            flows,
+            "typescript",
+            "this.route.snapshot.queryParams",
+            "bypassSecurityTrustHtml",
+            "xss"
+          )
+      }
+
+      "find location.hash reaching innerHTML through a captured variable" in {
+          requireAstgen()
+          val flows = runReachables(
+            "javascript",
+            "dom-spa",
+            dir =>
+              (dir / "src").createDirectories()
+              (dir / "src" / "main.js").write(
+                """const panel = document.getElementById('panel');
+                    |const fragment = decodeURIComponent(location.hash.slice(1));
+                    |
+                    |window.addEventListener('hashchange', () => {
+                    |  if (fragment) {
+                    |    panel.innerHTML = fragment;
+                    |  }
+                    |});
+                    |""".stripMargin
+              )
+          )
+          flows.exists(f => nodesOf(f).lastOption.exists(n => tagSet(n).contains("xss"))) shouldBe true
+      }
+
+      "find a Next.js server action argument reaching a shell command" in {
+          requireAstgen()
+          val flows = runReachables(
+            "ts",
+            "next-spa",
+            dir =>
+              (dir / "app").createDirectories()
+              (dir / "app" / "actions.ts").write(
+                """'use server';
+                    |import { exec } from 'node:child_process';
+                    |
+                    |export async function ping(formData: FormData) {
+                    |  const host = formData.get('host') as string;
+                    |  exec(`ping -c 1 ${host}`);
+                    |}
+                    |""".stripMargin
+              )
+          )
+          assertSourceToSinkFlow(flows, "typescript", "formData", "exec", "shell-exec")
       }
   }
 
