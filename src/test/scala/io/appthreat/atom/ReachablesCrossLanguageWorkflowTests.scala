@@ -291,6 +291,56 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
           )
           assertSourceToSinkFlow(flows, "typescript", "formData", "exec", "shell-exec")
       }
+
+      "report what a handler reflects, not a load's data, a JSON response or a chained request" in {
+          requireAstgen()
+          val flows = runReachables(
+            "ts",
+            "sk-spa",
+            dir =>
+              (dir / "src" / "routes" / "item").createDirectories()
+              (dir / "src" / "routes" / "api" / "raw").createDirectories()
+              (dir / "src" / "lib").createDirectories()
+              (dir / "package.json").write("""{ "dependencies": { "@sveltejs/kit": "^2.0.0" } }""")
+              (dir / "src" / "routes" / "item" / "+page.server.ts").write(
+                """export const load = async ({ params }) => {
+                    |  return { id: params.id };
+                    |};
+                    |""".stripMargin
+              )
+              (dir / "src" / "routes" / "api" / "+server.ts").write(
+                """export const GET = async ({ url }) => {
+                    |  const q = url.searchParams.get('q');
+                    |  return Response.json({ q });
+                    |};
+                    |""".stripMargin
+              )
+              (dir / "src" / "routes" / "api" / "raw" / "+server.ts").write(
+                """export const GET = async ({ url }) => {
+                    |  const q = url.searchParams.get('q') ?? '';
+                    |  return new Response(q, { headers: { 'content-type': 'text/html' } });
+                    |};
+                    |""".stripMargin
+              )
+              (dir / "src" / "lib" / "items.ts").write(
+                """export async function related() {
+                    |  const res = await fetch('/api/item');
+                    |  const item = await res.json();
+                    |  return fetch(`/api/related/${item.id}`);
+                    |}
+                    |""".stripMargin
+              )
+          )
+          def endsIn(file: String) = flows.filter(f =>
+              nodesOf(f).lastOption.exists(_.obj.get("parentFileName").exists(_.str.endsWith(file)))
+          )
+          // the load's data goes to the page; a JSON response is no markup; an id one response
+          // gave is how the next request walks the API
+          endsIn("item/+page.server.ts") shouldBe empty
+          endsIn("api/+server.ts") shouldBe empty
+          endsIn("lib/items.ts") shouldBe empty
+          endsIn("raw/+server.ts") should not be empty
+      }
   }
 
   "usages for javascript" should {

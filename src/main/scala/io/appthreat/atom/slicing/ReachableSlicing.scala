@@ -619,8 +619,8 @@ object ReachableSlicing:
     * that sinks on `call.argument` includes the call's receiver. Without an SBOM there are no purl
     * tags for such flows to reach, and what remains are paths that end on `this`, on a lowering
     * temporary, or on a node no sink tag is anywhere near. A flow is kept when it ends on a value
-    * the sink consumes and some node of it - or the call its last node is an argument of - carries
-    * a sink tag.
+    * the sink consumes and some node of it after its source - or the call its last node is an
+    * argument of - carries a sink tag.
     */
   private def isUnsunkFlow(path: Path, sinkTagPattern: Pattern): Boolean =
     def isSink(node: AstNode): Boolean =
@@ -634,7 +634,9 @@ object ReachableSlicing:
       val enclosingSink = last match
         case e: Expression => e.inCall.exists(isSink)
         case _             => false
-      endsOnReceiver || !(enclosingSink || path.elements.exists(isSink))
+      // the source's own tags do not count: a parameter tagged both `framework-input` and `http`
+      // reaching a read of itself is no finding
+      endsOnReceiver || !(enclosingSink || path.elements.drop(1).exists(isSink))
     }
 
   // The sink tags of a request whose URL a value decides: client-side path traversal or forgery.
@@ -767,13 +769,21 @@ object ReachableSlicing:
       flowsFrom(atom.ret.where(_.tag.name(sinkTagRegex)))
     ).flatten
 
+  /** A route's data function (`load`, a loader, a form action - `framework-data`) hands its return
+    * value to the page that renders it; only an endpoint's return value is its response.
+    */
+  private val DATA_FUNCTION_TAG = "framework-data"
+
   private def collectDefaultTagFlows(atom: Cpg, sourceTagRegex: String): List[Iterator[Path]] =
       List(
-        atom.ret.where(_.method.tag.name(sourceTagRegex)).reachableByFlows(
-          atom.tag.name(sourceTagRegex).parameter,
-          atom.tag.name(sourceTagRegex).identifier,
-          atom.tag.name(sourceTagRegex).call
-        ),
+        atom.ret
+            .where(_.method.tag.name(sourceTagRegex))
+            .whereNot(_.method.tag.nameExact(DATA_FUNCTION_TAG))
+            .reachableByFlows(
+              atom.tag.name(sourceTagRegex).parameter,
+              atom.tag.name(sourceTagRegex).identifier,
+              atom.tag.name(sourceTagRegex).call
+            ),
         atom.tag.name(API_TAG).parameter.reachableByFlows(
           atom.tag.name(API_TAG).parameter,
           atom.tag.name(API_TAG).identifier
