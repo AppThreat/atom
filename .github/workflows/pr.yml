@@ -11,6 +11,13 @@ concurrency:
   cancel-in-progress: true
 permissions:
   contents: read
+# Google's mirror of Maven Central first, with repo1 and every resolver the build declares
+# (see build.sbt) as fallbacks: Maven Central is rate-limited/flaky from CI - the sbt launcher
+# itself failed to download org.scala-sbt:sbt while the artifact existed. This drives the sbt
+# launcher as well as the build's dependency resolution. chen-from-main writes the GitHub
+# Packages credentials coursier needs for the last entry.
+env:
+  COURSIER_REPOSITORIES: ivy2-local;maven-local;https://maven-central.storage-download.googleapis.com/maven2;https://repo1.maven.org/maven2;https://maven.google.com;https://oss.sonatype.org/content/repositories/public;https://packages.atlassian.com/mvn/maven-atlassian-external;https://repo.gradle.org/gradle/libs-releases;https://maven.pkg.github.com/appthreat/chen
 
 jobs:
   # The unit tests and distribution build on the other operating systems, so a merge cannot

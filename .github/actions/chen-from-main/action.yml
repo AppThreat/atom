@@ -15,6 +15,18 @@ inputs:
 runs:
   using: composite
   steps:
+    # Repositories for the sbt launcher are steered by COURSIER_REPOSITORIES in the calling
+    # workflows, which lists GitHub Packages; coursier needs its own credentials file to
+    # authenticate against it, independent of the sbt-github-packages plugin.
+    - name: Coursier credentials for GitHub Packages
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        set -euo pipefail
+        dir="${COURSIER_CONFIG_DIR:-$HOME/.config/coursier}"
+        mkdir -p "$dir"
+        printf 'maven.pkg.github.com x-access-token %s\n' "$GITHUB_TOKEN" > "$dir/credentials.properties"
     - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961  # v5.7.0
       if: inputs.setup-jdk == 'true'
       with:
