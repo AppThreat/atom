@@ -172,9 +172,13 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
                     |""".stripMargin
               )
           )
-          flows.length should be(4)
-          // The request-derived local must reach the framework output sink.
-          assertSourceToSinkFlow(flows, "javascript", "name", "send", "framework-output")
+          // One flow: req.query.name -> shout(name) -> res.send(...). Three more used to be
+          // reported - the `app.get(...)` registration call was a source and a sink because its
+          // code contained `req.` and `res.`, and one path ended at `shout(name)`, on no sink.
+          flows.length should be(1)
+          // The request data must reach the framework output sink. The flow is rooted at the read
+          // `req.query` that `.name` is taken from: a read of a read now carries the value.
+          assertSourceToSinkFlow(flows, "javascript", "req.query", "send", "framework-output")
       }
 
       "emit source-to-sink flows for a react-router component" in {
@@ -201,6 +205,141 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
           // The URL parameter reaches the raw-HTML render through the props chain: the flow must
           // be rooted at the tagged useParams call and end at the framework-output sink.
           assertSourceToSinkFlow(flows, "javascript", "useParams", "__html", "framework-output")
+      }
+  }
+
+  // Frontend single-page applications, with no SBOM in the project: the sources and sinks come
+  // from chen's JavaScript framework recognizers alone (`taggers/js`), not from purl tags.
+  // RELEASE ORDERING: like the React Router fixture above, these need the chen that ships the
+  // recognizers published before atom's CI runs them.
+  "reachables for frontend applications without an SBOM" should {
+      "find an Angular route parameter reaching a sanitizer bypass" in {
+          requireAstgen()
+          val flows = runReachables(
+            "ts",
+            "ng-spa",
+            dir =>
+              (dir / "src" / "app").createDirectories()
+              (dir / "src" / "app" / "search.component.ts").write(
+                """import { Component, inject } from '@angular/core';
+                    |import { ActivatedRoute } from '@angular/router';
+                    |import { DomSanitizer } from '@angular/platform-browser';
+                    |
+                    |@Component({ selector: 'app-search', template: '<p [innerHTML]="html"></p>' })
+                    |export class SearchComponent {
+                    |  private readonly route = inject(ActivatedRoute);
+                    |  private readonly sanitizer = inject(DomSanitizer);
+                    |  html: unknown;
+                    |  ngOnInit() {
+                    |    const q = this.route.snapshot.queryParams.q;
+                    |    this.html = this.sanitizer.bypassSecurityTrustHtml('<b>' + q + '</b>');
+                    |  }
+                    |}
+                    |""".stripMargin
+              )
+          )
+          assertSourceToSinkFlow(
+            flows,
+            "typescript",
+            "this.route.snapshot.queryParams",
+            "bypassSecurityTrustHtml",
+            "xss"
+          )
+      }
+
+      "find location.hash reaching innerHTML through a captured variable" in {
+          requireAstgen()
+          val flows = runReachables(
+            "javascript",
+            "dom-spa",
+            dir =>
+              (dir / "src").createDirectories()
+              (dir / "src" / "main.js").write(
+                """const panel = document.getElementById('panel');
+                    |const fragment = decodeURIComponent(location.hash.slice(1));
+                    |
+                    |window.addEventListener('hashchange', () => {
+                    |  if (fragment) {
+                    |    panel.innerHTML = fragment;
+                    |  }
+                    |});
+                    |""".stripMargin
+              )
+          )
+          flows.exists(f =>
+              nodesOf(f).lastOption.exists(n => tagSet(n).contains("xss"))
+          ) shouldBe true
+      }
+
+      "find a Next.js server action argument reaching a shell command" in {
+          requireAstgen()
+          val flows = runReachables(
+            "ts",
+            "next-spa",
+            dir =>
+              (dir / "app").createDirectories()
+              (dir / "app" / "actions.ts").write(
+                """'use server';
+                    |import { exec } from 'node:child_process';
+                    |
+                    |export async function ping(formData: FormData) {
+                    |  const host = formData.get('host') as string;
+                    |  exec(`ping -c 1 ${host}`);
+                    |}
+                    |""".stripMargin
+              )
+          )
+          assertSourceToSinkFlow(flows, "typescript", "formData", "exec", "shell-exec")
+      }
+
+      "report what a handler reflects, not a load's data, a JSON response or a chained request" in {
+          requireAstgen()
+          val flows = runReachables(
+            "ts",
+            "sk-spa",
+            dir =>
+              (dir / "src" / "routes" / "item").createDirectories()
+              (dir / "src" / "routes" / "api" / "raw").createDirectories()
+              (dir / "src" / "lib").createDirectories()
+              (dir / "package.json").write("""{ "dependencies": { "@sveltejs/kit": "^2.0.0" } }""")
+              (dir / "src" / "routes" / "item" / "+page.server.ts").write(
+                """export const load = async ({ params }) => {
+                    |  return { id: params.id };
+                    |};
+                    |""".stripMargin
+              )
+              (dir / "src" / "routes" / "api" / "+server.ts").write(
+                """export const GET = async ({ url }) => {
+                    |  const q = url.searchParams.get('q');
+                    |  return Response.json({ q });
+                    |};
+                    |""".stripMargin
+              )
+              (dir / "src" / "routes" / "api" / "raw" / "+server.ts").write(
+                """export const GET = async ({ url }) => {
+                    |  const q = url.searchParams.get('q') ?? '';
+                    |  return new Response(q, { headers: { 'content-type': 'text/html' } });
+                    |};
+                    |""".stripMargin
+              )
+              (dir / "src" / "lib" / "items.ts").write(
+                """export async function related() {
+                    |  const res = await fetch('/api/item');
+                    |  const item = await res.json();
+                    |  return fetch(`/api/related/${item.id}`);
+                    |}
+                    |""".stripMargin
+              )
+          )
+          def endsIn(file: String) = flows.filter(f =>
+              nodesOf(f).lastOption.exists(_.obj.get("parentFileName").exists(_.str.endsWith(file)))
+          )
+          // the load's data goes to the page; a JSON response is no markup; an id one response
+          // gave is how the next request walks the API
+          endsIn("item/+page.server.ts") shouldBe empty
+          endsIn("api/+server.ts") shouldBe empty
+          endsIn("lib/items.ts") shouldBe empty
+          endsIn("raw/+server.ts") should not be empty
       }
   }
 

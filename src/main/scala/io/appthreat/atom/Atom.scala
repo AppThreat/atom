@@ -1228,6 +1228,16 @@ object Atom:
     // the `--flux` data-flow engine so each improvement can be evaluated independently.
     if config.cacheFragments then
       io.appthreat.x2cpg.passes.frontend.CacheControl.enableFragments()
+    // `--no-ast-cache` reaches the C/C++ and Python frontends through their configs, but the
+    // JavaScript frontend consults only the global switchboard - its per-file AST fragments and the
+    // astgen output were still written to `<input>/.chen`. Turn both kinds off there too.
+    if !FrontendArgsApplier.bool(config.frontendArgs, "enable-ast-cache", default = true) then
+      io.appthreat.x2cpg.passes.frontend.CacheControl.disable(
+        io.appthreat.x2cpg.passes.frontend.CacheControl.Ast
+      )
+      io.appthreat.x2cpg.passes.frontend.CacheControl.disable(
+        io.appthreat.x2cpg.passes.frontend.CacheControl.Astgen
+      )
     // Enable the method-flow-summary cache so summaries persist next to the atom and are reused on
     // an unchanged re-run. Summaries are part of the Flux bundle, so this follows `useFluxEngine`.
     if config.useFluxEngine then

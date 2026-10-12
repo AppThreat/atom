@@ -314,9 +314,14 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
             "line"     -> io.circe.Json.fromInt(3),
             "severity" -> io.circe.Json.fromString("high")
           )
-          // "MS-AAA-000" sorts before every registered id and is not one
+          // "MS-AAA-000" sorts before every registered id and is not one. The outside-the-input
+          // file is written as the platform would write it: a POSIX absolute path is not absolute
+          // on Windows, where `Paths.get("/usr/...")` is a current-drive-relative path instead.
+          val outsideHeader =
+              if scala.util.Properties.isWin then "C:\\Windows\\include\\string.h"
+              else "/usr/include/string.h"
           val sarif = MemorySafetySarif.document(
-            List(finding("MS-AAA-000", "src/a.c"), finding(known, "/usr/include/string.h")),
+            List(finding("MS-AAA-000", "src/a.c"), finding(known, outsideHeader)),
             "/work/project",
             None
           )
@@ -332,7 +337,7 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
           artifact(results.head).get[String]("uriBaseId").toOption shouldBe Some("%SRCROOT%")
           artifact(results.last).get[String]("uri").toOption.get should startWith("file:/")
           artifact(results.last).get[String]("uri").toOption.get should endWith(
-            "/usr/include/string.h"
+            "string.h"
           )
           artifact(results.last).get[String]("uriBaseId").toOption shouldBe None
       }

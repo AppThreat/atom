@@ -74,6 +74,8 @@ object ReachableSlicing:
       Set(Languages.PHP, Languages.RUBYSRC)
   private val C_LANGUAGES =
       Set(Languages.NEWC, Languages.C)
+  private val JS_LANGUAGES =
+      Set(Languages.JSSRC, Languages.JAVASCRIPT)
   private val PYTHON_LANGUAGES =
       Set(Languages.PYTHON, Languages.PYTHONSRC)
 
@@ -131,6 +133,8 @@ object ReachableSlicing:
     // Calls tagged as sanitisers/validators (by ChennaiTagsPass) and the sink categories each
     // covers. A flow that passes through such a call is dropped for the matching categories.
     val sanitizerCalls = collectSanitizerCalls(atom)
+    // Calls whose result is a boolean or a number about their arguments (tagged `predicate`).
+    val predicateCalls = atom.call.where(_.tag.nameExact(PREDICATE_TAG)).id.toSet
     // Profile-driven neutraliser barriers (validators, sanitisers, encoders, ORM reads). A flow that
     // passes through any of these node ids is dropped. Empty for the default `generic` profile.
     val neutralizerNodeIds = collectNeutralizerNodeIds(atom, config.profile.neutralizerTags)
@@ -163,11 +167,18 @@ object ReachableSlicing:
     val collectedPaths = collectFlowSlices(atom, config, language)
         .iterator
         .flatten
+        // first, so that every check below judges the path that is reported
+        .flatMap(path =>
+            if JS_LANGUAGES.contains(language) then fromLastSourceVisit(path) else Some(path)
+        )
         .filterNot(isLibrarySourcedFlow)
-        .filterNot(isSanitized(_, sanitizerCalls))
+        .filterNot(isSanitized(_, sanitizerCalls, sinkTagPattern))
+        .filterNot(passesThroughPredicate(_, predicateCalls))
         .filterNot(passesThroughNeutralizer(_, neutralizerNodeIds))
         .filterNot(isMetaClassAdapterFlow)
         .filterNot(endsAtNonSink)
+        .filterNot(path => JS_LANGUAGES.contains(language) && isUnsunkFlow(path, sinkTagPattern))
+        .filterNot(path => JS_LANGUAGES.contains(language) && isApiChaining(path, sinkTagPattern))
         .toVector
     // Each path's endpoint key and signature, computed ONCE. Both are O(path length) string
     // builds over every collected path, and the group fold plus the emit filter each need both -
@@ -605,6 +616,67 @@ object ReachableSlicing:
         NON_SINK_NAMES.contains(name)
       }
 
+  /** JavaScript only: a flow that is no finding at all.
+    *
+    * The dynamic-language collectors also query flows whose end is not a sink of their own - into
+    * the arguments of input-tagged calls, into calls of sink-tagged methods - and every collector
+    * that sinks on `call.argument` includes the call's receiver. Without an SBOM there are no purl
+    * tags for such flows to reach, and what remains are paths that end on `this`, on a lowering
+    * temporary, or on a node no sink tag is anywhere near. A flow is kept when it ends on a value
+    * the sink consumes and some node of it after its source - or the call its last node is an
+    * argument of - carries a sink tag.
+    */
+  private def isUnsunkFlow(path: Path, sinkTagPattern: Pattern): Boolean =
+    def isSink(node: AstNode): Boolean =
+        node.tag.name.exists(sinkTagPattern.matcher(_).matches)
+    path.elements.lastOption.forall { last =>
+      val endsOnReceiver = last match
+        case id: Identifier =>
+            id.name == "this" || id.name.startsWith("_tmp_") || id.argumentIndex == 0 ||
+            // the object a method is looked up on (`alerts` in `alerts.disconnect()`)
+            id.inCall.exists(fa => fa.name == "<operator>.fieldAccess" && fa._receiverIn.nonEmpty)
+        case p: MethodParameterIn => p.name == "this"
+        case _                    => false
+      val enclosingSink = last match
+        case e: Expression => e.inCall.exists(isSink)
+        case _             => false
+      // the source's own tags do not count: a parameter tagged both `framework-input` and `http`
+      // reaching a read of itself is no finding
+      endsOnReceiver || !(enclosingSink || path.elements.drop(1).exists(isSink))
+    }
+
+  /** JavaScript only: a path that comes back to the node it started at - out through a callback's
+    * return and into the callback again, or through the other uses of a variable whose read is the
+    * source - is the path from that node's last visit; the loop before it says nothing. A path that
+    * is nothing but the loop is left with its source alone, and dropped.
+    */
+  private def fromLastSourceVisit(path: Path): Option[Path] =
+      path.elements.headOption match
+        case Some(head) =>
+            val last = path.elements.lastIndexWhere(_.id() == head.id())
+            if last <= 0 then Some(path)
+            else Option.when(path.elements.size - last > 1)(Path(path.elements.drop(last)))
+        case None => Some(path)
+
+  // The sink tags of a request whose URL a value decides: client-side path traversal or forgery.
+  private val REQUEST_SINK_TAGS = Set("http-client", "http", "ssrf")
+
+  /** JavaScript only: a flow from data the application received or stored itself - a response, a
+    * WebSocket message, Web Storage, all tagged `service-ingress` - into nothing but the URL of
+    * another request. An id from one response in the path of the next request is how an API is
+    * walked, not a URL the attacker chose. The same data reaching markup or code stays a finding.
+    */
+  private def isApiChaining(path: Path, sinkTagPattern: Pattern): Boolean =
+      path.elements.headOption.exists { head =>
+        val sourceTags = head.tag.name.toSet
+        sourceTags.contains(INGRESS_SOURCE_TAG) && !sourceTags.contains(FRAMEWORK_INPUT_TAG)
+      } && {
+          val sinkTags = flowSinkCategories(path, sinkTagPattern)
+              .filter(sinkTagPattern.matcher(_).matches)
+              .filterNot(_.startsWith("pkg:"))
+          sinkTags.nonEmpty && sinkTags.subsetOf(REQUEST_SINK_TAGS)
+      }
+
   private def isMetaClassAdapterFlow(path: Path): Boolean =
       path.elements.headOption.exists { head =>
         val methodName = head match
@@ -614,52 +686,120 @@ object ReachableSlicing:
         methodName.contains("metaClassAdapter")
       }
 
-  private val SANITIZER_TAG             = "sanitizer"
+  /** True when the flow reaches the result of a predicate call, or hops from one of its arguments
+    * to another - the engine lets an unknown call's arguments taint each other, so `hasOwn(ALLOWED,
+    * dest)` "taints" `ALLOWED`, which a predicate never does.
+    */
+  private def passesThroughPredicate(path: Path, predicateCalls: Set[Long]): Boolean =
+      predicateCalls.nonEmpty && {
+          val elements = path.elements
+          elements.exists(e => predicateCalls.contains(e.id())) ||
+          elements.iterator.sliding(2).exists {
+              case Seq(a, b) =>
+                  (enclosingCallId(a), enclosingCallId(b)) match
+                    case (Some(x), Some(y)) => x == y && predicateCalls.contains(x)
+                    case _                  => false
+              case _ => false
+          }
+      }
+
+  private val SANITIZER_TAG = "sanitizer"
+  // A flow through the RESULT of such a call (`allowed.has(x)`, `url.startsWith('/')`) carries a
+  // boolean or a number, not the value. Its arguments pass on unchanged, so - unlike a sanitiser -
+  // only the call itself on the path neutralises a flow, not an argument of it.
+  private val PREDICATE_TAG             = "predicate"
   private val SANITIZER_CATEGORY_PREFIX = "sanitizer-"
 
   /** Call sites tagged as sanitisers/validators, mapped to the sink categories each one covers (an
-    * empty set means it covers every category).
+    * empty set means it covers every category) - and the reads a guard validated (`next` in
+    * `ALLOWED.includes(next) ? next : "/"`, tagged by the JavaScript taggers), which cover every
+    * category.
     */
   private def collectSanitizerCalls(atom: Cpg): Map[Long, Set[String]] =
-      atom.call.where(_.tag.name(SANITIZER_TAG)).map { call =>
-        val categories = call.tag.name.l.collect {
-            case name if name.startsWith(SANITIZER_CATEGORY_PREFIX) =>
-                name.stripPrefix(SANITIZER_CATEGORY_PREFIX)
-        }.toSet
-        call.id() -> categories
-      }.toMap
+    val calls = atom.call.where(_.tag.name(SANITIZER_TAG)).map { call =>
+      val categories = call.tag.name.l.collect {
+          case name if name.startsWith(SANITIZER_CATEGORY_PREFIX) =>
+              name.stripPrefix(SANITIZER_CATEGORY_PREFIX)
+      }.toSet
+      call.id() -> categories
+    }.toMap
+    calls ++ atom.identifier.where(_.tag.name(SANITIZER_TAG)).map(_.id() -> Set.empty[String])
 
   /** True if the flow passes through a sanitiser whose categories cover the flow's sink. A flow is
     * sanitised when it touches a sanitiser call (or an argument of one) that either covers every
     * category or shares a category with the flow's sink.
     */
-  private def isSanitized(path: Path, sanitizerCalls: Map[Long, Set[String]]): Boolean =
+  private def isSanitized(
+    path: Path,
+    sanitizerCalls: Map[Long, Set[String]],
+    sinkTagPattern: Pattern
+  ): Boolean =
       if sanitizerCalls.isEmpty then false
       else
-        val sinkCategories = flowSinkCategories(path)
-        path.elements.exists { element =>
-            (element.id() :: enclosingCallId(element).toList).exists { id =>
-                sanitizerCalls.get(id).exists { categories =>
-                    categories.isEmpty || categories.exists(sinkCategories.contains)
-                }
+        val sinkCategories = flowSinkCategories(path, sinkTagPattern)
+        def covers(id: Long): Boolean =
+            sanitizerCalls.get(id).exists { categories =>
+                categories.isEmpty || categories.exists(sinkCategories.contains)
             }
+        val elements = path.elements.toIndexedSeq
+        elements.indices.exists { i =>
+          val element = elements(i)
+          covers(element.id()) || enclosingCallId(element).exists(call =>
+              covers(call) && continuesThrough(elements.lift(i + 1), call)
+          )
+        } ||
+        // the engine may step from a variable's definition straight to the call using it: the
+        // argument that read the variable - a read a guard validated - is not on the path itself
+        path.elements.iterator.sliding(2).exists {
+            case Seq(from, call: Call) =>
+                val variable = from match
+                  case id: Identifier       => Some(id.name)
+                  case p: MethodParameterIn => Some(p.name)
+                  case _                    => None
+                variable.exists(name =>
+                    call.argument.isIdentifier.nameExact(name).exists(arg => covers(arg.id()))
+                )
+            case _ => false
         }
+
+  /** Whether a flow that reached an argument of the call `callId` goes on through it: to the call,
+    * or to an expression built on its result (`id = Number.parseInt(x)`). A path that only touched
+    * the argument on its way elsewhere - `params.ticket_id` read for a parse, then `params` again
+    * for another member - carries the value past the sanitiser, not through it. The last element of
+    * a path has nowhere further to go.
+    */
+  private def continuesThrough(next: Option[AstNode], callId: Long): Boolean =
+      next match
+        case None                        => true
+        case Some(n) if n.id() == callId => true
+        case Some(n)                     => n.ast.id(callId).nonEmpty
 
   private def enclosingCallId(node: AstNode): Option[Long] =
       node match
         case expr: Expression => expr.inCall.headOption.map(_.id())
         case _                => None
 
-  /** The categories of a flow's sink, taken from the tags on the last path element and its
-    * enclosing call.
+  /** The categories of a flow's sink, taken from the tags on the sink and its enclosing call.
+    *
+    * The sink is the node the flow is reported at. A path the engine continued past a sink - from
+    * `fetch(url)` on to the response it returned - is reported cut back to the last call carrying a
+    * sink tag (see `normaliseTerminus`), so that call is the sink here too: judged by the untagged
+    * node the path happened to end on, a URL encoder before `fetch` covered nothing.
     */
-  private def flowSinkCategories(path: Path): Set[String] =
-      path.elements.lastOption.toList.flatMap { sink =>
-        val callTags = sink match
-          case expr: Expression => expr.inCall.tag.name.l
-          case _                => Nil
-        sink.tag.name.l ++ callTags
-      }.toSet
+  private def flowSinkCategories(path: Path, sinkTagPattern: Pattern): Set[String] =
+    def carriesSinkTag(node: AstNode): Boolean =
+        node.tag.name.exists(sinkTagPattern.matcher(_).matches)
+    val elements = path.elements
+    val sinkNode =
+        elements.lastOption.filter(carriesSinkTag).orElse(
+          elements.reverseIterator.collectFirst { case c: Call if carriesSinkTag(c) => c }
+        ).orElse(elements.lastOption)
+    sinkNode.toList.flatMap { sink =>
+      val callTags = sink match
+        case expr: Expression => expr.inCall.tag.name.l
+        case _                => Nil
+      sink.tag.name.l ++ callTags
+    }.toSet
 
   private def collectBasicFlows(
     atom: Cpg,
@@ -680,13 +820,21 @@ object ReachableSlicing:
       flowsFrom(atom.ret.where(_.tag.name(sinkTagRegex)))
     ).flatten
 
+  /** A route's data function (`load`, a loader, a form action - `framework-data`) hands its return
+    * value to the page that renders it; only an endpoint's return value is its response.
+    */
+  private val DATA_FUNCTION_TAG = "framework-data"
+
   private def collectDefaultTagFlows(atom: Cpg, sourceTagRegex: String): List[Iterator[Path]] =
       List(
-        atom.ret.where(_.method.tag.name(sourceTagRegex)).reachableByFlows(
-          atom.tag.name(sourceTagRegex).parameter,
-          atom.tag.name(sourceTagRegex).identifier,
-          atom.tag.name(sourceTagRegex).call
-        ),
+        atom.ret
+            .where(_.method.tag.name(sourceTagRegex))
+            .whereNot(_.method.tag.nameExact(DATA_FUNCTION_TAG))
+            .reachableByFlows(
+              atom.tag.name(sourceTagRegex).parameter,
+              atom.tag.name(sourceTagRegex).identifier,
+              atom.tag.name(sourceTagRegex).call
+            ),
         atom.tag.name(API_TAG).parameter.reachableByFlows(
           atom.tag.name(API_TAG).parameter,
           atom.tag.name(API_TAG).identifier
@@ -930,6 +1078,20 @@ object ReachableSlicing:
   private def carriesSourceOrSinkTag(node: AstNode, sourceSinkTagPattern: Pattern): Boolean =
       node.tag.name.exists(sourceSinkTagPattern.matcher(_).matches)
 
+  /** The call an identifier is shown with: its own call, or - where that is lowering with a
+    * synthetic code (a template literal is `<operator>.formatString(...)`) - the nearest call
+    * around it written in the source, such as the request the template is the URL of.
+    */
+  private def displayedCall(call: Call): Call =
+    var shown = call
+    var depth = 0
+    while shown.code.startsWith("<operator") && depth < 8 do
+      shown.inCall.headOption match
+        case Some(outer) => shown = outer
+        case None        => depth = 8
+      depth += 1
+    if shown.code.startsWith("<operator") then call else shown
+
   private def createSliceNode(
     astNode: AstNode,
     sourceSinkTagPattern: Pattern
@@ -1003,7 +1165,7 @@ object ReachableSlicing:
             (
               Some(baseNode.copy(
                 name = i.name,
-                code = i.inCall.head.code,
+                code = displayedCall(i.inCall.head).code,
                 parentMethodName = i.method.name,
                 parentMethodSignature = i.method.signature,
                 parentPackageName = i.method.location.packageName,
