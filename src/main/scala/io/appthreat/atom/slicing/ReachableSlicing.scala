@@ -650,10 +650,10 @@ object ReachableSlicing:
         val sourceTags = head.tag.name.toSet
         sourceTags.contains(INGRESS_SOURCE_TAG) && !sourceTags.contains(FRAMEWORK_INPUT_TAG)
       } && {
-        val sinkTags = flowSinkCategories(path, sinkTagPattern)
-            .filter(sinkTagPattern.matcher(_).matches)
-            .filterNot(_.startsWith("pkg:"))
-        sinkTags.nonEmpty && sinkTags.subsetOf(REQUEST_SINK_TAGS)
+          val sinkTags = flowSinkCategories(path, sinkTagPattern)
+              .filter(sinkTagPattern.matcher(_).matches)
+              .filterNot(_.startsWith("pkg:"))
+          sinkTags.nonEmpty && sinkTags.subsetOf(REQUEST_SINK_TAGS)
       }
 
   private def isMetaClassAdapterFlow(path: Path): Boolean =
@@ -666,27 +666,27 @@ object ReachableSlicing:
       }
 
   /** True when the flow reaches the result of a predicate call, or hops from one of its arguments
-    * to another - the engine lets an unknown call's arguments taint each other, so
-    * `hasOwn(ALLOWED, dest)` "taints" `ALLOWED`, which a predicate never does.
+    * to another - the engine lets an unknown call's arguments taint each other, so `hasOwn(ALLOWED,
+    * dest)` "taints" `ALLOWED`, which a predicate never does.
     */
   private def passesThroughPredicate(path: Path, predicateCalls: Set[Long]): Boolean =
       predicateCalls.nonEmpty && {
-        val elements = path.elements
-        elements.exists(e => predicateCalls.contains(e.id())) ||
-        elements.iterator.sliding(2).exists {
-          case Seq(a, b) =>
-              (enclosingCallId(a), enclosingCallId(b)) match
-                case (Some(x), Some(y)) => x == y && predicateCalls.contains(x)
-                case _                  => false
-          case _ => false
-        }
+          val elements = path.elements
+          elements.exists(e => predicateCalls.contains(e.id())) ||
+          elements.iterator.sliding(2).exists {
+              case Seq(a, b) =>
+                  (enclosingCallId(a), enclosingCallId(b)) match
+                    case (Some(x), Some(y)) => x == y && predicateCalls.contains(x)
+                    case _                  => false
+              case _ => false
+          }
       }
 
-  private val SANITIZER_TAG             = "sanitizer"
+  private val SANITIZER_TAG = "sanitizer"
   // A flow through the RESULT of such a call (`allowed.has(x)`, `url.startsWith('/')`) carries a
   // boolean or a number, not the value. Its arguments pass on unchanged, so - unlike a sanitiser -
   // only the call itself on the path neutralises a flow, not an argument of it.
-  private val PREDICATE_TAG = "predicate"
+  private val PREDICATE_TAG             = "predicate"
   private val SANITIZER_CATEGORY_PREFIX = "sanitizer-"
 
   /** Call sites tagged as sanitisers/validators, mapped to the sink categories each one covers (an
@@ -729,9 +729,9 @@ object ReachableSlicing:
   /** The categories of a flow's sink, taken from the tags on the sink and its enclosing call.
     *
     * The sink is the node the flow is reported at. A path the engine continued past a sink - from
-    * `fetch(url)` on to the response it returned - is reported cut back to the last call carrying
-    * a sink tag (see `normaliseTerminus`), so that call is the sink here too: judged by the
-    * untagged node the path happened to end on, a URL encoder before `fetch` covered nothing.
+    * `fetch(url)` on to the response it returned - is reported cut back to the last call carrying a
+    * sink tag (see `normaliseTerminus`), so that call is the sink here too: judged by the untagged
+    * node the path happened to end on, a URL encoder before `fetch` covered nothing.
     */
   private def flowSinkCategories(path: Path, sinkTagPattern: Pattern): Set[String] =
     def carriesSinkTag(node: AstNode): Boolean =
@@ -742,11 +742,11 @@ object ReachableSlicing:
           elements.reverseIterator.collectFirst { case c: Call if carriesSinkTag(c) => c }
         ).orElse(elements.lastOption)
     sinkNode.toList.flatMap { sink =>
-        val callTags = sink match
-          case expr: Expression => expr.inCall.tag.name.l
-          case _                => Nil
-        sink.tag.name.l ++ callTags
-      }.toSet
+      val callTags = sink match
+        case expr: Expression => expr.inCall.tag.name.l
+        case _                => Nil
+      sink.tag.name.l ++ callTags
+    }.toSet
 
   private def collectBasicFlows(
     atom: Cpg,

@@ -266,7 +266,9 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
                     |""".stripMargin
               )
           )
-          flows.exists(f => nodesOf(f).lastOption.exists(n => tagSet(n).contains("xss"))) shouldBe true
+          flows.exists(f =>
+              nodesOf(f).lastOption.exists(n => tagSet(n).contains("xss"))
+          ) shouldBe true
       }
 
       "find a Next.js server action argument reaching a shell command" in {
