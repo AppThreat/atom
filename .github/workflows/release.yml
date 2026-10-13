@@ -48,8 +48,8 @@ jobs:
       - run: |
           Invoke-WebRequest -Uri https://github.com/upx/upx/releases/download/v5.0.1/upx-5.0.1-win64.zip -UseBasicParsing -OutFile upx-5.0.1-win64.zip
           Expand-Archive -Path upx-5.0.1-win64.zip -DestinationPath . -Force
-          sbt "stage;createDistribution"
-          sbt "GraalVMNativeImage / packageBin"
+          sbt --server "stage; createDistribution"
+          sbt --server "GraalVMNativeImage / packageBin"
           .\target\graalvm-native-image\atom.exe --help
           cd target\graalvm-native-image
           (Get-FileHash -Algorithm SHA512 .\atom.exe).hash | Out-File -FilePath .\atom.exe.sha512
@@ -100,8 +100,8 @@ jobs:
       - run: |
           Invoke-WebRequest -Uri https://github.com/upx/upx/releases/download/v5.0.1/upx-5.0.1-win64.zip -UseBasicParsing -OutFile upx-5.0.1-win64.zip
           Expand-Archive -Path upx-5.0.1-win64.zip -DestinationPath . -Force
-          sbt "stage;createDistribution"
-          sbt "GraalVMNativeImage / packageBin"
+          sbt --server "stage; createDistribution"
+          sbt --server "GraalVMNativeImage / packageBin"
           .\target\graalvm-native-image\atom.exe --help
           mv .\target\graalvm-native-image\atom.exe .\target\graalvm-native-image\atom-arm64.exe
           cd target\graalvm-native-image
@@ -147,7 +147,7 @@ jobs:
           tar -xvf upx-5.0.1-amd64_linux.tar.xz
           chmod +x upx-5.0.1-amd64_linux/upx
           sudo cp upx-5.0.1-amd64_linux/upx /usr/local/bin/
-          sbt "stage;createDistribution"
+          sbt --server "stage; createDistribution"
           sha512sum target/atom.zip > target/atom.zip.sha512
           bash ci/native-image.sh
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-amd64
@@ -157,7 +157,7 @@ jobs:
           sha512sum target/graalvm-native-image/atom-amd64 > target/graalvm-native-image/atom-amd64.sha512
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: sbt publish
+      - run: sbt --server publish
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -231,7 +231,7 @@ jobs:
           tar -xvf upx-5.0.1-arm64_linux.tar.xz
           chmod +x upx-5.0.1-arm64_linux/upx
           sudo cp upx-5.0.1-arm64_linux/upx /usr/local/bin/
-          sbt "stage;createDistribution"
+          sbt --server "stage; createDistribution"
           bash ci/native-image.sh
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-arm64
           /usr/local/bin/upx -9 --lzma target/graalvm-native-image/atom-arm64
@@ -294,7 +294,7 @@ jobs:
       - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
       - run: |
           brew install coreutils
-          sbt "stage;createDistribution"
+          sbt --server "stage; createDistribution"
           bash ci/native-image.sh
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-darwin-arm64
           bash ci/native-smoke.sh target/graalvm-native-image/atom-darwin-arm64
@@ -464,7 +464,7 @@ jobs:
           sudo apt install -y zlib1g php-zip
       - name: Assemble JAR packages
         run: |
-          sbt "stage;createDistribution"
+          sbt --server "stage; createDistribution"
           cd wrapper/nodejs
           # Unzips target/atom.zip and stamps the universal jar + jar-fallback packages.
           bash build.sh

@@ -9,7 +9,7 @@ Install Java 21
 Node.js > 21
 
 ```shell
-sbt "clean;stage;scalafmt;testFull;createDistribution"
+sbt "clean; stage; scalafmt; testFull; createDistribution"
 cd wrapper/nodejs
 bash build.sh && sudo npm install -g .
 ```

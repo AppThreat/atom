@@ -152,7 +152,7 @@ jobs:
         if: runner.os == 'macOS'
       - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
       - run: |
-          sbt "stage;createDistribution"
+          sbt --server "stage; createDistribution"
           python -m pip install atom-tools
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
