@@ -108,7 +108,7 @@ jobs:
           lookup-only: true
       - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
       - run: |
-          sbt stage createDistribution
+          sbt --server "stage; createDistribution"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up QEMU

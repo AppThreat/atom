@@ -1,13 +1,13 @@
 # Assemble the local @appthreat/atom JAR packages from a freshly built distribution.
 #
-# Prerequisite: run `sbt stage createDistribution` from the repo root first so that
+# Prerequisite: run `sbt "stage; createDistribution"` from the repo root first so that
 # target/atom.zip exists. Native-binary packages are assembled separately in the
 # release workflow (see scripts/assemble.mjs).
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
 if (-Not (Test-Path ..\..\target\atom.zip)) {
-    Write-Error "Build the atom project using 'sbt stage createDistribution' before running this script"
+    Write-Error "Build the atom project using 'sbt `"stage; createDistribution`"' before running this script"
     exit 1
 }
 

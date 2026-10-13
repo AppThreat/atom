@@ -3,7 +3,7 @@
 # sdk use java 25.0.2-graalce
 
 echo "About to build the native image. This would take a few minutes ..."
-sbt "GraalVMNativeImage / packageBin"
+sbt --server "GraalVMNativeImage / packageBin"
 
 if [ -f "target/graalvm-native-image/atom" ]; then
     chmod +x target/graalvm-native-image/atom
