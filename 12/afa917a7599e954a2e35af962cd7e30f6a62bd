@@ -1,0 +1,16 @@
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  h_6a4cc5cdf68def 447,456-458,460-491,493-503,505-506
+src/test/scala/io/appthreat/atom/slicing/ReachableDedupTests.scala
+  h_6a4cc5cdf68def 1-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "12afa917a7599e954a2e35af962cd7e30f6a62bd",
+  "prompts": {},
+  "humans": {
+    "h_6a4cc5cdf68def": {
+      "author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
