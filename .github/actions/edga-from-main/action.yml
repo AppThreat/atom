@@ -1,0 +1,36 @@
+name: edga from main
+description: >-
+  Temporary: puts edga as of main on the PATH as EDGA_PATH, so the tests of the EDG C/C++ frontend
+  (`--c-frontend edg`) run against what edga main exports instead of being cancelled. The binary
+  is the one edga's main workflow pushes to ghcr.io/appthreat/edga:main-<platform> with oras.
+  Remove this action and its callers once that edga version is released.
+outputs:
+  path:
+    description: The edga binary; empty on Windows, where edga does not build.
+    value: ${{ steps.pull.outputs.path }}
+runs:
+  using: composite
+  steps:
+    - uses: oras-project/setup-oras@1d808f7d7f6995cc68b7bf507bfe5c5446e1dc9d  # v2.0.1
+      if: runner.os != 'Windows'
+    - name: Pull edga main
+      id: pull
+      if: runner.os != 'Windows'
+      shell: bash
+      env:
+        EDGA_BIN: ${{ runner.temp }}/edga-bin
+      run: |
+        set -euo pipefail
+        case "$RUNNER_OS-$RUNNER_ARCH" in
+          Linux-X64) platform=linux-amd64 ;;
+          Linux-ARM64) platform=linux-arm64 ;;
+          macOS-ARM64) platform=darwin-arm64 ;;
+          *) echo "edga: no build for $RUNNER_OS-$RUNNER_ARCH" >&2; exit 1 ;;
+        esac
+        oras pull "ghcr.io/appthreat/edga:main-$platform" -o "$EDGA_BIN"
+        # oras does not keep a file's mode
+        chmod +x "$EDGA_BIN/edga"
+        "$EDGA_BIN/edga" --version
+        echo "EDGA_PATH=$EDGA_BIN/edga" >> "$GITHUB_ENV"
+        echo "$EDGA_BIN" >> "$GITHUB_PATH"
+        echo "path=$EDGA_BIN/edga" >> "$GITHUB_OUTPUT"

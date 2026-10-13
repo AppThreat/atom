@@ -47,6 +47,8 @@ jobs:
           package-manager-cache: false
       - uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d  # v8.1.1
       - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
+      # Before `sbt test`: the C frontend workflow tests cancel their EDG cases without edga
+      - uses: ./.github/actions/edga-from-main  # temporary: remove once edga 0.2.0 is released
       # Before `sbt test`: the workflow tests probe for the AST generators and cancel without
       # them, so a post-test install would silently skip the JavaScript (and Ruby) fixtures.
       - run: npm install -g @appthreat/atom-parsetools
@@ -122,6 +124,8 @@ jobs:
         with:
           apps: scala3 scalac
       - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
+      # Before `sbt test`: the C frontend workflow tests cancel their EDG cases without edga
+      - uses: ./.github/actions/edga-from-main  # temporary: remove once edga 0.2.0 is released
       - run: |
           # Install the AST generators (astgen, phpastgen, rbastgen) BEFORE `sbt test`: the
           # workflow tests probe for them and cancel without them, so a post-test install would
