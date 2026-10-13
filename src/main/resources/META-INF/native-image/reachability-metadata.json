@@ -3335,6 +3335,31 @@
       "type": "org.slf4j.nop.NOPServiceProvider"
     },
     {
+      "type": "overflowdb.formats.graphson.package$Edge",
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "overflowdb.formats.graphson.package$GraphSON",
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "overflowdb.formats.graphson.package$GraphSONElements",
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "overflowdb.formats.graphson.package$Property",
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "overflowdb.formats.graphson.package$Vertex",
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
       "type": "scala.Enumeration",
       "fields": [
         {
