@@ -1,0 +1,16 @@
+src/main/scala/io/appthreat/atom/passes/DataDepsPass.scala
+  h_6a4cc5cdf68def 28-30,41
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  h_6a4cc5cdf68def 200-203,212,889-906,910-913,924
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e659fa68f078ddfc30a850bb18a1585544e95637",
+  "prompts": {},
+  "humans": {
+    "h_6a4cc5cdf68def": {
+      "author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
