@@ -1,17 +1,10 @@
-# edga, for the opt-in EDG C/C++ frontend (`--c-frontend edg`), built from main until its next
-# release. The binary is static, so it runs on the image whatever its C library. A local build
-# reuses a cached stage: pass --build-arg EDGA_REF=<commit> (or --no-cache) for a newer main.
-FROM ubuntu:24.04 AS edga
-ARG EDGA_REF=main
-RUN apt-get update -qq \
-    && apt-get install -y -qq --no-install-recommends ca-certificates git cmake ninja-build g++ python3 \
-    && git init -q /edga \
-    && git -C /edga fetch -q --depth 1 https://github.com/AppThreat/edga.git "${EDGA_REF}" \
-    && git -C /edga checkout -q FETCH_HEAD \
-    && /edga/tools/fetch-edg.sh \
-    && cmake -S /edga -B /edga/build -G Ninja -DCMAKE_BUILD_TYPE=Release \
-    && cmake --build /edga/build --target edga \
-    && /edga/build/bin/edga --version
+# edga, for the opt-in EDG C/C++ frontend (`--c-frontend edg`): until its next release, the static
+# binary edga's main workflow pushes to ghcr.io/appthreat/edga:main-<platform> with oras
+FROM ghcr.io/oras-project/oras:v1.3.4 AS edga
+ARG TARGETARCH
+ARG EDGA_TAG=main
+RUN oras pull "ghcr.io/appthreat/edga:${EDGA_TAG}-linux-${TARGETARCH}" -o /edga \
+    && chmod 0755 /edga/edga
 
 FROM ghcr.io/appthreat/base-al10:main
 
@@ -123,8 +116,8 @@ RUN set -e; \
     && rbastgen --help \
     && microdnf clean all
 
-# edga, built in the stage above
-COPY --from=edga /edga/build/bin/edga /usr/local/bin/edga
+# edga, pulled in the stage above
+COPY --from=edga /edga/edga /usr/local/bin/edga
 RUN edga --version
 
 ENV LC_ALL=en_US.UTF-8 \

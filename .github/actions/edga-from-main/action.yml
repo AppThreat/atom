@@ -2,13 +2,12 @@ name: edga from main
 description: >-
   Temporary: puts edga as of main on the PATH as EDGA_PATH, so the tests of the EDG C/C++ frontend
   (`--c-frontend edg`) run against what edga main exports instead of being cancelled. The binary
-  is the one edga's main workflow pushes to ghcr.io/appthreat/edga:main-<platform>; where that
-  cannot be pulled, edga is built from main (cached per commit). Remove this action and its callers
-  once that edga version is released.
+  is the one edga's main workflow pushes to ghcr.io/appthreat/edga:main-<platform> with oras.
+  Remove this action and its callers once that edga version is released.
 outputs:
   path:
     description: The edga binary; empty on Windows, where edga does not build.
-    value: ${{ steps.locate.outputs.path }}
+    value: ${{ steps.pull.outputs.path }}
 runs:
   using: composite
   steps:
@@ -17,7 +16,6 @@ runs:
     - name: Pull edga main
       id: pull
       if: runner.os != 'Windows'
-      continue-on-error: true
       shell: bash
       env:
         EDGA_BIN: ${{ runner.temp }}/edga-bin
@@ -30,57 +28,8 @@ runs:
           *) echo "edga: no build for $RUNNER_OS-$RUNNER_ARCH" >&2; exit 1 ;;
         esac
         oras pull "ghcr.io/appthreat/edga:main-$platform" -o "$EDGA_BIN"
+        # oras does not keep a file's mode
         chmod +x "$EDGA_BIN/edga"
-    - name: edga main commit
-      id: head
-      if: runner.os != 'Windows' && steps.pull.outcome != 'success'
-      shell: bash
-      run: |
-        set -euo pipefail
-        sha=$(git ls-remote https://github.com/AppThreat/edga.git refs/heads/main | cut -f1)
-        echo "sha=$sha" >> "$GITHUB_OUTPUT"
-    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
-      id: cache
-      if: runner.os != 'Windows' && steps.pull.outcome != 'success'
-      with:
-        path: ${{ runner.temp }}/edga-bin
-        key: edga-${{ runner.os }}-${{ runner.arch }}-${{ steps.head.outputs.sha }}
-    - name: Build edga main
-      if: runner.os != 'Windows' && steps.pull.outcome != 'success' && steps.cache.outputs.cache-hit != 'true'
-      shell: bash
-      env:
-        EDGA_DIR: ${{ runner.temp }}/edga-main
-        EDGA_BIN: ${{ runner.temp }}/edga-bin
-        EDGA_SHA: ${{ steps.head.outputs.sha }}
-      run: |
-        set -euo pipefail
-        if [[ "$RUNNER_OS" == "Linux" ]]; then
-          sudo apt-get install -y -qq ninja-build >/dev/null
-          # the newest GCC the runner has: the EDG sources need _Float16 in C++, which GCC 11
-          # (ubuntu-22.04's default) lacks
-          for v in 14 13 12; do
-            if command -v "g++-$v" >/dev/null; then export CC="gcc-$v" CXX="g++-$v"; break; fi
-          done
-        else
-          brew install ninja >/dev/null
-        fi
-        git init -q "$EDGA_DIR"
-        git -C "$EDGA_DIR" fetch -q --depth 1 https://github.com/AppThreat/edga.git "$EDGA_SHA"
-        git -C "$EDGA_DIR" checkout -q FETCH_HEAD
-        "$EDGA_DIR/tools/fetch-edg.sh"
-        cmake -S "$EDGA_DIR" -B "$EDGA_DIR/build" -G Ninja -DCMAKE_BUILD_TYPE=Release
-        cmake --build "$EDGA_DIR/build" --target edga
-        mkdir -p "$EDGA_BIN"
-        cp "$EDGA_DIR/build/bin/edga" "$EDGA_BIN/edga"
-        rm -rf "$EDGA_DIR"
-    - name: Put edga on the PATH
-      id: locate
-      if: runner.os != 'Windows'
-      shell: bash
-      env:
-        EDGA_BIN: ${{ runner.temp }}/edga-bin
-      run: |
-        set -euo pipefail
         "$EDGA_BIN/edga" --version
         echo "EDGA_PATH=$EDGA_BIN/edga" >> "$GITHUB_ENV"
         echo "$EDGA_BIN" >> "$GITHUB_PATH"
