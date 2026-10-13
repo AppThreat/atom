@@ -1,0 +1,19 @@
+src/main/resources/META-INF/native-image/reachability-metadata.json
+  s_f0dc77cd7bedb9::t_4c1bcd9b37600e 3337-3361
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "eaf2486a66f560c88c2f95920fa51ec5e76f8c22",
+  "prompts": {},
+  "sessions": {
+    "s_f0dc77cd7bedb9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "05a70e3b-3b4f-4d77-a7f8-10fecf1fa02a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
