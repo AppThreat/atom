@@ -1,0 +1,14 @@
+docs/docs/c-frontends.md
+  h_0926447d100ad2 74-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ed28eb4c7c9f75550710657aa61d5806ea7c3bb4",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
