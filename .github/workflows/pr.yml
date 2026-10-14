@@ -1,7 +1,8 @@
 name: pull_request
 # testing and the pr-tests legs are required status checks on main, so this workflow must
 # trigger on every pull request and on merge-group builds; the heavy language and repo-test
-# matrices skip merge-group builds via their own if:.
+# matrices skip merge-group builds via their own if:. A change to the documentation alone still
+# reports the required checks, but builds nothing (see `changes`).
 on:
   pull_request:
   merge_group:
@@ -21,43 +22,96 @@ env:
   COURSIER_REPOSITORIES: "ivy2Local|https://maven-central.storage-download.googleapis.com/maven2|https://repo1.maven.org/maven2|https://maven.google.com|https://oss.sonatype.org/content/repositories/public|https://packages.atlassian.com/mvn/maven-atlassian-external|https://repo.gradle.org/gradle/libs-releases|https://maven.pkg.github.com/appthreat/chen"
 
 jobs:
+  # Whether anything but documentation (docs/, Markdown) changed. The other workflows skip such
+  # pull requests with paths-ignore, but a workflow that does not run never reports its required
+  # checks, so this one runs and its jobs pass without building.
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      code: ${{ steps.files.outputs.code }}
+    steps:
+      - id: files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          PR: ${{ github.event.pull_request.number }}
+          BASE: ${{ github.event.merge_group.base_sha }}
+          HEAD: ${{ github.event.merge_group.head_sha }}
+        run: |
+          set -euo pipefail
+          files=""
+          case "$EVENT" in
+            pull_request) files=$(gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[].filename') ;;
+            # the compare API lists at most 300 files: more counts as code
+            merge_group) files=$(gh api "repos/$REPO/compare/$BASE...$HEAD" \
+              --jq 'if (.files | length) < 300 then .files[].filename else "more" end') ;;
+          esac
+          code=true
+          if [ -n "$files" ] && ! grep -qvE '^docs/|\.md$' <<<"$files"; then code=false; fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "Code changed: $code" >> "$GITHUB_STEP_SUMMARY"
+
   # The unit tests and distribution build on the other operating systems, so a merge cannot
   # land while Windows or macOS is failing. Ubuntu is covered by `testing` below, which also
   # carries the full repo-scan battery; these legs stop at build + test to keep the merge
   # queue fast.
   pr-tests:
+    needs: changes
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    # a check with nothing to build needs no Windows or macOS machine: its name comes from the
+    # matrix values. (A skipped matrix job would report one unexpanded name, not these.)
+    runs-on: ${{ needs.changes.outputs.code == 'true' && matrix.os || 'ubuntu-latest' }}
+    env:
+      CODE: ${{ needs.changes.outputs.code }}
     steps:
+      - name: Documentation only
+        if: env.CODE != 'true'
+        run: echo "Only documentation changed - nothing to build."
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        if: env.CODE == 'true'
         with:
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961  # v5.7.0
+        if: env.CODE == 'true'
         with:
           distribution: 'temurin'
           java-version: '25'
       - uses: sbt/setup-sbt@bfea3c5f48abd221b04a6df4798aa5eb8b6a2baf  # v1.5.6
+        if: env.CODE == 'true'
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        if: env.CODE == 'true'
         with:
           node-version: '25.x'
           package-manager-cache: false
       - uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d  # v8.1.1
+        if: env.CODE == 'true'
       - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
+        if: env.CODE == 'true'
       # Before `sbt test`: the C frontend workflow tests cancel their EDG cases without edga
       - uses: ./.github/actions/edga-from-main  # temporary: remove once edga 0.2.0 is released
+        if: env.CODE == 'true'
       # Before `sbt test`: the workflow tests probe for the AST generators and cancel without
       # them, so a post-test install would silently skip the JavaScript (and Ruby) fixtures.
       - run: npm install -g @appthreat/atom-parsetools
+        if: env.CODE == 'true'
       - run: sbt --server -batch "scalafmtCheck; testFull; stage; createDistribution"
+        if: env.CODE == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
 
   testing:
+    needs: changes
+    # a skipped job reports success, which is what a required check wants of a documentation change
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
