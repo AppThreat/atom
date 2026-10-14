@@ -1,6 +1,10 @@
 name: langtests
 on:
   pull_request:
+    # a change to the documentation alone builds nothing
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   workflow_dispatch:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
