@@ -71,9 +71,10 @@ another edga build exported is not reused.
 
 The atom container images include edga. Elsewhere, download it from the
 [edga releases](https://github.com/AppThreat/edga/releases) - static Linux binaries (glibc and
-musl, amd64 and arm64) and macOS arm64, each with its SHA-256 - and put it on the `PATH`, or
-point `EDGA_PATH` or `--edga-path` at it. To build it, see the
-[edga README](https://github.com/AppThreat/edga): it compiles the EDG sources unmodified.
+musl, amd64 and arm64), macOS arm64, and Windows amd64 and arm64 (from the release after 0.1.1),
+each with its SHA-256 - and put it on the `PATH` as `edga` (`edga.exe` on Windows), or point
+`EDGA_PATH` or `--edga-path` at it. To build it, see the [edga README](https://github.com/AppThreat/edga): it compiles the EDG
+sources unmodified.
 
 ## Hosts
 
