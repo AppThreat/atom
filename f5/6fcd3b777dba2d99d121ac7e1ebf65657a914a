@@ -1,0 +1,25 @@
+.github/workflows/pr.yml
+  s_236e880d3ee8e7::t_d2b0fb72d3a60b 4-5,25-57,63,68-72,74-76,78,83,88,90,95,97,100,104,106,112-114
+.github/workflows/nodejstests.yml
+  s_236e880d3ee8e7::t_d2b0fb72d3a60b 4-7
+.github/workflows/release.yml
+  s_236e880d3ee8e7::t_d2b0fb72d3a60b 7-10
+.github/workflows/repotests.yml
+  s_236e880d3ee8e7::t_d2b0fb72d3a60b 4-7,12-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f56fcd3b777dba2d99d121ac7e1ebf65657a914a",
+  "prompts": {},
+  "sessions": {
+    "s_236e880d3ee8e7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "52eeaa6b-eddb-4834-83cf-34eb1a185cc1",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
