@@ -1,0 +1,31 @@
+src/test/scala/io/appthreat/atom/IgnoredUnitsWarningTests.scala
+  s_236e880d3ee8e7::t_0d7fa005c14698 15-20,22-53,55-57,62-79,81
+  h_0926447d100ad2 1-14,21,54,58-61,80,82-85
+src/main/scala/io/appthreat/atom/Atom.scala
+  h_0926447d100ad2 223,228,253,1362-1363,1365,1406-1407,1409
+  s_236e880d3ee8e7::t_032b87569f4ec9 224-227,229,252,1364,1408
+  s_236e880d3ee8e7::t_0d7fa005c14698 230-251,1382
+src/test/scala/io/appthreat/atom/IncludePathEnvTests.scala
+  s_236e880d3ee8e7::t_0d7fa005c14698 22-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a646647e8a741b488c651764c4c6cfc9fd986039",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  },
+  "sessions": {
+    "s_236e880d3ee8e7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "52eeaa6b-eddb-4834-83cf-34eb1a185cc1",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
