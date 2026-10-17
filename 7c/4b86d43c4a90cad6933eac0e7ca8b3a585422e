@@ -1,0 +1,25 @@
+src/main/scala/io/appthreat/atom/dataflows/OssDataFlow.scala
+  s_b9f6f98e1c3bda::t_91ca4f4b697a2f 7-8,17-26
+  s_b9f6f98e1c3bda::t_f4d4a7a4a1727f 41-42,48
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_b9f6f98e1c3bda::t_91ca4f4b697a2f 1538-1541
+src/test/scala/io/appthreat/atom/LanguageFlowsDataDepsTests.scala
+  s_b9f6f98e1c3bda::t_c2ef43e3b3b9ad 1-4,6-56
+  s_b9f6f98e1c3bda::t_d0429e9a4260d1 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7c4b86d43c4a90cad6933eac0e7ca8b3a585422e",
+  "prompts": {},
+  "sessions": {
+    "s_b9f6f98e1c3bda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eb6bce3d-1e28-48ad-a820-e339060a0abd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}

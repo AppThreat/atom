@@ -1,0 +1,31 @@
+.github/actions/chen-from-main/action.yml
+  s_4b70c6697bebd0::t_baae8608704451 1-7,9-53
+  s_4b70c6697bebd0::t_124b25e0c16f37 8
+.github/workflows/pr.yml
+  s_4b70c6697bebd0::t_aaa9d376ec35dd 78
+.github/workflows/repotests.yml
+  s_4b70c6697bebd0::t_d09a90f0abb76e 144
+.github/workflows/nodejstests.yml
+  s_4b70c6697bebd0::t_a51b458f043cda 194
+  s_4b70c6697bebd0::t_11fe4cbadaa4de 104
+.github/workflows/containers.yml
+  s_4b70c6697bebd0::t_6e025ba5371068 104
+.github/workflows/release.yml
+  s_4b70c6697bebd0::t_72872f09fb6dd2 39,91,139,222,287,335-338,388-391
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f80cc77bf6b7e344bd3a831284054d1e586e31bc",
+  "prompts": {},
+  "sessions": {
+    "s_4b70c6697bebd0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f6050ea0-96eb-4a29-ae56-eab953b5cf93",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}

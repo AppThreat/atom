@@ -1,0 +1,23 @@
+src/test/scala/io/appthreat/atom/NativeImageResourcesTests.scala
+  s_b9f6f98e1c3bda::t_8b356149b6db2c 68-87
+src/main/resources/META-INF/native-image/reflect-config.json
+  s_b9f6f98e1c3bda::t_19efc7463fe50a 413-416,1970-1973
+src/main/resources/META-INF/native-image/resource-config.json
+  s_b9f6f98e1c3bda::t_19efc7463fe50a 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "17fb9393f40d89a49e008282ab53c4e1e3a0c8e6",
+  "prompts": {},
+  "sessions": {
+    "s_b9f6f98e1c3bda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eb6bce3d-1e28-48ad-a820-e339060a0abd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}

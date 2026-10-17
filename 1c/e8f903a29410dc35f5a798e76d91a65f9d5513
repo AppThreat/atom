@@ -1,0 +1,23 @@
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  s_d0def3984b5153::t_3836ad42aea6cb 241-245
+  s_d0def3984b5153::t_a427285f2ffd40 217-219,235-240,246-247
+src/test/scala/io/appthreat/atom/slicing/ReachableChunkFilesTests.scala
+  s_d0def3984b5153::t_3836ad42aea6cb 33-35
+  s_d0def3984b5153::t_88972a24836725 1-32,36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1ce8f903a29410dc35f5a798e76d91a65f9d5513",
+  "prompts": {},
+  "sessions": {
+    "s_d0def3984b5153": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2152c1a9-0695-4073-ad88-dd4f54925ca3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}

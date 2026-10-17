@@ -1,0 +1,21 @@
+src/main/scala/io/appthreat/atom/frontends/FrontendArgsApplier.scala
+  s_b9f6f98e1c3bda::t_ad28becc32065b 444-459,463-464
+src/test/scala/io/appthreat/atom/FrontendArgsApplierTests.scala
+  s_b9f6f98e1c3bda::t_5f6b163663b96c 233-254
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0dac11b99951cd40fc699dcabd38e65f23239bd1",
+  "prompts": {},
+  "sessions": {
+    "s_b9f6f98e1c3bda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eb6bce3d-1e28-48ad-a820-e339060a0abd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}

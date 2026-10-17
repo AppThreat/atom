@@ -1,0 +1,20 @@
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  s_d1bd8c782538f7::t_0381f04ead8b32 171-174,651-654,673-677,680,694-699,701-709
+  s_d1bd8c782538f7::t_12ccf3c5a9e45c 136-137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "fbe51ac62a64ab8bdaeab1ea2480ceff15542c83",
+  "prompts": {},
+  "sessions": {
+    "s_d1bd8c782538f7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6debb108-9d35-4adc-be40-7d01dd8e9337",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}

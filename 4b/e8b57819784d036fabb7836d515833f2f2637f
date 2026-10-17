@@ -1,0 +1,48 @@
+src/test/resources/sarif/sarif-schema-2.1.0.json
+  s_b9f6f98e1c3bda::t_5d96d56d607e66 1-3389
+README.md
+  s_b9f6f98e1c3bda::t_53047988afde1b 187,190
+src/test/resources/sarif/README.md
+  s_b9f6f98e1c3bda::t_098d846864d78e 1-2
+  s_b9f6f98e1c3bda::t_23d688fdd21922 3-5
+src/test/scala/io/appthreat/atom/MemorySafetyCommandTests.scala
+  s_b9f6f98e1c3bda::t_8de0343fdaa280 252,257-272,275-306
+  s_b9f6f98e1c3bda::t_0f90a4ab929e59 273-274
+  s_b9f6f98e1c3bda::t_38c75a093db598 307,309-322,324-339
+  s_b9f6f98e1c3bda::t_a2ec62f2b7d05f 323
+  s_b9f6f98e1c3bda::t_e8a96d41534fad 308
+build.sbt
+  s_b9f6f98e1c3bda::t_098d846864d78e 32-34
+docs/docs/cli.md
+  s_b9f6f98e1c3bda::t_0f4d18e684f064 111
+  s_b9f6f98e1c3bda::t_53047988afde1b 88,91
+  s_b9f6f98e1c3bda::t_148ac59da9f387 106-110,112-117
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_b9f6f98e1c3bda::t_3aff11734f4802 800
+  s_b9f6f98e1c3bda::t_53047988afde1b 786
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_b9f6f98e1c3bda::t_3aff11734f4802 29-30,52-53,99-100,106-107
+  s_b9f6f98e1c3bda::t_4f51a457707d67 101-105
+src/main/scala/io/appthreat/atom/MemorySafetySarif.scala
+  s_b9f6f98e1c3bda::t_a84f21dd3af550 1-6,10-12,15,20,23,27-33,39-59,62-72,84-88,90-98,103-111,117-159
+  s_b9f6f98e1c3bda::t_c2c0aaa42ec143 22,24-26,112-114,116
+  s_b9f6f98e1c3bda::t_4f51a457707d67 7-9,16-19,21,34-38,60-61,73-83,89,99-102
+  s_b9f6f98e1c3bda::t_a2ec62f2b7d05f 115
+  s_b9f6f98e1c3bda::t_23d688fdd21922 13-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4be8b57819784d036fabb7836d515833f2f2637f",
+  "prompts": {},
+  "sessions": {
+    "s_b9f6f98e1c3bda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eb6bce3d-1e28-48ad-a820-e339060a0abd",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
