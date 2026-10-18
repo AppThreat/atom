@@ -24,9 +24,11 @@ class IgnoredUnitsWarningTests extends AnyWordSpec with Matchers:
     unit.parent.createDirectories()
     unit.writeText("int main(void) { return 0; }\n")
     val db = dir / "compile_commands.json"
+    // paths inside a JSON string: a Windows path's backslashes must be escaped
+    def quoted(f: File): String = f.pathAsString.replace("\\", "\\\\")
     db.writeText(
-      s"""[{"directory": "${unit.parent.pathAsString}", "command": "cc -c ${unit
-              .name}", "file": "${unit.pathAsString}"}]"""
+      s"""[{"directory": "${quoted(unit.parent)}", "command": "cc -c ${unit
+              .name}", "file": "${quoted(unit)}"}]"""
     )
     capturedStderr {
         Atom.run(
