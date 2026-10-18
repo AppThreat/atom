@@ -220,6 +220,37 @@ object Atom:
   private def ignoredFilesRegex(defaultRegex: String, envVars: String*): String =
       combineIgnoredFilesRegex(Some(defaultRegex), ignoredFilesRegexFromEnv(envVars*))
 
+  /** The C/C++ ignore pattern filters out every translation unit a compile database lists: the
+    * analysis would see an empty project and say nothing about why. Say it, naming the pattern and
+    * the option that replaces it. Each unit is matched as the frontend matches it: its path,
+    * resolved against the entry's directory, relative to the input root, matched whole. An
+    * `--exclude-regex` of the user's own replaces the default, so there is nothing to explain.
+    */
+  private def warnWhenIgnoredUnitsAreEverything(config: AtomConfig, pattern: String): Unit =
+      if !config.frontendArgs.contains("exclude-regex") then
+        for
+          dbPath <- config.frontendArgs.get("compile-commands")
+          source <- scala.util.Try(better.files.File(dbPath).contentAsString).toOption
+          json   <- io.circe.parser.parse(source).toOption
+          units  <- json.asArray
+        do
+          val root = config.inputPath.path.toAbsolutePath.normalize
+          val relative = units.flatMap(_.asObject).flatMap { o =>
+              for
+                file <- o("file").flatMap(_.asString).filter(_.nonEmpty)
+                dir = o("directory").flatMap(_.asString).getOrElse(".")
+              yield
+                val path = java.nio.file.Paths.get(dir).resolve(file).toAbsolutePath.normalize
+                if path.startsWith(root) then root.relativize(path).toString else path.toString
+          }
+          val regex = pattern.r
+          if relative.nonEmpty && relative.forall(regex.matches) then
+            System.err.println(
+              s"atom: every unit in $dbPath is filtered out by the default C/C++ ignore pattern " +
+                  s"'$pattern'. Pass --exclude-regex with a pattern of your own to replace it."
+            )
+  end warnWhenIgnoredUnitsAreEverything
+
   private def combineIgnoredFilesRegex(regexes: Option[String]*): String =
       regexes.flatten.filter(_.nonEmpty).map(regex => s"(?:$regex)").mkString("|")
 
@@ -1328,6 +1359,10 @@ object Atom:
 
   private def createC2Atom(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
     val cIgnoreDirEnvVars = Seq("CHEN_C_IGNORE_DIRS")
+    warnWhenIgnoredUnitsAreEverything(
+      config,
+      ignoredFilesRegex(COMMON_IGNORE_REGEX, cIgnoreDirEnvVars*)
+    )
     val baseConfig = CConfig(
       includeComments = false,
       logProblems = false,
@@ -1344,6 +1379,7 @@ object Atom:
         .withIncludePaths(C2ATOM_INCLUDE_PATH)
     val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
     new C2Atom().createCpg(C2Cpg.withCensusDefines(finalConfig))
+  end createC2Atom
 
   private def createC2Cpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
       config.frontendArgs.get("c-frontend").map(_.trim.toLowerCase) match
@@ -1367,6 +1403,10 @@ object Atom:
         if config.language.equalsIgnoreCase("CPP") || config.language.equalsIgnoreCase("C++") then
           Seq("CHEN_C_IGNORE_DIRS", "CHEN_CPP_IGNORE_DIRS")
         else Seq("CHEN_C_IGNORE_DIRS")
+    warnWhenIgnoredUnitsAreEverything(
+      config,
+      ignoredFilesRegex(COMMON_IGNORE_REGEX, cIgnoreDirEnvVars*)
+    )
     val baseConfig = CConfig(
       includeComments = false,
       logProblems = false,

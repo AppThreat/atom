@@ -19,15 +19,15 @@ class IncludePathEnvTests extends AnyFunSuite with Matchers:
     Atom.includePathsFrom(first.pathAsString) shouldBe Set(first.pathAsString)
     Atom.includePathsFrom("", windows = false) shouldBe Set.empty
     if !scala.util.Properties.isWin then
-        // without drive letters to protect, both separators split entries
-        Atom.includePathsFrom(
-          s"${first.pathAsString};${second.pathAsString}",
-          windows = false
-        ) shouldBe expected
-        Atom.includePathsFrom(
-          s"${first.pathAsString}:${second.pathAsString}:$missing",
-          windows = false
-        ) shouldBe expected
+      // without drive letters to protect, both separators split entries
+      Atom.includePathsFrom(
+        s"${first.pathAsString};${second.pathAsString}",
+        windows = false
+      ) shouldBe expected
+      Atom.includePathsFrom(
+        s"${first.pathAsString}:${second.pathAsString}:$missing",
+        windows = false
+      ) shouldBe expected
 
   test("on Windows only ';' separates entries, so drive letters survive"):
     val dir = File.newTemporaryDirectory("inc-w").deleteOnExit()
