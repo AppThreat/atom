@@ -184,10 +184,15 @@ object MemorySafetyCommands:
     val tags = node.tag.l
     tags.filter(_.name == ValueOriginPass.TagOrigin)
         .foreach(t => textEntry(s"origin: ${t.value}", "origin"))
+    // a guard tag is valued `<bounding node id>:<code>`; the id differs between runs, so the
+    // report names the bound by its code alone
+    def boundCode(value: String): String = value.split(":", 2) match
+      case Array(id, code) if id.nonEmpty && id.forall(_.isDigit) => code
+      case _                                                      => value
     tags.filter(_.name == GuardPass.TagBelow)
-        .foreach(t => textEntry(s"bounded-below by ${t.value}", "guard"))
+        .foreach(t => textEntry(s"bounded-below by ${boundCode(t.value)}", "guard"))
     tags.filter(_.name == GuardPass.TagAbove)
-        .foreach(t => textEntry(s"bounded-above by ${t.value}", "guard"))
+        .foreach(t => textEntry(s"bounded-above by ${boundCode(t.value)}", "guard"))
 
     // the destination's extent, for the size-parameter rule
     node._astIn.collectFirst { case c: Call => c }.foreach { call =>
