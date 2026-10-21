@@ -188,7 +188,7 @@ object MemorySafetyCommands:
     // report names the bound by its code alone
     def boundCode(value: String): String = value.split(":", 2) match
       case Array(id, code) if id.nonEmpty && id.forall(_.isDigit) => code
-      case _                                                       => value
+      case _                                                      => value
     tags.filter(_.name == GuardPass.TagBelow)
         .foreach(t => textEntry(s"bounded-below by ${boundCode(t.value)}", "guard"))
     tags.filter(_.name == GuardPass.TagAbove)
