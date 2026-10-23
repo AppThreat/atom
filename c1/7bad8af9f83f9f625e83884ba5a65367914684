@@ -1,0 +1,16 @@
+src/main/scala/io/appthreat/atom/Atom.scala
+  h_0926447d100ad2 223-248,1357-1361,1401-1405
+src/test/scala/io/appthreat/atom/IgnoredUnitsWarningTests.scala
+  h_0926447d100ad2 1-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c17bad8af9f83f9f625e83884ba5a65367914684",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
