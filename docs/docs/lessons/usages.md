@@ -15,8 +15,10 @@ Extract per-object usage traces — how each variable, parameter, or allocation 
 Usage slicing tracks each object from its definition to its uses within method scope — ideal for profiling how library objects, crypto contexts, or HTTP request objects are handled. [`UsageSlicing`](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/slicing/UsageSlicing.scala) collects, for each tracked declaration:
 
 - **definedBy** — the `DefComponent` describing where the object originated (local assignment, call result, or parameter).
-- **invokedCalls** — methods invoked directly on the object.
-- **argToCalls** — calls where the object is passed as an argument (with its parameter index).
+- **invokedCalls** — calls the object is passed to as a regular argument (index 1 and up).
+- **argToCalls** — calls on the object, with its `position`: `0` when it is the receiver argument (`obj.method()`), the parameter name for named arguments, and `-1` when the object, or a member chain rooted at it, is the callee itself (`createDebug("x")`, `process.stdout.write(...)`).
+
+Uses are found through nested functions that capture the object (resolved by closure binding, so a shadowing local of the same name is not attributed to it), through pure aliases (`const f = flatten; f()`), and through member chains rooted at it (`fn(path.sep)`).
 
 Behaviour is tuned by `UsagesConfig`:
 
