@@ -25,7 +25,9 @@ class JsUsagesExternalCallSiteTests extends AnyWordSpec with Matchers with Befor
     "issue240-cross-file",
     "issue240-local-cross-file",
     "issue240-same-file",
-    "multiplicity"
+    "multiplicity",
+    "binding-uses",
+    "decorators"
   )
 
   private var workspace: BFile                    = scala.compiletime.uninitialized
@@ -114,6 +116,26 @@ class JsUsagesExternalCallSiteTests extends AnyWordSpec with Matchers with Befor
   private def callSitesOf(caseName: String, resolvedMethod: String): Seq[UsageEntry] =
       entriesOf(caseName)
           .filter(e => e.field == "targetObj" && e.resolvedMethod == resolvedMethod)
+
+  /** The calls recorded in the slice of an import binding (a LOCAL defined by `require`), as
+    * (field, line, position) with position -1 marking the callee.
+    */
+  private def bindingCalls(caseName: String, binding: String): Seq[(String, Int, Int)] =
+      for
+        os    <- sliceJson(caseName)("objectSlices").arr.toSeq
+        usage <- os("usages").arr.toSeq
+        if usage.obj.get("targetObj").exists(t =>
+            t("label").str == "LOCAL" && t("name").str == binding
+        )
+        if usage.obj.get("definedBy").exists(d => d.obj.get("name").exists(_.str == "require"))
+        field <- Seq("invokedCalls", "argToCalls")
+        call  <- usage.obj.get(field).map(_.arr.toSeq).getOrElse(Nil)
+        line  <- call.obj.get("lineNumber").filterNot(_.isNull).map(_.num.toInt)
+      yield (
+        field,
+        line,
+        call.obj.get("position").flatMap(p => Try(p.num.toInt).toOption).getOrElse(Int.MinValue)
+      )
 
   private def withSliceFile(entry: UsageEntry): Option[(String, Int, String)] =
       entry.line.map(l => (entry.sliceFile, l, entry.sliceFullName))
@@ -206,8 +228,91 @@ class JsUsagesExternalCallSiteTests extends AnyWordSpec with Matchers with Befor
               withClue(s"$caseName: ${e.field} of slice ${e.sliceFullName}: "):
                 (e.name should not).startWith("<operator")
                 (e.resolvedMethod should not).startWith("<operator")
-                e.name should not be "require"
-                (e.resolvedMethod should not).endWith(":require")
+                // an import binding's definedBy is its require call; no other entry may be one
+                if e.field != "definedBy" then
+                  e.name should not be "require"
+                  (e.resolvedMethod should not).endWith(":require")
+      }
+  }
+
+  "usage slices of import bindings" should {
+
+      "record a call through a pure alias as a callee use of the original binding" in {
+          requireAstgen()
+          bindingCalls("binding-uses", "flatten") should contain(("argToCalls", 9, -1))
+      }
+
+      "record calls on member chains rooted at a binding" in {
+          requireAstgen()
+          // process.stdout.write("x"): the binding roots the callee chain
+          bindingCalls("binding-uses", "process") should contain(("argToCalls", 12, -1))
+          // path.join("a", path.sep): path.sep is passed as argument 2
+          bindingCalls("binding-uses", "path").map(_._2) should contain(13)
+      }
+
+      "name the module and symbol of a resolved call and of the import itself" in {
+          requireAstgen()
+          val js = sliceJson("binding-uses")
+          val readFile =
+              for
+                os    <- js("objectSlices").arr.toSeq
+                usage <- os("usages").arr.toSeq
+                if usage.obj.get("targetObj").exists(_("name").str == "readFileSync")
+              yield usage
+          readFile should not be empty
+          val definedBy = readFile.head("definedBy")
+          definedBy("module").str shouldBe "node:fs"
+          definedBy("symbol").str shouldBe "readFileSync"
+          definedBy.obj.get("code").map(_.str) shouldBe Some("require(\"node:fs\").readFileSync")
+          val calls = readFile.flatMap(u => u("argToCalls").arr.toSeq)
+          calls.map(c => (c("resolvedMethod").str, c("module").str, c("symbol").str)).distinct shouldBe
+              Seq(("node:fs:readFileSync", "node:fs", "readFileSync"))
+      }
+
+      "record a callee use inside a nested arrow function" in {
+          requireAstgen()
+          bindingCalls("binding-uses", "readFileSync") should contain(("argToCalls", 17, -1))
+      }
+
+      "not attribute a shadowing local's calls to the import" in {
+          requireAstgen()
+          val lines = bindingCalls("binding-uses", "debugLib").map(_._2)
+          lines should contain(25)
+          lines should not contain 23
+      }
+  }
+
+  "usage slices of decorators and heritage clauses" should {
+
+      def declEntries(label: String): Seq[(String, Int, String, String)] =
+          for
+            os    <- sliceJson("decorators")("objectSlices").arr.toSeq
+            usage <- os("usages").arr.toSeq
+            t     <- usage.obj.get("targetObj").toSeq
+            if t("label").str == label
+          yield (
+            t("name").str,
+            t("lineNumber").num.toInt,
+            t.obj.get("module").map(_.str).getOrElse(""),
+            t.obj.get("resolvedMethod").filterNot(_.isNull).map(_.str).getOrElse("")
+          )
+
+      "record every decorator at its own line with its module, including unused parameters" in {
+          requireAstgen()
+          val decorators = declEntries("ANNOTATION").distinct.sortBy(_._2)
+          decorators shouldBe Seq(
+            ("Entity", 5, "typeorm", "typeorm:Entity"),
+            ("Column", 7, "typeorm", "typeorm:Column"),
+            ("Controller", 11, "@nestjs/common", "@nestjs/common:Controller"),
+            ("Get", 13, "@nestjs/common", "@nestjs/common:Get"),
+            ("Param", 14, "@nestjs/common", "@nestjs/common:Param"),
+            ("Injectable", 19, "@nestjs/common", "@nestjs/common:Injectable")
+          )
+      }
+
+      "record an extends clause at its own line, not the decorator's" in {
+          requireAstgen()
+          declEntries("EXTENDS") shouldBe Seq(("EventEmitter", 21, "events", "events:EventEmitter"))
       }
   }
 
