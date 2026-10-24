@@ -47,6 +47,7 @@ object UsageSlicing:
   ): List[MethodUsageSlice] =
     val language = atom.metaData.language.headOption
     val root     = atom.metaData.root.headOption
+    val declRefs = DeclarationRefs(atom)
 
     val filteredDecls = declarations
         .to(LazyList)
@@ -55,7 +56,8 @@ object UsageSlicing:
             !d.name.startsWith("_tmp_") && atLeastNCalls(
               d,
               config.minNumCalls,
-              config.excludeOperatorCalls
+              config.excludeOperatorCalls,
+              declRefs
             )
         )
 
@@ -63,9 +65,10 @@ object UsageSlicing:
     // only visits its declaration's references, and skipping those slower than a timeout made the output depend on
     // the machine's load.
     val mainSlices = filteredDecls.flatMap { decl =>
-        Try(computeUsageSlice(atom, decl, typeMap, config.excludeOperatorCalls)).recover { case e =>
-            logger.warn(s"Usage slice for ${decl.name} failed", e)
-            Nil
+        Try(computeUsageSlice(atom, decl, typeMap, config.excludeOperatorCalls, declRefs)).recover {
+            case e =>
+                logger.warn(s"Usage slice for ${decl.name} failed", e)
+                Nil
         }.getOrElse(Nil)
     }
 
@@ -88,7 +91,8 @@ object UsageSlicing:
     atom: Cpg,
     tgt: Declaration,
     typeMap: Map[String, String],
-    excludeOperatorCalls: Boolean
+    excludeOperatorCalls: Boolean,
+    declRefs: DeclarationRefs
   ): List[(Method, ObjectUsageSlice)] =
     tgt match
       // External method stubs carry no body of their own; their usages are the call sites that
@@ -100,7 +104,7 @@ object UsageSlicing:
       case _ =>
           val defNode = getDefNode(tgt)
           val (invokedCalls, argToCalls) =
-              partitionInvolvementInCalls(atom, tgt, typeMap, excludeOperatorCalls)
+              partitionInvolvementInCalls(atom, tgt, typeMap, excludeOperatorCalls, declRefs)
 
           (tgt, defNode) match
             case (local: Local, Some(genCall: Call)) =>
@@ -223,24 +227,30 @@ object UsageSlicing:
     atom: Cpg,
     tgt: Declaration,
     typeMap: Map[String, String],
-    excludeOperatorCalls: Boolean
+    excludeOperatorCalls: Boolean,
+    declRefs: DeclarationRefs
   ): (List[ObservedCall], List[ObservedCallWithArgPos]) =
-    val callsToCheck = getInCallsForReferencedIdentifiers(tgt, excludeOperatorCalls)
-        .sortBy(f => (f.lineNumber, f.columnNumber))
+    import DeclarationRefs.Role
+    val involvements = involvementsOf(tgt, excludeOperatorCalls, declRefs)
 
-    val (invoked, args) = callsToCheck.flatMap { c =>
-        c.argument.find(_.code == tgt.name).map(arg => (c, arg))
-    }.partition { case (_, arg) =>
-        if arg.argumentName.isDefined then false
-        else arg.argumentIndex != 0
+    // A call the declaration is passed to (any argument but the receiver-like index 0) is an
+    // invoked call; calls *on* it - index 0, a named argument, or the callee itself - are
+    // argument calls. The callee case carries position -1.
+    val (invoked, args) = involvements.map(i => (i.call, i.expr, i.role)).partition {
+        case (_, _, Role.Receiver) => false
+        case (_, arg, _) =>
+            if arg.argumentName.isDefined then false
+            else arg.argumentIndex != 0
     }
 
     val invokedObserved =
-        invoked.map(_._1).isCall.flatMap(c => exprToObservedCall(atom, c, typeMap)).toList
+        invoked.map(_._1).flatMap(c => exprToObservedCall(atom, c, typeMap))
 
-    val argObserved = args.flatMap { case (c: Call, arg) =>
-        val argPos = if arg.argumentName.isDefined then Left(arg.argumentName.get)
-        else Right(arg.argumentIndex)
+    val argObserved = args.flatMap { case (c: Call, arg, role) =>
+        val argPos =
+            if role == Role.Receiver then Right(-1)
+            else if arg.argumentName.isDefined then Left(arg.argumentName.get)
+            else Right(arg.argumentIndex)
         exprToObservedCall(atom, c, typeMap).map(oc =>
             ObservedCallWithArgPos.fromObservedCall(oc, argPos)
         )
@@ -257,7 +267,8 @@ object UsageSlicing:
     val language = atom.metaData.language.headOption
     val isMember = baseCall.name == Operators.fieldAccess
     val isConstructor =
-        baseCall.name == Operators.alloc || baseCall.ast.isCall.nameExact(Operators.alloc).nonEmpty
+        baseCall.name == Operators.alloc || baseCall.name == "<operator>.new" ||
+            baseCall.ast.isCall.nameExact(Operators.alloc).nonEmpty
 
     def getResolved(x: Call): Option[String] =
         Option(x.methodFullName).filterNot(n =>
@@ -373,31 +384,71 @@ object UsageSlicing:
     case x: AstNode => Some(x)
     case _          => None
 
-  private def atLeastNCalls(decl: Declaration, n: Int, excludeOp: Boolean): Boolean =
-      decl.label == "METHOD" || decl.name.contains("init") || getInCallsForReferencedIdentifiers(
-        decl,
-        excludeOp
-      ).size >= n
-
-  private def getInCallsForReferencedIdentifiers(
+  private def atLeastNCalls(
     decl: Declaration,
-    excludeOp: Boolean
-  ): List[Call] =
-    val capturedVars =
-        decl.capturedByMethodRef.referencedMethod.ast.isIdentifier.nameExact(decl.name)
-    val refs = decl.flatMap {
-        case local: Local             => local.referencingIdentifiers ++ capturedVars
-        case param: MethodParameterIn => param.referencingIdentifiers ++ capturedVars
-        case m: Method                => m.callIn.argument.isIdentifier
-        case _                        => Seq()
-    }
+    n: Int,
+    excludeOp: Boolean,
+    declRefs: DeclarationRefs
+  ): Boolean =
+      decl.label == "METHOD" || decl.name.contains("init") ||
+          involvementsOf(decl, excludeOp, declRefs).size >= n
 
-    refs.inCall.collect {
-        case c
-            if c.name.startsWith(Operators.assignment) && c.ast.isCall.name(Operators.alloc).nonEmpty =>
-            c
-        case c if !excludeOp || !c.name.startsWith("<operator") => c
-    }.dedup.toList
+  /** The calls a declaration takes part in, one per call, ordered by position.
+    *
+    * Its references are resolved through closure captures (see [[DeclarationRefs]]). Each reference
+    * counts where it is an argument (as before), and also where it roots a member chain
+    * (`path.sep`, `process.stdout`) that is passed to a call or is a call's callee, and where it is
+    * itself the callee (`createDebug(...)`, an alias `f()`). In the JS CPG a callee is the call's
+    * receiver, not one of its arguments, so argument edges alone never see it.
+    */
+  private def involvementsOf(
+    decl: Declaration,
+    excludeOp: Boolean,
+    declRefs: DeclarationRefs
+  ): List[DeclarationRefs.Involvement] =
+    import DeclarationRefs.{Involvement, Role, argumentOf, chainTop, receiverOf}
+    val refs: List[Identifier] = decl match
+      // A method's own name passed to one of its calls; anything else passed to it is a use of
+      // that argument's declaration, not of the method.
+      case m: Method => m.callIn.argument.isIdentifier.nameExact(m.name).l
+      case d         => declRefs.referencesOf(d)
+
+    val direct = refs.flatMap { id =>
+        id.inCall.collect {
+            case c
+                if c.name.startsWith(Operators.assignment) &&
+                    c.ast.isCall.name(Operators.alloc).nonEmpty =>
+                Involvement(c, id, Role.Argument)
+            case c if !excludeOp || DeclarationRefs.isInvocation(c) =>
+                Involvement(c, id, Role.Argument)
+        }
+    }
+    val viaChains = if decl.isInstanceOf[Method] then Nil
+    else
+      refs.flatMap { id =>
+        val top = chainTop(id)
+        receiverOf(top).map(c => Involvement(c, top, Role.Receiver))
+            .orElse(if top ne id then argumentOf(top).map(c => Involvement(c, top, Role.Argument))
+            else None)
+      }
+
+    // One involvement per call: an argument role wins over the callee role (`x.f()` passes `x`
+    // as argument 0 and also roots the callee `x.f`), and the lowest argument index wins.
+    (direct ++ viaChains)
+        .groupBy(_.call.id())
+        .values
+        .map(_.minBy(i =>
+            (if i.role == Role.Argument then 0 else 1, i.expr.argumentIndex, i.expr.id())
+        ))
+        .toList
+        .sortBy(i =>
+            (
+              i.call.lineNumber.map(_.intValue()).getOrElse(Int.MaxValue),
+              i.call.columnNumber.map(_.intValue()).getOrElse(Int.MaxValue),
+              i.call.id()
+            )
+        )
+  end involvementsOf
 
   private def createProgramUsageSlice(
     atom: Cpg,

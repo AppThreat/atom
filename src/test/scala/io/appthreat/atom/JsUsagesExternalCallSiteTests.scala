@@ -25,7 +25,8 @@ class JsUsagesExternalCallSiteTests extends AnyWordSpec with Matchers with Befor
     "issue240-cross-file",
     "issue240-local-cross-file",
     "issue240-same-file",
-    "multiplicity"
+    "multiplicity",
+    "binding-uses"
   )
 
   private var workspace: BFile                    = scala.compiletime.uninitialized
@@ -114,6 +115,26 @@ class JsUsagesExternalCallSiteTests extends AnyWordSpec with Matchers with Befor
   private def callSitesOf(caseName: String, resolvedMethod: String): Seq[UsageEntry] =
       entriesOf(caseName)
           .filter(e => e.field == "targetObj" && e.resolvedMethod == resolvedMethod)
+
+  /** The calls recorded in the slice of an import binding (a LOCAL defined by `require`), as
+    * (field, line, position) with position -1 marking the callee.
+    */
+  private def bindingCalls(caseName: String, binding: String): Seq[(String, Int, Int)] =
+      for
+        os    <- sliceJson(caseName)("objectSlices").arr.toSeq
+        usage <- os("usages").arr.toSeq
+        if usage.obj.get("targetObj").exists(t =>
+            t("label").str == "LOCAL" && t("name").str == binding
+        )
+        if usage.obj.get("definedBy").exists(d => d.obj.get("name").exists(_.str == "require"))
+        field <- Seq("invokedCalls", "argToCalls")
+        call  <- usage.obj.get(field).map(_.arr.toSeq).getOrElse(Nil)
+        line  <- call.obj.get("lineNumber").filterNot(_.isNull).map(_.num.toInt)
+      yield (
+        field,
+        line,
+        call.obj.get("position").flatMap(p => Try(p.num.toInt).toOption).getOrElse(Int.MinValue)
+      )
 
   private def withSliceFile(entry: UsageEntry): Option[(String, Int, String)] =
       entry.line.map(l => (entry.sliceFile, l, entry.sliceFullName))
@@ -206,8 +227,38 @@ class JsUsagesExternalCallSiteTests extends AnyWordSpec with Matchers with Befor
               withClue(s"$caseName: ${e.field} of slice ${e.sliceFullName}: "):
                 (e.name should not).startWith("<operator")
                 (e.resolvedMethod should not).startWith("<operator")
-                e.name should not be "require"
-                (e.resolvedMethod should not).endWith(":require")
+                // an import binding's definedBy is its require call; no other entry may be one
+                if e.field != "definedBy" then
+                  e.name should not be "require"
+                  (e.resolvedMethod should not).endWith(":require")
+      }
+  }
+
+  "usage slices of import bindings" should {
+
+      "record a call through a pure alias as a callee use of the original binding" in {
+          requireAstgen()
+          bindingCalls("binding-uses", "flatten") should contain(("argToCalls", 9, -1))
+      }
+
+      "record calls on member chains rooted at a binding" in {
+          requireAstgen()
+          // process.stdout.write("x"): the binding roots the callee chain
+          bindingCalls("binding-uses", "process") should contain(("argToCalls", 12, -1))
+          // path.join("a", path.sep): path.sep is passed as argument 2
+          bindingCalls("binding-uses", "path").map(_._2) should contain(13)
+      }
+
+      "record a callee use inside a nested arrow function" in {
+          requireAstgen()
+          bindingCalls("binding-uses", "readFileSync") should contain(("argToCalls", 17, -1))
+      }
+
+      "not attribute a shadowing local's calls to the import" in {
+          requireAstgen()
+          val lines = bindingCalls("binding-uses", "debugLib").map(_._2)
+          lines should contain(25)
+          lines should not contain 23
       }
   }
 
