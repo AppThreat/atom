@@ -48,6 +48,7 @@ object UsageSlicing:
     val language = atom.metaData.language.headOption
     val root     = atom.metaData.root.headOption
     val declRefs = DeclarationRefs(atom)
+    val jsNames  = if JsNames.isJs(language) then Some(JsNames(atom)) else None
 
     val filteredDecls = declarations
         .to(LazyList)
@@ -65,7 +66,14 @@ object UsageSlicing:
     // only visits its declaration's references, and skipping those slower than a timeout made the output depend on
     // the machine's load.
     val mainSlices = filteredDecls.flatMap { decl =>
-        Try(computeUsageSlice(atom, decl, typeMap, config.excludeOperatorCalls, declRefs)).recover {
+        Try(computeUsageSlice(
+          atom,
+          decl,
+          typeMap,
+          config.excludeOperatorCalls,
+          declRefs,
+          jsNames
+        )).recover {
             case e =>
                 logger.warn(s"Usage slice for ${decl.name} failed", e)
                 Nil
@@ -92,7 +100,8 @@ object UsageSlicing:
     tgt: Declaration,
     typeMap: Map[String, String],
     excludeOperatorCalls: Boolean,
-    declRefs: DeclarationRefs
+    declRefs: DeclarationRefs,
+    jsNames: Option[JsNames]
   ): List[(Method, ObjectUsageSlice)] =
     tgt match
       // External method stubs carry no body of their own; their usages are the call sites that
@@ -100,17 +109,28 @@ object UsageSlicing:
       // call's own position. Deriving a single entry's position from an arbitrary `callIn` element
       // placed it in a random caller's file (atom#240).
       case m: Method if m.isExternal || m.filename == "<empty>" =>
-          externalStubCallSiteSlices(m)
+          externalStubCallSiteSlices(m, jsNames)
       case _ =>
           val defNode = getDefNode(tgt)
           val (invokedCalls, argToCalls) =
-              partitionInvolvementInCalls(atom, tgt, typeMap, excludeOperatorCalls, declRefs)
+              partitionInvolvementInCalls(
+                atom,
+                tgt,
+                typeMap,
+                excludeOperatorCalls,
+                declRefs,
+                jsNames
+              )
 
           (tgt, defNode) match
             case (local: Local, Some(genCall: Call)) =>
                 List(local.method.head -> ObjectUsageSlice(
                   targetObj = DefComponent.fromNode(local, genCall, typeMap),
-                  definedBy = Some(DefComponent.fromNode(genCall, null, typeMap)),
+                  definedBy = Some(withJsNames(
+                    DefComponent.fromNode(genCall, null, typeMap),
+                    genCall,
+                    jsNames
+                  )),
                   invokedCalls = invokedCalls,
                   argToCalls = argToCalls
                 ))
@@ -124,6 +144,7 @@ object UsageSlicing:
             case (m: Method, _) =>
                 createMethodObjectUsageSlice(m, invokedCalls, argToCalls, typeMap)
             case _ => Nil
+          end match
     end match
   end computeUsageSlice
 
@@ -131,10 +152,16 @@ object UsageSlicing:
     * library entry points (`debug:createDebug`, `@angular/core:signal`), operators and the
     * synthetic `require` stubs of the JS frontends.
     */
-  private def externalStubCallSiteSlices(m: Method): List[(Method, ObjectUsageSlice)] =
+  private def externalStubCallSiteSlices(
+    m: Method,
+    jsNames: Option[JsNames]
+  ): List[(Method, ObjectUsageSlice)] =
       // Operator calls and `require` stubs carry no SBOM evidence; their per-call entries would
       // only flood the slices (an `<operator>.assignment` stub's callIn covers every assignment).
-      if m.name.startsWith("<operator") || m.fullName.endsWith(":require")
+      // JavaScript also names stubs of unresolved dynamic calls by their source text
+      // (`value .split`); they resolve to nothing, so they carry no evidence either.
+      if m.name.startsWith("<operator") || m.fullName.endsWith(":require") ||
+        jsNames.isDefined && !JsNames.isResolvedName(m.fullName)
       then Nil
       else
         m.callIn.l
@@ -146,13 +173,16 @@ object UsageSlicing:
                 )
             }
             .map { call =>
+              val names = jsNames.flatMap(_.split(m.fullName))
               val defComp = CallDef(
                 call.name,
                 call.typeFullName,
                 Option(m.fullName),
                 Option(true),
                 call.lineNumber.map(_.intValue()),
-                call.columnNumber.map(_.intValue())
+                call.columnNumber.map(_.intValue()),
+                module = names.map(_._1),
+                symbol = names.flatMap(_._2)
               )
               call.method -> ObjectUsageSlice(
                 targetObj = defComp,
@@ -228,7 +258,8 @@ object UsageSlicing:
     tgt: Declaration,
     typeMap: Map[String, String],
     excludeOperatorCalls: Boolean,
-    declRefs: DeclarationRefs
+    declRefs: DeclarationRefs,
+    jsNames: Option[JsNames]
   ): (List[ObservedCall], List[ObservedCallWithArgPos]) =
     import DeclarationRefs.Role
     val involvements = involvementsOf(tgt, excludeOperatorCalls, declRefs)
@@ -244,14 +275,14 @@ object UsageSlicing:
     }
 
     val invokedObserved =
-        invoked.map(_._1).flatMap(c => exprToObservedCall(atom, c, typeMap))
+        invoked.map(_._1).flatMap(c => exprToObservedCall(atom, c, typeMap, jsNames))
 
     val argObserved = args.flatMap { case (c: Call, arg, role) =>
         val argPos =
             if role == Role.Receiver then Right(-1)
             else if arg.argumentName.isDefined then Left(arg.argumentName.get)
             else Right(arg.argumentIndex)
-        exprToObservedCall(atom, c, typeMap).map(oc =>
+        exprToObservedCall(atom, c, typeMap, jsNames).map(oc =>
             ObservedCallWithArgPos.fromObservedCall(oc, argPos)
         )
     }
@@ -262,9 +293,9 @@ object UsageSlicing:
   private def exprToObservedCall(
     atom: Cpg,
     baseCall: Call,
-    typeMap: Map[String, String]
+    typeMap: Map[String, String],
+    jsNames: Option[JsNames]
   ): Option[ObservedCall] =
-    val language = atom.metaData.language.headOption
     val isMember = baseCall.name == Operators.fieldAccess
     val isConstructor =
         baseCall.name == Operators.alloc || baseCall.name == "<operator>.new" ||
@@ -289,18 +320,24 @@ object UsageSlicing:
       Option(baseCall.name) -> getResolved(baseCall)
 
     callName.map { name =>
-      val params        = getCallParameters(baseCall, isMember, isConstructor)
-      val returnType    = getReturnType(atom, baseCall, isConstructor, resolvedMethod)
-      val finalResolved = handleJavaScriptLogic(baseCall, resolvedMethod, language)
+      val params     = getCallParameters(baseCall, isMember, isConstructor)
+      val returnType = getReturnType(atom, baseCall, isConstructor, resolvedMethod)
+      // JavaScript: resolvedMethod stays the resolved name; the source text routes and endpoints
+      // are read from goes to `code`, and the module/symbol split is added.
+      val jsResolved = jsNames.map(_ => resolvedMethod.filter(JsNames.isResolvedName))
+      val names      = jsNames.zip(jsResolved.flatten).flatMap((js, r) => js.split(r))
 
       ObservedCall(
         name,
-        finalResolved,
+        jsResolved.getOrElse(resolvedMethod),
         params,
         returnType,
         baseCall.callee(using resolver).isExternal.headOption,
         baseCall.lineNumber.map(_.intValue()),
-        baseCall.columnNumber.map(_.intValue())
+        baseCall.columnNumber.map(_.intValue()),
+        code = jsNames.flatMap(_ => jsCallCode(baseCall)),
+        module = names.map(_._1),
+        symbol = names.flatMap(_._2)
       )
     }
   end exprToObservedCall
@@ -345,33 +382,52 @@ object UsageSlicing:
                 x.callee(using resolver).methodReturn.typeFullName.headOption
         }.flatten.getOrElse("ANY")
 
-  private def handleJavaScriptLogic(
-    baseCall: Call,
-    resolvedMethod: Option[String],
-    language: Option[String]
-  ): Option[String] =
-    val isJs = language.contains(Languages.JSSRC) || language.contains(Languages.JAVASCRIPT)
-    if !isJs || baseCall.code.isEmpty || !baseCall.code.contains("(") then
-      resolvedMethod
-    else
-      val taggedArg =
-          baseCall.argument.filter(_.tag.nameExact(FRAMEWORK_ROUTE).nonEmpty).isLiteral.headOption
-      if taggedArg.isDefined then
-        Option(taggedArg.get.code)
+  /** The source text of a JavaScript call that route and endpoint extraction reads: the literal
+    * route argument when one is tagged as a framework route, the path of `app.use("/x", ...)`, the
+    * whole call for `app*`/`route*` calls, otherwise the callee text before `(`.
+    */
+  private def jsCallCode(baseCall: Call): Option[String] =
+      if baseCall.code.isEmpty || !baseCall.code.contains("(") then None
       else
-        var code = baseCall.code.takeWhile(_ != '(')
-        if code.contains(" ") then code = code.split(" ").last
+        val taggedArg =
+            baseCall.argument.filter(_.tag.nameExact(FRAMEWORK_ROUTE).nonEmpty).isLiteral.headOption
+        if taggedArg.isDefined then Option(taggedArg.get.code)
+        else
+          var code = baseCall.code.takeWhile(_ != '(')
+          if code.contains(" ") then code = code.split(" ").last
 
-        if code.startsWith("app.use") && baseCall.argument.isLiteral.exists(_.code != "*") then
-          code = baseCall.argument.isLiteral.filterNot(_.code == "*").head.code
-        else if code.startsWith("route") || code.startsWith("app") then
-          code = baseCall.code.replaceAll("\n", "\\n").replaceAll(" {4}", " {2}").replaceAll(
-            " {2}",
-            "\\t"
-          )
-        Option(code)
-    end if
-  end handleJavaScriptLogic
+          if code.startsWith("app.use") && baseCall.argument.isLiteral.exists(_.code != "*") then
+            code = baseCall.argument.isLiteral.filterNot(_.code == "*").head.code
+          else if code.startsWith("route") || code.startsWith("app") then
+            code = baseCall.code.replaceAll("\n", "\\n").replaceAll(" {4}", " {2}").replaceAll(
+              " {2}",
+              "\\t"
+            )
+          Option(code)
+  end jsCallCode
+
+  /** JavaScript: a definition's call keeps its resolved name in `resolvedMethod`; source text that
+    * stood there (an import expression, an unresolved callee) moves to `code`, and an import gets
+    * its module and symbol.
+    */
+  private def withJsNames(
+    defComp: DefComponent,
+    node: Call,
+    jsNames: Option[JsNames]
+  ): DefComponent =
+      (defComp, jsNames) match
+        case (c: CallDef, Some(js)) =>
+            val resolved =
+                if node.code.startsWith("new ") then c.resolvedMethod
+                else Option(node.methodFullName).filter(JsNames.isResolvedName)
+            val names = js.ofImportExpression(node).orElse(resolved.flatMap(js.split))
+            c.copy(
+              resolvedMethod = resolved,
+              code = c.resolvedMethod.filterNot(r => resolved.contains(r)),
+              module = names.map(_._1),
+              symbol = names.flatMap(_._2)
+            )
+        case _ => defComp
 
   private def getDefNode(tgt: Declaration): Option[AstNode] = tgt match
     case local: Local =>
