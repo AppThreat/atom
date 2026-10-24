@@ -1,0 +1,46 @@
+src/main/scala/io/appthreat/atom/slicing/UsageSlicing.scala
+  h_6a4cc5cdf68def 68-69,92-123,126-161,199,214
+src/main/scala/io/appthreat/atom/slicing/package.scala
+  h_6a4cc5cdf68def 570-572,574-575,578-579
+src/test/resources/js-usages/issue240-cross-file/package.json
+  h_6a4cc5cdf68def 1-9
+src/test/resources/js-usages/issue240-cross-file/src/first.ts
+  h_6a4cc5cdf68def 1-5
+src/test/resources/js-usages/issue240-cross-file/src/second.ts
+  h_6a4cc5cdf68def 1-7
+src/test/resources/js-usages/issue240-cross-file/tsconfig.json
+  h_6a4cc5cdf68def 1-15
+src/test/resources/js-usages/issue240-local-cross-file/package.json
+  h_6a4cc5cdf68def 1-7
+src/test/resources/js-usages/issue240-local-cross-file/src/make.ts
+  h_6a4cc5cdf68def 1-3
+src/test/resources/js-usages/issue240-local-cross-file/src/use.ts
+  h_6a4cc5cdf68def 1-7
+src/test/resources/js-usages/issue240-local-cross-file/tsconfig.json
+  h_6a4cc5cdf68def 1-15
+src/test/resources/js-usages/issue240-same-file/package.json
+  h_6a4cc5cdf68def 1-9
+src/test/resources/js-usages/issue240-same-file/src/funcs.ts
+  h_6a4cc5cdf68def 1-14
+src/test/resources/js-usages/issue240-same-file/tsconfig.json
+  h_6a4cc5cdf68def 1-15
+src/test/resources/js-usages/multiplicity/package.json
+  h_6a4cc5cdf68def 1-9
+src/test/resources/js-usages/multiplicity/src/a.js
+  h_6a4cc5cdf68def 1-21
+src/test/resources/js-usages/multiplicity/src/b.js
+  h_6a4cc5cdf68def 1-7
+src/test/scala/io/appthreat/atom/JsUsagesExternalCallSiteTests.scala
+  h_6a4cc5cdf68def 1-226
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dac4f7e03b50e769e61fa3c5990365facb3167de",
+  "prompts": {},
+  "humans": {
+    "h_6a4cc5cdf68def": {
+      "author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
