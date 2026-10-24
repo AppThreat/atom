@@ -130,7 +130,7 @@ object UsageSlicing:
   private def externalStubCallSiteSlices(m: Method): List[(Method, ObjectUsageSlice)] =
     // Operator calls and `require` stubs carry no SBOM evidence; their per-call entries would
     // only flood the slices (an `<operator>.assignment` stub's callIn covers every assignment).
-    if m.name.startsWith("<operator") || m.name == "require" || m.fullName.endsWith(":require")
+    if m.name.startsWith("<operator") || m.fullName.endsWith(":require")
     then Nil
     else
       m.callIn.l
