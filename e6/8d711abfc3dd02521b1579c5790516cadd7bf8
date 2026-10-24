@@ -1,0 +1,35 @@
+src/main/scala/io/appthreat/atom/slicing/UsageSlicing.scala
+  s_e335fe820b41b8::t_f362cdcb7518ed 51,69-76,103-104,112,116-123,129-133,147,155-158,161-164,176,183-185,261-262,278,285,296-297,323-328,332,337-340,385-390,392-403,405-430
+  s_e335fe820b41b8::t_63082a53ee91b0 404
+src/test/scala/io/appthreat/atom/JsNamesTests.scala
+  s_e335fe820b41b8::t_1492fe18f747d6 1-70
+src/main/scala/io/appthreat/atom/slicing/package.scala
+  s_e335fe820b41b8::t_f362cdcb7518ed 456-457
+  s_e335fe820b41b8::t_63082a53ee91b0 491
+  s_e335fe820b41b8::t_00267b8f6b0dcd 429-435,444-447,453-455,458-470,687-690,711-714,716-726,743-746,772-775,788-790,802,804-818,823-824
+  s_e335fe820b41b8::t_bb78d0a3234e94 4
+src/test/scala/io/appthreat/atom/JsUsagesExternalCallSiteTests.scala
+  s_e335fe820b41b8::t_1492fe18f747d6 252-270
+src/main/scala/io/appthreat/atom/slicing/JsNames.scala
+  s_e335fe820b41b8::t_d93e6be7171bd6 27,53-63
+  s_e335fe820b41b8::t_f362cdcb7518ed 40-42
+  s_e335fe820b41b8::t_2d5452f2722da9 1-26,28-39,43-52,64-97
+docs/docs/lessons/usages.md
+  s_e335fe820b41b8::t_5db757ecb4d94f 21-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e68d711abfc3dd02521b1579c5790516cadd7bf8",
+  "prompts": {},
+  "sessions": {
+    "s_e335fe820b41b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "120fe233-8899-4149-b780-6eac261dbd9d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
