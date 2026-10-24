@@ -18,6 +18,12 @@ Usage slicing tracks each object from its definition to its uses within method s
 - **invokedCalls** — calls the object is passed to as a regular argument (index 1 and up).
 - **argToCalls** — calls on the object, with its `position`: `0` when it is the receiver argument (`obj.method()`), the parameter name for named arguments, and `-1` when the object, or a member chain rooted at it, is the callee itself (`createDebug("x")`, `process.stdout.write(...)`).
 
+For JavaScript and TypeScript, every call entry (`definedBy`, `targetObj`, `invokedCalls`, `argToCalls`) keeps the resolved callee name in `resolvedMethod` (absent when the frontend could not resolve it) and adds:
+
+- **module**: the imported module the call resolves to (`node:fs`, `@babel/parser`, `@angular/common/http`); for an import binding's `definedBy`, the module it imports.
+- **symbol**: the path within that module (`readFile`, `Parser.on`, `default.get`).
+- **code**: the call's source text where route and endpoint extraction need it (`app.get("/x", ...)`, the route literal of `app.use`), or where the resolved name says less (an import expression, an unresolved callee).
+
 Uses are found through nested functions that capture the object (resolved by closure binding, so a shadowing local of the same name is not attributed to it), through pure aliases (`const f = flatten; f()`), and through member chains rooted at it (`fn(path.sep)`).
 
 Behaviour is tuned by `UsagesConfig`:

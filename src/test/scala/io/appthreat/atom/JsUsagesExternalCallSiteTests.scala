@@ -249,6 +249,25 @@ class JsUsagesExternalCallSiteTests extends AnyWordSpec with Matchers with Befor
           bindingCalls("binding-uses", "path").map(_._2) should contain(13)
       }
 
+      "name the module and symbol of a resolved call and of the import itself" in {
+          requireAstgen()
+          val js = sliceJson("binding-uses")
+          val readFile =
+              for
+                os    <- js("objectSlices").arr.toSeq
+                usage <- os("usages").arr.toSeq
+                if usage.obj.get("targetObj").exists(_("name").str == "readFileSync")
+              yield usage
+          readFile should not be empty
+          val definedBy = readFile.head("definedBy")
+          definedBy("module").str shouldBe "node:fs"
+          definedBy("symbol").str shouldBe "readFileSync"
+          definedBy.obj.get("code").map(_.str) shouldBe Some("require(\"node:fs\").readFileSync")
+          val calls = readFile.flatMap(u => u("argToCalls").arr.toSeq)
+          calls.map(c => (c("resolvedMethod").str, c("module").str, c("symbol").str)).distinct shouldBe
+              Seq(("node:fs:readFileSync", "node:fs", "readFileSync"))
+      }
+
       "record a callee use inside a nested arrow function" in {
           requireAstgen()
           bindingCalls("binding-uses", "readFileSync") should contain(("argToCalls", 17, -1))

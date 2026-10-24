@@ -1,7 +1,7 @@
 package io.appthreat.atom
 
 import better.files.File
-import io.circe.{Decoder, Encoder, HCursor, Json}
+import io.circe.{Decoder, Encoder, HCursor, Json, JsonObject}
 import io.shiftleft.codepropertygraph.generated.PropertyNames
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
@@ -426,6 +426,13 @@ package object slicing:
     *
     * @param resolvedMethod
     *   the full method path if resolved.
+    * @param code
+    *   JavaScript only: the call's source text where it says more than the resolved name (an import
+    *   expression, an unresolved callee).
+    * @param module
+    *   JavaScript only: the imported module the call resolves to (`node:fs`, `@scope/pkg/sub`).
+    * @param symbol
+    *   JavaScript only: the path within the module (`readFile`, `Parser.on`).
     */
   case class CallDef(
     name: String,
@@ -434,13 +441,33 @@ package object slicing:
     isExternal: Option[Boolean],
     lineNumber: Option[Int] = None,
     columnNumber: Option[Int] = None,
-    label: String = "CALL"
+    label: String = "CALL",
+    code: Option[String] = None,
+    module: Option[String] = None,
+    symbol: Option[String] = None
   ) extends DefComponent:
     override def toString: String =
         super.toString + resolvedMethod.map(s => s" @ $s").getOrElse("")
 
   implicit val callDefDecoder: Decoder[CallDef] = deriveDecoder[CallDef]
-  implicit val callDefEncoder: Encoder[CallDef] = deriveEncoder[CallDef]
+  implicit val callDefEncoder: Encoder[CallDef] =
+      deriveEncoder[CallDef].mapJsonObject(dropUnsetJsNames)
+
+  /** The JavaScript-only name fields are left out when unset, so other languages' slices keep their
+    * shape.
+    */
+  private def dropUnsetJsNames(o: JsonObject): JsonObject =
+      o.filter { case (k, v) => !(jsNameFields.contains(k) && v.isNull) }
+
+  private val jsNameFields = Set("code", "module", "symbol")
+
+  private def jsNamesJson(
+    code: Option[String],
+    module: Option[String],
+    symbol: Option[String]
+  ): List[(String, Json)] =
+      code.map("code" -> _.asJson).toList ++ module.map("module" -> _.asJson).toList ++
+          symbol.map("symbol" -> _.asJson).toList
 
   /** Representds data introduced by an unhandled data structure.
     */
@@ -461,7 +488,7 @@ package object slicing:
   implicit val encodeDefComponent: Encoder[DefComponent] = Encoder.instance {
       case local @ LocalDef(_, _, _, _, _)     => local.asJson
       case literal @ LiteralDef(_, _, _, _, _) => literal.asJson
-      case call @ CallDef(_, _, _, _, _, _, _) => call.asJson
+      case call: CallDef                       => call.asJson
       case param @ ParamDef(_, _, _, _, _, _)  => param.asJson
       case unknown @ UnknownDef(_, _, _, _, _) => unknown.asJson
   }
@@ -657,7 +684,10 @@ package object slicing:
     returnType: String,
     isExternal: Option[Boolean],
     lineNumber: Option[Int] = None,
-    columnNumber: Option[Int] = None
+    columnNumber: Option[Int] = None,
+    code: Option[String] = None,
+    module: Option[String] = None,
+    symbol: Option[String] = None
   ) extends UsedCall(
         callName,
         resolvedMethod,
@@ -678,17 +708,22 @@ package object slicing:
             ex  <- c.downField("isExternal").as[Option[Boolean]]
             lin <- c.downField("lineNumber").as[Option[Int]]
             col <- c.downField("columnNumber").as[Option[Int]]
-          yield ObservedCall(x, m, p, r, ex, lin, col)
+            cd  <- c.downField("code").as[Option[String]]
+            md  <- c.downField("module").as[Option[String]]
+            sy  <- c.downField("symbol").as[Option[String]]
+          yield ObservedCall(x, m, p, r, ex, lin, col, cd, md, sy)
   implicit val encodeObservedCall: Encoder[ObservedCall] =
-      Encoder.instance { case ObservedCall(c, m, p, r, ex, lin, col) =>
-          Json.obj(
-            "callName"       -> c.asJson,
-            "resolvedMethod" -> m.asJson,
-            "paramTypes"     -> p.asJson,
-            "returnType"     -> r.asJson,
-            "isExternal"     -> ex.asJson,
-            "lineNumber"     -> lin.asJson,
-            "columnNumber"   -> col.asJson
+      Encoder.instance { oc =>
+          Json.fromFields(
+            List(
+              "callName"       -> oc.callName.asJson,
+              "resolvedMethod" -> oc.resolvedMethod.asJson,
+              "paramTypes"     -> oc.paramTypes.asJson,
+              "returnType"     -> oc.returnType.asJson,
+              "isExternal"     -> oc.isExternal.asJson,
+              "lineNumber"     -> oc.lineNumber.asJson,
+              "columnNumber"   -> oc.columnNumber.asJson
+            ) ++ jsNamesJson(oc.code, oc.module, oc.symbol)
           )
       }
 
@@ -705,7 +740,10 @@ package object slicing:
     position: Either[String, Int],
     isExternal: Option[Boolean],
     lineNumber: Option[Int] = None,
-    columnNumber: Option[Int] = None
+    columnNumber: Option[Int] = None,
+    code: Option[String] = None,
+    module: Option[String] = None,
+    symbol: Option[String] = None
   ) extends UsedCall(
         callName,
         resolvedMethod,
@@ -731,7 +769,10 @@ package object slicing:
           pos,
           oc.isExternal,
           oc.lineNumber,
-          oc.columnNumber
+          oc.columnNumber,
+          oc.code,
+          oc.module,
+          oc.symbol
         )
 
   implicit val decodeObservedCallWithArgPos: Decoder[ObservedCallWithArgPos] =
@@ -744,6 +785,9 @@ package object slicing:
             ex  <- c.downField("isExternal").as[Option[Boolean]]
             lin <- c.downField("lineNumber").as[Option[Int]]
             col <- c.downField("columnNumber").as[Option[Int]]
+            cd  <- c.downField("code").as[Option[String]]
+            md  <- c.downField("module").as[Option[String]]
+            sy  <- c.downField("symbol").as[Option[String]]
           yield
             val pos = c.downField("position").as[Int] match
               case Left(_) =>
@@ -755,27 +799,29 @@ package object slicing:
                         )
                     case Right(argName) => Left(argName)
               case Right(argIdx) => Right(argIdx)
-            ObservedCallWithArgPos(x, m, p, r, pos, ex, lin, col)
+            ObservedCallWithArgPos(x, m, p, r, pos, ex, lin, col, cd, md, sy)
   implicit val encodeObservedCallWithArgPos: Encoder[ObservedCallWithArgPos] =
-      Encoder.instance { case ObservedCallWithArgPos(c, m, p, r, a, ex, lin, col) =>
-          Json.obj(
-            "callName"       -> c.asJson,
-            "resolvedMethod" -> m.asJson,
-            "paramTypes"     -> p.asJson,
-            "returnType"     -> r.asJson,
-            "position" -> (a match
-              case Left(argName) => argName.asJson
-              case Right(argIdx) => argIdx.asJson
-            ),
-            "isExternal"   -> ex.asJson,
-            "lineNumber"   -> lin.asJson,
-            "columnNumber" -> col.asJson
+      Encoder.instance { oc =>
+          Json.fromFields(
+            List(
+              "callName"       -> oc.callName.asJson,
+              "resolvedMethod" -> oc.resolvedMethod.asJson,
+              "paramTypes"     -> oc.paramTypes.asJson,
+              "returnType"     -> oc.returnType.asJson,
+              "position" -> (oc.position match
+                case Left(argName) => argName.asJson
+                case Right(argIdx) => argIdx.asJson
+              ),
+              "isExternal"   -> oc.isExternal.asJson,
+              "lineNumber"   -> oc.lineNumber.asJson,
+              "columnNumber" -> oc.columnNumber.asJson
+            ) ++ jsNamesJson(oc.code, oc.module, oc.symbol)
           )
       }
 
   implicit val encodeUsedCall: Encoder[UsedCall] = Encoder.instance {
-      case oc @ ObservedCall(_, _, _, _, _, _, _)               => oc.asJson
-      case oca @ ObservedCallWithArgPos(_, _, _, _, _, _, _, _) => oca.asJson
+      case oc: ObservedCall            => oc.asJson
+      case oca: ObservedCallWithArgPos => oca.asJson
   }
 
   implicit val decodeUsedCall: Decoder[UsedCall] =
