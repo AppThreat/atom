@@ -1,0 +1,9 @@
+{
+  "name": "usage-corpus-multiplicity",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "debug": "4.3.7"
+  }
+}
