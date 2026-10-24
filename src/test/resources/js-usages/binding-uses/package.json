@@ -1,0 +1,10 @@
+{
+  "name": "usage-corpus-binding-uses",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "debug": "4.3.7",
+    "lodash": "4.17.21"
+  }
+}
