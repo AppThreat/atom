@@ -1,0 +1,9 @@
+{
+  "name": "usage-corpus-issue240-same-file",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@angular/core": "21.2.0"
+  }
+}

@@ -65,8 +65,8 @@ object UsageSlicing:
     val mainSlices = filteredDecls.flatMap { decl =>
         Try(computeUsageSlice(atom, decl, typeMap, config.excludeOperatorCalls)).recover { case e =>
             logger.warn(s"Usage slice for ${decl.name} failed", e)
-            None
-        }.toOption.flatten
+            Nil
+        }.getOrElse(Nil)
     }
 
     val annotationSlices = filteredDecls.collect {
@@ -89,30 +89,75 @@ object UsageSlicing:
     tgt: Declaration,
     typeMap: Map[String, String],
     excludeOperatorCalls: Boolean
-  ): Option[(Method, ObjectUsageSlice)] =
-    val defNode = getDefNode(tgt)
-    val (invokedCalls, argToCalls) =
-        partitionInvolvementInCalls(atom, tgt, typeMap, excludeOperatorCalls)
+  ): List[(Method, ObjectUsageSlice)] =
+    tgt match
+      // External method stubs carry no body of their own; their usages are the call sites that
+      // reach them. One entry per call, in the slice of the method containing the call and at the
+      // call's own position. Deriving a single entry's position from an arbitrary `callIn` element
+      // placed it in a random caller's file (atom#240).
+      case m: Method if m.isExternal || m.filename == "<empty>" =>
+          externalStubCallSiteSlices(m)
+      case _ =>
+        val defNode = getDefNode(tgt)
+        val (invokedCalls, argToCalls) =
+            partitionInvolvementInCalls(atom, tgt, typeMap, excludeOperatorCalls)
 
-    (tgt, defNode) match
-      case (local: Local, Some(genCall: Call)) =>
-          Some(local.method.head -> ObjectUsageSlice(
-            targetObj = DefComponent.fromNode(local, genCall, typeMap),
-            definedBy = Some(DefComponent.fromNode(genCall, null, typeMap)),
-            invokedCalls = invokedCalls,
-            argToCalls = argToCalls
-          ))
-      case (param: MethodParameterIn, _) if !param.name.matches("(this|self)") =>
-          Some(param.method -> ObjectUsageSlice(
-            targetObj = DefComponent.fromNode(param, null, typeMap),
-            definedBy = Some(DefComponent.fromNode(param, null, typeMap)),
-            invokedCalls = invokedCalls,
-            argToCalls = argToCalls
-          ))
-      case (m: Method, _) =>
-          createMethodObjectUsageSlice(m, invokedCalls, argToCalls, typeMap)
-      case _ => None
+        (tgt, defNode) match
+          case (local: Local, Some(genCall: Call)) =>
+              List(local.method.head -> ObjectUsageSlice(
+                targetObj = DefComponent.fromNode(local, genCall, typeMap),
+                definedBy = Some(DefComponent.fromNode(genCall, null, typeMap)),
+                invokedCalls = invokedCalls,
+                argToCalls = argToCalls
+              ))
+          case (param: MethodParameterIn, _) if !param.name.matches("(this|self)") =>
+              List(param.method -> ObjectUsageSlice(
+                targetObj = DefComponent.fromNode(param, null, typeMap),
+                definedBy = Some(DefComponent.fromNode(param, null, typeMap)),
+                invokedCalls = invokedCalls,
+                argToCalls = argToCalls
+              ))
+          case (m: Method, _) =>
+              createMethodObjectUsageSlice(m, invokedCalls, argToCalls, typeMap)
+          case _ => Nil
+    end match
   end computeUsageSlice
+
+  /** Stubs of methods this project only calls, modelled as external METHOD nodes with no body:
+    * library entry points (`debug:createDebug`, `@angular/core:signal`), operators and the
+    * synthetic `require` stubs of the JS frontends.
+    */
+  private def externalStubCallSiteSlices(m: Method): List[(Method, ObjectUsageSlice)] =
+    // Operator calls and `require` stubs carry no SBOM evidence; their per-call entries would
+    // only flood the slices (an `<operator>.assignment` stub's callIn covers every assignment).
+    if m.name.startsWith("<operator") || m.name == "require" || m.fullName.endsWith(":require")
+    then Nil
+    else
+      m.callIn.l
+          .sortBy { call =>
+            (
+              call.method.filename,
+              call.lineNumber.map(_.intValue()).getOrElse(Int.MaxValue),
+              call.columnNumber.map(_.intValue()).getOrElse(Int.MaxValue)
+            )
+          }
+          .map { call =>
+            val defComp = CallDef(
+              call.name,
+              call.typeFullName,
+              Option(m.fullName),
+              Option(true),
+              call.lineNumber.map(_.intValue()),
+              call.columnNumber.map(_.intValue())
+            )
+            call.method -> ObjectUsageSlice(
+              targetObj = defComp,
+              definedBy = Some(defComp),
+              invokedCalls = List.empty,
+              argToCalls = List.empty
+            )
+          }
+  end externalStubCallSiteSlices
 
   private def paramAnnotationSlices(
     param: MethodParameterIn,
@@ -151,8 +196,7 @@ object UsageSlicing:
     invokedCalls: List[ObservedCall],
     argToCalls: List[ObservedCallWithArgPos],
     typeMap: Map[String, String]
-  ): Option[(Method, ObjectUsageSlice)] =
-    val method  = if m.filename == "<empty>" && m.callIn.nonEmpty then m.callIn.head.method else m
+  ): List[(Method, ObjectUsageSlice)] =
     val defComp = DefComponent.fromNode(m, null, typeMap)
 
     val annotationCalls = m.annotation.map { a =>
@@ -167,7 +211,7 @@ object UsageSlicing:
         )
     }.toList
 
-    Some(method -> ObjectUsageSlice(
+    List(m -> ObjectUsageSlice(
       targetObj = defComp,
       definedBy = Some(defComp),
       invokedCalls = invokedCalls ++ annotationCalls,

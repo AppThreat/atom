@@ -567,14 +567,16 @@ package object slicing:
         case x: Literal    => LiteralDef(x.code, typeFullName, lineNumber, columnNumber)
         case x: Member     => LocalDef(x.name, typeFullName, lineNumber, columnNumber)
         case x: Method if x.callIn.nonEmpty =>
-            val lastCall = x.callIn.last
+            // The position is the method definition's own, never a caller's: `callIn` order is
+            // arbitrary, so a position taken from one of its calls lands in a random file.
+            val call = x.callIn.last
             CallDef(
-              lastCall.name,
-              lastCall.typeFullName,
+              call.name,
+              call.typeFullName,
               Option(x.fullName),
               isExternal,
-              lastCall.lineNumber.map(_.intValue()),
-              lastCall.columnNumber.map(_.intValue())
+              lineNumber,
+              columnNumber
             )
         case x: Method if x.annotation.nonEmpty =>
             val annotation = x.annotation.last
