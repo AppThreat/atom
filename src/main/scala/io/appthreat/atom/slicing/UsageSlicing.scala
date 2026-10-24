@@ -311,7 +311,27 @@ object UsageSlicing:
 
     (uniqueDecorators ++ heritage)
         .sortBy((m, d) => (m.fullName, d.lineNumber.getOrElse(-1), d.columnNumber.getOrElse(-1)))
-        .map((m, d) => m -> ObjectUsageSlice(targetObj = d, definedBy = Some(d), Nil, Nil))
+        .map { (m, d) =>
+          // also as an observed call, the shape annotation consumers (route extraction) read
+          val asCall = ObservedCall(
+            d.name,
+            d.resolvedMethod,
+            Nil,
+            "",
+            d.isExternal,
+            d.lineNumber,
+            d.columnNumber,
+            d.code,
+            d.module,
+            d.symbol
+          )
+          m -> ObjectUsageSlice(
+            targetObj = d,
+            definedBy = Some(d),
+            invokedCalls = if d.label == "EXTENDS" then Nil else List(asCall),
+            argToCalls = Nil
+          )
+        }
   end jsDecoratorAndHeritageSlices
 
   private def paramAnnotationSlices(
