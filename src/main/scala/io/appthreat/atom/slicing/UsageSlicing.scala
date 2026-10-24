@@ -80,11 +80,18 @@ object UsageSlicing:
         }.getOrElse(Nil)
     }
 
-    val annotationSlices = filteredDecls.collect {
-        case param: MethodParameterIn if !param.name.matches("(this|self)") => param
-    }.flatMap(param => paramAnnotationSlices(param, typeMap))
+    // JavaScript decorators and heritage clauses get their own entries (below), so the generic
+    // annotation handling, which keeps only parameters with calls, is for the other languages.
+    val annotationSlices = if jsNames.isDefined then Nil
+    else
+      filteredDecls.collect {
+          case param: MethodParameterIn if !param.name.matches("(this|self)") => param
+      }.flatMap(param => paramAnnotationSlices(param, typeMap))
 
-    (mainSlices ++ annotationSlices)
+    val jsDeclarationSlices =
+        jsNames.map(js => jsDecoratorAndHeritageSlices(atom, js)).getOrElse(Nil)
+
+    (mainSlices ++ annotationSlices ++ jsDeclarationSlices)
         .groupBy { case (method, _) => method }
         .view
         .filterKeys(m => !isExcludedMethod(m))
@@ -142,7 +149,13 @@ object UsageSlicing:
                   argToCalls = argToCalls
                 ))
             case (m: Method, _) =>
-                createMethodObjectUsageSlice(m, invokedCalls, argToCalls, typeMap)
+                createMethodObjectUsageSlice(
+                  m,
+                  invokedCalls,
+                  argToCalls,
+                  typeMap,
+                  withAnnotations = jsNames.isEmpty
+                )
             case _ => Nil
           end match
     end match
@@ -193,6 +206,114 @@ object UsageSlicing:
             }
   end externalStubCallSiteSlices
 
+  /** JavaScript/TypeScript decorators (on classes, methods, accessors, properties and parameters)
+    * and heritage clauses (`extends`), one entry each at its own position, in the slice of the
+    * method enclosing the decorated element (for a class or property, the method the class is
+    * declared in). The decorator or base-class name is resolved through the file's import bindings,
+    * by name: the frontend does not link these identifiers to their binding.
+    */
+  private def jsDecoratorAndHeritageSlices(
+    atom: Cpg,
+    jsNames: JsNames
+  ): List[(Method, ObjectUsageSlice)] =
+    def enclosingMethod(n: AstNode): Option[Method] = n match
+      case m: Method            => Some(m)
+      case p: MethodParameterIn => Some(p.method)
+      case _ =>
+          Iterator.iterate(DeclarationRefs.parentOf(n))(_.flatMap(DeclarationRefs.parentOf))
+              .takeWhile(_.isDefined).flatten.collectFirst { case m: Method => m }
+
+    def entry(
+      name: String,
+      typeFullName: String,
+      file: String,
+      line: Option[Int],
+      col: Option[Int],
+      label: String,
+      code: Option[String]
+    ): CallDef =
+      val names = jsNames.ofBindingName(file, name)
+      CallDef(
+        name,
+        typeFullName,
+        names.map((m, s) => s.fold(m)(sym => s"$m:$sym")),
+        Some(names.isDefined),
+        line,
+        col,
+        label = label,
+        code = code,
+        module = names.map(_._1),
+        symbol = names.flatMap(_._2)
+      )
+    end entry
+
+    val decorators = atom.annotation.l.flatMap { a =>
+        DeclarationRefs.parentOf(a).flatMap(enclosingMethod).map { m =>
+          val line = a.lineNumber.map(_.intValue())
+          val col  = a.columnNumber.map(_.intValue())
+          (
+            (m.filename, line, col, a.name),
+            m -> entry(
+              a.name,
+              a.fullName,
+              m.filename,
+              line,
+              col,
+              a.label,
+              Option(a.code).filter(_.nonEmpty)
+            )
+          )
+        }
+    }
+    // A method's decorator hangs off both its METHOD and its MEMBER node.
+    val uniqueDecorators = decorators.groupBy(_._1).values.map(_.head._2).toList
+
+    // A decorated class's TYPE_DECL starts at its first decorator, so the heritage clause's line
+    // is looked up in the source, from there to the class body.
+    val root      = atom.metaData.root.headOption.getOrElse("")
+    val fileLines = TrieMap.empty[String, IndexedSeq[String]]
+    def linesOf(f: String): IndexedSeq[String] =
+        fileLines.getOrElseUpdate(
+          f,
+          Try {
+              val file = if java.nio.file.Paths.get(f).isAbsolute then File(f) else File(root) / f
+              file.lines.toIndexedSeq
+          }.getOrElse(IndexedSeq.empty)
+        )
+    def heritageLine(t: TypeDecl, file: String, baseName: String): Option[Int] =
+      val start = t.lineNumber.map(_.intValue())
+      val clause =
+          Pattern.compile(s"\\b(extends|implements)\\b[^{]*\\b${Pattern.quote(baseName)}\\b")
+      start.flatMap { from =>
+        val lines = linesOf(file)
+        (from to math.min(from + 40, lines.size)).find(n => clause.matcher(lines(n - 1)).find())
+      }.orElse(start)
+
+    val heritage = atom.typeDecl.filterNot(_.isExternal).l.flatMap { t =>
+        enclosingMethod(t).toList.flatMap { m =>
+            t.inheritsFromTypeFullName.filterNot(n => n == "ANY" || n.isEmpty).flatMap { base =>
+              // the frontend guesses a file for an imported base (`events.js::program:X`)
+              val baseName = base.split("[:.]").lastOption.getOrElse(base)
+              jsNames.ofBindingName(m.filename, baseName).map(_ =>
+                  m -> entry(
+                    baseName,
+                    base,
+                    m.filename,
+                    heritageLine(t, m.filename, baseName),
+                    None,
+                    "EXTENDS",
+                    None
+                  )
+              )
+            }
+        }
+    }
+
+    (uniqueDecorators ++ heritage)
+        .sortBy((m, d) => (m.fullName, d.lineNumber.getOrElse(-1), d.columnNumber.getOrElse(-1)))
+        .map((m, d) => m -> ObjectUsageSlice(targetObj = d, definedBy = Some(d), Nil, Nil))
+  end jsDecoratorAndHeritageSlices
+
   private def paramAnnotationSlices(
     param: MethodParameterIn,
     typeMap: Map[String, String]
@@ -229,21 +350,36 @@ object UsageSlicing:
     m: Method,
     invokedCalls: List[ObservedCall],
     argToCalls: List[ObservedCallWithArgPos],
-    typeMap: Map[String, String]
+    typeMap: Map[String, String],
+    withAnnotations: Boolean
   ): List[(Method, ObjectUsageSlice)] =
-    val defComp = DefComponent.fromNode(m, null, typeMap)
+    // JavaScript decorators have entries of their own, so the method is described by itself
+    // rather than by its last decorator.
+    val defComp =
+        if withAnnotations || m.callIn.nonEmpty then DefComponent.fromNode(m, null, typeMap)
+        else
+          CallDef(
+            m.name,
+            m.methodReturn.typeFullName,
+            Option(m.fullName),
+            Option(m.isExternal),
+            m.lineNumber.map(_.intValue()),
+            m.columnNumber.map(_.intValue())
+          )
 
-    val annotationCalls = m.annotation.map { a =>
-        ObservedCall(
-          if a.fullName.nonEmpty then a.fullName else a.name,
-          Option(a.code).filter(_.nonEmpty).orElse(Option(a.fullName)),
-          List.empty,
-          "",
-          Option(m.isExternal),
-          a.lineNumber.map(_.intValue()),
-          a.columnNumber.map(_.intValue())
-        )
-    }.toList
+    val annotationCalls = if !withAnnotations then Nil
+    else
+      m.annotation.map { a =>
+          ObservedCall(
+            if a.fullName.nonEmpty then a.fullName else a.name,
+            Option(a.code).filter(_.nonEmpty).orElse(Option(a.fullName)),
+            List.empty,
+            "",
+            Option(m.isExternal),
+            a.lineNumber.map(_.intValue()),
+            a.columnNumber.map(_.intValue())
+          )
+      }.toList
 
     List(m -> ObjectUsageSlice(
       targetObj = defComp,

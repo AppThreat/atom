@@ -26,6 +26,29 @@ final class JsNames(atom: Cpg):
   def split(fullName: String): Option[(String, Option[String])] =
       JsNames.split(knownModules, fullName)
 
+  /** file -> import binding name -> (module, symbol), from the `:program` assignments the frontend
+    * lowers imports to (`var X = require("m").X`).
+    */
+  private lazy val importBindings: Map[String, Map[String, (String, Option[String])]] =
+      atom.method.nameExact(":program").l.map { program =>
+        val bindings = program.ast.isCall.nameExact(Operators.assignment).l.flatMap { a =>
+            a.argument.l.sortBy(_.argumentIndex) match
+              case (lhs: Identifier) :: (rhs: Call) :: _ =>
+                  ofImportExpression(rhs).map(lhs.name -> _)
+              case _ => None
+        }
+        program.filename -> bindings.toMap
+      }.toMap
+
+  /** (module, symbol) a dotted name (`Column`, `ng.Input`) refers to through the file's imports. */
+  def ofBindingName(file: String, name: String): Option[(String, Option[String])] =
+    val head = name.takeWhile(_ != '.')
+    val rest = name.drop(head.length).stripPrefix(".")
+    importBindings.getOrElse(file, Map.empty).get(head).map { (module, symbol) =>
+        module -> Option((symbol.toList ++ Option(rest).filter(_.nonEmpty)).mkString("."))
+            .filter(_.nonEmpty)
+    }
+
   /** (module, symbol path) of an import binding's defining expression: `require("x")`,
     * `require("x").a.b`, `await import("x")`, and the frontend's `_tmp` lowering of them.
     */

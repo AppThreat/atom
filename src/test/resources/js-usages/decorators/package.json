@@ -1,0 +1,9 @@
+{
+  "name": "usage-corpus-decorators",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@nestjs/common": "10.0.0",
+    "typeorm": "0.3.20"
+  }
+}

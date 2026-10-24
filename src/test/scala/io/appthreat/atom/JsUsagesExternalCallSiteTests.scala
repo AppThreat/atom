@@ -26,7 +26,8 @@ class JsUsagesExternalCallSiteTests extends AnyWordSpec with Matchers with Befor
     "issue240-local-cross-file",
     "issue240-same-file",
     "multiplicity",
-    "binding-uses"
+    "binding-uses",
+    "decorators"
   )
 
   private var workspace: BFile                    = scala.compiletime.uninitialized
@@ -278,6 +279,40 @@ class JsUsagesExternalCallSiteTests extends AnyWordSpec with Matchers with Befor
           val lines = bindingCalls("binding-uses", "debugLib").map(_._2)
           lines should contain(25)
           lines should not contain 23
+      }
+  }
+
+  "usage slices of decorators and heritage clauses" should {
+
+      def declEntries(label: String): Seq[(String, Int, String, String)] =
+          for
+            os    <- sliceJson("decorators")("objectSlices").arr.toSeq
+            usage <- os("usages").arr.toSeq
+            t     <- usage.obj.get("targetObj").toSeq
+            if t("label").str == label
+          yield (
+            t("name").str,
+            t("lineNumber").num.toInt,
+            t.obj.get("module").map(_.str).getOrElse(""),
+            t.obj.get("resolvedMethod").filterNot(_.isNull).map(_.str).getOrElse("")
+          )
+
+      "record every decorator at its own line with its module, including unused parameters" in {
+          requireAstgen()
+          val decorators = declEntries("ANNOTATION").distinct.sortBy(_._2)
+          decorators shouldBe Seq(
+            ("Entity", 5, "typeorm", "typeorm:Entity"),
+            ("Column", 7, "typeorm", "typeorm:Column"),
+            ("Controller", 11, "@nestjs/common", "@nestjs/common:Controller"),
+            ("Get", 13, "@nestjs/common", "@nestjs/common:Get"),
+            ("Param", 14, "@nestjs/common", "@nestjs/common:Param"),
+            ("Injectable", 19, "@nestjs/common", "@nestjs/common:Injectable")
+          )
+      }
+
+      "record an extends clause at its own line, not the decorator's" in {
+          requireAstgen()
+          declEntries("EXTENDS") shouldBe Seq(("EventEmitter", 21, "events", "events:EventEmitter"))
       }
   }
 
