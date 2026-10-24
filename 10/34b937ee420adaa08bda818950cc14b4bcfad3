@@ -1,0 +1,21 @@
+src/main/scala/io/appthreat/atom/slicing/package.scala
+  s_e335fe820b41b8::t_c527b7c81c677f 570-572,574-575
+src/main/scala/io/appthreat/atom/slicing/UsageSlicing.scala
+  s_e335fe820b41b8::t_c527b7c81c677f 133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1034b937ee420adaa08bda818950cc14b4bcfad3",
+  "prompts": {},
+  "sessions": {
+    "s_e335fe820b41b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "120fe233-8899-4149-b780-6eac261dbd9d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
