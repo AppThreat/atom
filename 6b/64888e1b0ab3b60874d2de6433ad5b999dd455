@@ -1,0 +1,30 @@
+src/main/scala/io/appthreat/atom/slicing/package.scala
+  s_e335fe820b41b8::t_5fff779c7718bd 201
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_e335fe820b41b8::t_7360ffb80ee86c 1108
+src/test/scala/io/appthreat/atom/JsCallSitesTests.scala
+  s_e335fe820b41b8::t_0131e7243d53d1 157-159
+src/main/scala/io/appthreat/atom/slicing/CallSiteSlicing.scala
+  s_e335fe820b41b8::t_69715feb2f529a 93,153-158,257
+  s_e335fe820b41b8::t_7360ffb80ee86c 55,114,118,196
+  s_e335fe820b41b8::t_5fff779c7718bd 147
+docs/docs/lessons/callsites.md
+  s_e335fe820b41b8::t_69715feb2f529a 31,69
+  s_e335fe820b41b8::t_affbeff0048263 92-93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6b64888e1b0ab3b60874d2de6433ad5b999dd455",
+  "prompts": {},
+  "sessions": {
+    "s_e335fe820b41b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "120fe233-8899-4149-b780-6eac261dbd9d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
