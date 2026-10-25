@@ -264,9 +264,11 @@ object CallSiteSlicing:
               c.methodFullName.take(80)
             )
         }
-      else if !c.argument.exists(_.argumentIndex == 0) then
-        // a call with no receiver/callee argument: the frontend's lowering of a tagged
-        // template (`` gql`...` ``) names the call after the tag
+      else if !c.argument.exists(_.argumentIndex == 0) && c.methodFullName == c.name then
+        // a call with no receiver/callee argument whose full name is the bare name: the
+        // frontend's lowering of a tagged template (`` gql`...` ``) names the call after the
+        // tag and resolves nothing. A resolved name (`JSON.parse`) is a builtin call whose
+        // member happens to match a file binding, not a tag.
         js.ofBindingName(file, c.name).map { (module, symbol) =>
             CallSiteRecord(
               file,
