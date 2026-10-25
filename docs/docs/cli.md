@@ -6,7 +6,7 @@ title: CLI Usage
 # CLI Usage
 
 ```
-Usage: atom [parsedeps|data-flow|usages|reachables|memory-safety|export|algorithms] [options] [input]
+Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|export|algorithms] [options] [input]
 
   -o, --output <value>     output filename. Default app.⚛ or app.atom in windows
   -s, --slice-outfile <value>
@@ -80,6 +80,8 @@ Extract local variable and parameter usages
   --min-num-calls <value>  the minimum number of calls required for a usage slice - defaults to 1.
   --include-source         includes method source code in the slices - defaults to false.
   --extract-endpoints      extract http endpoints and convert to openapi format using atom-tools - defaults to false.
+Command: callsites
+Extract one record per external call/use site of an imported module (JS/TS)
 Command: reachables [options]
 Extract reachable data-flow slices based on automated framework tags
   --source-tag <value>     source tag - defaults to framework-input. Comma-separated values allowed.

@@ -794,6 +794,9 @@ object Atom:
                     case _                   => c
               )
         )
+    cmd("callsites")
+        .text("Extract one record per external call/use site of an imported module (JS/TS)")
+        .action((_, *) => AtomCallsitesConfig())
     cmd("reachables")
         .text("Extract reachable data-flow slices based on automated framework tags")
         .action((_, *) => AtomReachablesConfig().withDataDependencies(true))
@@ -1009,6 +1012,10 @@ object Atom:
               PerfReporter.stage("slicing.dataFlow", "slicing")(generateDataFlowSlice(config, ag))
           case u: UsagesConfig =>
               PerfReporter.stage("slicing.usages", "slicing")(generateUsagesSlice(config, ag, u))
+          case _: CallsitesConfig =>
+              PerfReporter.stage("slicing.callsites", "slicing")(
+                generateCallsitesSlice(config, ag)
+              )
           case _: ReachablesConfig =>
               PerfReporter.stage("slicing.reachables", "slicing")(
                 generateReachablesSlice(config, ag)
@@ -1094,6 +1101,17 @@ object Atom:
             val usagesConfig = migrateAtomConfigToSliceConfig(x).asInstanceOf[UsagesConfig]
             Option(UsageSlicing.calculateUsageSlice(cpg, usagesConfig))
         case _ => None
+
+  private def generateCallsitesSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
+    println("Slicing the atom for call sites. This might take a few minutes ...")
+    runChennaiTags(config, ag)
+    val slice = CallSiteSlicing.calculateCallSitesSlice(
+      ag,
+      migrateAtomConfigToSliceConfig(config).asInstanceOf[CallsitesConfig]
+    )
+    SliceFiles.writeAtomically(config.outputSliceFile)(slice.toJsonFile)
+    println(s"Call sites have been successfully written to ${config.outputSliceFile.pathAsString}")
+    Right("Call sites slice generated successfully")
 
   private def handleEndpointExtraction(config: AtomConfig, usagesConfig: UsagesConfig): Unit =
       if usagesConfig.extractEndpoints then
@@ -1201,6 +1219,8 @@ object Atom:
               !config.includeMethodSource,
               config.extractEndpoints
             )
+        case _: AtomCallsitesConfig =>
+            CallsitesConfig()
         case config: AtomReachablesConfig =>
             val profile = ReachabilityProfile.byName(config.profile).getOrElse {
                 if config.profile.trim.nonEmpty &&
@@ -1309,6 +1329,7 @@ object Atom:
 
   private def shouldReuseExistingAtom(config: AtomConfig, outputAtomFile: String): Boolean =
       (config.isInstanceOf[AtomUsagesConfig] ||
+          config.isInstanceOf[AtomCallsitesConfig] ||
           config.isInstanceOf[AtomExportConfig] ||
           config.isInstanceOf[AtomAlgorithmsConfig] ||
           config.exportAtom || config.reuseAtom) &&

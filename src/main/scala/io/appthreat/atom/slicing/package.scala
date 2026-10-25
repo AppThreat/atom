@@ -80,6 +80,8 @@ package object slicing:
     extractEndpoints: Boolean = false
   ) extends BaseConfig
 
+  case class CallsitesConfig() extends BaseConfig
+
   case class ReachablesConfig(
     sourceTag: Seq[String],
     sinkTag: Seq[String],
@@ -180,6 +182,26 @@ package object slicing:
     def toJsonPretty: String = this.asJson.spaces2
 
   case class ReachableSlice(reachables: List[ReachableFlows]) extends ProgramSlice:
+    def toJson: String = this.asJson.noSpaces
+
+    def toJsonPretty: String = this.asJson.spaces2
+
+  /** One record per external use site of an imported module: where and how it is used. Written by
+    * `atom callsites`; see CallSiteSlicing for the field meanings.
+    */
+  final case class CallSiteRecord(
+    file: String,
+    line: Integer,
+    col: Integer,
+    method: String,
+    module: String,
+    path: String,
+    kind: String,
+    via: String,
+    mfn: String
+  )
+
+  case class ProgramCallSites(callsites: List[CallSiteRecord]) extends ProgramSlice:
     def toJson: String = this.asJson.noSpaces
 
     def toJsonPretty: String = this.asJson.spaces2
