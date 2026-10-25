@@ -17,7 +17,7 @@ import scala.util.Try
   */
 class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
-  private val fixtureCases = Seq("callsites", "decorators")
+  private val fixtureCases = Seq("callsites", "decorators", "callsites-fields")
 
   private var workspace: BFile                    = scala.compiletime.uninitialized
   private var slices: Map[String, List[CallSite]] = Map.empty
@@ -144,6 +144,100 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           )
           at("decorators", "src/cats.ts", 21, "events") should contain theSameElementsAs List(
             CallSite("src/cats.ts", 21, -1, "events", "EventEmitter", "extends", "name")
+          )
+      }
+
+      "keep an import's uses when a class field copies it under its own name" in {
+          // `readonly Subject = Subject;` sets a field of `this`; it is not a second assignment
+          // of the imported `Subject` (atom#293 review)
+          records("callsites").filter(r =>
+              r.file == "src/widgets.ts"
+          ) should contain theSameElementsAs List(
+            CallSite("src/widgets.ts", 4, 21, "rxjs", "Subject", "ref", "binding"),
+            CallSite("src/widgets.ts", 7, 15, "rxjs", "Subject", "new", "binding"),
+            CallSite("src/widgets.ts", 13, 15, "rxjs", "Subject", "new", "binding")
+          )
+      }
+
+      "follow a class field that holds an import into its reads" in {
+          def in(file: String) =
+              records("callsites-fields").filter(r => r.file == file && r.via == "binding")
+                  .map(r => (r.line, r.kind, r.module, r.path))
+          // `this.Subject` in the class and in a subclass; `mutable` is written twice: no alias
+          in("src/aliases.ts") should contain theSameElementsAs List(
+            (5, "ref", "rxjs", "Subject"),
+            (6, "ref", "lodash-es", "uniq"),
+            (9, "new", "rxjs", "Subject"),
+            (13, "ref", "lodash-es", "chunk"),
+            (19, "ref", "rxjs", "BehaviorSubject"),
+            (22, "new", "rxjs", "Subject"),
+            (23, "new", "rxjs", "BehaviorSubject")
+          )
+          // a static field read off the class, a private field, a string-keyed field
+          (in("src/shapes.ts") should contain).allOf(
+            (6, "ref", "dayjs", ""),
+            (19, "call", "dayjs", ""),
+            (23, "call", "lodash-es", "debounce"),
+            (23, "call", "lodash-es", "throttle"),
+            (23, "call", "lodash-es", "chunk")
+          )
+      }
+
+      "record a component template's reads of a field that holds an import" in {
+          def in(file: String) =
+              records("callsites-fields").filter(r => r.file == file && r.via == "binding")
+                  .map(r => (r.line, r.col, r.kind, r.module, r.path))
+          // the templateUrl file: a property binding and an interpolated call
+          in("src/app/icons.component.html") should contain theSameElementsAs List(
+            (1, 17, "ref", "@fortawesome/free-solid-svg-icons", "faCoffee"),
+            (2, 9, "call", "date-fns", "formatDistance")
+          )
+          // an inline template, positioned in the decorator; `| uppercase` is a pipe, not a read
+          in("src/app/icons.component.ts").filter(_._1 == 16) should contain theSameElementsAs List(
+            (16, 30, "ref", "@fortawesome/free-solid-svg-icons", "faStar"),
+            (16, 52, "ref", "@fortawesome/free-solid-svg-icons", "faStar.iconName")
+          )
+      }
+
+      "not take a field written any other way for an alias" in {
+          def in(file: String) =
+              records("callsites-fields").filter(r => r.file == file && r.via == "binding")
+                  .map(r => (r.line, r.kind, r.module, r.path))
+          // only the initialisers' own values: no read of `this.g` (bracket write), `this.k` (`??=`),
+          // `this.h` (destructuring), `this.q` (Object.assign), `this.S` in an instance method,
+          // `this.f` (overwritten by a subclass); `new this.S()` in a static method is a read
+          in("src/negatives.ts") should contain theSameElementsAs List(
+            (4, "ref", "rxjs", "of"),
+            (5, "ref", "rxjs", "from"),
+            (10, "ref", "rxjs", "timer"),
+            (11, "ref", "rxjs", "interval"),
+            (16, "ref", "rxjs", "from"),
+            (22, "ref", "rxjs", "Subject"),
+            (28, "ref", "rxjs", "Subject"),
+            (30, "new", "rxjs", "Subject"),
+            (34, "ref", "rxjs", "Subject"),
+            (39, "ref", "rxjs", "BehaviorSubject")
+          )
+          // `Widget extends Component` from react: not the project's Component and its field
+          in("src/widget.ts") shouldBe empty
+      }
+
+      "read templates as Angular does" in {
+          def in(file: String) =
+              records("callsites-fields").filter(r => r.file == file && r.via == "binding")
+                  .map(r => (r.line, r.col, r.kind, r.path))
+          // escaped quotes in an inline template; `'star'` is a string; a template that writes
+          // `icon` makes it no alias
+          in("src/app/more.component.ts").filter(_._1 == 7) should contain theSameElementsAs List(
+            (7, 33, "ref", "faStar"),
+            (7, 73, "call", "format")
+          )
+          in("src/app/more.component.ts").filter(_._1 > 25).map(_._1) shouldBe List(28)
+          // a templateUrl without `./`; `href="#coffee"` and prose declare nothing; the `@for`
+          // variable hides the field only in its block; an unquoted value; a string is no read
+          in("src/app/plain.component.html") should contain theSameElementsAs List(
+            (1, 17, "ref", "faCoffee"),
+            (3, 11, "ref", "faStar")
           )
       }
 
