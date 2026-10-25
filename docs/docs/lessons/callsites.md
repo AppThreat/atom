@@ -37,6 +37,19 @@ is use-shaped: one `CallSiteRecord` per place an import is used, ready to become
   assignments the frontend lowers imports to, including destructured dynamic imports
   (`const { S3Client } = await import("@aws-sdk/client-s3")` → `new S3Client()`). A local that
   is reassigned anywhere gets no origin: it may hold something else at a use.
+  A class field written once with such a binding is an alias by the same rule
+  (`readonly Subject = Subject;`, or a single `this.x = Subject` in the constructor): its reads
+  are uses, through `this` (inherited fields included) or, for a static field, through the
+  class's name or `this` in a static method. Every write counts against that single write: a
+  subclass's, a compound one (`this.x ??= v`), a destructuring one (`({ a: this.x } = o)`), a
+  bracket one (`this["x"] = v`), and a template statement's (`(click)="x = null"`). A field
+  written off any other base (`comp.x = v`) is never an alias, since those writes cannot be placed
+  without types, and no field of a class that writes `this` by a key computed at run time
+  (`this[k] = v`) or wholesale (`Object.assign(this, o)`) is. Angular templates read a
+  component's members by bare name, so a field alias read in the component's `templateUrl` file
+  or inline `template` (`[icon]="faCoffee"`, `{{ when(start, end) }}`) is a use too, positioned
+  in the template; names the template declares (`#ref`, `let x`, `@for (x of ...)`, `@let`) hide
+  members where they are in scope.
 - **`type`** — the call is not covered by a binding, but its resolved name starts with a module
   the project imports (`res.status()` on a typed express response → `express:Response:status`).
   Records whose callee member is a primitive string/array method (`includes`, `replace`, ...)
