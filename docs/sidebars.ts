@@ -63,6 +63,7 @@ const sidebars: SidebarsConfig = {
         'lessons/dependencies',
         'lessons/enrichment',
         'lessons/usages',
+        'lessons/callsites',
         'lessons/dataflow',
         'lessons/reachability',
         'lessons/export',

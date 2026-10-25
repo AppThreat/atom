@@ -151,6 +151,8 @@ package object atom:
     extractEndpoints: Boolean = false
   ) extends AtomConfig
 
+  case class AtomCallsitesConfig() extends AtomConfig
+
   case class AtomReachablesConfig(
     sourceTag: Seq[String] = DEFAULT_SOURCE_TAGS,
     sinkTag: Seq[String] = DEFAULT_SINK_TAGS,
