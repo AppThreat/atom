@@ -1,0 +1,64 @@
+src/test/scala/io/appthreat/atom/JsCallSitesTests.scala
+  s_e335fe820b41b8::t_63757110c60987 150-201,220,223,234,241-242
+  s_e335fe820b41b8::t_ebf300902d750d 20,202-219,221-222,224-233,235-240,243
+src/main/scala/io/appthreat/atom/slicing/AngularTemplate.scala
+  s_e335fe820b41b8::t_8d29a611419a62 51-69,137,159
+  s_e335fe820b41b8::t_bb7b0d845ef124 136,223-226,229-232,235-241,258,261
+  s_e335fe820b41b8::t_72b98bf5c12837 227-228
+  s_e335fe820b41b8::t_e73f4c3090d2d6 1-5,8,13,21-25,31,35,90,161,171,194-195,207,211,217,219,222,233-234,260,262
+  s_e335fe820b41b8::t_db94fd7fc3f640 11-12,17-20,112-135,164-170,179-193,196-206,244-257,259
+  s_e335fe820b41b8::t_6bc82d3a15bdff 6-7,9-10,14-16,26-30,32-34,36-50,70-89,91-111,138-158,160,162-163,172-178,208-210,212-216,218,220-221,242-243
+src/test/resources/js-usages/callsites-fields/src/component.ts
+  s_e335fe820b41b8::t_4cf43225ef10a5 1-5
+src/main/scala/io/appthreat/atom/slicing/CallSiteSlicing.scala
+  s_e335fe820b41b8::t_db94fd7fc3f640 224-228,236,238-243,275-299,572-579,595
+  s_e335fe820b41b8::t_404bbc4090cac0 581-584
+  s_e335fe820b41b8::t_9164acfd764fc7 212-223,230-231,234,244-247,300-307
+  s_e335fe820b41b8::t_72b98bf5c12837 59-64,117,196-197,199-211,229,232,235,237,248-274,449,641,647-650
+  s_e335fe820b41b8::t_d0ba0f8398b72c 549,580
+  s_e335fe820b41b8::t_9099f6db832369 6,68-94,104,108-116,193-195,198,233,308-310,313-322,488-489,519-524,552,559,561-563,587-588,596,598-601,619-625,627-632,644,654-655,659-665,668-672,674-676,679-682,705-707,711,719-720
+  s_e335fe820b41b8::t_f48049fb590ad2 311-312,490-492,496-497,570,585,709,712
+  s_e335fe820b41b8::t_0d838441da629b 5,118,451,493-495,525-548,550-551,553-558,560,564-569,571,586,589-594,597,602-618,626,633-640,642-643,645-646,651-653,656-658,666-667,673,677-678,700-704,708,710
+src/test/resources/js-usages/callsites-fields/src/negatives.ts
+  s_e335fe820b41b8::t_4cf43225ef10a5 1-40
+src/test/resources/js-usages/callsites-fields/package.json
+  s_e335fe820b41b8::t_e74e0d8b0a25f8 1-4
+src/test/resources/js-usages/callsites-fields/src/aliases.ts
+  s_e335fe820b41b8::t_e74e0d8b0a25f8 1-25
+src/test/resources/js-usages/callsites-fields/src/app/icons.component.ts
+  s_e335fe820b41b8::t_e74e0d8b0a25f8 1-20
+src/test/resources/js-usages/callsites-fields/src/shapes.ts
+  s_e335fe820b41b8::t_e74e0d8b0a25f8 1-33
+src/test/resources/js-usages/callsites-fields/src/app/plain.component.html
+  s_e335fe820b41b8::t_4cf43225ef10a5 1-3
+src/test/resources/js-usages/callsites-fields/src/app/icons.component.html
+  s_e335fe820b41b8::t_e74e0d8b0a25f8 1-2
+src/test/resources/js-usages/callsites-fields/src/app/more.component.ts
+  s_e335fe820b41b8::t_4cf43225ef10a5 1-21,23,26,29
+  s_e335fe820b41b8::t_aaabdae4c2fce5 22,24-25,27-28
+src/test/resources/js-usages/callsites-fields/src/widget.ts
+  s_e335fe820b41b8::t_4cf43225ef10a5 1-7
+docs/docs/lessons/callsites.md
+  s_e335fe820b41b8::t_6e6d905a680f66 40-42
+  s_e335fe820b41b8::t_1a50f7c2b59267 43-52
+src/test/resources/js-usages/callsites/src/widgets.ts
+  s_e335fe820b41b8::t_bcd2a1c9759868 1-15
+src/test/scala/io/appthreat/atom/slicing/AngularTemplateTests.scala
+  s_e335fe820b41b8::t_6e7f13f6a3d75b 1-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "266213fc0ddefb56351af35d1e6b288f40b95abb",
+  "prompts": {},
+  "sessions": {
+    "s_e335fe820b41b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "120fe233-8899-4149-b780-6eac261dbd9d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
