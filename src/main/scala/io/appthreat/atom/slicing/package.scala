@@ -198,7 +198,7 @@ package object slicing:
     path: String,
     kind: String,
     via: String,
-    mfn: String
+    resolvedMethod: String
   )
 
   case class ProgramCallSites(callsites: List[CallSiteRecord]) extends ProgramSlice:

@@ -107,7 +107,6 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
   "atom callsites" should {
 
       "record each binding use at the use's own position" in {
-          val rs = records("callsites")
           // `client.send(jwt.sign({ a: 1 }))`: jwt is called (its record carries the member path)
           at("callsites", "src/app.js", 13, "jsonwebtoken") should contain theSameElementsAs List(
             CallSite("src/app.js", 13, 21, "jsonwebtoken", "sign", "call", "binding")
@@ -155,8 +154,9 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
       }
 
       "record decorators by their binding, one per decorator" in {
-          val rs = records("decorators")
-          rs.filter(r => r.kind == "decorator").map(r => (r.module, r.line, r.path)) should
+          records("decorators").filter(r => r.kind == "decorator").map(r =>
+              (r.module, r.line, r.path)
+          ) should
               contain theSameElementsAs List(
                 ("typeorm", 5, "Entity"),
                 ("typeorm", 7, "Column"),

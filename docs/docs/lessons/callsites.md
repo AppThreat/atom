@@ -28,7 +28,7 @@ is use-shaped: one `CallSiteRecord` per place an import is used, ready to become
 | `path`  | export path within the module (`readFile`, `Parser.on`, `EditorView.dispatch`) |
 | `kind`  | `call`, `new`, `jsx`, `arg`, `ref`, `decorator`, `extends`, `tag`           |
 | `via`   | how the module was resolved: `binding`, `type` or `name` (below)            |
-| `mfn`   | the resolved callee's method full name, when a call is involved             |
+| `resolvedMethod` | the callee's method full name when a call is involved and the frontend resolved it, else empty |
 
 `via` is the resolution story of the record:
 
@@ -66,7 +66,7 @@ The output is `{"callsites": [ ... ]}`.
 ```json
 {"file":"src/dyn.ts","line":3,"col":21,"method":"src/dyn.ts::program:s3list",
  "module":"@aws-sdk/client-s3","path":"S3Client","kind":"new","via":"binding",
- "mfn":"<unknownFullName>"}
+ "resolvedMethod":""}
 ```
 
 The three passes in [CallSiteSlicing.scala](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/slicing/CallSiteSlicing.scala):
@@ -89,5 +89,5 @@ recs ++= nameResolvedRecords(atom, js)
 - `via=name` records (JSX above all) depend on name matching within the file, not on scope
   resolution.
 - `via=type` records inherit type recovery's guesses on untyped code; the primitive-member
-  filter removes the measured false-positive class, and the file's own bindings win when a
-  resolved name carries a module the file never imports.
+  filter removes the measured false-positive class, but a guessed receiver type (a project
+  logger typed as `node:console:Console`) still produces a record.

@@ -1105,10 +1105,7 @@ object Atom:
   private def generateCallsitesSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
     println("Slicing the atom for call sites. This might take a few minutes ...")
     runChennaiTags(config, ag)
-    val slice = CallSiteSlicing.calculateCallSitesSlice(
-      ag,
-      migrateAtomConfigToSliceConfig(config).asInstanceOf[CallsitesConfig]
-    )
+    val slice = CallSiteSlicing.calculateCallSitesSlice(ag)
     SliceFiles.writeAtomically(config.outputSliceFile)(slice.toJsonFile)
     println(s"Call sites have been successfully written to ${config.outputSliceFile.pathAsString}")
     Right("Call sites slice generated successfully")

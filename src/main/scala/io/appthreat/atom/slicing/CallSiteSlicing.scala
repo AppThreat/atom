@@ -52,7 +52,7 @@ object CallSiteSlicing:
     "toUpperCase"
   )
 
-  def calculateCallSitesSlice(atom: Cpg, config: CallsitesConfig): ProgramCallSites =
+  def calculateCallSitesSlice(atom: Cpg): ProgramCallSites =
     if !JsNames.isJs(atom.metaData.language.headOption) then return ProgramCallSites(Nil)
 
     val js       = JsNames(atom)
@@ -90,7 +90,7 @@ object CallSiteSlicing:
               (origin.path ++ resolver.membersOf(id)).mkString("."),
               kind,
               "binding",
-              involvement.map(_.methodFullName).getOrElse("")
+              involvement.map(c => resolvedName(c.methodFullName)).getOrElse("")
             )
           end if
         }
@@ -104,16 +104,6 @@ object CallSiteSlicing:
               // the symbol path is dotted (`path.includes`); the callee member is its last segment
               val member = symbol.map(_.split('.').last).getOrElse("")
               if !primitiveMembers.contains(member) then
-                val file = c.method.filename
-                // A resolved name may carry a module the file never imports while its type name is a
-                // binding of this file (type recovery chose `codemirror:EditorView:*` in a file that
-                // imports `@codemirror/view`). The file's own binding wins.
-                val preferred = symbol.toList match
-                  case first :: _ =>
-                      js.ofBindingName(file, first.takeWhile(_ != '.')) match
-                        case Some((m, _)) if m != module && !resolver.fileImports(file, module) => m
-                        case _ => module
-                  case _ => module
                 // `consumer\n  .apply(x)`: report the member name's position, not the chain's start
                 val memberPos =
                     c.receiver.collectFirst {
@@ -121,17 +111,16 @@ object CallSiteSlicing:
                             f.argument.collectFirst { case fi: FieldIdentifier => fi }
                     }.flatten.filter(_.lineNumber.exists(_.intValue > 0))
                 recs += CallSiteRecord(
-                  file,
+                  c.method.filename,
                   memberPos.map(fi => line(fi)).getOrElse(line(c)),
                   memberPos.map(fi => col(fi)).getOrElse(col(c)),
                   c.method.fullName,
-                  preferred,
+                  module,
                   symbol.getOrElse(""),
                   "call",
                   "type",
                   c.methodFullName
                 )
-              end if
             }
         }
 
@@ -155,21 +144,25 @@ object CallSiteSlicing:
     val deduped = recs
         .groupBy(r => (r.file, r.line, r.col, r.module))
         .values
-        .map(rs => rs.minBy(r => (kindRank.getOrElse(r.kind, 8), r.path, r.via, r.mfn)))
+        .map(rs => rs.minBy(r => (kindRank.getOrElse(r.kind, 8), r.path, r.via, r.resolvedMethod)))
     ProgramCallSites(
       deduped.toList.sortBy(r => (r.file, r.line.intValue, r.col.intValue))
     )
   end calculateCallSitesSlice
 
+  /** The callee's full name when the frontend resolved one, else empty (a placeholder, or the
+    * source text the JS frontend falls back to for JSX elements).
+    */
+  private def resolvedName(fullName: String): String =
+      if JsNames.isResolvedName(fullName) then fullName else ""
+
   private def line(n: AstNode): Integer = n match
     case e: Expression => e.lineNumber.getOrElse(-1)
-    case a: Annotation => a.lineNumber.getOrElse(-1)
     case t: TypeDecl   => t.lineNumber.getOrElse(-1)
     case _             => -1
 
   private def col(n: AstNode): Integer = n match
     case e: Expression => e.columnNumber.getOrElse(-1)
-    case a: Annotation => a.columnNumber.getOrElse(-1)
     case _             => -1
 
   private def enclosingMethod(n: AstNode): Option[Method] =
@@ -200,7 +193,7 @@ object CallSiteSlicing:
       val clause = java.util.regex.Pattern.compile(
         s"\\b(extends|implements)\\b[^{]*\\b${java.util.regex.Pattern.quote(baseName)}\\b"
       )
-      t.lineNumber.map(_.intValue).flatMap { from =>
+      t.lineNumber.map(n => math.max(n.intValue, 1)).flatMap { from =>
         val lines = linesOf(file)
         (from to math.min(from + 40, lines.size)).find(n => clause.matcher(lines(n - 1)).find())
       }.map(Integer.valueOf)
@@ -261,7 +254,7 @@ object CallSiteSlicing:
               (symbol.toList ++ parts.tail).mkString("."),
               "jsx",
               "name",
-              c.methodFullName.take(80)
+              resolvedName(c.methodFullName)
             )
         }
       else if !c.argument.exists(_.argumentIndex == 0) && c.methodFullName == c.name then
@@ -381,20 +374,6 @@ object CallSiteSlicing:
                   case _ =>
           }
     }
-
-    // file -> module specifiers its import bindings bring in
-    private val fileModules: Map[String, Set[String]] =
-        atom.method.nameExact(":program").l
-            .flatMap(p =>
-                p.local.l.flatMap(l => origins.get(l.id())).map(o => (p.filename, o.module))
-            )
-            .groupMap(_._1)(_._2)
-            .view
-            .mapValues(_.toSet)
-            .toMap
-
-    def fileImports(file: String, module: String): Boolean =
-        fileModules.getOrElse(file, Set.empty).contains(module)
 
     /** The (module, export path) an identifier's declaration is an import binding of, if any. */
     def originOf(id: Identifier): Option[Origin] =
