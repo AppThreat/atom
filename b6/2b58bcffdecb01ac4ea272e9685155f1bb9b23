@@ -1,0 +1,25 @@
+src/main/scala/io/appthreat/atom/passes/TypeHintPass.scala
+  s_e335fe820b41b8::t_cd91c02d0761f5 11-12
+  h_6a4cc5cdf68def 3,9-10,13-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b62b58bcffdecb01ac4ea272e9685155f1bb9b23",
+  "prompts": {},
+  "humans": {
+    "h_6a4cc5cdf68def": {
+      "author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  },
+  "sessions": {
+    "s_e335fe820b41b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "120fe233-8899-4149-b780-6eac261dbd9d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
