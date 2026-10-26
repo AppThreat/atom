@@ -1,0 +1,35 @@
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_e335fe820b41b8::t_a442d541581fab 48,67
+  s_e335fe820b41b8::t_a815ba8425f4b9 70
+  s_e335fe820b41b8::t_68ad279b44c405 1026-1028,1036-1038,1042-1044
+  s_e335fe820b41b8::t_9663c9e322b3d0 698-725,1016,1020-1025,1029-1035,1039-1041,1045-1058,1383
+src/main/scala/io/appthreat/atom/package.scala
+  s_e335fe820b41b8::t_9663c9e322b3d0 48-52,139-145
+  s_e335fe820b41b8::t_4c09959982a2c0 146
+README.md
+  s_e335fe820b41b8::t_00aa7535c2e16e 166-167
+src/test/scala/io/appthreat/atom/BomOptionsTests.scala
+  s_e335fe820b41b8::t_1ff3e123e2737b 63-74,80,86-88,90
+  s_e335fe820b41b8::t_7f448f5af5fe2b 1-42,46,50-62,75-79,81-85,89,91-125
+  s_e335fe820b41b8::t_0bfc10bd6482b2 43-45,47-49
+docs/docs/cli.md
+  s_e335fe820b41b8::t_3548f879ef8c95 62-63
+docs/docs/slicing.md
+  s_e335fe820b41b8::t_8fdfda71a063fd 191-196
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b2ca22e8015e3106dc7d6e20f5263497de36c9db",
+  "prompts": {},
+  "sessions": {
+    "s_e335fe820b41b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "120fe233-8899-4149-b780-6eac261dbd9d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
