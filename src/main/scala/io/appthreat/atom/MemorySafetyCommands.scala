@@ -199,6 +199,15 @@ object MemorySafetyCommands:
         call.argument.l
             .filter(a => a.tag.name(MemoryApiPass.TagDst).l.nonEmpty)
             .flatMap(_.tag.name(ExtentPass.TagExtent).value.l)
+            // an `alloc:<node id>` extent names its allocation by a per-run id: show the
+            // allocation's code instead
+            .map(v =>
+                v.split(":", 2) match
+                  case Array("alloc", id) if id.nonEmpty && id.forall(_.isDigit) =>
+                      scala.util.Try(call.graph.node(id.toLong)).toOption.flatMap(Option(_))
+                          .map(n => s"alloc:${n.property("CODE")}").getOrElse("alloc")
+                  case _ => v
+            )
             .foreach(v => textEntry(s"destination extent $v", "destination"))
     }
 
@@ -212,7 +221,16 @@ object MemorySafetyCommands:
           while frontier.nonEmpty && shown < MaxFlowEntries do
             val next = mutable.ListBuffer.empty[StoredNode]
             frontier.foreach { n =>
+                // the edge order follows node ids, which differ between runs: order the
+                // definitions by where they are written instead
                 n._reachingDefIn.collectAll[StoredNode].l.filterNot(d => visited.contains(d.id))
+                    .sortBy(d =>
+                        (
+                          Option(d.property("LINE_NUMBER")).map(_.toString.toInt).getOrElse(0),
+                          Option(d.property("COLUMN_NUMBER")).map(_.toString.toInt).getOrElse(0),
+                          String.valueOf(d.property("CODE"))
+                        )
+                    )
                     .foreach { d =>
                       visited += d.id
                       d match
