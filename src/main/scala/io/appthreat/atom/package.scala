@@ -45,6 +45,11 @@ package object atom:
     // built-in inventory by API name - declare an in-house `av_memcpy` wrapper or a platform's
     // memcpy roles without patching chen. Applies to C/C++ graphs.
     var memoryApiConfigFile: Option[File] = None
+    // The project's CycloneDX BOM(s), given with `--bom-file` or `--bom-dir` (one or the other).
+    // They are stored in the atom in place of any BOM the project directory holds, and the tag
+    // passes take purls and component tags from them.
+    var bomFile: Option[File] = None
+    var bomDir: Option[File]  = None
 
     def withOutputAtomFile(x: File): AtomConfig =
       this.outputAtomFile = x
@@ -129,6 +134,14 @@ package object atom:
 
     def withMemoryApiConfigFile(x: Option[File]): AtomConfig =
       this.memoryApiConfigFile = x
+      this
+
+    def withBomFile(x: Option[File]): AtomConfig =
+      this.bomFile = x
+      this
+
+    def withBomDir(x: Option[File]): AtomConfig =
+      this.bomDir = x
       this
 
   end AtomConfig

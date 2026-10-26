@@ -163,6 +163,8 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
                            path to a JSON file (memory-apis.json schema) merged over the built-in memory-API inventory by API name, declaring in-house wrappers or platform argument roles. (C/C++ only)
   --validation-config <value>
                            path to a JSON file declaring validators/sanitisers (chennai.json schema). Reachable flows passing through a declared sanitiser are dropped for its categories.
+  --bom-file <value>       the project's CycloneDX BOM or VDR, e.g. from cdxgen. Reachables takes package purls and component tags from it; without it or --bom-dir, a BOM in the input directory is used.
+  --bom-dir <value>        a directory of CycloneDX BOMs: every *bom*.json, *.cdx.json and *.vdr.json under it is used as with --bom-file.
   --file-filter <value>    the name of the source file to generate slices from. Uses regex.
   --method-name-filter <value>
                            filters in slices that go through specific methods by names. Uses regex.
