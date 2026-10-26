@@ -45,6 +45,7 @@ import io.appthreat.x2cpg.passes.frontend.{XTypeRecovery, XTypeRecoveryConfig}
 import io.appthreat.x2cpg.passes.taggers.{
     AllocationStatePass,
     AndroidServicesTagsPass,
+    BomFiles,
     CdxPass,
     ChennaiTagsPass,
     EasyTagsPass,
@@ -63,8 +64,10 @@ import io.appthreat.x2cpg.passes.taggers.python.PythonFrameworkRecognizersPass
 import io.appthreat.x2cpg.utils.ExternalCommand
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
 import io.shiftleft.codepropertygraph.generated.{Cpg, Languages}
+import io.shiftleft.codepropertygraph.generated.nodes.NewConfigFile
 import io.shiftleft.semanticcpg.language.*
 import io.shiftleft.semanticcpg.layers.LayerCreatorContext
+import overflowdb.BatchedUpdate
 import scopt.OptionParser
 
 import java.util.Locale
@@ -692,6 +695,34 @@ object Atom:
               case config: AtomConfig => config.withValidationConfigFile(Option(File(x)))
               case _                  => c
         )
+    opt[String]("bom-file")
+        .text(
+          "the project's CycloneDX BOM or VDR, e.g. from cdxgen. Reachables takes package purls " +
+              "and component tags from it; without it or --bom-dir, a BOM in the input directory is used."
+        )
+        .validate(x =>
+            if File(x).isRegularFile then success
+            else failure(s"The BOM file `$x` passed via `--bom-file` does not exist.")
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withBomFile(Option(File(x)))
+              case _                  => c
+        )
+    opt[String]("bom-dir")
+        .text(
+          "a directory of CycloneDX BOMs: every *bom*.json, *.cdx.json and *.vdr.json under it is " +
+              "used as with --bom-file."
+        )
+        .validate(x =>
+            if File(x).isDirectory then success
+            else failure(s"The BOM directory `$x` passed via `--bom-dir` is not a directory.")
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withBomDir(Option(File(x)))
+              case _                  => c
+        )
     opt[String]("file-filter")
         .text(s"the name of the source file to generate slices from. Uses regex.")
         .action((x, c) => c.withFileFilter(Option(x)))
@@ -982,8 +1013,48 @@ object Atom:
 
   private def run(config: AtomConfig, language: String): Either[String, String] =
       for
+        _ <- givenBoms(config)
         _ <- generateAtom(config, language)
       yield newAtomCreatedString(config)
+
+  /** The BOMs given with `--bom-file` or `--bom-dir`: none when neither was, and an error when both
+    * were or the directory holds no BOM.
+    */
+  private def givenBoms(config: AtomConfig): Either[String, List[File]] =
+      (config.bomFile, config.bomDir) match
+        case (Some(_), Some(_)) =>
+            Left(
+              "The arguments `--bom-file`, `--bom-dir` are mutually exclusive. Pass only one of them."
+            )
+        case (Some(file), None) => Right(List(file))
+        case (None, Some(dir)) =>
+            val boms = dir.listRecursively
+                .filter(f => f.isRegularFile && BomFiles.isBom(f.pathAsString))
+                .toList
+                .sortBy(_.pathAsString)
+            if boms.isEmpty then
+              Left(
+                s"No BOM (*bom*.json, *.cdx.json, *.vdr.json) found under `${dir.pathAsString}`."
+              )
+            else Right(boms)
+        case (None, None) => Right(Nil)
+
+  /** Stores the given BOMs in the atom in place of any the project directory held, so the tag
+    * passes read exactly these. A reused atom keeps the tags it was built with; only the slices
+    * that tag again (usages, callsites) see a BOM given on the re-run.
+    */
+  private def storeBoms(config: AtomConfig, atom: Cpg): Either[String, Unit] =
+      givenBoms(config).map { boms =>
+          if boms.nonEmpty then
+            val diff = new BatchedUpdate.DiffGraphBuilder
+            atom.configFile.filter(f => BomFiles.isBom(f.name)).foreach(diff.removeNode)
+            boms.foreach(bom =>
+                diff.addNode(
+                  NewConfigFile().name(bom.pathAsString).content(bom.contentAsString)
+                )
+            )
+            BatchedUpdate.applyDiff(atom.graph, diff)
+      }
 
   private def newAtomCreatedString(config: AtomConfig): String =
     val absolutePath = config.outputAtomFile.path.toAbsolutePath
@@ -1309,6 +1380,7 @@ object Atom:
             Right("AST cache generated successfully. Skipped CPG enhancement and slicing.")
           else
             for
+              _ <- storeBoms(config, ag)
               _ <- enhanceCpg(config, ag, reusing)
               _ <- generateSlice(config, ag)
               _ <- PerfReporter.stage("verification.persist", "verification")(closeCpg(ag))
