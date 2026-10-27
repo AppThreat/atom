@@ -876,7 +876,7 @@ object ReachableSlicing:
     dynamic ++ phpRuby ++ ruby ++ cLang
   end collectLanguageSpecificFlows
 
-  private def collectDynamicLanguageFlows(
+  private[slicing] def collectDynamicLanguageFlows(
     atom: Cpg,
     config: ReachablesConfig,
     language: String,
@@ -886,13 +886,16 @@ object ReachableSlicing:
   ): Iterator[Iterator[Path]] =
     if !DYNAMIC_LANGUAGES.contains(language) then return Iterator.empty
 
-    val dynCallSource          = atom.tag.name(sourceTagRegex).call.argument.isIdentifier
+    // Traversals are single-use iterators. These three sets feed several queries and the f2 gate,
+    // so they are lists.
+    val dynCallSource          = atom.tag.name(sourceTagRegex).call.argument.isIdentifier.l
+    val dynFrameworkParameter  = atom.tag.name(s"($FRAMEWORK_TAG|$FRAMEWORK_INPUT_TAG)").parameter.l
+    val dynSink                = atom.tag.name(sinkTagRegex).call.argument.isIdentifier.l
     val dynCallAllArgSource    = atom.tag.name(sourceTagRegex).call.argument
     val dynFrameworkIdentifier = atom.tag.name(s"($FRAMEWORK_TAG|$FRAMEWORK_INPUT_TAG)").identifier
-    val dynFrameworkParameter  = atom.tag.name(s"($FRAMEWORK_TAG|$FRAMEWORK_INPUT_TAG)").parameter
-    val dynSink                = atom.tag.name(sinkTagRegex).call.argument.isIdentifier
     val dynSinkMethodCallIn    = atom.tag.name(sinkTagRegex).method.callIn(using NoResolve)
-    val flow1                  = dynSink.reachableByFlows(dynCallSource, dynFrameworkParameter)
+    val flow1 =
+        dynSink.iterator.reachableByFlows(dynCallSource.iterator, dynFrameworkParameter.iterator)
     val dynCallInFlows =
         dynSinkMethodCallIn.reachableByFlows(
           dynCallAllArgSource
@@ -900,12 +903,12 @@ object ReachableSlicing:
     val defaultFlows = if defaultTagsMode then
       val f1 =
           atom.tag.name(s"($FRAMEWORK_TAG|$FRAMEWORK_INPUT_TAG)").call.argument.reachableByFlows(
-            dynFrameworkParameter,
+            dynFrameworkParameter.iterator,
             atom.tag.name(sourceTagRegex).parameter
           )
       val f2 = if dynFrameworkParameter.isEmpty then
         Iterator(
-          dynSink.reachableByFlows(dynCallSource, dynFrameworkIdentifier),
+          dynSink.iterator.reachableByFlows(dynCallSource.iterator, dynFrameworkIdentifier),
           atom.tag.name(s"($FRAMEWORK_TAG|$FRAMEWORK_INPUT_TAG)").call.argument.isIdentifier.reachableByFlows(
             atom.tag.name(sourceTagRegex).identifier
           )
