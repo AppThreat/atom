@@ -1,0 +1,20 @@
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  s_e335fe820b41b8::t_6538becfdeb189 889-902,904
+  s_e335fe820b41b8::t_f02d1c8a9054a7 905
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e00cd79634e6b2aa8f32571340bfc1ee859cec7e",
+  "prompts": {},
+  "sessions": {
+    "s_e335fe820b41b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "120fe233-8899-4149-b780-6eac261dbd9d",
+        "model": "unknown"
+      },
+      "human_author": null
+    }
+  }
+}
