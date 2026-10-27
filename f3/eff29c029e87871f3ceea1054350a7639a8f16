@@ -1,0 +1,27 @@
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  s_e335fe820b41b8::t_9160cef737a7d4 911
+  s_e335fe820b41b8::t_755251c8001ac7 889-893
+  s_e335fe820b41b8::t_f0ee6246a072f8 897-898,906
+  s_e335fe820b41b8::t_645df41b41e442 879
+src/test/scala/io/appthreat/atom/slicing/ReachablesIteratorReuseTests.scala
+  s_e335fe820b41b8::t_6f335d21a41a46 19-21
+  s_e335fe820b41b8::t_56b02b50322ad2 6,71
+  s_e335fe820b41b8::t_c8b97e65a633f0 17-18,75-102
+  s_e335fe820b41b8::t_7dc4e5e384e23a 1-5,7-16,22-70,72-74,103-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f3eff29c029e87871f3ceea1054350a7639a8f16",
+  "prompts": {},
+  "sessions": {
+    "s_e335fe820b41b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "120fe233-8899-4149-b780-6eac261dbd9d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
