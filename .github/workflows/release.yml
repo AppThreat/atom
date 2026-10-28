@@ -71,6 +71,20 @@ jobs:
           files: |
             target/graalvm-native-image/atom.exe
             target/graalvm-native-image/atom.exe.sha512
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: diagnostics-release-win
+          # The native-image crash reports and JVM crash logs land in the working directory.
+          # The binaries are left out: they are large and a failed build has no good one.
+          path: |
+            hs_err_pid*.log
+            svm_err_b_*.md
+            target/graalvm-native-image/reports/
+            target/graalvm-native-image/*.txt
+          if-no-files-found: ignore
+          retention-days: 30
 
 
   release-win-arm64:
@@ -202,6 +216,20 @@ jobs:
             target/atom.zip.sha512
             target/graalvm-native-image/atom-amd64
             target/graalvm-native-image/atom-amd64.sha512
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: diagnostics-release
+          # The native-image crash reports and JVM crash logs land in the working directory.
+          # The binaries are left out: they are large and a failed build has no good one.
+          path: |
+            hs_err_pid*.log
+            svm_err_b_*.md
+            target/graalvm-native-image/reports/
+            target/graalvm-native-image/*.txt
+          if-no-files-found: ignore
+          retention-days: 30
 
 
   release-arm64:
@@ -268,6 +296,20 @@ jobs:
           files: |
             target/graalvm-native-image/atom-arm64
             target/graalvm-native-image/atom-arm64.sha512
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: diagnostics-release-arm64
+          # The native-image crash reports and JVM crash logs land in the working directory.
+          # The binaries are left out: they are large and a failed build has no good one.
+          path: |
+            hs_err_pid*.log
+            svm_err_b_*.md
+            target/graalvm-native-image/reports/
+            target/graalvm-native-image/*.txt
+          if-no-files-found: ignore
+          retention-days: 30
 
 
   release-mac:
@@ -329,6 +371,20 @@ jobs:
           files: |
             target/graalvm-native-image/atom-darwin-arm64
             target/graalvm-native-image/atom-darwin-arm64.sha512
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: diagnostics-release-mac
+          # The native-image crash reports and JVM crash logs land in the working directory.
+          # The binaries are left out: they are large and a failed build has no good one.
+          path: |
+            hs_err_pid*.log
+            svm_err_b_*.md
+            target/graalvm-native-image/reports/
+            target/graalvm-native-image/*.txt
+          if-no-files-found: ignore
+          retention-days: 30
 
 
   release-linux-musl-amd64:
@@ -382,6 +438,20 @@ jobs:
           files: |
             target/graalvm-native-image/atom-linux-musl-amd64
             target/graalvm-native-image/atom-linux-musl-amd64.sha512
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: diagnostics-release-linux-musl-amd64
+          # The native-image crash reports and JVM crash logs land in the working directory.
+          # The binaries are left out: they are large and a failed build has no good one.
+          path: |
+            hs_err_pid*.log
+            svm_err_b_*.md
+            target/graalvm-native-image/reports/
+            target/graalvm-native-image/*.txt
+          if-no-files-found: ignore
+          retention-days: 30
 
 
   release-linux-musl-arm64:
