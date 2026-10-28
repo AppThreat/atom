@@ -1,0 +1,25 @@
+wrapper/nodejs/packages/atom/package.json
+  s_89be65d2bb5e9e::t_90a7858807569f 3,38-46
+build.sbt
+  s_89be65d2bb5e9e::t_90a7858807569f 3
+codemeta.json
+  s_89be65d2bb5e9e::t_90a7858807569f 10
+wrapper/nodejs/package-lock.json
+  s_89be65d2bb5e9e::t_85fa609af09191 1294,1303-1311,1316,1327,1338,1343,1357,1371,1385,1399,1410
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "17725bd10b896ea726c5b125eeef5accbf9ef9dc",
+  "prompts": {},
+  "sessions": {
+    "s_89be65d2bb5e9e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cd714c25-040a-430d-a68b-529262f0d8da",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
