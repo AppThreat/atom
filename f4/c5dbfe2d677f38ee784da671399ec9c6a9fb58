@@ -1,0 +1,19 @@
+AGENTS.md
+  s_9e5a3338ab7e3b::t_773e1fb317d1ee 1-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f4c5dbfe2d677f38ee784da671399ec9c6a9fb58",
+  "prompts": {},
+  "sessions": {
+    "s_9e5a3338ab7e3b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "434f6aff-cd8e-4383-a216-1c6a9f4be2af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
