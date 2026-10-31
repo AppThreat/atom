@@ -7,7 +7,7 @@ inputs:
   chen-ref:
     description: The chen branch to build, for an atom change that needs a chen pull request not merged yet.
     required: false
-    default: 'feat/callsites-tranche1'
+    default: 'main'
   ivy-home:
     description: Ivy home to publish into, for builds that mount their own (Linux and macOS). Defaults to sbt's.
     required: false
