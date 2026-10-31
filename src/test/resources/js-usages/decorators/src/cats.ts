@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Injectable } from "@nestjs/common";
 import { Column, Entity } from "typeorm";
 import { EventEmitter } from "events";
+import { OnInit } from "@angular/core";
 
 @Entity()
 export class Cat {
@@ -18,5 +19,6 @@ export class CatsController {
 
 @Injectable()
 export class Bus
-  extends EventEmitter {
+  extends EventEmitter
+  implements OnInit {
 }

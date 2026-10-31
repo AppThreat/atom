@@ -1,6 +1,7 @@
 package io.appthreat.atom
 
 import better.files.File
+import io.appthreat.atom.slicing.callsites.CallSiteRecord
 import io.circe.{Decoder, Encoder, HCursor, Json, JsonObject}
 import io.shiftleft.codepropertygraph.generated.PropertyNames
 import io.shiftleft.codepropertygraph.generated.nodes.*
@@ -185,21 +186,6 @@ package object slicing:
     def toJson: String = this.asJson.noSpaces
 
     def toJsonPretty: String = this.asJson.spaces2
-
-  /** One record per external use site of an imported module: where and how it is used. Written by
-    * `atom callsites`; see CallSiteSlicing for the field meanings.
-    */
-  final case class CallSiteRecord(
-    file: String,
-    line: Integer,
-    col: Integer,
-    method: String,
-    module: String,
-    path: String,
-    kind: String,
-    via: String,
-    resolvedMethod: String
-  )
 
   case class ProgramCallSites(callsites: List[CallSiteRecord]) extends ProgramSlice:
     def toJson: String = this.asJson.noSpaces

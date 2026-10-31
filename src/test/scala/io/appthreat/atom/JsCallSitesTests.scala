@@ -1,5 +1,7 @@
 package io.appthreat.atom
 
+import io.shiftleft.semanticcpg.language.*
+
 import better.files.File as BFile
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
@@ -17,7 +19,7 @@ import scala.util.Try
   */
 class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
-  private val fixtureCases = Seq("callsites", "decorators", "callsites-fields")
+  private val fixtureCases = Seq("callsites", "decorators", "callsites-fields", "orphans")
 
   private var workspace: BFile                    = scala.compiletime.uninitialized
   private var slices: Map[String, List[CallSite]] = Map.empty
@@ -106,6 +108,78 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
   "atom callsites" should {
 
+      "slice a project whose destructured arrow parameters the frontend used to detach (outline shape)" in {
+          // on the pre-tranche pairing this failed the whole slice with
+          // NullPointerException: "method" is null in CallSiteSlicing.useRecord. The
+          // destructured parameters shadow the import, so their uses are typed records
+          val slice = records("orphans").filter(r => r.file == "src/actions.js")
+          slice should contain theSameElementsAs List(
+            CallSite("src/actions.js", 4, 27, "i18next", "t", "call", "type"),
+            CallSite("src/actions.js", 5, 34, "i18next", "t", "call", "binding"),
+            CallSite("src/actions.js", 9, 9, "i18next", "t", "call", "binding")
+          )
+      }
+
+      "attribute a use the frontend detached from the AST and never fail the slice on it" in {
+          requireAstgen()
+          val atomFile = workspace / "orphans.atom"
+          val cpg = io.shiftleft.codepropertygraph.cpgloading.CpgLoader
+              .loadFromOverflowDb(
+                io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig()
+                    .withOverflowConfig(
+                      overflowdb.Config.withDefaults()
+                          .withStorageLocation(atomFile.pathAsString)
+                    )
+                    .doNotCreateIndexesOnLoad
+              )
+          // simulate the frontend defect: an identifier use with no AST parent, but with the
+          // REF edge to the binding's local, exactly like outline's 7,296 detached identifiers
+          val local = cpg.identifier.nameExact("t")
+              .filter(_.lineNumber.exists(_.intValue == 9))
+              .head.refsTo.head
+          val builder = overflowdb.BatchedUpdate.DiffGraphBuilder()
+          val orphan = io.shiftleft.codepropertygraph.generated.nodes.NewIdentifier()
+              .name("t")
+              .code("t")
+              .order(0)
+              .argumentIndex(0)
+              .lineNumber(9)
+              .columnNumber(5)
+          builder.addNode(orphan)
+          builder.addEdge(orphan, local, io.shiftleft.codepropertygraph.generated.EdgeTypes.REF)
+          overflowdb.BatchedUpdate.applyDiff(cpg.graph, builder)
+          val slice = io.appthreat.atom.slicing.CallSiteSlicing.calculateCallSitesSlice(cpg)
+          // the detached use resolves through its REF edge like its parented sibling: the same
+          // module, the same kind, attributed to the method of the local's declaration
+          val detached = slice.callsites.filter(r => r.line == 9 || r.col == 5)
+          detached.map(r =>
+              (r.file, r.line, r.col, r.module, r.path, r.kind, r.via)
+          ) should contain theSameElementsAs List(
+            // the orphan, attributed through its REF edge to the binding's local
+            (
+              "src/actions.js",
+              Integer.valueOf(9),
+              Integer.valueOf(5),
+              "i18next",
+              "t",
+              "ref",
+              "binding"
+            ),
+            // its parented sibling on the same line
+            (
+              "src/actions.js",
+              Integer.valueOf(9),
+              Integer.valueOf(9),
+              "i18next",
+              "t",
+              "call",
+              "binding"
+            )
+          )
+          detached.map(_.method) should not contain ""
+          cpg.close()
+      }
+
       "record each binding use at the use's own position" in {
           // `client.send(jwt.sign({ a: 1 }))`: jwt is called (its record carries the member path)
           at("callsites", "src/app.js", 13, "jsonwebtoken") should contain theSameElementsAs List(
@@ -142,8 +216,20 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           at("callsites", "src/app.js", 16, "sequelize") should contain theSameElementsAs List(
             CallSite("src/app.js", 16, -1, "sequelize", "Model", "extends", "name")
           )
-          at("decorators", "src/cats.ts", 21, "events") should contain theSameElementsAs List(
-            CallSite("src/cats.ts", 21, -1, "events", "EventEmitter", "extends", "name")
+          at("decorators", "src/cats.ts", 22, "events") should contain theSameElementsAs List(
+            CallSite("src/cats.ts", 22, -1, "events", "EventEmitter", "extends", "name")
+          )
+      }
+
+      "record an implements clause as its own kind" in {
+          // interfaces are erased at run time; the clause is a use of its own kind
+          at(
+            "decorators",
+            "src/cats.ts",
+            23,
+            "@angular/core"
+          ) should contain theSameElementsAs List(
+            CallSite("src/cats.ts", 23, -1, "@angular/core", "OnInit", "implements", "name")
           )
       }
 
@@ -252,12 +338,12 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
               (r.module, r.line, r.path)
           ) should
               contain theSameElementsAs List(
-                ("typeorm", 5, "Entity"),
-                ("typeorm", 7, "Column"),
-                ("@nestjs/common", 11, "Controller"),
-                ("@nestjs/common", 13, "Get"),
-                ("@nestjs/common", 14, "Param"),
-                ("@nestjs/common", 19, "Injectable")
+                ("typeorm", 6, "Entity"),
+                ("typeorm", 8, "Column"),
+                ("@nestjs/common", 12, "Controller"),
+                ("@nestjs/common", 14, "Get"),
+                ("@nestjs/common", 15, "Param"),
+                ("@nestjs/common", 20, "Injectable")
               )
       }
 
