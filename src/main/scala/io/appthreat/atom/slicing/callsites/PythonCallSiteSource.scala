@@ -88,6 +88,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
   def calculate(): ProgramCallSites =
     // import origins per declaration, and assignment counts (the single-assignment rule)
     val bindings    = mutable.HashMap.empty[Long, Binding]
+    val importBound = mutable.HashSet.empty[Long]
     val assignCount = mutable.HashMap.empty[Long, Int].withDefaultValue(0)
     val fileModules = mutable.HashMap.empty[String, mutable.Set[String]]
 
@@ -104,6 +105,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
           case (lhs: Identifier) :: (rhs: Expression) :: _ =>
               declOf(lhs).foreach { d =>
                   assignCount(d.id()) += 1
+                  importBound += d.id()
                   rhs match
                     case importCall: Call if importCall.name == "import" =>
                         val args = importArgs(importCall)
@@ -176,6 +178,19 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
             case _ => false
         }
 
+    /** The target of the guarded fallback's `x = None` write: not a use of the binding, the same
+      * way the import's own lowering target is not.
+      */
+    def isFallbackNoneLhs(id: Identifier): Boolean =
+        id.argumentIndex == 1 && DeclarationRefs.parentOf(id).exists {
+            case c: Call =>
+                c.name == Operators.assignment && c.argument.exists {
+                    case l: Literal => l.code == "None"
+                    case _          => false
+                }
+            case _ => false
+        }
+
     /** The member chain from a use, through the frontend's `tmpN = a.b` callee lowering. */
     def climb(id: Expression): (List[String], Expression) =
       val members        = mutable.ListBuffer[String]()
@@ -216,7 +231,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
     // can duplicate a receiver identifier node (the base of a chain appears twice at one
     // position); the dedupe keeps one record per site.
     atom.identifier.filterNot(_.name.matches("tmp\\d+")).foreach { id =>
-        if !isImportLhs(id) then
+        if !isImportLhs(id) && !isFallbackNoneLhs(id) then
           bindingOf(id).foreach { binding =>
               methodOf(id) match
                 case None => collector.skip(id)
@@ -244,9 +259,13 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
     }
 
     // Pass 2: a call attributed only through its resolved name (via=type), and a typed attribute
-    // read (`request.method`). Type recovery names a call even where a parameter or local shadows
-    // the import: a receiver chain rooted at a non-import declaration of the module's own
-    // top-level name is that local, not the module.
+    // read (`request.method`). A receiver chain names its module through the static type of the
+    // identifier at its root (the receiver's declared or recovered type, PEP 484 wrappers
+    // unwrapped), never through the recovery's typing of the chain's inner links: `self.flag`
+    // typed as its field's declared class would name `self.flag.startswith` after the field, not
+    // after the str it holds. Type recovery names a call even where a parameter or local shadows
+    // the import: a root of the module's own top-level name that no binding resolves is that
+    // local, not the module.
     val covered = mutable.HashSet.empty[Long]
     def receiverRootOf(e: Expression): Option[Expression] =
         Some {
@@ -255,6 +274,46 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
             do cur = cur.asInstanceOf[Call].argument(1)
             cur.asInstanceOf[Expression]
         }
+
+    /** A receiver chain rooted at a `super()` call: the receiver is the enclosing class, project
+      * code, whose inherited-base uses the heritage record already attributes at the class line.
+      */
+    def isSuperReceiver(e: Expression): Boolean =
+        receiverRootOf(e) match
+          case Some(c: Call) => c.name == "super"
+          case _             => false
+
+    /** The static type of the identifier at the root of a receiver chain: unwrapped to the
+      * runtime type, `Wrapper` when the root is declared as a PEP 484 wrapper that names no
+      * single runtime type (the recovery echoes the wrapper into the callee's name), or `NoType`
+      * when the root carries no type at all.
+      *
+      * An untyped `self`/`cls` root is `NoType` too: its type is the enclosing class, project
+      * code, and a member read through it is attributed by the class's own records (heritage
+      * names the base's module at the class line); the recovery's naming of such a read after
+      * the inherited base would put a record on every inherited member's line.
+      */
+    enum RootType:
+        case Unwrapped(t: String)
+        case Wrapper
+        case NoType
+
+    def rootTypeOf(e: Expression): RootType =
+        receiverRootOf(e) match
+          case Some(i: Identifier) =>
+              val types = (i.typeFullName +: i.dynamicTypeHintFullName)
+                  .filterNot(t => t == "ANY" || t.isEmpty)
+              val unwrapped = types.flatMap(receiverTypeOf)
+              unwrapped.headOption.map(RootType.Unwrapped.apply).getOrElse {
+                  if types.exists(t => t.startsWith("typing.") || t.startsWith("__builtin."))
+                  then RootType.Wrapper
+                  else RootType.NoType
+              }
+          case Some(i: Identifier) if i.name == "self" || i.name == "cls" =>
+              // the enclosing class is project code; the recovery types self with the inherited
+              // base, which the heritage record already attributes at the class's line
+              RootType.NoType
+          case _ => RootType.NoType
     def shadowed(m: String, root: Option[Expression]): Boolean =
         root.exists {
             case i: Identifier => i.name == m.split('.').head && bindingOf(i).isEmpty
@@ -264,23 +323,43 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
         fileModules.get(file).toList.flatten.filter(m => t == m || t.startsWith(m + "."))
             .sortBy(-_.length).headOption
 
+    /** The static type a receiver is read through. A PEP 484 wrapper (typing.Optional[User],
+      * typing.List[str]) is not a value: the receiver's runtime type is the wrapped one, so
+      * `user.is_admin` on `user: Optional[User]` belongs to User, and the other wrappers resolve
+      * to builtins the slice does not name. A wrapper over exactly one type unwraps to it; the
+      * rest yield None, and so does the wrapper's own module (typing is recorded from
+      * annotations, not from attribute reads through wrappers).
+      */
+    def receiverTypeOf(t: String): Option[String] =
+        val bare = t.startsWith("typing.") || t.startsWith("__builtin.")
+        if !bare then Some(t)
+        else if t.endsWith("]") && t.contains("[") then
+            val inner = t.substring(t.indexOf('[') + 1, t.length - 1)
+            if !inner.contains(",") && !inner.contains("[") && inner.nonEmpty &&
+                !inner.startsWith("typing.") && !inner.startsWith("__builtin.")
+            then Some(inner)
+            else None
+        else None
+
     atom.call.nameExact(Operators.fieldAccess).foreach { fa =>
         methodOf(fa) match
           case None => collector.skip(fa)
           case Some(method) =>
-            val base = fa.argument.l.find(_.argumentIndex == 1)
-            val baseTypes = base.toList.flatMap {
-                case i: Identifier => i.typeFullName +: i.dynamicTypeHintFullName
-                case _             => Nil
-            }.filterNot(t => t == "ANY" || t.isEmpty)
-            if baseTypes.nonEmpty then
-              val file = method.filename
-              baseTypes.distinct.foreach { t =>
-                  moduleOfPrefix(file, t).foreach { m =>
-                      if !shadowed(m, base) then
-                        val member = fa.argument.collectFirst {
-                            case f: FieldIdentifier => f.canonicalName
-                        }.getOrElse("")
+            val base    = fa.argument.l.find(_.argumentIndex == 1)
+            val file    = method.filename
+            val member  = fa.argument.collectFirst {
+                case f: FieldIdentifier => f.canonicalName
+            }.getOrElse("")
+            val rootT = rootTypeOf(fa)
+            val chainTypes = rootT match
+                case RootType.Unwrapped(t) => List(t)
+                case _                     => Nil
+            val skipWrapper = rootT match
+                case RootType.Wrapper => true
+                case _                => false
+            chainTypes.foreach { t =>
+                moduleOfPrefix(file, t).foreach { m =>
+                    if !shadowed(m, base) then
                         collector.add(fa) {
                             CallSiteRecord(
                               file,
@@ -298,8 +377,22 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                         // the read's base is covered: a call on the same chain is the binding
                         // pass's or this pass's, never a second typed record
                         base.foreach { b => DeclarationRefs.receiverOf(fa).foreach(covered += _.id()) }
-                  }
+                }
+            if rootT == RootType.NoType && chainTypes.isEmpty then
+              // no root type: the raw recovered name of the field access is all there is
+              moduleOfPrefix(file, fa.methodFullName).foreach { m =>
+                  if !shadowed(m, base) then
+                    collector.add(fa) {
+                        CallSiteRecord(
+                          file, line(fa), col(fa), method.fullName, m,
+                          fa.methodFullName.stripPrefix(m).stripPrefix("."),
+                          "ref", "type", "",
+                          builtin = stdlibModules.contains(m)
+                        )
+                    }
+                    base.foreach { b => DeclarationRefs.receiverOf(fa).foreach(covered += _.id()) }
               }
+            }
     }
 
     atom.call
@@ -309,8 +402,45 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
               case None => collector.skip(c)
               case Some(method) =>
                 val file = method.filename
-                moduleOfPrefix(file, c.methodFullName).foreach { m =>
-                    if !shadowed(m, c.receiver.l.headOption.flatMap(receiverRootOf)) then
+                // when the receiver chain's root has a static type, the callee is named through
+                // it (the recovery may have prefixed an inner link's type instead:
+                // Optional[User].is_admin, or a field's declared class for a str method)
+                val rootT = rootTypeOf(c)
+                val receiverNamed: Map[String, String] = rootT match
+                    case RootType.Unwrapped(t) =>
+                        (for m <- moduleOfPrefix(file, s"$t.${c.name}")
+                         yield m -> s"$t.${c.name}".stripPrefix(m).stripPrefix(".")).toMap
+                    case _ => Map.empty
+                val skipWrapper = rootT match
+                    case RootType.Wrapper => true
+                    case _                => false
+                if receiverNamed.nonEmpty then
+                    receiverNamed.foreach { (m, path) =>
+                        if !shadowed(m, c.receiver.l.headOption.flatMap(receiverRootOf)) then
+                          collector.add(c) {
+                              CallSiteRecord(
+                                file,
+                                line(c),
+                                col(c),
+                                method.fullName,
+                                m,
+                                path,
+                                "call",
+                                "type",
+                                s"$m.$path",
+                                builtin = stdlibModules.contains(m)
+                              )
+                          }
+                    }
+                else if rootT == RootType.NoType && !isSuperReceiver(c) then
+                  // the receiver chain has no typed root: the recovery's name for the callee
+                  // is all there is. A name under the typing module is that module's wrapper
+                  // echoed into the callee (ClassVar[List[X]].append) — wrappers are not
+                  // runtime receivers, and the typing records the slice emits come from
+                  // annotations (decltype)
+                  moduleOfPrefix(file, c.methodFullName).foreach { m =>
+                    if m != "typing" &&
+                        !shadowed(m, c.receiver.l.headOption.flatMap(receiverRootOf)) then
                       collector.add(c) {
                           CallSiteRecord(
                             file,
@@ -435,11 +565,15 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
             }
 
     def decltype(node: AstNode, method: Method, t: String): Unit =
-        // a return type sits on the def line (the METHOD_RETURN node has no position of its
-        // own), and the synthetic methods the recovery invented carry no source position at all
+        // a return type sits on the annotation's own line (the tag the frontend writes; a
+        // multi-line signature puts it on a later line than the def), and the synthetic methods
+        // the recovery invented carry no source position at all
         val at = node match
-            case _: MethodReturn => method.lineNumber
-            case other           => other.lineNumber
+            case _: MethodReturn =>
+                method.tag.nameExact("callsites-return-line").value.flatMap(v =>
+                    Try(Integer.valueOf(v.trim.toInt)).toOption).headOption
+                    .orElse(method.lineNumber)
+            case other => other.lineNumber
         if at.exists(_.intValue > 0) && method.filename.nonEmpty then
             typeOrigin(method.filename, t).foreach { (m, path, builtin) =>
                 collector.add(node) {
@@ -467,17 +601,18 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
     }
     atom.local.filterNot(_.name.matches("tmp\\d+")).foreach { l =>
         methodOf(l).foreach { method =>
-            val isImportBinding = declOfNode(l).exists(d => bindings.contains(d.id()))
-            if !isImportBinding then (l.typeFullName +: l.dynamicTypeHintFullName)
+            val isImportBinding = declOfNode(l).exists(d => importBound.contains(d.id()))
+            if !isImportBinding then l.dynamicTypeHintFullName
                 .filterNot(t => t == "ANY" || t.isEmpty || t.contains("<") ||
                     t.startsWith(method.fullName))
                 .foreach(t => decltype(l, method, t))
         }
     }
-    atom.method.methodReturn.foreach { mr =>
+    atom.method.methodReturn.collect { case mr if !mr.method.name.contains("<") => mr }.foreach { mr =>
         val m = mr.method
         // the declared return annotation is the METHOD_RETURN's own type; the recovery's
-        // inferred hints land in the dynamic hint and are not declarations
+        // inferred hints land in the dynamic hint and are not declarations, and the synthetic
+        // class-adapter copies of a method carry the class's line, not the def's
         Seq(mr.typeFullName)
             .filterNot(t => t == "ANY" || t.isEmpty || t.contains("<") ||
                 t.startsWith(m.fullName))

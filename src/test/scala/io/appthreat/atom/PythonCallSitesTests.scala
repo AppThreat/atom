@@ -80,10 +80,10 @@ class PythonCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfter
           in("imports.py").filter(_.line == 9) should contain theSameElementsAs List(
             PythonCallSitesTests.Rec("imports.py", 9, 7, "numpy", "array", "call", "binding", builtin = false)
           )
-          // `from flask import Flask, request`: the module is the from-name
+          // `from flask import Flask, request`: the module is the from-name. The local the
+          // constructor assigns to carries no decltype: its type is dataflow, not a declaration
           in("imports.py").filter(_.line == 10) should contain theSameElementsAs List(
-            PythonCallSitesTests.Rec("imports.py", 10, 7, "flask", "Flask", "call", "binding", builtin = false),
-            PythonCallSitesTests.Rec("imports.py", 10, -1, "flask", "Flask", "decltype", "name", builtin = false)
+            PythonCallSitesTests.Rec("imports.py", 10, 7, "flask", "Flask", "call", "binding", builtin = false)
           )
           // `from django.db.models import Q`: the module is the dotted from-name
           in("imports.py").filter(_.line == 12) should contain theSameElementsAs List(
@@ -131,9 +131,10 @@ class PythonCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfter
           in("exceptions.py").filter(_.line == 7) should contain theSameElementsAs List(
             PythonCallSitesTests.Rec("exceptions.py", 7, 12, "requests", "ConnectionError", "ref", "binding", builtin = false)
           )
-          // a tuple of handler classes
+          // a tuple of handler classes: the member chain names urllib3.HTTPError through
+          // the binding's own module
           in("exceptions.py").filter(_.line == 9) should contain theSameElementsAs List(
-            PythonCallSitesTests.Rec("exceptions.py", 9, 13, "urllib3", "exceptions", "ref", "type", builtin = false)
+            PythonCallSitesTests.Rec("exceptions.py", 9, 13, "urllib3", "HTTPError", "ref", "type", builtin = false)
           )
       }
 
@@ -144,10 +145,9 @@ class PythonCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfter
       }
 
       "keep a guarded fallback import as one origin" in {
-          // try: import yaml except ImportError: yaml = None - the name is still the module
-          in("fallback.py").filter(_.line == 4) should contain theSameElementsAs List(
-            PythonCallSitesTests.Rec("fallback.py", 4, 5, "yaml", "", "ref", "binding", builtin = false)
-          )
+          // try: import yaml except ImportError: yaml = None - the name is still the module,
+          // and the fallback's own `yaml = None` write is not a use
+          in("fallback.py").filter(_.line == 4) shouldBe empty
           in("fallback.py").filter(_.line == 7) should contain theSameElementsAs List(
             PythonCallSitesTests.Rec("fallback.py", 7, 12, "yaml", "safe_load", "call", "binding", builtin = false)
           )
