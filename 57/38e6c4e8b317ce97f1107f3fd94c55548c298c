@@ -1,0 +1,59 @@
+src/test/scala/io/appthreat/atom/JavaCallSitesTests.scala
+  s_b37b12b5351861::t_ad8dfa09f0aed1 1-278
+  s_b37b12b5351861::t_780bd0533d5539 279-568
+src/test/resources/java-callsites/make/make-stub-jars.sh
+  s_b37b12b5351861::t_62ceed06f9aaca 1-33
+  s_b37b12b5351861::t_2f0ce8f5e3fe90 34
+src/test/resources/java-callsites/make/Handler.java
+  s_b37b12b5351861::t_2f624ea97c849f 1-5
+src/test/resources/java-callsites/make/RequestParam.java
+  s_b37b12b5351861::t_a000c7c88143a0 1-12
+src/test/resources/java-callsites/make/Security.java
+  s_b37b12b5351861::t_a51e67d46856f2 1-8
+src/test/resources/java-callsites/make/Session.java
+  s_b37b12b5351861::t_202e29014c210a 1-6
+src/test/resources/java-callsites/make/Shared.java
+  s_b37b12b5351861::t_ae5cf0193377b4 1-5
+src/test/resources/java-callsites/make/Util.java
+  s_b37b12b5351861::t_7e4f3a37e25460 1-5
+src/test/resources/java-callsites/src/proj/Annotations.java
+  s_b37b12b5351861::t_ddce5dcb89913b 1-15
+src/test/resources/java-callsites/src/proj/Calls.java
+  s_b37b12b5351861::t_a18745cedb2ab0 1-12
+src/test/resources/java-callsites/src/proj/DeclTypes.java
+  s_b37b12b5351861::t_94842fb3ed3a68 1-14
+src/test/resources/java-callsites/src/proj/Handler.java
+  s_b37b12b5351861::t_a24636eee34747 1-6
+src/test/resources/java-callsites/src/proj/Heritage.java
+  s_b37b12b5351861::t_e7c6bced9cf8e0 1-10
+src/test/resources/java-callsites/src/proj/Imports.java
+  s_b37b12b5351861::t_1cfde1ac24b332 1-14
+src/test/resources/java-callsites/src/proj/Initializers.java
+  s_b37b12b5351861::t_648cb3047eae7a 1-11
+src/test/resources/java-callsites/src/proj/Literals.java
+  s_b37b12b5351861::t_28bba0e33e2f8e 1-12
+src/test/resources/java-callsites/src/proj/Lombok.java
+  s_b37b12b5351861::t_000f0e17ec7de4 1-14
+src/test/resources/java-callsites/src/proj/Purl.java
+  s_b37b12b5351861::t_120aed30999395 1-13
+src/test/resources/java-callsites/src/proj/RestController.java
+  s_b37b12b5351861::t_23dd362e94ae94 1-11
+src/test/resources/java-callsites/src/proj/Shadow.java
+  s_b37b12b5351861::t_a44ac848f33871 1-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5738e6c4e8b317ce97f1107f3fd94c55548c298c",
+  "prompts": {},
+  "sessions": {
+    "s_b37b12b5351861": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_cb0e2603-6d04-484d-ac02-895b1a9284cd",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
