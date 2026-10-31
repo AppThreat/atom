@@ -10,5 +10,4 @@ import io.shiftleft.codepropertygraph.Cpg
 object CallSiteSlicing:
 
   def calculateCallSitesSlice(atom: Cpg): ProgramCallSites =
-    CallSiteSource.forAtom(atom).calculate()
-end CallSiteSlicing
+      CallSiteSource.forAtom(atom).calculate()

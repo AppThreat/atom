@@ -156,9 +156,25 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
               (r.file, r.line, r.col, r.module, r.path, r.kind, r.via)
           ) should contain theSameElementsAs List(
             // the orphan, attributed through its REF edge to the binding's local
-            ("src/actions.js", Integer.valueOf(9), Integer.valueOf(5), "i18next", "t", "ref", "binding"),
+            (
+              "src/actions.js",
+              Integer.valueOf(9),
+              Integer.valueOf(5),
+              "i18next",
+              "t",
+              "ref",
+              "binding"
+            ),
             // its parented sibling on the same line
-            ("src/actions.js", Integer.valueOf(9), Integer.valueOf(9), "i18next", "t", "call", "binding")
+            (
+              "src/actions.js",
+              Integer.valueOf(9),
+              Integer.valueOf(9),
+              "i18next",
+              "t",
+              "call",
+              "binding"
+            )
           )
           detached.map(_.method) should not contain ""
           cpg.close()
@@ -207,7 +223,12 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
       "record an implements clause as its own kind" in {
           // interfaces are erased at run time; the clause is a use of its own kind
-          at("decorators", "src/cats.ts", 23, "@angular/core") should contain theSameElementsAs List(
+          at(
+            "decorators",
+            "src/cats.ts",
+            23,
+            "@angular/core"
+          ) should contain theSameElementsAs List(
             CallSite("src/cats.ts", 23, -1, "@angular/core", "OnInit", "implements", "name")
           )
       }

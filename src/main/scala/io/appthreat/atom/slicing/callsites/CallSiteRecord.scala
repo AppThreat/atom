@@ -15,9 +15,9 @@ package io.appthreat.atom.slicing.callsites
   *
   * `builtin` marks uses of the language's standard library, and `declaringModule` carries the
   * module of the class that declares the callee when it differs from the receiver's static type
-  * (decision 0001, P2). `purl` carries the distribution the module maps to when atom knows one
-  * (a BOM's ImportedModules or the python-deps index); it is left out of the JSON while empty.
-  * These are new in v4; atom and cdxgen change together, so there is no schema versioning.
+  * (decision 0001, P2). `purl` carries the distribution the module maps to when atom knows one (a
+  * BOM's ImportedModules or the python-deps index); it is left out of the JSON while empty. These
+  * are new in v4; atom and cdxgen change together, so there is no schema versioning.
   */
 final case class CallSiteRecord(
   file: String,

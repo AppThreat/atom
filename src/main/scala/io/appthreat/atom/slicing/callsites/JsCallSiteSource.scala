@@ -30,31 +30,31 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
     // the top of its member chain takes part in a call.
     val coveredCalls = mutable.HashSet.empty[Long]
     def useRecord(use: Expression, origin: Origin): Unit =
-      methodOf(use) match
-        case None => collector.skip(use)
-        case Some(method) =>
-          collector.add(use) {
-            val top         = DeclarationRefs.chainTop(use)
-            val involvement = DeclarationRefs.receiverOf(top)
-            involvement.foreach(c => coveredCalls += c.id())
-            val kind = involvement.map { c =>
-              val isJsx = c.code.startsWith("<") && !c.name.startsWith("<operator")
-              if c.name == "<operator>.new" then "new"
-              else if isJsx then "jsx"
-              else "call"
-            }.getOrElse(DeclarationRefs.argumentOf(top).map(_ => "arg").getOrElse("ref"))
-            CallSiteRecord(
-              method.filename,
-              line(use),
-              col(use),
-              method.fullName,
-              origin.module,
-              (origin.path ++ resolver.membersOf(use)).mkString("."),
-              kind,
-              "binding",
-              involvement.map(c => resolvedName(c.methodFullName)).getOrElse("")
-            )
-          }
+        methodOf(use) match
+          case None => collector.skip(use)
+          case Some(method) =>
+              collector.add(use) {
+                  val top         = DeclarationRefs.chainTop(use)
+                  val involvement = DeclarationRefs.receiverOf(top)
+                  involvement.foreach(c => coveredCalls += c.id())
+                  val kind = involvement.map { c =>
+                    val isJsx = c.code.startsWith("<") && !c.name.startsWith("<operator")
+                    if c.name == "<operator>.new" then "new"
+                    else if isJsx then "jsx"
+                    else "call"
+                  }.getOrElse(DeclarationRefs.argumentOf(top).map(_ => "arg").getOrElse("ref"))
+                  CallSiteRecord(
+                    method.filename,
+                    line(use),
+                    col(use),
+                    method.fullName,
+                    origin.module,
+                    (origin.path ++ resolver.membersOf(use)).mkString("."),
+                    kind,
+                    "binding",
+                    involvement.map(c => resolvedName(c.methodFullName)).getOrElse("")
+                  )
+              }
     end useRecord
 
     // Pass A: every identifier that resolves to an imported binding (via=binding). The
@@ -88,30 +88,31 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
             methodOf(c) match
               case None => collector.skip(c)
               case Some(method) =>
-                js.split(c.methodFullName).foreach { (module, symbol) =>
-                  // the symbol path is dotted (`path.includes`); the callee member is its last segment
-                  val member = symbol.map(_.split('.').last).getOrElse("")
-                  if !primitiveMembers.contains(member) then
-                    // `consumer\n  .apply(x)`: report the member name's position, not the chain's start
-                    val memberPos =
-                        c.receiver.collectFirst {
-                            case f: Call if f.name == Operators.fieldAccess =>
-                                f.argument.collectFirst { case fi: FieldIdentifier => fi }
-                        }.flatten.filter(_.lineNumber.exists(_.intValue > 0))
-                    collector.add(c) {
-                      CallSiteRecord(
-                        method.filename,
-                        memberPos.map(fi => line(fi)).getOrElse(line(c)),
-                        memberPos.map(fi => col(fi)).getOrElse(col(c)),
-                        method.fullName,
-                        module,
-                        symbol.getOrElse(""),
-                        "call",
-                        "type",
-                        c.methodFullName
-                      )
-                    }
-                }
+                  js.split(c.methodFullName).foreach { (module, symbol) =>
+                    // the symbol path is dotted (`path.includes`); the callee member is its last segment
+                    val member = symbol.map(_.split('.').last).getOrElse("")
+                    if !primitiveMembers.contains(member) then
+                      // `consumer\n  .apply(x)`: report the member name's position, not the chain's start
+                      val memberPos =
+                          c.receiver.collectFirst {
+                              case f: Call if f.name == Operators.fieldAccess =>
+                                  f.argument.collectFirst { case fi: FieldIdentifier => fi }
+                          }.flatten.filter(_.lineNumber.exists(_.intValue > 0))
+                      collector.add(c) {
+                          CallSiteRecord(
+                            method.filename,
+                            memberPos.map(fi => line(fi)).getOrElse(line(c)),
+                            memberPos.map(fi => col(fi)).getOrElse(col(c)),
+                            method.fullName,
+                            module,
+                            symbol.getOrElse(""),
+                            "call",
+                            "type",
+                            c.methodFullName
+                          )
+                      }
+                    end if
+                  }
         }
 
     // Pass C: decorators, heritage clauses, tagged templates and JSX tags, by name (via=name)
@@ -299,22 +300,22 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
     */
   private def nameResolvedRecords(atom: Cpg, js: JsNames): List[CallSiteRecord] =
     val decorators = atom.annotation.l.flatMap { a =>
-      fileOf(a).getOrElse("") match
-        case file if file.nonEmpty =>
-          js.ofBindingName(file, a.name).map { (module, symbol) =>
-              CallSiteRecord(
-                file,
-                line(a),
-                col(a),
-                enclosingMethodOf(a).map(_.fullName).getOrElse(""),
-                module,
-                symbol.getOrElse(""),
-                "decorator",
-                "name",
-                a.fullName
-              )
-          }
-        case _ => None
+        fileOf(a).getOrElse("") match
+          case file if file.nonEmpty =>
+              js.ofBindingName(file, a.name).map { (module, symbol) =>
+                  CallSiteRecord(
+                    file,
+                    line(a),
+                    col(a),
+                    enclosingMethodOf(a).map(_.fullName).getOrElse(""),
+                    module,
+                    symbol.getOrElse(""),
+                    "decorator",
+                    "name",
+                    a.fullName
+                  )
+              }
+          case _ => None
     }
     // A method's decorator hangs off both its METHOD and its MEMBER node.
     val uniqueDecorators =
@@ -324,9 +325,9 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
       val tagged = heritageOf(t)
       fileOf(t).getOrElse("") match
         case file if file.nonEmpty =>
-          t.inheritsFromTypeFullName.filterNot(n => n == "ANY" || n.isEmpty).flatMap { base =>
-            val baseName = simpleName(base)
-            js.ofBindingName(file, baseName).map { (module, symbol) =>
+            t.inheritsFromTypeFullName.filterNot(n => n == "ANY" || n.isEmpty).flatMap { base =>
+              val baseName = simpleName(base)
+              js.ofBindingName(file, baseName).map { (module, symbol) =>
                 // the frontend tags each base with its clause and line; a base it could not
                 // tag keeps the class's own line
                 val (kind, heritageLine) = tagged.getOrElse(baseName, ("extends", line(t)))
@@ -341,52 +342,53 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
                   "name",
                   base
                 )
+              }
             }
-          }
         case _ => None
+      end match
     }
 
     val taggedAndJsx = atom.call.filterNot(_.name.startsWith("<operator>")).l.flatMap { c =>
-      methodOf(c) match
-        case Some(method) =>
-          val file = method.filename
-          if c.code.startsWith("<") then
-            // JSX element: the tag name (`Button`, `Foo.Bar`) against the file's bindings
-            val parts = c.name.split('.').toList
-            js.ofBindingName(file, parts.head).map { (module, symbol) =>
-                CallSiteRecord(
-                  file,
-                  line(c),
-                  col(c),
-                  method.fullName,
-                  module,
-                  (symbol.toList ++ parts.tail).mkString("."),
-                  "jsx",
-                  "name",
-                  resolvedName(c.methodFullName)
-                )
-            }
-          else if !c.argument.exists(_.argumentIndex == 0) && c.methodFullName == c.name then
-            // a call with no receiver/callee argument whose full name is the bare name: the
-            // frontend's lowering of a tagged template (`` gql`...` ``) names the call after the
-            // tag and resolves nothing. A resolved name (`JSON.parse`) is a builtin call whose
-            // member happens to match a file binding, not a tag.
-            js.ofBindingName(file, c.name).map { (module, symbol) =>
-                CallSiteRecord(
-                  file,
-                  line(c),
-                  col(c),
-                  method.fullName,
-                  module,
-                  symbol.getOrElse(""),
-                  "tag",
-                  "name",
-                  c.methodFullName
-                )
-            }
-          else None
-          end if
-        case None => None
+        methodOf(c) match
+          case Some(method) =>
+              val file = method.filename
+              if c.code.startsWith("<") then
+                // JSX element: the tag name (`Button`, `Foo.Bar`) against the file's bindings
+                val parts = c.name.split('.').toList
+                js.ofBindingName(file, parts.head).map { (module, symbol) =>
+                    CallSiteRecord(
+                      file,
+                      line(c),
+                      col(c),
+                      method.fullName,
+                      module,
+                      (symbol.toList ++ parts.tail).mkString("."),
+                      "jsx",
+                      "name",
+                      resolvedName(c.methodFullName)
+                    )
+                }
+              else if !c.argument.exists(_.argumentIndex == 0) && c.methodFullName == c.name then
+                // a call with no receiver/callee argument whose full name is the bare name: the
+                // frontend's lowering of a tagged template (`` gql`...` ``) names the call after the
+                // tag and resolves nothing. A resolved name (`JSON.parse`) is a builtin call whose
+                // member happens to match a file binding, not a tag.
+                js.ofBindingName(file, c.name).map { (module, symbol) =>
+                    CallSiteRecord(
+                      file,
+                      line(c),
+                      col(c),
+                      method.fullName,
+                      module,
+                      symbol.getOrElse(""),
+                      "tag",
+                      "name",
+                      c.methodFullName
+                    )
+                }
+              else None
+              end if
+          case None => None
     }
 
     (uniqueDecorators.toList ++ heritage ++ taggedAndJsx)

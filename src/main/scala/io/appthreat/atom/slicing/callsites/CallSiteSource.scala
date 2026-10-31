@@ -23,22 +23,21 @@ object CallSiteSource:
     * slice.
     */
   def forAtom(atom: Cpg): CallSiteSource =
-      val language = atom.metaData.language.headOption
-      if JsNames.isJs(language) then JsCallSiteSource(atom)
-      else if isPython(language) then PythonCallSiteSource(atom)
-      else EmptyCallSiteSource
+    val language = atom.metaData.language.headOption
+    if JsNames.isJs(language) then JsCallSiteSource(atom)
+    else if isPython(language) then PythonCallSiteSource(atom)
+    else EmptyCallSiteSource
 
   private def isPython(language: Option[String]): Boolean =
       language.exists(l => l == Languages.PYTHONSRC || l == Languages.PYTHON)
 
   /** A language the slice does not cover (yet). */
   object EmptyCallSiteSource extends CallSiteSource:
-      def calculate(): ProgramCallSites = ProgramCallSites(Nil)
-end CallSiteSource
+    def calculate(): ProgramCallSites = ProgramCallSites(Nil)
 
-/** Collects the records of one source run, and keeps one bad node from failing the whole slice:
-  * a record whose construction throws is logged once with the node's id and skipped, and the slice
-  * is always written (atom#317).
+/** Collects the records of one source run, and keeps one bad node from failing the whole slice: a
+  * record whose construction throws is logged once with the node's id and skipped, and the slice is
+  * always written (atom#317).
   */
 final class RecordCollector(sourceName: String):
 
@@ -50,11 +49,13 @@ final class RecordCollector(sourceName: String):
   /** Adds the record built for `node`; an exception in the by-name `record` logs the node once. */
   def add(node: AstNode)(record: => CallSiteRecord): Unit =
       try records += record
-      catch case NonFatal(e) =>
-          if failedNodes.add(node.id()) then
-            logger.warn(
-              s"callsites[$sourceName]: skipped node ${node.id()} (${node.label}) at line ${nodeLine(node)}: $e"
-            )
+      catch
+        case NonFatal(e) =>
+            if failedNodes.add(node.id()) then
+              logger.warn(
+                s"callsites[$sourceName]: skipped node ${node.id()} (${node
+                        .label}) at line ${nodeLine(node)}: $e"
+              )
 
   /** Adds records whose builders used the safe lookups and cannot throw. */
   def addAll(built: List[CallSiteRecord]): Unit = records ++= built
@@ -63,22 +64,22 @@ final class RecordCollector(sourceName: String):
     * skipped.
     */
   def skip(node: AstNode): Unit =
-      skipped += 1
-      if failedNodes.add(node.id()) then
-        logger.debug(
-          s"callsites[$sourceName]: no method for node ${node.id()} (${node.label}) at line ${nodeLine(node)}"
-        )
+    skipped += 1
+    if failedNodes.add(node.id()) then
+      logger.debug(
+        s"callsites[$sourceName]: no method for node ${node.id()} (${node.label}) at line ${nodeLine(node)}"
+      )
 
   private def nodeLine(node: AstNode): String =
       node.property(io.shiftleft.codepropertygraph.generated.PropertyNames.LINE_NUMBER, "?")
 
   def result(): ProgramCallSites =
-      val failed = failedNodes.size
-      if failed > 0 || skipped > 0 then
-        println(
-          s"Call sites: skipped $failed node(s) that failed and $skipped node(s) with no method"
-        )
-      ProgramCallSites(CallSiteRecord.dedupe(records))
+    val failed = failedNodes.size
+    if failed > 0 || skipped > 0 then
+      println(
+        s"Call sites: skipped $failed node(s) that failed and $skipped node(s) with no method"
+      )
+    ProgramCallSites(CallSiteRecord.dedupe(records))
 end RecordCollector
 
 /** The lookups every language source shares. Some frontends leave AST-detached nodes (outline's
@@ -86,7 +87,8 @@ end RecordCollector
   * `.method` or a `.file`: the enclosing method is found through the AST parents, with the method
   * of the declaration the node REFs as the fallback, and the file follows the method.
   */
-abstract class BaseCallSiteSource(protected val atom: Cpg, sourceName: String) extends CallSiteSource:
+abstract class BaseCallSiteSource(protected val atom: Cpg, sourceName: String)
+    extends CallSiteSource:
 
   protected val declRefs  = DeclarationRefs(atom)
   protected val collector = RecordCollector(sourceName)
