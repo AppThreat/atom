@@ -1,0 +1,19 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteRecord.scala
+  s_c130237d85d968::t_a2fd369d383c16 18-20,33-34,39-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ab3fcaa8d9dd6864446ca9d06b00de7825ab7d0a",
+  "prompts": {},
+  "sessions": {
+    "s_c130237d85d968": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_22357300-4561-4ca2-a12b-e0a36396896e",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
