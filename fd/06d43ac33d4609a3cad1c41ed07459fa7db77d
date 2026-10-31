@@ -1,0 +1,21 @@
+src/test/resources/py-usages/callsites/multiline.py
+  s_c130237d85d968::t_73c60fdcef3996 1-6
+src/test/scala/io/appthreat/atom/PythonCallSitesTests.scala
+  s_c130237d85d968::t_7989d3b6b1c854 191-197
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fd06d43ac33d4609a3cad1c41ed07459fa7db77d",
+  "prompts": {},
+  "sessions": {
+    "s_c130237d85d968": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_22357300-4561-4ca2-a12b-e0a36396896e",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
