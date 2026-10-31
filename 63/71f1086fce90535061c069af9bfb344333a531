@@ -1,0 +1,25 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/JavaCallSiteSource.scala
+  s_b37b12b5351861::t_4a4481580e429c 1-12,15-20,22-31,37-64,66,69-73,75-76,80,87-88,92-104,110-125,127-144,148-161,177,179-187,191-201,203-204,207,223-227,230-232,236-239,243,255-257,259-260,263,266-267,271-273,275-286,288-296,300-312,314-322,326-337,357-358,360-366,370,376,389
+  s_b37b12b5351861::t_73ed0d02cb2bc6 13-14,21,32-36,65,67-68,74,77-79,81-86,89-91,105-109,126,145-147,162-176,178,188-190,202,205-206,208-222,228-229,233-235,240-242,244-254,258,261-262,264-265,268-270,274,287,297-299,313,323-325,338-356,359,367-369
+  s_b37b12b5351861::t_a3c667826a421e 371-375,377-388,390-398
+src/main/resources/callsites/jdk-packages.txt
+  s_b37b12b5351861::t_dbe7a433a36877 1-178
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteSource.scala
+  s_b37b12b5351861::t_c3f5d06135e0f2 29,35-37,41,79-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6371f1086fce90535061c069af9bfb344333a531",
+  "prompts": {},
+  "sessions": {
+    "s_b37b12b5351861": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_cb0e2603-6d04-484d-ac02-895b1a9284cd",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
