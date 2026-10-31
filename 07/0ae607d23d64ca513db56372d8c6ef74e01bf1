@@ -1,0 +1,21 @@
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_b37b12b5351861::t_fb1fbe9232dc77 80-84,831-839,1180-1193,1196
+src/main/scala/io/appthreat/atom/package.scala
+  s_b37b12b5351861::t_05b5c271e1d374 165-172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "070ae607d23d64ca513db56372d8c6ef74e01bf1",
+  "prompts": {},
+  "sessions": {
+    "s_b37b12b5351861": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_cb0e2603-6d04-484d-ac02-895b1a9284cd",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
