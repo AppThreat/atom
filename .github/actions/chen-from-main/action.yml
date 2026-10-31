@@ -4,6 +4,10 @@ description: >-
   resolves a chen version that is not released yet. Remove this action and its callers once that
   chen version is on the package registry.
 inputs:
+  chen-ref:
+    description: The chen branch to build, for an atom change that needs a chen pull request not merged yet.
+    required: false
+    default: 'feat/callsites-tranche1'
   ivy-home:
     description: Ivy home to publish into, for builds that mount their own (Linux and macOS). Defaults to sbt's.
     required: false
@@ -40,10 +44,11 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
         CHEN_DIR: ${{ runner.temp }}/chen-main
+        CHEN_REF: ${{ inputs.chen-ref }}
         IVY_HOME: ${{ inputs.ivy-home }}
       run: |
         set -euo pipefail
-        git clone --quiet --depth 1 --branch main https://github.com/AppThreat/chen.git "$CHEN_DIR"
+        git clone --quiet --depth 1 --branch "$CHEN_REF" https://github.com/AppThreat/chen.git "$CHEN_DIR"
         cd "$CHEN_DIR"
         sbt --server ${IVY_HOME:+"-Dsbt.ivy.home=$IVY_HOME"} -batch \
           "set ThisBuild / Compile / packageDoc / publishArtifact := false; publishLocal"
@@ -55,8 +60,9 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
         CHEN_DIR: ${{ runner.temp }}\chen-main
+        CHEN_REF: ${{ inputs.chen-ref }}
       run: |
-        git clone --quiet --depth 1 --branch main https://github.com/AppThreat/chen.git "$env:CHEN_DIR"
+        git clone --quiet --depth 1 --branch "$env:CHEN_REF" https://github.com/AppThreat/chen.git "$env:CHEN_DIR"
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         Push-Location "$env:CHEN_DIR"
         sbt --server -batch "set ThisBuild / Compile / packageDoc / publishArtifact := false; publishLocal"
