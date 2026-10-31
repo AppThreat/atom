@@ -188,6 +188,13 @@ class PythonCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfter
           )
       }
 
+      "put a multi-line signature's return decltype on the annotation's own line" in {
+          // def handle(\n    body,\n) -> Response:  the annotation is on the 5th line
+          in("multiline.py").filter(r => r.kind == "decltype") should contain theSameElementsAs List(
+            PythonCallSitesTests.Rec("multiline.py", 5, -1, "fastapi", "Response", "decltype", "name", builtin = false)
+          )
+      }
+
       "record heritage bases checked against the file's imports" in {
           // class Command(click.Command)
           in("heritage.py").filter(_.line == 4) should contain theSameElementsAs List(
