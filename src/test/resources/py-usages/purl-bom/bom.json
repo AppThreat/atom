@@ -1,0 +1,24 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "components": [
+    {
+      "type": "library",
+      "name": "PyYAML",
+      "purl": "pkg:pypi/pyyaml@6.0.1",
+      "properties": [ { "name": "ImportedModules", "value": "yaml" } ]
+    },
+    {
+      "type": "library",
+      "name": "ruamel-yaml",
+      "purl": "pkg:pypi/ruamel-yaml@0.18.5",
+      "properties": [ { "name": "ImportedModules", "value": "yaml" } ]
+    },
+    {
+      "type": "library",
+      "name": "requests",
+      "purl": "pkg:pypi/requests@2.31.0",
+      "properties": [ { "name": "ImportedModules", "value": "requests" } ]
+    }
+  ]
+}
