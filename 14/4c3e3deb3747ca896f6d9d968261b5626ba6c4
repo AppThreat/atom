@@ -1,0 +1,19 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/JsCallSiteSource.scala
+  s_79a7c562b49300::t_c1574bef5c515e 330-332,590,593-599
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "144c3e3deb3747ca896f6d9d968261b5626ba6c4",
+  "prompts": {},
+  "sessions": {
+    "s_79a7c562b49300": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e06ad8c2-0767-47dd-913e-35689e5f05ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
