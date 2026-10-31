@@ -1,0 +1,19 @@
+src/test/scala/io/appthreat/atom/JavaCallSitesTests.scala
+  s_b37b12b5351861::t_cf2a4aa23e7845 166,237,247,257,263-272,358,531,544
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9a4d8b125bce66b60ac68817d7fd564ce7e2a0f0",
+  "prompts": {},
+  "sessions": {
+    "s_b37b12b5351861": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_cb0e2603-6d04-484d-ac02-895b1a9284cd",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
