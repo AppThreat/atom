@@ -1,0 +1,23 @@
+README.md
+  s_b37b12b5351861::t_02b60e503dbe33 189-190
+docs/docs/cli.md
+  s_b37b12b5351861::t_e987817689312f 85-86
+src/main/resources/META-INF/native-image/resource-config.json
+  s_b37b12b5351861::t_bfdfdd2bc2db8f 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "26380ab2a53b4df10861ad560f7d9b4e232c0ba5",
+  "prompts": {},
+  "sessions": {
+    "s_b37b12b5351861": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_cb0e2603-6d04-484d-ac02-895b1a9284cd",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
