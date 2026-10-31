@@ -1,0 +1,23 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/PythonCallSiteSource.scala
+  s_c130237d85d968::t_1e2ca81ab45a2e 3,5-7,9-37,41-49,69,72,88-122,124-458,465-473,475-480
+  s_c130237d85d968::t_b1ff61767ca589 71
+  s_c130237d85d968::t_b3fab5a3d26ba3 50-68,70,73-87,123,459-464,474,481-499,501-508
+src/main/resources/callsites/python-stdlib.json
+  s_c130237d85d968::t_486cfe19540cb1 1-195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d3f55f70805619f36ef74f6e5833dc56d902a2f3",
+  "prompts": {},
+  "sessions": {
+    "s_c130237d85d968": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_22357300-4561-4ca2-a12b-e0a36396896e",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
