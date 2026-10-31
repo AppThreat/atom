@@ -1,12 +1,508 @@
 package io.appthreat.atom.slicing.callsites
 
-import io.appthreat.atom.slicing.ProgramCallSites
+import io.appthreat.atom.slicing.{DeclarationRefs, ProgramCallSites}
 import io.shiftleft.codepropertygraph.Cpg
+import io.shiftleft.codepropertygraph.generated.Operators
+import io.shiftleft.codepropertygraph.generated.nodes.*
+import io.shiftleft.semanticcpg.language.*
 
-/** The Python source of the callsites slice. Placeholder while the core split lands: the adapter
-  * arrives with the Python port (atom#323).
+import scala.collection.mutable
+import scala.util.Try
+
+/** The Python source of the callsites slice: a port of the measured prototype
+  * (callsites-eval `harness/proto/py_callsites.scala`), extended with the kinds the prototype
+  * lacked.
+  *
+  * The frontend lowers every import to an assignment `x = import(from, name[, alias])`, links
+  * captured module-level names through closure bindings, and lowers a dotted callee to
+  * `tmpN = a.b; tmpN.c()`, so the binding -> origin -> use design of the JS source carries over.
+  * Origins come from those import assignments under the single-assignment rule; a name that is
+  * assigned anywhere else may hold something else at a use, so it stays unattributed. A guarded
+  * fallback import (`try: import x except ImportError: x = None`) is the one exception: at run
+  * time the name is still the module, so one import assignment and one `None` fallback count as a
+  * single origin.
+  *
+  * What the prototype measured without, and what this adds:
+  *   - heritage (`class X(click.Command)`), from `inheritsFromTypeFullName` checked against the
+  *     file's import bindings;
+  *   - `except X` handler classes, which the frontend lowers to references since chen#256, and
+  *     which therefore need no pass of their own;
+  *   - typed attribute reads (`request.method`), via=type with kind `ref`;
+  *   - declaration types (parameters, annotated locals and return types), kind `decltype`;
+  *   - decorators, whose base is either an import binding or a typed value;
+  *   - the standard library, recorded with `builtin: true`.
+  *
+  * Whether an import names project code or a dependency is the import resolver's verdict
+  * (`RESOLVED_*` tags name entities the graph contains, `UNKNOWN_*` name external ones), never a
+  * guess from path components; a relative import is project code by construction.
   */
 final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py"):
 
-  def calculate(): ProgramCallSites = ProgramCallSites(Nil)
+  private val stdlibModules: Set[String] =
+      Try {
+          val stream = getClass.getResourceAsStream("/callsites/python-stdlib.json")
+          val text   = io.circe.parser
+              .parse(scala.io.Source.fromInputStream(stream, "UTF-8").mkString).toOption
+          stream.close()
+          text.flatMap(_.asArray).toSeq.flatten.flatMap(_.asString).toSet
+      }.getOrElse(Set.empty)
+
+  /** Top-level import name -> purl, from the BOMs the atom carries (a component's
+    * ImportedModules property) and from the python-deps index of the input's dependency origins.
+    * A module claimed with different purls (yaml from PyYAML and ruamel-yaml) stays unmapped.
+    */
+  private lazy val purlsByModule: Map[String, String] =
+      val bomClaims = atom.configFile
+          .filter(f => io.appthreat.x2cpg.passes.taggers.BomFiles.isBom(f.name))
+          .toList
+          .flatMap(f => io.circe.parser.parse(f.content).toOption.toList)
+          .flatMap { json =>
+              json.asObject.flatMap(_("components")).flatMap(_.asArray).toSeq.flatten.flatMap {
+                  comp =>
+                      for
+                        obj    <- comp.asObject
+                        purl   <- obj("purl").flatMap(_.asString)
+                        props  <- obj("properties").flatMap(_.asArray)
+                        modules <- props.collectFirst {
+                            case p if p.asObject.exists(_("name").exists(_.asString.contains("ImportedModules"))) =>
+                                p.asObject.flatMap(_("value")).flatMap(_.asString).getOrElse("")
+                        }
+                      yield modules.split(',').map(_.trim).filter(_.nonEmpty).map(_ -> purl).toList
+              }
+          }
+      val depsClaims = Try {
+          val root = java.nio.file.Paths.get(atom.metaData.root.headOption.getOrElse("."))
+          io.appthreat.pysrc2cpg.PythonDependencyStubs.modulePurlIndex(
+            root,
+            io.appthreat.pysrc2cpg.Py2CpgOnFileSystemConfig()
+          )
+      }.getOrElse(Map.empty)
+      val claims = bomClaims.flatten.toList ++ depsClaims.toList
+      claims
+          .groupBy(_._1)
+          .view
+          .mapValues(_.map(_._2).toSet)
+          .collect { case (m, ps) if ps.size == 1 => m -> ps.head }
+          .toMap
+
+  def calculate(): ProgramCallSites =
+    // import origins per declaration, and assignment counts (the single-assignment rule)
+    val bindings    = mutable.HashMap.empty[Long, Binding]
+    val assignCount = mutable.HashMap.empty[Long, Int].withDefaultValue(0)
+    val fileModules = mutable.HashMap.empty[String, mutable.Set[String]]
+
+    def declOf(id: Identifier): Option[Declaration] =
+        id._refOut.collectFirst { case d: Declaration => declRefs.outermost(d) }
+
+    def declOfNode(n: AstNode): Option[Declaration] = n match
+        case i: Identifier => declOf(i)
+        case l: Local      => Some(declRefs.outermost(l))
+        case _             => None
+
+    atom.call.nameExact(Operators.assignment).foreach { a =>
+        a.argument.l.sortBy(_.argumentIndex) match
+          case (lhs: Identifier) :: (rhs: Expression) :: _ =>
+              declOf(lhs).foreach { d =>
+                  assignCount(d.id()) += 1
+                  rhs match
+                    case importCall: Call if importCall.name == "import" =>
+                        val args = importArgs(importCall)
+                        val from = args.headOption.getOrElse("")
+                        val name = args.lift(1).getOrElse("")
+                        // `import a.b` binds the package `a` (chen#244); a from-import names
+                        // the module it imports from
+                        val module = if from.isEmpty then name.split('.').head else from
+                        val path   = if from.isEmpty then Nil else List(name)
+                        // a relative import is project code; the resolver's RESOLVED_* tags
+                        // name entities the graph contains (project code), UNKNOWN_* externals
+                        val isProject = from.startsWith(".") ||
+                            importCall.tag.name.exists(_.startsWith("RESOLVED_"))
+                        methodOf(a).map(_.filename).filter(_.nonEmpty).foreach { file =>
+                            if !isProject then
+                              fileModules.getOrElseUpdate(file, mutable.Set.empty) += module
+                              bindings(d.id()) = Binding(file, module, path)
+                        }
+                    case _ =>
+              }
+          case _ =>
+    }
+
+    // the right-hand sides assigned to each declaration, for the guarded-fallback rule
+    val assignmentsOfDecl: Map[Long, List[AssignmentShape]] =
+      val out = mutable.HashMap.empty[Long, List[AssignmentShape]]
+      atom.call.nameExact(Operators.assignment).foreach { a =>
+          a.argument.l.sortBy(_.argumentIndex) match
+            case (lhs: Identifier) :: (rhs: Expression) :: _ =>
+                declOf(lhs).foreach { d =>
+                    val shape = rhs match
+                        case c: Call if c.name == "import" =>
+                            AssignmentShape.Import(
+                              importArgs(c).lift(1).getOrElse("").split('.').head
+                            )
+                        case l: Literal if l.code == "None"  => AssignmentShape.NoneLiteral
+                        case _                               => AssignmentShape.Other
+                    out(d.id()) = shape :: out.getOrElse(d.id(), Nil)
+                }
+            case _ =>
+      }
+      out.toMap
+
+    def singleOrigin(id: Long): Boolean =
+        assignCount(id) == 1 ||
+        assignCount(id) > 1 && {
+            val shapes = assignmentsOfDecl.getOrElse(id, Nil)
+            // a guarded fallback (`try: import x except ImportError: x = None`) is one origin
+            (assignCount(id) == 2 && shapes.count {
+                case AssignmentShape.Import(_) => true
+                case _                         => false
+            } == 1 && shapes.count(_ == AssignmentShape.NoneLiteral) == 1) ||
+            // `import os` and `import os.path` both bind the name `os` to the same package
+            shapes.forall {
+                case AssignmentShape.Import(_) => true
+                case _                         => false
+            } && shapes.collect { case AssignmentShape.Import(m) => m }.distinct.size == 1
+        }
+
+    def bindingOf(id: Identifier): Option[Binding] =
+        declOf(id).flatMap { d => if singleOrigin(d.id()) then bindings.get(d.id()) else None }
+
+    def isImportLhs(id: Identifier): Boolean =
+        id.argumentIndex == 1 && DeclarationRefs.parentOf(id).exists {
+            case c: Call =>
+                c.name == Operators.assignment && c.argument.exists {
+                    case r: Call => r.name == "import"
+                    case _       => false
+                }
+            case _ => false
+        }
+
+    /** The member chain from a use, through the frontend's `tmpN = a.b` callee lowering. */
+    def climb(id: Expression): (List[String], Expression) =
+      val members        = mutable.ListBuffer[String]()
+      var top: Expression = id
+      var go              = true
+      while go do
+        DeclarationRefs.parentOf(top) match
+          case Some(c: Call) if c.name == Operators.fieldAccess && top.argumentIndex == 1 =>
+              c.argument.collect { case f: FieldIdentifier => f.canonicalName }
+                  .foreach(members += _)
+              top = c
+          case Some(c: Call) if c.name == Operators.assignment && top.argumentIndex == 2 &&
+              c.argument.exists {
+                  case i: Identifier => i.argumentIndex == 1 && i.name.matches("tmp\\d+")
+                  case _             => false
+              } =>
+              // continue at the temporary's use as a receiver/base in the same method
+              val tmp   = c.argument.collectFirst {
+                  case i: Identifier if i.argumentIndex == 1 => i.name
+              }.get
+              val inMethod = methodOf(c).map(m => m.ast.isIdentifier.nameExact(tmp)).getOrElse(
+                  Iterator.empty
+              )
+              inMethod.filter(_.id() != c.argument(1).id())
+                  .find(i =>
+                      DeclarationRefs.parentOf(i).exists {
+                          case p: Call => p.name == Operators.fieldAccess
+                          case _       => false
+                      }
+                  ) match
+                case Some(next) => top = next
+                case None       => go = false
+          case _ => go = false
+      (members.toList, top)
+    end climb
+
+    // Pass 1: every identifier that resolves to an imported binding (via=binding). The frontend
+    // can duplicate a receiver identifier node (the base of a chain appears twice at one
+    // position); the dedupe keeps one record per site.
+    atom.identifier.filterNot(_.name.matches("tmp\\d+")).foreach { id =>
+        if !isImportLhs(id) then
+          bindingOf(id).foreach { binding =>
+              methodOf(id) match
+                case None => collector.skip(id)
+                case Some(method) =>
+                  collector.add(id) {
+                      val (members, top) = climb(id)
+                      val involvement    = DeclarationRefs.receiverOf(top)
+                      val kind = involvement.map(_ => "call").getOrElse(
+                          DeclarationRefs.argumentOf(top).map(_ => "arg").getOrElse("ref")
+                      )
+                      CallSiteRecord(
+                        method.filename,
+                        line(id),
+                        col(id),
+                        method.fullName,
+                        binding.module,
+                        (binding.path ++ members).mkString("."),
+                        kind,
+                        "binding",
+                        involvement.map(_.methodFullName).getOrElse(""),
+                        builtin = stdlibModules.contains(binding.module)
+                      )
+                  }
+          }
+    }
+
+    // Pass 2: a call attributed only through its resolved name (via=type), and a typed attribute
+    // read (`request.method`). Type recovery names a call even where a parameter or local shadows
+    // the import: a receiver chain rooted at a non-import declaration of the module's own
+    // top-level name is that local, not the module.
+    val covered = mutable.HashSet.empty[Long]
+    def receiverRootOf(e: Expression): Option[Expression] =
+        Some {
+            var cur: AstNode = e
+            while cur.isInstanceOf[Call] && cur.asInstanceOf[Call].name == Operators.fieldAccess
+            do cur = cur.asInstanceOf[Call].argument(1)
+            cur.asInstanceOf[Expression]
+        }
+    def shadowed(m: String, root: Option[Expression]): Boolean =
+        root.exists {
+            case i: Identifier => i.name == m.split('.').head && bindingOf(i).isEmpty
+            case _             => false
+        }
+    def moduleOfPrefix(file: String, t: String): Option[String] =
+        fileModules.get(file).toList.flatten.filter(m => t == m || t.startsWith(m + "."))
+            .sortBy(-_.length).headOption
+
+    atom.call.nameExact(Operators.fieldAccess).foreach { fa =>
+        methodOf(fa) match
+          case None => collector.skip(fa)
+          case Some(method) =>
+            val base = fa.argument.l.find(_.argumentIndex == 1)
+            val baseTypes = base.toList.flatMap {
+                case i: Identifier => i.typeFullName +: i.dynamicTypeHintFullName
+                case _             => Nil
+            }.filterNot(t => t == "ANY" || t.isEmpty)
+            if baseTypes.nonEmpty then
+              val file = method.filename
+              baseTypes.distinct.foreach { t =>
+                  moduleOfPrefix(file, t).foreach { m =>
+                      if !shadowed(m, base) then
+                        val member = fa.argument.collectFirst {
+                            case f: FieldIdentifier => f.canonicalName
+                        }.getOrElse("")
+                        collector.add(fa) {
+                            CallSiteRecord(
+                              file,
+                              line(fa),
+                              col(fa),
+                              method.fullName,
+                              m,
+                              s"${t.stripPrefix(m).stripPrefix(".")}.$member".stripPrefix("."),
+                              "ref",
+                              "type",
+                              "",
+                              builtin = stdlibModules.contains(m)
+                            )
+                        }
+                        // the read's base is covered: a call on the same chain is the binding
+                        // pass's or this pass's, never a second typed record
+                        base.foreach { b => DeclarationRefs.receiverOf(fa).foreach(covered += _.id()) }
+                  }
+              }
+    }
+
+    atom.call
+        .filterNot(c => c.name.startsWith("<operator>") || covered.contains(c.id()))
+        .foreach { c =>
+            methodOf(c) match
+              case None => collector.skip(c)
+              case Some(method) =>
+                val file = method.filename
+                moduleOfPrefix(file, c.methodFullName).foreach { m =>
+                    if !shadowed(m, c.receiver.l.headOption.flatMap(receiverRootOf)) then
+                      collector.add(c) {
+                          CallSiteRecord(
+                            file,
+                            line(c),
+                            col(c),
+                            method.fullName,
+                            m,
+                            c.methodFullName.stripPrefix(m).stripPrefix("."),
+                            "call",
+                            "type",
+                            c.methodFullName,
+                            builtin = stdlibModules.contains(m)
+                          )
+                      }
+                }
+        }
+
+    // Pass 3: heritage, decorators and declaration types, matched against the file's import
+    // bindings by name.
+    def bindingByName(file: String, name: String): Option[Binding] =
+        bindings.values.find(b => b.file == file && b.path.headOption.contains(name))
+
+    // heritage: `class Handler(Celery)` - the base names a module the file imports, or a member
+    // of one; the record sits on the class's own line
+    atom.typeDecl.filterNot(_.isExternal).foreach { t =>
+        val file = t.filename
+        t.inheritsFromTypeFullName.filterNot(n => n == "ANY" || n.isEmpty).foreach { base =>
+            val moduleOf: Option[(String, String, Boolean)] =
+                moduleOfPrefix(file, base)
+                    .map(m => (m, base.stripPrefix(m).stripPrefix("."),
+                        stdlibModules.contains(m)))
+                    .orElse {
+                        bindingByName(file, base.split('.').head).map { b =>
+                            (b.module, base, stdlibModules.contains(b.module))
+                        }
+                    }
+            moduleOf.foreach { (m, path, builtin) =>
+                collector.add(t) {
+                    CallSiteRecord(
+                      file,
+                      line(t),
+                      -1,
+                      enclosingMethodOf(t).map(_.fullName).getOrElse(""),
+                      m,
+                      path,
+                      "extends",
+                      "name",
+                      base,
+                      builtin = builtin
+                    )
+                }
+            }
+        }
+    }
+
+    // decorators: `@app.route("/x")` - the base is either an import binding of the file, or a
+    // value whose type names one; the annotation and its lowered field access share the line
+    atom.annotation.foreach { a =>
+        methodOf(a) match
+          case None => collector.skip(a)
+          case Some(method) =>
+            val file = method.filename
+            val base = a.name.takeWhile(_ != '.')
+            val rest = a.name.drop(base.length + 1).split('.').toList.filter(_.nonEmpty)
+            bindingByName(file, base)
+                .map { b =>
+                    CallSiteRecord(
+                      file,
+                      line(a),
+                      col(a),
+                      method.fullName,
+                      b.module,
+                      (b.path ++ rest).mkString("."),
+                      "decorator",
+                      "name",
+                      a.fullName,
+                      builtin = stdlibModules.contains(b.module)
+                    )
+                }
+                .orElse {
+                    val baseTypes = atom.identifier.nameExact(base)
+                        .filter(i =>
+                            i.lineNumber.map(_.intValue) == a.lineNumber.map(_.intValue)
+                        )
+                        .flatMap(i => i.typeFullName +: i.dynamicTypeHintFullName)
+                        .filterNot(t => t == "ANY" || t.isEmpty)
+                    baseTypes.collectFirst { t =>
+                        moduleOfPrefix(file, t).map { m =>
+                            CallSiteRecord(
+                              file,
+                              line(a),
+                              col(a),
+                              method.fullName,
+                              m,
+                              s"${t.stripPrefix(m).stripPrefix(".")}.${
+                                    rest.mkString(".")
+                                }".stripPrefix("."),
+                              "decorator",
+                              "type",
+                              a.fullName,
+                              builtin = stdlibModules.contains(m)
+                            )
+                        }
+                    }.flatten
+                }
+                .foreach(r => collector.add(a)(r))
+    }
+
+    // declaration types (kind decltype): parameter, local and return annotations, from the types
+    // the frontend put on the nodes
+    def typeOrigin(file: String, t: String): Option[(String, String, Boolean)] =
+        // an annotation never names a bare module of this file's imports; a type that is one
+        // comes from the recovery's naming of a binding or a lowering temporary, not a
+        // declaration
+        if fileModules.get(file).exists(_.contains(t)) then None
+        else moduleOfPrefix(file, t)
+            .map(m => (m, t.stripPrefix(m).stripPrefix("."), stdlibModules.contains(m)))
+            .orElse {
+                bindingByName(file, t.split('.').head).map { b =>
+                    (b.module, t, stdlibModules.contains(b.module))
+                }
+            }
+
+    def decltype(node: AstNode, method: Method, t: String): Unit =
+        // a return type sits on the def line (the METHOD_RETURN node has no position of its
+        // own), and the synthetic methods the recovery invented carry no source position at all
+        val at = node match
+            case _: MethodReturn => method.lineNumber
+            case other           => other.lineNumber
+        if at.exists(_.intValue > 0) && method.filename.nonEmpty then
+            typeOrigin(method.filename, t).foreach { (m, path, builtin) =>
+                collector.add(node) {
+                    CallSiteRecord(
+                      method.filename,
+                      at.get,
+                      -1,
+                      method.fullName,
+                      m,
+                      path,
+                      "decltype",
+                      "name",
+                      t,
+                      builtin = builtin
+                    )
+                }
+            }
+
+    atom.method.parameter.filterNot(p => p.name == "self" || p.name == "cls").foreach { p =>
+        methodOf(p).foreach { method =>
+            (p.typeFullName +: p.dynamicTypeHintFullName)
+                .filterNot(t => t == "ANY" || t.isEmpty || t.startsWith(method.fullName))
+                .foreach(t => decltype(p, method, t))
+        }
+    }
+    atom.local.filterNot(_.name.matches("tmp\\d+")).foreach { l =>
+        methodOf(l).foreach { method =>
+            val isImportBinding = declOfNode(l).exists(d => bindings.contains(d.id()))
+            if !isImportBinding then (l.typeFullName +: l.dynamicTypeHintFullName)
+                .filterNot(t => t == "ANY" || t.isEmpty || t.contains("<") ||
+                    t.startsWith(method.fullName))
+                .foreach(t => decltype(l, method, t))
+        }
+    }
+    atom.method.methodReturn.foreach { mr =>
+        val m = mr.method
+        // the declared return annotation is the METHOD_RETURN's own type; the recovery's
+        // inferred hints land in the dynamic hint and are not declarations
+        Seq(mr.typeFullName)
+            .filterNot(t => t == "ANY" || t.isEmpty || t.contains("<") ||
+                t.startsWith(m.fullName))
+            .foreach(t => decltype(mr, m, t))
+    }
+
+    val slice = collector.result()
+    if purlsByModule.isEmpty then slice
+    else
+      slice.copy(callsites = slice.callsites.map(r =>
+          r.copy(purl = purlsByModule.getOrElse(r.module, ""))
+      ))
+  end calculate
+
+  /** The import call's arguments, unquoted: `(from, name[, alias])`. */
+  private def importArgs(importCall: Call): List[String] =
+      importCall.argument.l.sortBy(_.argumentIndex).collect { case l: Literal =>
+          l.code.stripPrefix("\"").stripSuffix("\"").stripPrefix("'").stripSuffix("'")
+      }.toList
 end PythonCallSiteSource
+
+private[callsites] final case class Binding(file: String, module: String, path: List[String])
+
+private[callsites] sealed trait AssignmentShape
+private[callsites] object AssignmentShape:
+    final case class Import(module: String) extends AssignmentShape
+    case object NoneLiteral                 extends AssignmentShape
+    case object Other                       extends AssignmentShape
