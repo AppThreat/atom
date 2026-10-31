@@ -163,7 +163,7 @@ class JavaCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
               Rec(
                 "Imports.java",
                 8,
-                12,
+                30,
                 "web.Session",
                 "header",
                 "call",
@@ -234,7 +234,7 @@ class JavaCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
               Rec(
                 "Calls.java",
                 9,
-                5,
+                9,
                 "web.Security",
                 "login",
                 "call",
@@ -244,23 +244,31 @@ class JavaCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
               Rec(
                 "Calls.java",
                 9,
-                5,
+                21,
                 "web.Session",
                 "header",
                 "call",
                 "type",
                 purl = "pkg:maven/com.example/stub-web@1.0.0"
               ),
-              // the chain's login lands on the same site and module as the http call that
-              // anchors it, so one record carries the line for both
               Rec(
                 "Calls.java",
                 10,
-                5,
+                14,
                 "web.Security",
                 "http",
                 "call",
                 "binding",
+                purl = "pkg:maven/com.example/stub-web@1.0.0"
+              ),
+              Rec(
+                "Calls.java",
+                10,
+                21,
+                "web.Security",
+                "login",
+                "call",
+                "type",
                 purl = "pkg:maven/com.example/stub-web@1.0.0"
               )
             )
@@ -347,7 +355,7 @@ class JavaCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
               Rec(
                 "DeclTypes.java",
                 11,
-                26,
+                31,
                 "java.util.List",
                 "of",
                 "call",
@@ -520,7 +528,7 @@ class JavaCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
               Rec(
                 "Initializers.java",
                 6,
-                42,
+                51,
                 "web.Security",
                 "http",
                 "call",
@@ -533,7 +541,7 @@ class JavaCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
 
       "record the Lombok-generated logger's calls and no record for the generated field" in {
           in("Lombok.java").filter(_.module.startsWith("org.slf4j")) shouldBe List(
-            Rec("Lombok.java", 11, 5, "org.slf4j.Logger", "info", "call", "type")
+            Rec("Lombok.java", 11, 9, "org.slf4j.Logger", "info", "call", "type")
           )
       }
 
