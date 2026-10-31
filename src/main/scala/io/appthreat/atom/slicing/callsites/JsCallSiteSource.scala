@@ -298,29 +298,6 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
     * stays name-based until T9 lands.
     */
   private def nameResolvedRecords(atom: Cpg, js: JsNames): List[CallSiteRecord] =
-    val root      = atom.metaData.root.headOption.getOrElse("")
-    val fileLines = mutable.HashMap[String, IndexedSeq[String]]()
-    def linesOf(f: String): IndexedSeq[String] =
-        fileLines.getOrElseUpdate(
-          f,
-          Try {
-              val file = if Paths.get(f).isAbsolute then better.files.File(f)
-              else better.files.File(root) / f
-              file.lines.toIndexedSeq
-          }.getOrElse(IndexedSeq.empty)
-        )
-    // A decorated class's TYPE_DECL starts at its first decorator, so the heritage clause's line
-    // is looked up in the source from there to the class body. Atoms built by a frontend that
-    // already tags the heritage (see heritageLineOf) never reach this scan.
-    def legacyHeritageLine(t: TypeDecl, file: String, baseName: String): Option[Integer] =
-      val clause = java.util.regex.Pattern.compile(
-        s"\\b(extends|implements)\\b[^{]*\\b${java.util.regex.Pattern.quote(baseName)}\\b"
-      )
-      t.lineNumber.map(n => math.max(n.intValue, 1)).flatMap { from =>
-        val lines = linesOf(file)
-        (from to math.min(from + 40, lines.size)).find(n => clause.matcher(lines(n - 1)).find())
-      }.map(Integer.valueOf)
-
     val decorators = atom.annotation.l.flatMap { a =>
       fileOf(a).getOrElse("") match
         case file if file.nonEmpty =>
@@ -350,10 +327,9 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
           t.inheritsFromTypeFullName.filterNot(n => n == "ANY" || n.isEmpty).flatMap { base =>
             val baseName = simpleName(base)
             js.ofBindingName(file, baseName).map { (module, symbol) =>
-                val (kind, taggedLine) = tagged.getOrElse(baseName, ("extends", null))
-                val heritageLine =
-                    if taggedLine != null then taggedLine
-                    else legacyHeritageLine(t, file, baseName).getOrElse(line(t))
+                // the frontend tags each base with its clause and line; a base it could not
+                // tag keeps the class's own line
+                val (kind, heritageLine) = tagged.getOrElse(baseName, ("extends", line(t)))
                 CallSiteRecord(
                   file,
                   heritageLine,
@@ -611,8 +587,15 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
               }
       (staticShape || dynamicShape) && c.argument
           .find(_.argumentIndex >= 1)
-          .exists(a => a.code.matches("(?s)this\\b.*"))
+          .exists(isRootedAtThis)
     end writesThisWholesale
+
+    /** `this`, or a member chain read from it (`this.state`). */
+    private def isRootedAtThis(e: Expression): Boolean = e match
+      case i: Identifier => i.name == "this"
+      case c: Call if c.name == Operators.fieldAccess =>
+          c.argument.find(_.argumentIndex == 1).exists(isRootedAtThis)
+      case _ => false
 
     private val fieldOrigins = mutable.HashMap[FieldKey, Origin]()
 
