@@ -15,8 +15,9 @@ package io.appthreat.atom.slicing.callsites
   *
   * `builtin` marks uses of the language's standard library, and `declaringModule` carries the
   * module of the class that declares the callee when it differs from the receiver's static type
-  * (decision 0001, P2). Both are new in v4; atom and cdxgen change together, so there is no schema
-  * versioning.
+  * (decision 0001, P2). `purl` carries the distribution the module maps to when atom knows one
+  * (a BOM's ImportedModules or the python-deps index); it is left out of the JSON while empty.
+  * These are new in v4; atom and cdxgen change together, so there is no schema versioning.
   */
 final case class CallSiteRecord(
   file: String,
@@ -29,10 +30,19 @@ final case class CallSiteRecord(
   via: String,
   resolvedMethod: String,
   builtin: Boolean = false,
-  declaringModule: String = ""
+  declaringModule: String = "",
+  purl: String = ""
 )
 
 object CallSiteRecord:
+
+  implicit val encoder: io.circe.Encoder[CallSiteRecord] =
+      io.circe.generic.semiauto.deriveEncoder[CallSiteRecord].mapJsonObject { json =>
+          // an absent purl says "no mapping", not "the empty purl"
+          if json("purl").exists(_.isNull) || json("purl").exists(_.asString.exists(_.isEmpty))
+          then json.remove("purl")
+          else json
+      }
 
   /** The most specific kind wins when one use site (a position and a module) carries several
     * records: the base of `jwt.sign(...)` reaches the slice both as the chain's base and as the
