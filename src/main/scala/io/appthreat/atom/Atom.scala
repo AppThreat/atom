@@ -77,6 +77,11 @@ import scala.util.{Failure, Success, Try}
 
 object Atom:
 
+  /** The tagger's own project-level config, read by ChennaiTagsPass from the atom's config files;
+    * its content is part of the tagger input state.
+    */
+  val TaggerConfigFileName = "chennai.json"
+
   val DEFAULT_ATOM_OUT_FILE: String = "app.atom"
   val DEFAULT_SLICE_OUT_FILE        = "slices.json"
   val DEFAULT_SLICE_DEPTH           = 7
@@ -823,6 +828,15 @@ object Atom:
                   c match
                     case c: AtomUsagesConfig => c.copy(extractEndpoints = true)
                     case _                   => c
+              ),
+          opt[String]("also-callsites")
+              .text(
+                "also write the callsites slice to the given path: the atom is built and tagged once for both slices."
+              )
+              .action((x, c) =>
+                  c match
+                    case c: AtomUsagesConfig => c.withAlsoCallsites(Option(File(x)))
+                    case _                   => c
               )
         )
     cmd("callsites")
@@ -1163,8 +1177,23 @@ object Atom:
       SliceFiles.writeAtomically(outFile)(s.toJsonFile)
       println(s"Slices have been successfully written to ${outFile.pathAsString}")
     }
+    // One process, two slices (atom#336): the atom is built and tagged once, and the callsites
+    // slice reads the graph the usages slice just did. The output is the separate command's,
+    // byte for byte.
+    config match
+      case u: AtomUsagesConfig if u.alsoCallsites.isDefined =>
+          PerfReporter.stage("slicing.callsites", "slicing") {
+              val callsitesFile = u.alsoCallsites.get
+              val callSites     = CallSiteSlicing.calculateCallSitesSlice(ag)
+              SliceFiles.writeAtomically(callsitesFile)(callSites.toJsonFile)
+              println(
+                s"Call sites have been successfully written to ${callsitesFile.pathAsString}"
+              )
+          }
+      case _ =>
     handleEndpointExtraction(config, usagesConfig)
     Right("Usages slice generated successfully")
+  end generateUsagesSlice
 
   private def calculateUsagesSlice(cpg: Cpg, config: BaseConfig): Option[ProgramSlice] =
       config match
