@@ -77,6 +77,9 @@ import scala.util.{Failure, Success, Try}
 
 object Atom:
 
+  /** The config file that records the state the atom's tags were built from (atom#337). */
+  val TagStateFileName = "atom-tag-state.json"
+
   /** The tagger's own project-level config, read by ChennaiTagsPass from the atom's config files;
     * its content is part of the tagger input state.
     */
@@ -1813,7 +1816,70 @@ object Atom:
   private def runChennaiTags(config: AtomConfig, atom: Cpg): Unit =
     val externalConfig =
         config.validationConfigFile.filter(_.exists).map(_.contentAsString)
-    new ChennaiTagsPass(atom, externalConfig).createAndApply()
+    // Tag once per tagger input state (atom#337): the tags are a function of what the taggers
+    // read, so a reused atom whose inputs match the recorded state already carries identical
+    // tags and the pass is skipped; any changed input re-tags. The inputs are every file the
+    // pass reads: the BOMs and chennai.json it finds among the atom's config files, the
+    // validation config given on the command line, and the chen and atom versions the pass's
+    // code came from.
+    val state   = taggerInputState(atom, externalConfig)
+    val marker  = atom.configFile.name(Atom.TagStateFileName).content.headOption
+    val matches = marker.flatMap(m => tagStateHashOf(m)).contains(state)
+    if matches then
+      println(
+        "Tagging skipped: the tagger inputs match the state recorded with the atom's tags."
+      )
+    else
+      new ChennaiTagsPass(atom, externalConfig).createAndApply()
+      storeTagState(atom, state)
+
+  /** Everything the tagging pass reads, hashed: the BOM and chennai.json contents among the atom's
+    * config files, the validation config, and the versions of chen and atom. A canonical string
+    * over all of them, so any changed input yields a different hash.
+    */
+  private def taggerInputState(atom: Cpg, externalConfig: Option[String]): String =
+    // Everything the pass reads from the atom's config files: the BOMs (the JS module purl
+    // mapping reads them at slice time) and chennai.json, the tagger's own project-level
+    // config whose name lives privately in the pass.
+    val configFileStates =
+        atom.configFile
+            .filter(f => BomFiles.isBom(f.name) || f.name == TaggerConfigFileName)
+            .toList
+            .sortBy(_.name)
+            .map(f => s"${f.name}\u0000${f.content}")
+    val parts = configFileStates ++ Seq(
+      externalConfig.getOrElse(""),
+      versionOf(classOf[io.appthreat.x2cpg.passes.taggers.ChennaiTagsPass]),
+      versionOf(getClass)
+    )
+    val digest = java.security.MessageDigest.getInstance("SHA-256")
+    parts.foreach(part =>
+        digest.update(part.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+    )
+    digest.digest().map(b => f"$b%02x").mkString
+  end taggerInputState
+
+  /** The implementation version of the jar `clazz` was loaded from, which is the version the staged
+    * distribution names; empty when the class was not loaded from a manifest jar.
+    */
+  private def versionOf(clazz: Class[?]): String =
+      Option(clazz.getPackage).flatMap(p => Option(p.getImplementationVersion)).getOrElse("")
+
+  private def tagStateHashOf(content: String): Option[String] =
+      io.circe.parser
+          .parse(content)
+          .toOption
+          .flatMap(_.hcursor.downField("hash").as[String].toOption)
+
+  private def storeTagState(atom: Cpg, state: String): Unit =
+    val diff = new BatchedUpdate.DiffGraphBuilder
+    atom.configFile.name(Atom.TagStateFileName).foreach(diff.removeNode)
+    diff.addNode(
+      NewConfigFile()
+          .name(Atom.TagStateFileName)
+          .content(ujson.write(ujson.Obj("hash" -> state)))
+    )
+    BatchedUpdate.applyDiff(atom.graph, diff)
 
   private def enhanceCpg(config: AtomConfig, atom: Cpg, reusing: Boolean): Either[String, Unit] =
       config match
