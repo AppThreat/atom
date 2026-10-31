@@ -30,6 +30,11 @@ import scala.util.Try
   * The JDK is a dependency (`builtin: true`): membership comes from the committed list of the JDK's
   * exported packages, generated once from the module image's `jmod` descriptions, never from a
   * hand-written prefix list. `javax.servlet` is not on it; `javax.xml` is.
+  *
+  * With the dependency classpath the frontend resolved types from (chen's `java-classpath.json`
+  * config file), a record also carries the `purl` of the Maven artifact whose jar contains the
+  * class. Shaded or relocated classes belong to the jar that contains them; a class that two
+  * artifacts carry stays unmapped, and JDK classes get no purl.
   */
 final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java"):
 
@@ -150,7 +155,8 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
                       if isNew || static then "binding" else "type",
                       c.methodFullName,
                       isJdk(module),
-                      declaringModule = if module != cls then cls else ""
+                      declaringModule = if module != cls then cls else "",
+                      purlOf(module)
                     )
                 }
         end if
@@ -181,7 +187,8 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
                       "annotation",
                       "binding",
                       cls,
-                      isJdk(cls)
+                      isJdk(cls),
+                      purl = purlOf(cls)
                     )
                 }
             case Some(method) =>
@@ -196,7 +203,8 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
                       "annotation",
                       "binding",
                       cls,
-                      isJdk(cls)
+                      isJdk(cls),
+                      purl = purlOf(cls)
                     )
                 }
         end if
@@ -226,7 +234,8 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
                     if idx == 0 then "extends" else "implements",
                     "binding",
                     base,
-                    isJdk(base)
+                    isJdk(base),
+                    purl = purlOf(base)
                   )
               }
         }
@@ -275,7 +284,8 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
                                     "ref",
                                     "binding",
                                     module,
-                                    isJdk(module)
+                                    isJdk(module),
+                                    purl = purlOf(module)
                                   )
                               }
                   }
@@ -304,7 +314,8 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
                       "methodref",
                       "binding",
                       m.methodFullName,
-                      isJdk(cls)
+                      isJdk(cls),
+                      purl = purlOf(cls)
                     )
                 }
       }
@@ -329,7 +340,8 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
                       "decltype",
                       "binding",
                       cls,
-                      isJdk(cls)
+                      isJdk(cls),
+                      purl = purlOf(cls)
                     )
                 }
             case None => collector.skip(node)
@@ -355,7 +367,8 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
                   "decltype",
                   "binding",
                   m.typeFullName,
-                  isJdk(m.typeFullName)
+                  isJdk(m.typeFullName),
+                  purl = purlOf(m.typeFullName)
                 )
             }
     }
@@ -379,7 +392,8 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
                         "decltype",
                         "binding",
                         throwsType,
-                        isJdk(throwsType)
+                        isJdk(throwsType),
+                        purl = purlOf(throwsType)
                       )
                   }
             }
@@ -395,4 +409,91 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
           yield (t, Integer.valueOf(l))
       }
 
+  /** The purl of the Maven artifact that carries `cls`, from the dependency classpath the frontend
+    * recorded: the jar whose entries contain the class, named by its
+    * `META-INF/maven/**/pom.properties`. A class two jars carry stays unmapped, and a class the JDK
+    * exports has no artifact at all.
+    */
+  private def purlOf(cls: String): String =
+      if cls.isEmpty || isJdk(cls) then ""
+      else purlsByClass.getOrElse(cls, "")
+
+  private lazy val purlsByClass: Map[String, String] =
+    val jars = dependencyJars
+    if jars.isEmpty then Map.empty
+    else
+      val classesByJar = jars.map(jar => jar -> classesIn(jar))
+      val owners       = mutable.HashMap.empty[String, List[String]]
+      classesByJar.foreach { (jar, classes) =>
+          classes.foreach(cls => owners.update(cls, jar :: owners.getOrElse(cls, Nil)))
+      }
+      val purlByJar     = jars.map(jar => jar -> pomProperties(jar).map(coordsToPurl).getOrElse(""))
+      val purlByJarList = purlByJar.toMap
+      owners.collect {
+          case (cls, jarsHeld) if jarsHeld.distinct.size == 1 =>
+              cls -> purlByJarList.getOrElse(jarsHeld.head, "")
+      }.filter((_, purl) => purl.nonEmpty).toMap
+
+  /** The dependency jars the frontend resolved types from, as the frontend recorded them. */
+  private def dependencyJars: List[String] =
+      atom.configFile
+          .name(JavaCallSiteSource.DependencyClasspathFileName)
+          .content
+          .headOption
+          .flatMap(content => io.circe.parser.parse(content).toOption)
+          .map(_.asArray.toSeq.flatten.flatMap(_.asString).toList)
+          .getOrElse(Nil)
+          .filter(path => Try(java.nio.file.Paths.get(path).toFile.isFile).getOrElse(false))
+
+  /** The class names a jar carries, from its `.class` entries. */
+  private def classesIn(jar: String): List[String] =
+      Try {
+          val jf = new java.util.jar.JarFile(jar)
+          try
+              jf.stream()
+                  .iterator()
+                  .asScala
+                  .map(_.getName)
+                  .filter(n => n.endsWith(".class") && !n.contains("$"))
+                  .map(n => n.stripSuffix(".class").replace('/', '.'))
+                  .toList
+          finally jf.close()
+      }.getOrElse(Nil)
+
+  /** The Maven coordinates a jar declares, `group:artifact:version`, when it carries exactly one
+    * `pom.properties`.
+    */
+  private def pomProperties(jar: String): Option[(String, String, String)] =
+      Try {
+          val jf = new java.util.jar.JarFile(jar)
+          try
+            val entries = jf.entries().asScala
+                .filter(e =>
+                    e.getName.startsWith("META-INF/maven/") &&
+                        e.getName.endsWith("/pom.properties")
+                )
+                .toList
+            if entries.size != 1 then None
+            else
+              val props = new java.util.Properties()
+              props.load(jf.getInputStream(entries.head))
+              Some(
+                (
+                  props.getProperty("groupId", ""),
+                  props.getProperty("artifactId", ""),
+                  props.getProperty("version", "")
+                )
+              )
+          finally jf.close()
+      }.toOption.flatten.filter { (group, artifact, _) =>
+          group.nonEmpty && artifact.nonEmpty
+      }
+
+  private def coordsToPurl(coords: (String, String, String)): String =
+    val (group, artifact, version) = coords
+    if version.isEmpty then s"pkg:maven/$group/$artifact"
+    else s"pkg:maven/$group/$artifact@$version"
 end JavaCallSiteSource
+
+object JavaCallSiteSource:
+  val DependencyClasspathFileName = "java-classpath.json"
