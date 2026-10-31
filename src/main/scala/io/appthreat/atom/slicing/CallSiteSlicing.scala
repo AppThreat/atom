@@ -7,9 +7,12 @@ import io.shiftleft.codepropertygraph.generated.{ModifierTypes, Operators}
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
 
+import org.slf4j.LoggerFactory
+
 import java.nio.file.Paths
 import scala.collection.mutable
 import scala.util.Try
+import scala.util.control.NonFatal
 
 /** One record per external use site: where and how a module import is used. See [[CallSiteRecord]]
   * for the fields.
@@ -53,6 +56,100 @@ object CallSiteSlicing:
     "toUpperCase"
   )
 
+
+  /** The method enclosing `n`, through the AST parents; `astParent` throws on the detached nodes
+    * some frontends leave (outline's destructured arrow parameters, PHP property-hook bodies), so
+    * the edge is read directly (see DeclarationRefs.parentOf).
+    */
+  private[slicing] def enclosingMethodOf(n: AstNode): Option[Method] =
+      Iterator
+          .iterate(DeclarationRefs.parentOf(n))(_.flatMap(DeclarationRefs.parentOf))
+          .takeWhile(_.isDefined).flatten.collectFirst { case m: Method => m }
+
+  /** The enclosing method of a use, falling back to the method of the declaration it REFs: the
+    * frontend's lowering can detach an identifier from the AST while it keeps its REF edge.
+    */
+  private[slicing] def methodOf(use: AstNode): Option[Method] =
+      enclosingMethodOf(use).orElse(
+        use match
+          case e: Expression =>
+              e._refOut.collectFirst { case d: Declaration => d } match
+                case Some(l: Local)             => enclosingMethodOf(l)
+                case Some(p: MethodParameterIn) => enclosingMethodOf(p)
+                case _                          => None
+          case _ => None
+      )
+
+  /** The file a node sits in: its method's filename when there is one, else the file traversal,
+    * which the detached nodes have no business relying on.
+    */
+  private[slicing] def fileOf(n: AstNode): Option[String] =
+      methodOf(n).map(_.filename).orElse(Try(n.file.name.headOption).toOption.flatten)
+
+  /** Collects the records of the slice, and keeps one bad node from failing the whole slice: a
+    * record whose construction throws is logged once with the node's id and skipped, and the
+    * slice is always written (atom#317).
+    */
+  private[slicing] final class RecordCollector:
+    private val logger      = LoggerFactory.getLogger(getClass)
+    private val records     = mutable.LinkedHashSet.empty[CallSiteRecord]
+    private val failedNodes = mutable.LinkedHashSet.empty[Long]
+    private var skipped     = 0
+
+    /** Adds the record built for `node`; an exception in the by-name `record` logs the node once. */
+    def add(node: AstNode)(record: => CallSiteRecord): Unit =
+        try records += record
+        catch case NonFatal(e) =>
+            if failedNodes.add(node.id()) then
+              logger.warn(
+                s"callsites: skipped node ${node.id()} (${node.label}) at line ${nodeLine(node)}: $e"
+              )
+
+    /** Adds records whose builders used the safe lookups and cannot throw. */
+    def addAll(built: List[CallSiteRecord]): Unit = records ++= built
+
+    /** A use with no enclosing method and no resolvable declaration cannot name a record:
+      * counted, skipped.
+      */
+    def skip(node: AstNode): Unit =
+        skipped += 1
+        if failedNodes.add(node.id()) then
+          logger.debug(
+            s"callsites: no method for node ${node.id()} (${node.label}) at line ${nodeLine(node)}"
+          )
+
+    private def nodeLine(node: AstNode): String =
+        node.property(io.shiftleft.codepropertygraph.generated.PropertyNames.LINE_NUMBER, "?")
+
+    def result(): ProgramCallSites =
+        val failed = failedNodes.size
+        if failed > 0 || skipped > 0 then
+          println(
+            s"Call sites: skipped $failed node(s) that failed and $skipped node(s) with no method"
+          )
+        ProgramCallSites(deduped(records))
+
+    /** One record per use site: the most specific kind wins, the order is positional. */
+    private def deduped(recs: mutable.LinkedHashSet[CallSiteRecord]): List[CallSiteRecord] =
+      val kindRank =
+          Map(
+            "call"      -> 0,
+            "new"       -> 1,
+            "jsx"       -> 2,
+            "tag"       -> 3,
+            "decorator" -> 4,
+            "arg"       -> 5,
+            "extends"   -> 6,
+            "ref"       -> 7
+          )
+      recs
+          .groupBy(r => (r.file, r.line, r.col, r.module))
+          .map(_._2.minBy(r => (kindRank.getOrElse(r.kind, 8), r.path, r.via, r.resolvedMethod)))
+          .toList
+          .sortBy(r => (r.file, r.line.intValue, r.col.intValue))
+    end deduped
+  end RecordCollector
+
   def calculateCallSitesSlice(atom: Cpg): ProgramCallSites =
     if !JsNames.isJs(atom.metaData.language.headOption) then return ProgramCallSites(Nil)
 
@@ -63,33 +160,37 @@ object CallSiteSlicing:
         templates.flatMap(t => AngularTemplate.writes(t.text).map(t.component.fullName -> _)).toSet
     val resolver = new BindingResolver(atom, js, templateWrites)
 
-    val recs = mutable.LinkedHashSet[CallSiteRecord]()
+    val recs = new RecordCollector
 
     // A use of a binding at `use` (an identifier, or the `this.f` of a field alias): its kind is how
     // the top of its member chain takes part in a call.
     val coveredCalls = mutable.HashSet[Long]()
-    def useRecord(use: Expression, origin: Origin): CallSiteRecord =
-      val top         = DeclarationRefs.chainTop(use)
-      val involvement = DeclarationRefs.receiverOf(top)
-      involvement.foreach(c => coveredCalls += c.id())
-      val kind = involvement.map { c =>
-        val isJsx = c.code.startsWith("<") && !c.name.startsWith("<operator")
-        if c.name == "<operator>.new" then "new"
-        else if isJsx then "jsx"
-        else "call"
-      }.getOrElse(DeclarationRefs.argumentOf(top).map(_ => "arg").getOrElse("ref"))
-      val method = use.method
-      CallSiteRecord(
-        method.filename,
-        line(use),
-        col(use),
-        method.fullName,
-        origin.module,
-        (origin.path ++ resolver.membersOf(use)).mkString("."),
-        kind,
-        "binding",
-        involvement.map(c => resolvedName(c.methodFullName)).getOrElse("")
-      )
+    def useRecord(use: Expression, origin: Origin): Unit =
+      methodOf(use) match
+        case None => recs.skip(use)
+        case Some(method) =>
+          recs.add(use) {
+            val top         = DeclarationRefs.chainTop(use)
+            val involvement = DeclarationRefs.receiverOf(top)
+            involvement.foreach(c => coveredCalls += c.id())
+            val kind = involvement.map { c =>
+              val isJsx = c.code.startsWith("<") && !c.name.startsWith("<operator")
+              if c.name == "<operator>.new" then "new"
+              else if isJsx then "jsx"
+              else "call"
+            }.getOrElse(DeclarationRefs.argumentOf(top).map(_ => "arg").getOrElse("ref"))
+            CallSiteRecord(
+              method.filename,
+              line(use),
+              col(use),
+              method.fullName,
+              origin.module,
+              (origin.path ++ resolver.membersOf(use)).mkString("."),
+              kind,
+              "binding",
+              involvement.map(c => resolvedName(c.methodFullName)).getOrElse("")
+            )
+          }
     end useRecord
 
     // Pass A: every identifier that resolves to an imported binding (via=binding). The
@@ -101,7 +202,7 @@ object CallSiteSlicing:
               case c: Call => c.name == Operators.assignment
               case _       => false
           }
-          if !isDef then recs += useRecord(id, origin)
+          if !isDef then useRecord(id, origin)
         }
     }
 
@@ -109,65 +210,50 @@ object CallSiteSlicing:
     // `new this.Subject()`), through `this` - inherited fields included - or, for a static field,
     // the class's name (via=binding: the field's single write is scope-resolved like a local's).
     atom.call.nameExact(Operators.fieldAccess).filterNot(JsShapes.isAssignmentTarget).foreach {
-        fa => resolver.fieldOriginOf(fa).foreach(origin => recs += useRecord(fa, origin))
+        fa => resolver.fieldOriginOf(fa).foreach(origin => useRecord(fa, origin))
     }
 
     // Angular templates read the component's members by bare name: a read of a field alias in
     // the component's template (`{{ translations.title }}`, `[icon]="faCoffee"`) is a use too.
-    recs ++= templateRecords(templates, resolver)
+    recs.addAll(templateRecords(templates, resolver))
 
     // Pass B: calls attributed only through their resolved name, a typed receiver (via=type)
     atom.call
         .filterNot(c => c.name.startsWith("<operator>") || coveredCalls.contains(c.id()))
         .foreach { c =>
-            js.split(c.methodFullName).foreach { (module, symbol) =>
-              // the symbol path is dotted (`path.includes`); the callee member is its last segment
-              val member = symbol.map(_.split('.').last).getOrElse("")
-              if !primitiveMembers.contains(member) then
-                // `consumer\n  .apply(x)`: report the member name's position, not the chain's start
-                val memberPos =
-                    c.receiver.collectFirst {
-                        case f: Call if f.name == Operators.fieldAccess =>
-                            f.argument.collectFirst { case fi: FieldIdentifier => fi }
-                    }.flatten.filter(_.lineNumber.exists(_.intValue > 0))
-                recs += CallSiteRecord(
-                  c.method.filename,
-                  memberPos.map(fi => line(fi)).getOrElse(line(c)),
-                  memberPos.map(fi => col(fi)).getOrElse(col(c)),
-                  c.method.fullName,
-                  module,
-                  symbol.getOrElse(""),
-                  "call",
-                  "type",
-                  c.methodFullName
-                )
-            }
+            methodOf(c) match
+              case None => recs.skip(c)
+              case Some(method) =>
+                js.split(c.methodFullName).foreach { (module, symbol) =>
+                  // the symbol path is dotted (`path.includes`); the callee member is its last segment
+                  val member = symbol.map(_.split('.').last).getOrElse("")
+                  if !primitiveMembers.contains(member) then
+                    // `consumer\n  .apply(x)`: report the member name's position, not the chain's start
+                    val memberPos =
+                        c.receiver.collectFirst {
+                            case f: Call if f.name == Operators.fieldAccess =>
+                                f.argument.collectFirst { case fi: FieldIdentifier => fi }
+                        }.flatten.filter(_.lineNumber.exists(_.intValue > 0))
+                    recs.add(c) {
+                      CallSiteRecord(
+                        method.filename,
+                        memberPos.map(fi => line(fi)).getOrElse(line(c)),
+                        memberPos.map(fi => col(fi)).getOrElse(col(c)),
+                        method.fullName,
+                        module,
+                        symbol.getOrElse(""),
+                        "call",
+                        "type",
+                        c.methodFullName
+                      )
+                    }
+                }
         }
 
     // Pass C: decorators, heritage clauses, tagged templates and JSX tags, by name (via=name)
-    recs ++= nameResolvedRecords(atom, js)
+    recs.addAll(nameResolvedRecords(atom, js))
 
-    // The frontend can duplicate an identifier node (the base of `jwt.sign(...)` appears both as
-    // the member chain's base and as the call's receiver argument); one use site keeps one
-    // record, the most specific kind wins.
-    val kindRank =
-        Map(
-          "call"      -> 0,
-          "new"       -> 1,
-          "jsx"       -> 2,
-          "tag"       -> 3,
-          "decorator" -> 4,
-          "arg"       -> 5,
-          "extends"   -> 6,
-          "ref"       -> 7
-        )
-    val deduped = recs
-        .groupBy(r => (r.file, r.line, r.col, r.module))
-        .values
-        .map(rs => rs.minBy(r => (kindRank.getOrElse(r.kind, 8), r.path, r.via, r.resolvedMethod)))
-    ProgramCallSites(
-      deduped.toList.sortBy(r => (r.file, r.line.intValue, r.col.intValue))
-    )
+    recs.result()
   end calculateCallSitesSlice
 
   /** The callee's full name when the frontend resolved one, else empty (a placeholder, or the
@@ -349,7 +435,7 @@ object CallSiteSlicing:
       }.map(Integer.valueOf)
 
     val decorators = atom.annotation.l.flatMap { a =>
-      val file = a.file.name.headOption.getOrElse("")
+      val file = fileOf(a).getOrElse("")
       js.ofBindingName(file, a.name).map { (module, symbol) =>
           CallSiteRecord(
             file,
@@ -369,7 +455,7 @@ object CallSiteSlicing:
         decorators.groupBy(r => (r.file, r.line, r.col, r.path)).values.map(_.head)
 
     val heritage = atom.typeDecl.filterNot(_.isExternal).l.flatMap { t =>
-      val file = t.file.name.headOption.getOrElse("")
+      val file = fileOf(t).getOrElse("")
       t.inheritsFromTypeFullName.filterNot(n => n == "ANY" || n.isEmpty).flatMap { base =>
         // the frontend guesses a file for an imported base (`events.js::program:X`)
         val baseName = base.split("[:.]").lastOption.getOrElse(base)
@@ -390,43 +476,46 @@ object CallSiteSlicing:
     }
 
     val taggedAndJsx = atom.call.filterNot(_.name.startsWith("<operator>")).l.flatMap { c =>
-      val file = c.method.filename
-      if c.code.startsWith("<") then
-        // JSX element: the tag name (`Button`, `Foo.Bar`) against the file's bindings
-        val parts = c.name.split('.').toList
-        js.ofBindingName(file, parts.head).map { (module, symbol) =>
-            CallSiteRecord(
-              file,
-              line(c),
-              col(c),
-              c.method.fullName,
-              module,
-              (symbol.toList ++ parts.tail).mkString("."),
-              "jsx",
-              "name",
-              resolvedName(c.methodFullName)
-            )
-        }
-      else if !c.argument.exists(_.argumentIndex == 0) && c.methodFullName == c.name then
-        // a call with no receiver/callee argument whose full name is the bare name: the
-        // frontend's lowering of a tagged template (`` gql`...` ``) names the call after the
-        // tag and resolves nothing. A resolved name (`JSON.parse`) is a builtin call whose
-        // member happens to match a file binding, not a tag.
-        js.ofBindingName(file, c.name).map { (module, symbol) =>
-            CallSiteRecord(
-              file,
-              line(c),
-              col(c),
-              c.method.fullName,
-              module,
-              symbol.getOrElse(""),
-              "tag",
-              "name",
-              c.methodFullName
-            )
-        }
-      else None
-      end if
+      methodOf(c) match
+        case Some(method) =>
+          val file = method.filename
+          if c.code.startsWith("<") then
+            // JSX element: the tag name (`Button`, `Foo.Bar`) against the file's bindings
+            val parts = c.name.split('.').toList
+            js.ofBindingName(file, parts.head).map { (module, symbol) =>
+                CallSiteRecord(
+                  file,
+                  line(c),
+                  col(c),
+                  method.fullName,
+                  module,
+                  (symbol.toList ++ parts.tail).mkString("."),
+                  "jsx",
+                  "name",
+                  resolvedName(c.methodFullName)
+                )
+            }
+          else if !c.argument.exists(_.argumentIndex == 0) && c.methodFullName == c.name then
+            // a call with no receiver/callee argument whose full name is the bare name: the
+            // frontend's lowering of a tagged template (`` gql`...` ``) names the call after the
+            // tag and resolves nothing. A resolved name (`JSON.parse`) is a builtin call whose
+            // member happens to match a file binding, not a tag.
+            js.ofBindingName(file, c.name).map { (module, symbol) =>
+                CallSiteRecord(
+                  file,
+                  line(c),
+                  col(c),
+                  method.fullName,
+                  module,
+                  symbol.getOrElse(""),
+                  "tag",
+                  "name",
+                  c.methodFullName
+                )
+            }
+          else None
+          end if
+        case None => None
     }
 
     (uniqueDecorators.toList ++ heritage ++ taggedAndJsx)
@@ -467,7 +556,7 @@ object CallSiteSlicing:
             // of its method. Only `_tmp*` names: any other no-REF identifier (an export-list
             // entry, say) must not be attributed to a same-named local.
             if id.name.startsWith("_tmp") then
-              methodLocals.get(id.method.id()).flatMap(_.get(id.name)).flatMap {
+              methodOf(id).flatMap(m => methodLocals.get(m.id())).flatMap(_.get(id.name)).flatMap {
                   case List(one) => Option(declRefs.outermost(one))
                   case _         => None
               }
