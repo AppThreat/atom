@@ -125,16 +125,19 @@ class PythonCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfter
 
       "record a use of the standard library with builtin set" in {
           in("imports.py").filter(r => r.module == "os").map(_.builtin) should not contain false
+          // a from-import of a stdlib submodule is the standard library too
+          in("imports.py").filter(_.line == 14) should contain theSameElementsAs List(
+            PythonCallSitesTests.Rec("imports.py", 14, 7, "os.path", "basename", "call", "binding", builtin = true)
+          )
       }
 
       "record an except handler class as a use of the module" in {
           in("exceptions.py").filter(_.line == 7) should contain theSameElementsAs List(
             PythonCallSitesTests.Rec("exceptions.py", 7, 12, "requests", "ConnectionError", "ref", "binding", builtin = false)
           )
-          // a tuple of handler classes: the member chain names urllib3.HTTPError through
-          // the binding's own module
+          // a tuple of handler classes: the member chain from the binding names the whole path
           in("exceptions.py").filter(_.line == 9) should contain theSameElementsAs List(
-            PythonCallSitesTests.Rec("exceptions.py", 9, 13, "urllib3", "HTTPError", "ref", "type", builtin = false)
+            PythonCallSitesTests.Rec("exceptions.py", 9, 13, "urllib3", "exceptions.HTTPError", "ref", "binding", builtin = false)
           )
       }
 
@@ -188,6 +191,17 @@ class PythonCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfter
           )
       }
 
+      "record no decltype for a return type the recovery inferred" in {
+          // def make_session(engine): return Session(engine) has no annotation
+          in("typed.py").filter(r => r.line == 13 && r.kind == "decltype") shouldBe empty
+      }
+
+      "name a generic annotation by its base type" in {
+          in("typed.py").filter(r => r.line == 18 && r.kind == "decltype").map(r => (r.module, r.path)) should contain(
+            ("typing", "Iterator")
+          )
+      }
+
       "put a multi-line signature's return decltype on the annotation's own line" in {
           // def handle(\n    body,\n) -> Response:  the annotation is on the 5th line
           in("multiline.py").filter(r => r.kind == "decltype") should contain theSameElementsAs List(
@@ -206,6 +220,15 @@ class PythonCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfter
           )
       }
 
+      "leave a member inherited from an imported base to the heritage record" in {
+          // class Formatter(argparse.HelpFormatter): the receiver of `self.add_usage(...)` is the
+          // project class, whose base the class line already records
+          in("heritage.py").filter(_.line == 12) should contain theSameElementsAs List(
+            PythonCallSitesTests.Rec("heritage.py", 12, -1, "argparse", "HelpFormatter", "extends", "name", builtin = true)
+          )
+          in("heritage.py").filter(_.line == 14) shouldBe empty
+      }
+
       "map a record's module to its distribution through the BOM's ImportedModules" in {
           val load = purlRecords.filter(_.path == "safe_load")
           load should have size 1
@@ -213,6 +236,10 @@ class PythonCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfter
           val fetch = purlRecords.filter(_.path == "get")
           fetch should have size 1
           fetch.head.purl shouldBe "pkg:pypi/requests@2.31.0"
+          // a submodule maps through its top-level package
+          val adapter = purlRecords.filter(_.path == "HTTPAdapter")
+          adapter should have size 1
+          adapter.head.purl shouldBe "pkg:pypi/requests@2.31.0"
       }
   }
 end PythonCallSitesTests

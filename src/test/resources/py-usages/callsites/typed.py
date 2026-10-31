@@ -9,3 +9,11 @@ def view(s: Session) -> str:
 
 def caller(req):
     return req.headers
+
+def make_session(engine):
+    return Session(engine)
+
+import typing
+
+def sessions(engine) -> typing.Iterator[Session]:
+    yield Session(engine)

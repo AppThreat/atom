@@ -6,3 +6,7 @@ def load(text):
 
 def fetch(url):
     return requests.get(url)
+
+from requests.adapters import HTTPAdapter
+
+adapter = HTTPAdapter()

@@ -10,3 +10,5 @@ print(np.array([1]))
 app = Flask(__name__)
 print(request.method if False else "")
 print(Q())
+from os.path import basename
+print(basename("x"))

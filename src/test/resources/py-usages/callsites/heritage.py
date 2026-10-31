@@ -6,3 +6,9 @@ class Command(click.Command):
 
 class Worker(Celery):
     pass
+
+import argparse
+
+class Formatter(argparse.HelpFormatter):
+    def add(self, usage):
+        self.add_usage(usage, None, None)

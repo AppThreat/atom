@@ -47,6 +47,22 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
           text.flatMap(_.asArray).toSeq.flatten.flatMap(_.asString).toSet
       }.getOrElse(Set.empty)
 
+  /** Whether a module (`os`, `os.path`, `email.mime.text`) belongs to the standard library: the
+    * list names top-level packages only.
+    */
+  private def isStdlib(module: String): Boolean =
+      stdlibModules.contains(module.takeWhile(_ != '.'))
+
+  /** The purl of the distribution that provides `module`: the longest mapped prefix, so that
+    * `requests.adapters` takes the purl of `requests`.
+    */
+  private def purlOf(module: String): String =
+      Iterator.iterate(module)(m => m.substring(0, math.max(m.lastIndexOf('.'), 0)))
+          .takeWhile(_.nonEmpty)
+          .flatMap(purlsByModule.get)
+          .nextOption()
+          .getOrElse("")
+
   /** Top-level import name -> purl, from the BOMs the atom carries (a component's
     * ImportedModules property) and from the python-deps index of the input's dependency origins.
     * A module claimed with different purls (yaml from PyYAML and ruamel-yaml) stays unmapped.
@@ -191,6 +207,30 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
             case _ => false
         }
 
+    /** Per method, the lowering temporaries read as the base of a member access, by name: one
+      * walk of each method's AST, not one per temporary.
+      */
+    val tmpBases = mutable.HashMap.empty[Long, Map[String, List[Identifier]]]
+    def tmpBasesIn(m: Method): Map[String, List[Identifier]] =
+        tmpBases.getOrElseUpdate(
+          m.id(),
+          m.ast.isIdentifier
+              .filter(_.name.matches("tmp\\d+"))
+              .filter(i =>
+                  DeclarationRefs.parentOf(i).exists {
+                      case p: Call => p.name == Operators.fieldAccess
+                      case _       => false
+                  }
+              )
+              .l
+              .groupBy(_.name)
+        )
+
+    /** The member accesses of chains rooted at an import binding: the binding pass records them,
+      * so the typed pass must not record them a second time under the module of an inner link.
+      */
+    val bindingChains = mutable.HashSet.empty[Long]
+
     /** The member chain from a use, through the frontend's `tmpN = a.b` callee lowering. */
     def climb(id: Expression): (List[String], Expression) =
       val members        = mutable.ListBuffer[String]()
@@ -201,6 +241,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
           case Some(c: Call) if c.name == Operators.fieldAccess && top.argumentIndex == 1 =>
               c.argument.collect { case f: FieldIdentifier => f.canonicalName }
                   .foreach(members += _)
+              bindingChains += c.id()
               top = c
           case Some(c: Call) if c.name == Operators.assignment && top.argumentIndex == 2 &&
               c.argument.exists {
@@ -211,16 +252,8 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
               val tmp   = c.argument.collectFirst {
                   case i: Identifier if i.argumentIndex == 1 => i.name
               }.get
-              val inMethod = methodOf(c).map(m => m.ast.isIdentifier.nameExact(tmp)).getOrElse(
-                  Iterator.empty
-              )
-              inMethod.filter(_.id() != c.argument(1).id())
-                  .find(i =>
-                      DeclarationRefs.parentOf(i).exists {
-                          case p: Call => p.name == Operators.fieldAccess
-                          case _       => false
-                      }
-                  ) match
+              val inMethod = methodOf(c).map(tmpBasesIn(_).getOrElse(tmp, Nil)).getOrElse(Nil)
+              inMethod.find(_.id() != c.argument(1).id()) match
                 case Some(next) => top = next
                 case None       => go = false
           case _ => go = false
@@ -239,6 +272,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                   collector.add(id) {
                       val (members, top) = climb(id)
                       val involvement    = DeclarationRefs.receiverOf(top)
+                      involvement.foreach(bindingChains += _.id())
                       val kind = involvement.map(_ => "call").getOrElse(
                           DeclarationRefs.argumentOf(top).map(_ => "arg").getOrElse("ref")
                       )
@@ -252,7 +286,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                         kind,
                         "binding",
                         involvement.map(_.methodFullName).getOrElse(""),
-                        builtin = stdlibModules.contains(binding.module)
+                        builtin = isStdlib(binding.module)
                       )
                   }
           }
@@ -300,6 +334,10 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
 
     def rootTypeOf(e: Expression): RootType =
         receiverRootOf(e) match
+          case Some(i: Identifier) if i.name == "self" || i.name == "cls" =>
+              // the enclosing class is project code; the recovery types self with the inherited
+              // base, which the heritage record already attributes at the class's line
+              RootType.NoType
           case Some(i: Identifier) =>
               val types = (i.typeFullName +: i.dynamicTypeHintFullName)
                   .filterNot(t => t == "ANY" || t.isEmpty)
@@ -309,10 +347,6 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                   then RootType.Wrapper
                   else RootType.NoType
               }
-          case Some(i: Identifier) if i.name == "self" || i.name == "cls" =>
-              // the enclosing class is project code; the recovery types self with the inherited
-              // base, which the heritage record already attributes at the class's line
-              RootType.NoType
           case _ => RootType.NoType
     def shadowed(m: String, root: Option[Expression]): Boolean =
         root.exists {
@@ -341,7 +375,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
             else None
         else None
 
-    atom.call.nameExact(Operators.fieldAccess).foreach { fa =>
+    atom.call.nameExact(Operators.fieldAccess).filterNot(fa => bindingChains.contains(fa.id())).foreach { fa =>
         methodOf(fa) match
           case None => collector.skip(fa)
           case Some(method) =>
@@ -354,9 +388,6 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
             val chainTypes = rootT match
                 case RootType.Unwrapped(t) => List(t)
                 case _                     => Nil
-            val skipWrapper = rootT match
-                case RootType.Wrapper => true
-                case _                => false
             chainTypes.foreach { t =>
                 moduleOfPrefix(file, t).foreach { m =>
                     if !shadowed(m, base) then
@@ -371,12 +402,12 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                               "ref",
                               "type",
                               "",
-                              builtin = stdlibModules.contains(m)
+                              builtin = isStdlib(m)
                             )
                         }
                         // the read's base is covered: a call on the same chain is the binding
                         // pass's or this pass's, never a second typed record
-                        base.foreach { b => DeclarationRefs.receiverOf(fa).foreach(covered += _.id()) }
+                        DeclarationRefs.receiverOf(fa).foreach(covered += _.id())
                 }
             if rootT == RootType.NoType && chainTypes.isEmpty then
               // no root type: the raw recovered name of the field access is all there is
@@ -387,16 +418,19 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                           file, line(fa), col(fa), method.fullName, m,
                           fa.methodFullName.stripPrefix(m).stripPrefix("."),
                           "ref", "type", "",
-                          builtin = stdlibModules.contains(m)
+                          builtin = isStdlib(m)
                         )
                     }
-                    base.foreach { b => DeclarationRefs.receiverOf(fa).foreach(covered += _.id()) }
+                    DeclarationRefs.receiverOf(fa).foreach(covered += _.id())
               }
             }
     }
 
     atom.call
-        .filterNot(c => c.name.startsWith("<operator>") || covered.contains(c.id()))
+        .filterNot(c =>
+            c.name.startsWith("<operator>") || covered.contains(c.id()) ||
+                bindingChains.contains(c.id())
+        )
         .foreach { c =>
             methodOf(c) match
               case None => collector.skip(c)
@@ -411,9 +445,6 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                         (for m <- moduleOfPrefix(file, s"$t.${c.name}")
                          yield m -> s"$t.${c.name}".stripPrefix(m).stripPrefix(".")).toMap
                     case _ => Map.empty
-                val skipWrapper = rootT match
-                    case RootType.Wrapper => true
-                    case _                => false
                 if receiverNamed.nonEmpty then
                     receiverNamed.foreach { (m, path) =>
                         if !shadowed(m, c.receiver.l.headOption.flatMap(receiverRootOf)) then
@@ -428,7 +459,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                                 "call",
                                 "type",
                                 s"$m.$path",
-                                builtin = stdlibModules.contains(m)
+                                builtin = isStdlib(m)
                               )
                           }
                     }
@@ -452,7 +483,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                             "call",
                             "type",
                             c.methodFullName,
-                            builtin = stdlibModules.contains(m)
+                            builtin = isStdlib(m)
                           )
                       }
                 }
@@ -460,8 +491,13 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
 
     // Pass 3: heritage, decorators and declaration types, matched against the file's import
     // bindings by name.
+    val bindingsByName: Map[(String, String), Binding] =
+        bindings.values.toList
+            .flatMap(b => b.path.headOption.map(n => (b.file, n) -> b))
+            .groupBy(_._1)
+            .map((k, bs) => k -> bs.map(_._2).minBy(b => (b.module, b.path.mkString("."))))
     def bindingByName(file: String, name: String): Option[Binding] =
-        bindings.values.find(b => b.file == file && b.path.headOption.contains(name))
+        bindingsByName.get((file, name))
 
     // heritage: `class Handler(Celery)` - the base names a module the file imports, or a member
     // of one; the record sits on the class's own line
@@ -471,10 +507,10 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
             val moduleOf: Option[(String, String, Boolean)] =
                 moduleOfPrefix(file, base)
                     .map(m => (m, base.stripPrefix(m).stripPrefix("."),
-                        stdlibModules.contains(m)))
+                        isStdlib(m)))
                     .orElse {
                         bindingByName(file, base.split('.').head).map { b =>
-                            (b.module, base, stdlibModules.contains(b.module))
+                            (b.module, base, isStdlib(b.module))
                         }
                     }
             moduleOf.foreach { (m, path, builtin) =>
@@ -517,7 +553,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                       "decorator",
                       "name",
                       a.fullName,
-                      builtin = stdlibModules.contains(b.module)
+                      builtin = isStdlib(b.module)
                     )
                 }
                 .orElse {
@@ -541,7 +577,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                               "decorator",
                               "type",
                               a.fullName,
-                              builtin = stdlibModules.contains(m)
+                              builtin = isStdlib(m)
                             )
                         }
                     }.flatten
@@ -557,22 +593,27 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
         // declaration
         if fileModules.get(file).exists(_.contains(t)) then None
         else moduleOfPrefix(file, t)
-            .map(m => (m, t.stripPrefix(m).stripPrefix("."), stdlibModules.contains(m)))
+            .map(m => (m, genericBase(t.stripPrefix(m).stripPrefix(".")), isStdlib(m)))
             .orElse {
                 bindingByName(file, t.split('.').head).map { b =>
-                    (b.module, t, stdlibModules.contains(b.module))
+                    (b.module, genericBase(t), isStdlib(b.module))
                 }
             }
 
+    /** `Iterator[typing.Tuple[str, Path]]` names `Iterator`; the full type stays in
+      * resolvedMethod.
+      */
+    def genericBase(path: String): String = path.takeWhile(_ != '[')
+
     def decltype(node: AstNode, method: Method, t: String): Unit =
-        // a return type sits on the annotation's own line (the tag the frontend writes; a
-        // multi-line signature puts it on a later line than the def), and the synthetic methods
-        // the recovery invented carry no source position at all
+        // a return type sits on the annotation's own line, from the tag the frontend writes for
+        // an annotated return only (a multi-line signature puts it on a later line than the
+        // def); the type recovery also infers return types, which are not declarations, so a
+        // method without the tag has no return decltype
         val at = node match
             case _: MethodReturn =>
                 method.tag.nameExact("callsites-return-line").value.flatMap(v =>
                     Try(Integer.valueOf(v.trim.toInt)).toOption).headOption
-                    .orElse(method.lineNumber)
             case other => other.lineNumber
         if at.exists(_.intValue > 0) && method.filename.nonEmpty then
             typeOrigin(method.filename, t).foreach { (m, path, builtin) =>
@@ -623,7 +664,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
     if purlsByModule.isEmpty then slice
     else
       slice.copy(callsites = slice.callsites.map(r =>
-          r.copy(purl = purlsByModule.getOrElse(r.module, ""))
+          r.copy(purl = purlOf(r.module))
       ))
   end calculate
 
