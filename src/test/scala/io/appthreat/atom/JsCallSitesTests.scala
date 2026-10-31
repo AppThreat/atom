@@ -200,8 +200,15 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           at("callsites", "src/app.js", 16, "sequelize") should contain theSameElementsAs List(
             CallSite("src/app.js", 16, -1, "sequelize", "Model", "extends", "name")
           )
-          at("decorators", "src/cats.ts", 21, "events") should contain theSameElementsAs List(
-            CallSite("src/cats.ts", 21, -1, "events", "EventEmitter", "extends", "name")
+          at("decorators", "src/cats.ts", 22, "events") should contain theSameElementsAs List(
+            CallSite("src/cats.ts", 22, -1, "events", "EventEmitter", "extends", "name")
+          )
+      }
+
+      "record an implements clause as its own kind" in {
+          // interfaces are erased at run time; the clause is a use of its own kind
+          at("decorators", "src/cats.ts", 23, "@angular/core") should contain theSameElementsAs List(
+            CallSite("src/cats.ts", 23, -1, "@angular/core", "OnInit", "implements", "name")
           )
       }
 
@@ -310,12 +317,12 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
               (r.module, r.line, r.path)
           ) should
               contain theSameElementsAs List(
-                ("typeorm", 5, "Entity"),
-                ("typeorm", 7, "Column"),
-                ("@nestjs/common", 11, "Controller"),
-                ("@nestjs/common", 13, "Get"),
-                ("@nestjs/common", 14, "Param"),
-                ("@nestjs/common", 19, "Injectable")
+                ("typeorm", 6, "Entity"),
+                ("typeorm", 8, "Column"),
+                ("@nestjs/common", 12, "Controller"),
+                ("@nestjs/common", 14, "Get"),
+                ("@nestjs/common", 15, "Param"),
+                ("@nestjs/common", 20, "Injectable")
               )
       }
 

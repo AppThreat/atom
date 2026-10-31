@@ -269,11 +269,13 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
         Integer.valueOf(offset - newline - 1)
       )
 
-  /** Each base's heritage line, from the `callsites-heritage` tags the frontend writes on the
-    * class's TYPE_REF. No node marks a heritage base and the TYPE_DECL's line is its first
-    * decorator's, so the position travels with the clause.
+  /** Each base's clause (extends or implements) and line, from the `callsites-heritage` tags the
+    * frontend writes on the class's TYPE_REF. No node marks a heritage base, the TYPE_DECL's line
+    * is its first decorator's, and inheritsFromTypeFullName does not say which clause a base came
+    * from, so both travel with the tag. Interfaces are erased at run time: an `implements` base is
+    * a use of its own kind (decision 0001, P1).
     */
-  private def heritageLineOf(t: TypeDecl): Map[String, Integer] =
+  private def heritageOf(t: TypeDecl): Map[String, (String, Integer)] =
       atom.typeRef.filter(_.typeFullName == t.fullName)
           .flatMap(_.tag.nameExact("callsites-heritage"))
           .flatMap(tag => io.circe.parser.parse(tag.value).toOption)
@@ -281,8 +283,9 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
               for
                 obj  <- json.asObject
                 base <- obj("base").flatMap(_.asString)
+                kind <- obj("kind").flatMap(_.asString)
                 ln   <- obj("line").flatMap(_.asNumber).flatMap(_.toInt)
-              yield simpleName(base) -> Integer.valueOf(ln)
+              yield simpleName(base) -> (kind -> Integer.valueOf(ln))
           }
           .toMap
 
@@ -341,14 +344,16 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
         decorators.groupBy(r => (r.file, r.line, r.col, r.path)).values.map(_.head)
 
     val heritage = atom.typeDecl.filterNot(_.isExternal).l.flatMap { t =>
-      val taggedLines = heritageLineOf(t)
+      val tagged = heritageOf(t)
       fileOf(t).getOrElse("") match
         case file if file.nonEmpty =>
           t.inheritsFromTypeFullName.filterNot(n => n == "ANY" || n.isEmpty).flatMap { base =>
             val baseName = simpleName(base)
             js.ofBindingName(file, baseName).map { (module, symbol) =>
-                val heritageLine = taggedLines.getOrElse(baseName,
-                    legacyHeritageLine(t, file, baseName).getOrElse(line(t)))
+                val (kind, taggedLine) = tagged.getOrElse(baseName, ("extends", null))
+                val heritageLine =
+                    if taggedLine != null then taggedLine
+                    else legacyHeritageLine(t, file, baseName).getOrElse(line(t))
                 CallSiteRecord(
                   file,
                   heritageLine,
@@ -356,7 +361,7 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
                   enclosingMethodOf(t).map(_.fullName).getOrElse(""),
                   module,
                   symbol.getOrElse(""),
-                  "extends",
+                  kind,
                   "name",
                   base
                 )
