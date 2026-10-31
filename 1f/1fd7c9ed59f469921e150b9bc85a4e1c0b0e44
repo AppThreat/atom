@@ -1,0 +1,25 @@
+src/main/scala/io/appthreat/atom/slicing/CallSiteSlicing.scala
+  s_c130237d85d968::t_334b39493fec35 10-11,15,59-152,163,168-193,205,213,218,224-250,254-256,438,458,479-518,559
+src/test/resources/js-usages/orphans/package.json
+  s_c130237d85d968::t_e83076057ee589 1
+src/test/resources/js-usages/orphans/src/actions.js
+  s_c130237d85d968::t_dca1a3df32384b 1-10
+src/test/scala/io/appthreat/atom/JsCallSitesTests.scala
+  s_c130237d85d968::t_499ceb995df008 3-4,22,111-166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1f1fd7c9ed59f469921e150b9bc85a4e1c0b0e44",
+  "prompts": {},
+  "sessions": {
+    "s_c130237d85d968": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_22357300-4561-4ca2-a12b-e0a36396896e",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
