@@ -1,0 +1,25 @@
+src/test/resources/js-usages/sfc/src/Comp.vue
+  s_b37b12b5351861::t_75dcedf4c2f4c1 1-27
+src/test/resources/js-usages/sfc/src/Page.astro
+  s_b37b12b5351861::t_8022ed6e129957 1-8
+src/test/resources/js-usages/sfc/src/Widget.svelte
+  s_b37b12b5351861::t_36977d97e2f75e 1-9
+src/test/scala/io/appthreat/atom/JsCallSitesTests.scala
+  s_b37b12b5351861::t_093798169ae120 22,111-139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c81ab051d2435f42206022653e794ef657596485",
+  "prompts": {},
+  "sessions": {
+    "s_b37b12b5351861": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_cb0e2603-6d04-484d-ac02-895b1a9284cd",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
