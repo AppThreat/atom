@@ -1,0 +1,36 @@
+src/test/scala/io/appthreat/atom/PythonCallSitesTests.scala
+  s_c130237d85d968::t_245323dfb051a1 1-221
+  s_c130237d85d968::t_89da2fba9b3893 222-224
+src/test/resources/py-usages/callsites/exceptions.py
+  s_c130237d85d968::t_d0f32ac2f77026 1-16
+src/test/resources/py-usages/callsites/fallback.py
+  s_c130237d85d968::t_9676668830db5d 1-14
+src/test/resources/py-usages/callsites/heritage.py
+  s_c130237d85d968::t_a1ee0c0d1905a1 1-8
+src/test/resources/py-usages/callsites/imports.py
+  s_c130237d85d968::t_b21cb5b9aceaaf 1-12
+src/test/resources/py-usages/callsites/scope.py
+  s_c130237d85d968::t_e0b65158d45321 1-24
+src/test/resources/py-usages/callsites/typed.py
+  s_c130237d85d968::t_317f5a12c99908 1-11
+src/test/resources/py-usages/purl-bom/app.py
+  s_c130237d85d968::t_b83b7d647e353b 1-8
+src/test/resources/py-usages/purl-bom/bom.json
+  s_c130237d85d968::t_b5bfe9dbc09a3f 1-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4f7951f272bb6fd0e2586c4e03a2073aa7ea583d",
+  "prompts": {},
+  "sessions": {
+    "s_c130237d85d968": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_22357300-4561-4ca2-a12b-e0a36396896e",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
