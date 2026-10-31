@@ -1,0 +1,19 @@
+src/test/scala/io/appthreat/atom/JsUsagesExternalCallSiteTests.scala
+  s_c130237d85d968::t_0f1596378724c3 304-309,315-318
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ce64c2f3f254a07dc2e2f1e98b7b570c5473483f",
+  "prompts": {},
+  "sessions": {
+    "s_c130237d85d968": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_22357300-4561-4ca2-a12b-e0a36396896e",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
