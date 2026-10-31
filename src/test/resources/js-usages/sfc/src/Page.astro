@@ -1,0 +1,8 @@
+---
+import Header from '../components/Header.astro'
+import axios from 'axios'
+
+const profile = await axios.get('/api/profile')
+---
+<Header title={profile.data.bio} />
+<p>{profile.data.username}</p>
