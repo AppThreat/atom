@@ -301,18 +301,21 @@ class JsUsagesExternalCallSiteTests extends AnyWordSpec with Matchers with Befor
           requireAstgen()
           val decorators = declEntries("ANNOTATION").distinct.sortBy(_._2)
           decorators shouldBe Seq(
-            ("Entity", 5, "typeorm", "typeorm:Entity"),
-            ("Column", 7, "typeorm", "typeorm:Column"),
-            ("Controller", 11, "@nestjs/common", "@nestjs/common:Controller"),
-            ("Get", 13, "@nestjs/common", "@nestjs/common:Get"),
-            ("Param", 14, "@nestjs/common", "@nestjs/common:Param"),
-            ("Injectable", 19, "@nestjs/common", "@nestjs/common:Injectable")
+            ("Entity", 6, "typeorm", "typeorm:Entity"),
+            ("Column", 8, "typeorm", "typeorm:Column"),
+            ("Controller", 12, "@nestjs/common", "@nestjs/common:Controller"),
+            ("Get", 14, "@nestjs/common", "@nestjs/common:Get"),
+            ("Param", 15, "@nestjs/common", "@nestjs/common:Param"),
+            ("Injectable", 20, "@nestjs/common", "@nestjs/common:Injectable")
           )
       }
 
       "record an extends clause at its own line, not the decorator's" in {
           requireAstgen()
-          declEntries("EXTENDS") shouldBe Seq(("EventEmitter", 21, "events", "events:EventEmitter"))
+          declEntries("EXTENDS").sortBy(_._2) shouldBe Seq(
+            ("EventEmitter", 22, "events", "events:EventEmitter"),
+            ("OnInit", 23, "@angular/core", "@angular/core:OnInit")
+          )
       }
   }
 
