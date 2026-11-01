@@ -394,29 +394,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                     case RootType.Unwrapped(t) => List(t)
                     case _                     => Nil
                   chainTypes.foreach { t =>
-                    moduleOfPrefix(file, t).foreach { m =>
-                        if !shadowed(m, base) then
-                          collector.add(fa) {
-                              CallSiteRecord(
-                                file,
-                                line(fa),
-                                col(fa),
-                                method.fullName,
-                                m,
-                                s"${t.stripPrefix(m).stripPrefix(".")}.$member".stripPrefix("."),
-                                "ref",
-                                "type",
-                                "",
-                                builtin = isStdlib(m)
-                              )
-                          }
-                          // the read's base is covered: a call on the same chain is the binding
-                          // pass's or this pass's, never a second typed record
-                          DeclarationRefs.receiverOf(fa).foreach(covered += _.id())
-                    }
-                    if rootT == RootType.NoType && chainTypes.isEmpty then
-                      // no root type: the raw recovered name of the field access is all there is
-                      moduleOfPrefix(file, fa.methodFullName).foreach { m =>
+                      moduleOfPrefix(file, t).foreach { m =>
                           if !shadowed(m, base) then
                             collector.add(fa) {
                                 CallSiteRecord(
@@ -425,16 +403,17 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                                   col(fa),
                                   method.fullName,
                                   m,
-                                  fa.methodFullName.stripPrefix(m).stripPrefix("."),
+                                  s"${t.stripPrefix(m).stripPrefix(".")}.$member".stripPrefix("."),
                                   "ref",
                                   "type",
                                   "",
                                   builtin = isStdlib(m)
                                 )
                             }
+                            // the read's base is covered: a call on the same chain is the binding
+                            // pass's or this pass's, never a second typed record
                             DeclarationRefs.receiverOf(fa).foreach(covered += _.id())
                       }
-                    end if
                   }
     }
 

@@ -53,6 +53,17 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
       cls.nonEmpty && !unresolved(cls) && !projectTypes.contains(cls) &&
           !projectTypes.contains(cls.takeWhile(_ != '$'))
 
+  private val Primitives =
+      Set("boolean", "byte", "char", "short", "int", "long", "float", "double", "void")
+
+  /** The class a type names: the element class of an array type, and none for a primitive, which no
+    * class or artifact provides.
+    */
+  private def classOfType(typeName: String): String =
+    var element = typeName
+    while element.endsWith("[]") do element = element.dropRight(2)
+    if Primitives.contains(element) then "" else element
+
   /** The declaring class of a resolved method full name (`pkg.Type.method:sig()`). */
   private def classOfMethod(fullName: String): String =
     val member = fullName.takeWhile(_ != ':')
@@ -99,7 +110,7 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
     case _             => None
 
   private def resolvedTypeOf(e: Expression): Option[String] =
-      staticTypeOf(e).filter(t => t.nonEmpty && t != "ANY" && t != "void")
+      staticTypeOf(e).map(classOfType).filter(t => t.nonEmpty && t != "ANY")
 
   /** The static type of a call's receiver: the base argument's type, when it resolved to something.
     * This is the class the code relies on (decision 0001, P2), which may differ from the class that
@@ -210,10 +221,11 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
 
   /** The heritage clauses of project classes: the first base the frontend records is the
     * superclass, the rest are interfaces; an implicit `java.lang.Object` is nobody's writing and
-    * never a record (decision 0001, P1).
+    * never a record (decision 0001, P1). A lambda's TYPE_DECL, which has no position, inherits the
+    * functional interface it implements, which no heritage clause names either.
     */
   private def heritage(): Unit =
-      atom.typeDecl.isExternal(false).foreach { t =>
+      atom.typeDecl.isExternal(false).filter(_.lineNumber.isDefined).foreach { t =>
         val bases = t.inheritsFromTypeFullName.l.filterNot(b => b == "ANY" || b.isEmpty)
         val written = bases match
           case "java.lang.Object" :: rest => rest
@@ -291,9 +303,7 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
           }
       }
 
-  /** `Foo::bar` and bound method references: the frontend resolves them to METHOD_REF nodes no
-    * slice read until now.
-    */
+  /** `Foo::bar` and bound method references, which the frontend resolves to METHOD_REF nodes. */
   private def methodRefs(): Unit =
       atom.methodRef.foreach { m =>
         val cls = classOfMethod(m.methodFullName)
@@ -323,8 +333,9 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
     * position of the type itself; the METHOD_RETURN node carries the return type's own line.
     */
   private def declarationTypes(): Unit =
+    // A node without a position is one the frontend synthesized, which no source text declares.
     def recordDecl(node: AstNode, cls: String, enclosing: Option[Method]): Unit =
-        if externalClass(cls) then
+        if externalClass(cls) && lineOf(node) > 0 then
           enclosing match
             case Some(method) =>
                 record(node, method.filename, method.fullName) {
@@ -345,34 +356,37 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
             case None => collector.skip(node)
 
     atom.parameter.filterNot(_.name == "this").foreach { p =>
-        recordDecl(p, p.typeFullName, methodOf(p))
+        recordDecl(p, classOfType(p.typeFullName), methodOf(p))
     }
     // A field's type sits on the member, under its type declaration, not under any method. A
     // member without a position is a generated one nobody wrote (the Lombok log field).
     atom.member.foreach { m =>
-        if externalClass(m.typeFullName) && m.lineNumber.exists(_.intValue > 0) then
-          val typeDecl = m.typeDecl
-          val file     = typeDecl.filename
-          if file.nonEmpty then
-            collector.add(m) {
-                CallSiteRecord(
-                  file,
-                  m.lineNumber.getOrElse(-1),
-                  m.columnNumber.getOrElse(-1),
-                  enclosingMethodOf(m).map(_.fullName).getOrElse(""),
-                  m.typeFullName,
-                  "",
-                  "decltype",
-                  "binding",
-                  m.typeFullName,
-                  isJdk(m.typeFullName),
-                  purl = purlOf(m.typeFullName)
-                )
-            }
+      val cls = classOfType(m.typeFullName)
+      if externalClass(cls) && m.lineNumber.exists(_.intValue > 0) then
+        val typeDecl = m.typeDecl
+        val file     = typeDecl.filename
+        if file.nonEmpty then
+          collector.add(m) {
+              CallSiteRecord(
+                file,
+                m.lineNumber.getOrElse(-1),
+                m.columnNumber.getOrElse(-1),
+                enclosingMethodOf(m).map(_.fullName).getOrElse(""),
+                cls,
+                "",
+                "decltype",
+                "binding",
+                cls,
+                isJdk(cls),
+                purl = purlOf(cls)
+              )
+          }
     }
-    atom.local.foreach { l => recordDecl(l, l.typeFullName, methodOf(l)) }
-    atom.methodReturn.foreach { r => recordDecl(r, r.typeFullName, enclosingMethodOf(r)) }
-    atom.typeRef.foreach { t => recordDecl(t, t.typeFullName, methodOf(t)) }
+    atom.local.foreach { l => recordDecl(l, classOfType(l.typeFullName), methodOf(l)) }
+    atom.methodReturn.foreach { r =>
+        recordDecl(r, classOfType(r.typeFullName), enclosingMethodOf(r))
+    }
+    atom.typeRef.foreach { t => recordDecl(t, classOfType(t.typeFullName), methodOf(t)) }
 
     // `throws IOException`: read from the frontend's tag, which carries the type and its line
     atom.method.foreach { method =>

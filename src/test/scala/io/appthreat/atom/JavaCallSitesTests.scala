@@ -549,6 +549,28 @@ class JavaCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
           )
       }
 
+      "record the members @Data generates at javac's lines, and no heritage for a lambda" in {
+          // the field at its declaration, the getter's return type at the field's name, the
+          // setter's parameter at the @Data annotation (line 6), where javac attributes them
+          val stubWeb = "pkg:maven/com.example/stub-web@1.0.0"
+          in("Dto.java").filter(_.module == "web.Security") shouldBe List(
+            Rec("Dto.java", 6, -1, "web.Security", "", "decltype", "binding", purl = stubWeb),
+            Rec("Dto.java", 8, -1, "web.Security", "", "decltype", "binding", purl = stubWeb),
+            Rec("Dto.java", 8, 20, "web.Security", "", "decltype", "binding", purl = stubWeb)
+          )
+          // one per position: the setters' at @Data, each getter's at its field
+          in("Dto.java").filter(_.module == "lombok.Generated").map(_.line).sorted shouldBe
+              List(6, 8, 9, 10)
+          records.filter(r => r.line <= 0) shouldBe Nil
+      }
+
+      "name an array's element class, and no primitive" in {
+          // `private String[] tags;` at line 10: the field, its getter and its setter
+          in("Dto.java").filter(r => r.line == 10 && r.kind == "decltype").map(_.module).distinct shouldBe
+              List("java.lang.String")
+          records.filter(r => !r.module.contains('.') || r.module.endsWith("[]")) shouldBe Nil
+      }
+
       "map a class to the artifact of the jar that carries it, and no further" in {
           val purls = in("Purl.java").filter(_.kind == "call")
               .map(r => (r.module, r.purl)).sortBy(_._1)
