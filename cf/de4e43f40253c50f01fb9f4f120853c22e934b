@@ -1,0 +1,53 @@
+src/test/resources/ruby-callsites/Gemfile
+  s_bf0a61c31b2594::t_8730f015420628 1-4
+src/test/resources/ruby-callsites/Gemfile.lock
+  s_bf0a61c31b2594::t_df6ac504b0b9a8 1-16
+src/test/resources/ruby-callsites/app/models/concerns/trackable.rb
+  s_bf0a61c31b2594::t_1ef109cc1994e0 1-5
+src/test/resources/ruby-callsites/app/models/gadget.rb
+  s_bf0a61c31b2594::t_390d07bcb9ccb1 1-2
+src/test/resources/ruby-callsites/app/models/widget.rb
+  s_bf0a61c31b2594::t_6ea21811c80232 1-5
+src/test/resources/ruby-callsites/lib/shapes.rb
+  s_bf0a61c31b2594::t_2ce5a376908fa2 1-85
+src/test/resources/ruby-callsites/vendor/bundle/ruby/3.4.0/gems/faraday-2.9.0/lib/faraday.rb
+  s_bf0a61c31b2594::t_3efd4eb0543a92 1
+src/test/resources/ruby-callsites/vendor/bundle/ruby/3.4.0/gems/faraday-2.9.0/lib/faraday/connection.rb
+  s_bf0a61c31b2594::t_67220ed63a8de5 1
+src/test/resources/ruby-callsites/vendor/bundle/ruby/3.4.0/gems/faraday-2.9.0/lib/faraday/error.rb
+  s_bf0a61c31b2594::t_8b9a08631691b0 1
+src/test/resources/ruby-callsites/vendor/bundle/ruby/3.4.0/gems/faraday-2.9.0/lib/faraday/middleware.rb
+  s_bf0a61c31b2594::t_f88b8dca71e919 1
+src/test/resources/ruby-callsites/vendor/bundle/ruby/3.4.0/gems/faraday-2.9.0/lib/faraday/utils.rb
+  s_bf0a61c31b2594::t_15dfe7ff236c4b 1
+src/test/resources/ruby-callsites/vendor/bundle/ruby/3.4.0/gems/i18n-1.14.1/lib/i18n.rb
+  s_bf0a61c31b2594::t_1f809247aa90b4 1
+src/test/resources/ruby-callsites/vendor/bundle/ruby/3.4.0/gems/i18n-1.14.1/lib/i18n/backend.rb
+  s_bf0a61c31b2594::t_9e87cc708d297d 1
+src/test/resources/ruby-callsites/vendor/bundle/ruby/3.4.0/gems/rack-3.0.8/lib/rack.rb
+  s_bf0a61c31b2594::t_82d02827596cb6 1
+src/test/resources/ruby-callsites/vendor/bundle/ruby/3.4.0/gems/rack-3.0.8/lib/rack/request.rb
+  s_bf0a61c31b2594::t_c6c1fde8170272 1
+src/test/resources/ruby-callsites/vendor/bundle/ruby/3.4.0/gems/rack-3.0.8/lib/rack/utils.rb
+  s_bf0a61c31b2594::t_cba18270e526f8 1
+src/test/resources/ruby-callsites/vendor/bundle/ruby/3.4.0/gems/rack-compat-1.0.0/lib/rack/utils.rb
+  s_bf0a61c31b2594::t_132237f9a8c3d2 1
+src/test/scala/io/appthreat/atom/RubyCallSitesTests.scala
+  s_bf0a61c31b2594::t_3e509bcf9d2dee 1-315
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cfde4e43f40253c50f01fb9f4f120853c22e934b",
+  "prompts": {},
+  "sessions": {
+    "s_bf0a61c31b2594": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0488d121-8c29-4478-a666-9e40427c2fac",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
