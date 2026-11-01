@@ -39,10 +39,15 @@ final class RubyCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "ruby
     */
   private val projectTypes: Set[String] = atom.typeDecl.isExternal(false).fullName.toSet
 
-  /** The names of the classes and modules the project declares: a core class it reopens is neither
-    * wholly the project's nor wholly the library's, and the oracle does not credit it either way.
+  /** The names of the classes and modules the project gives content to (a method of its own, or a
+    * member): a core class it reopens to add methods is neither wholly the project's nor wholly the
+    * library's, and the oracle does not credit it either way. A module that only nests others, the
+    * way a project reopens a gem's namespace, is not one of them.
     */
-  private val projectNames: Set[String] = atom.typeDecl.isExternal(false).name.toSet
+  private val projectNames: Set[String] =
+      atom.typeDecl.isExternal(false).filter(t =>
+          t.method.exists(m => m.name != "<body>" && m.name != "initialize") || t.member.nonEmpty
+      ).name.map(_.stripSuffix("<class>")).toSet
 
   private def lineOf(n: AstNode): Integer = n match
     case e: Expression => e.lineNumber.getOrElse(-1)
@@ -76,6 +81,12 @@ final class RubyCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "ruby
     DeclarationRefs.parentOf(holder) match
       case Some(_: TypeDecl)         => ("extends", "")
       case Some(_: ControlStructure) => ("ref", "")
+      case Some(index: Call)
+          if index.name == Operators.indexAccess && argumentAt(index, 1).exists(
+            _.id() == holder.id()
+          ) =>
+          // `Migration[7.2]` and `CONFIG[:key]` call `[]` on the constant
+          ("call", "[]")
       case Some(access: Call)
           if access.name == Operators.fieldAccess && argumentAt(access, 1).exists(
             _.id() == holder.id()
@@ -123,23 +134,38 @@ final class RubyCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "ruby
       RubyBuiltins.exact(owner).isDefined || gemMap.definesExactly(owner)
     }.getOrElse(written)
 
+  /** The enclosing type's declaration, for a reference that sits in a class body the frontend put
+    * under a namespace block (`class Admin::User < Base`) instead of under a method.
+    */
+  private def enclosingTypeDeclOf(n: AstNode): Option[TypeDecl] =
+      Iterator
+          .iterate(DeclarationRefs.parentOf(n))(_.flatMap(DeclarationRefs.parentOf))
+          .takeWhile(_.isDefined).flatten.collectFirst { case t: TypeDecl => t }
+
+  /** The file and the method a reference is in; the method is empty for a class body that is not in
+    * one.
+    */
+  private def locationOf(ref: TypeRef): Option[(String, String)] =
+      methodOf(ref).map(m => (m.filename, m.fullName)).orElse(
+        enclosingTypeDeclOf(ref).map(t => (t.filename, ""))
+      )
+
   private def references(): Unit =
       atom.typeRef.filterNot(t => projectTypes.contains(t.typeFullName)).foreach { ref =>
-          methodOf(ref).foreach { method =>
+          locationOf(ref).foreach { (file, methodName) =>
             val path = resolve(ref)
             // a core class the project reopens is not credited to the library
             val reopened = path.size == 1 && projectNames.contains(path.head)
             if reopened then ()
-            else if lineOf(ref) > 0 && method.filename.nonEmpty && method.filename != "<empty>"
-            then
+            else if lineOf(ref) > 0 && file.nonEmpty && file != "<empty>" then
               val (kind, member) = useOf(ref)
               val builtin        = RubyBuiltins.contains(path)
               collector.add(ref) {
                   CallSiteRecord(
-                    method.filename,
+                    file,
                     lineOf(ref),
                     colOf(ref),
-                    method.fullName,
+                    methodName,
                     path.mkString("::"),
                     member,
                     kind,

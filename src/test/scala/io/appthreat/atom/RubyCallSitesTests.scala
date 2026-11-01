@@ -150,6 +150,23 @@ class RubyCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
           shapes().filter(_.line == 39).map(_.module) shouldBe List("Cache")
       }
 
+      "find what a project class reaches through a namespace it reopens, a namespaced class name and an index" in {
+          // `lib/reopened.rb`: `module Paperclip` only nests classes (a gem's namespace the project
+          // reopens), so `Paperclip::Processor` and `Paperclip.options` are the gem's while the
+          // project's own `Paperclip::Transcoder.new` (line 19) is not a use; `class
+          // Admin::Account` is lowered under a namespace block, `Migration[7.2]` calls `[]` on its
+          // constant, `StandardError` is a bundled superclass and `::Thread` an absolute core class
+          if !atomRan then cancel("the Ruby fixture run failed")
+          records.filter(_.file == "reopened.rb").map(_.copy(file = "")) shouldBe List(
+            Rec(2, 21, "Paperclip::Processor", "", "extends", "binding", false, ""),
+            Rec(6, 23, "ActiveModel::Serializer", "", "extends", "binding", false, ""),
+            Rec(9, 17, "ActiveRecord::Migration", "[]", "call", "binding", false, ""),
+            Rec(12, 16, "StandardError", "", "extends", "binding", true, ""),
+            Rec(17, 4, "Thread", "current", "call", "binding", true, ""),
+            Rec(18, 4, "Paperclip", "options", "call", "binding", false, "")
+          )
+      }
+
       "emit no record for a require line, a project class, an autoloaded constant or a DSL call" in {
           val lines = shapes().map(_.line).toSet
           // the requires, `class Cart`, `include Trackable`, `has_many`, the project's own classes
