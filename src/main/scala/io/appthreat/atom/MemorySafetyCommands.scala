@@ -4,6 +4,7 @@ import better.files.File
 import io.circe.syntax.EncoderOps
 import io.circe.{Json, JsonObject}
 import io.shiftleft.codepropertygraph.generated.Cpg
+import io.shiftleft.codepropertygraph.generated.PropertyNames
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
 import io.appthreat.x2cpg.passes.taggers.{
@@ -226,8 +227,8 @@ object MemorySafetyCommands:
                 n._reachingDefIn.collectAll[StoredNode].l.filterNot(d => visited.contains(d.id))
                     .sortBy(d =>
                         (
-                          Option(d.property("LINE_NUMBER")).map(_.toString.toInt).getOrElse(0),
-                          Option(d.property("COLUMN_NUMBER")).map(_.toString.toInt).getOrElse(0),
+                          d.property(PropertyNames.LINE_NUMBER, 0),
+                          d.property(PropertyNames.COLUMN_NUMBER, 0),
                           String.valueOf(d.property("CODE"))
                         )
                     )

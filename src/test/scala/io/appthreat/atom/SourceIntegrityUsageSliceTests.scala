@@ -60,8 +60,9 @@ class SourceIntegrityUsageSliceTests extends CCodeToCpgSuite:
       )
       val cpg =
           try
-            val built =
-                new JavaSrc2Cpg().createCpg(dir.toString)(using JavaSrc2Cpg.DefaultConfig).get
+            val built = new JavaSrc2Cpg()
+                .createCpg(dir.toString)(using JavaSrc2Cpg.DefaultConfig)
+                .fold(err => throw err, identity)
             X2Cpg.applyDefaultOverlays(built)
             new SourceIntegrityPass(built).createAndApply()
             built

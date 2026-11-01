@@ -539,8 +539,12 @@ class JavaCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
           )
       }
 
-      "record the Lombok-generated logger's calls and no record for the generated field" in {
+      "record the Lombok-generated logger at javac's lines" in {
+          // the generated field sits at the @Slf4j annotation's line, where javac attributes
+          // it; its declaration type is a use like any other (decision 0001, P1), and
+          // log.info resolves through the generated member
           in("Lombok.java").filter(_.module.startsWith("org.slf4j")) shouldBe List(
+            Rec("Lombok.java", 6, 1, "org.slf4j.Logger", "", "decltype", "binding"),
             Rec("Lombok.java", 11, 9, "org.slf4j.Logger", "info", "call", "type")
           )
       }

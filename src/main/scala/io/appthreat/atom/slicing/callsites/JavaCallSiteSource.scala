@@ -74,21 +74,19 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
         case -1 => false
         case i  => jdkPackages.contains(cls.substring(0, i))
 
+  // an Annotation, a TypeRef and a MethodRef are Expressions in the schema, so the
+  // Expression cases carry their positions already
   private def lineOf(n: AstNode): Integer = n match
     case e: Expression        => e.lineNumber.getOrElse(-1)
-    case a: Annotation        => a.lineNumber.getOrElse(-1)
     case t: TypeDecl          => t.lineNumber.getOrElse(-1)
     case p: MethodParameterIn => p.lineNumber.getOrElse(-1)
     case l: Local             => l.lineNumber.getOrElse(-1)
     case m: Member            => m.lineNumber.getOrElse(-1)
     case r: MethodReturn      => r.lineNumber.getOrElse(-1)
-    case t: TypeRef           => t.lineNumber.getOrElse(-1)
-    case m: MethodRef         => m.lineNumber.getOrElse(-1)
     case _                    => -1
 
   private def colOf(n: AstNode): Integer = n match
     case e: Expression => e.columnNumber.getOrElse(-1)
-    case a: Annotation => a.columnNumber.getOrElse(-1)
     case _             => -1
 
   /** The type an expression carries in the graph, when it resolved to something. */
