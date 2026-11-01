@@ -92,7 +92,7 @@ class JavaCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
       ujson.read(sliceFile.contentAsString).obj("callsites").arr
           .map(r =>
               Rec(
-                r("file").str.split('/').last,
+                r("file").str.split(Array('/', '\\')).last,
                 r("line").num.toInt,
                 r("col").num.toInt,
                 r("module").str,
