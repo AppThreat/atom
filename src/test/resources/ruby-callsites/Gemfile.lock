@@ -1,0 +1,16 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    faraday (2.9.0)
+    i18n (1.14.1)
+    nokogiri (1.16.0-x86_64-linux)
+    rack (3.0.8)
+    rack-compat (1.0.0)
+    rexml (3.2.6)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  faraday
+  rack
