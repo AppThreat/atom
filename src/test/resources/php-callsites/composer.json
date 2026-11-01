@@ -1,0 +1,5 @@
+{
+  "name": "app/fixture",
+  "autoload": { "psr-4": { "App\\": "src/" } },
+  "require": { "acme/widgets": "^1.2", "acme/util": "^2.0" }
+}
