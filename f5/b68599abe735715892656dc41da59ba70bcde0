@@ -1,0 +1,27 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/PhpCallSiteSource.scala
+  s_31ec7d13cde4ed::t_a5621872350fdd 1-311,322
+  s_31ec7d13cde4ed::t_a680c404290543 312-321,323-358
+src/main/scala/io/appthreat/atom/slicing/callsites/PhpComposerMap.scala
+  s_31ec7d13cde4ed::t_1ac4ba7f749870 1-141
+  s_31ec7d13cde4ed::t_a86c7b1c5b6a88 142-148
+src/main/resources/callsites/php-builtins.txt
+  s_31ec7d13cde4ed::t_99622ccdb33a35 1-2475
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteSource.scala
+  s_31ec7d13cde4ed::t_2f6db3efa07025 30,39-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f5b68599abe735715892656dc41da59ba70bcde0",
+  "prompts": {},
+  "sessions": {
+    "s_31ec7d13cde4ed": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0d7aa722-72e4-4178-b294-f2ed79df9999",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
