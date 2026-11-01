@@ -152,8 +152,9 @@ object Atom:
       )
   private val COMMON_IGNORE_REGEX = ".*(docs|example|samples|mocks|Documentation|demos).*"
   private val JAVA_IGNORE_REGEX   = ".*(target|build)/(generated|intermediates|outputs|tmp).*"
-  private val PHP_IGNORE_REGEX    = ".*(samples|examples|docs).*"
-  private val RUBY_IGNORE_REGEX   = ".*(docs|vendor|spec).*"
+  // `vendor/` is Composer's dependency tree, at any depth: dependencies are not project code
+  private val PHP_IGNORE_REGEX  = "(.*(samples|examples|docs).*)|((.*/)?vendor/.*)"
+  private val RUBY_IGNORE_REGEX = ".*(docs|vendor|spec).*"
 
   private val COMMON_IGNORE_DIRS_ENV = "CHEN_IGNORE_DIRS"
   // Identify directories to ignore for python
