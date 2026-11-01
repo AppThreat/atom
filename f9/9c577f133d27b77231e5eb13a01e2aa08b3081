@@ -1,0 +1,27 @@
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_b37b12b5351861::t_543f7af59bb065 7,230-231
+src/main/scala/io/appthreat/atom/slicing/callsites/JavaCallSiteSource.scala
+  s_b37b12b5351861::t_270efa24634066 77-78
+src/main/scala/io/appthreat/atom/slicing/callsites/PythonCallSiteSource.scala
+  s_b37b12b5351861::t_ec3ccc440d61b7 397,406,413-414,417-437
+src/test/scala/io/appthreat/atom/JavaCallSitesTests.scala
+  s_b37b12b5351861::t_1bc8a8ded4f437 542-545,547
+src/test/scala/io/appthreat/atom/SourceIntegrityUsageSliceTests.scala
+  s_b37b12b5351861::t_d3a2100f1b4eab 63-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f99c577f133d27b77231e5eb13a01e2aa08b3081",
+  "prompts": {},
+  "sessions": {
+    "s_b37b12b5351861": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_cb0e2603-6d04-484d-ac02-895b1a9284cd",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
