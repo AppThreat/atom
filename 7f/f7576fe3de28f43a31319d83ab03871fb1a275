@@ -1,0 +1,49 @@
+src/test/resources/php-callsites/composer.json
+  s_31ec7d13cde4ed::t_31475a42a83c12 1-5
+src/test/resources/php-callsites/src/Local.php
+  s_31ec7d13cde4ed::t_628b8d3b8e8ba3 1-23
+src/test/resources/php-callsites/src/Shadow.php
+  s_31ec7d13cde4ed::t_cb946e02d5acda 1-22
+src/test/resources/php-callsites/src/Shapes.php
+  s_31ec7d13cde4ed::t_98e5393e0275ec 1-110
+src/test/resources/php-callsites/vendor/acme/util/src/functions.php
+  s_31ec7d13cde4ed::t_97bea377b3bff7 1-4
+src/test/resources/php-callsites/vendor/acme/widgets/src/Failure.php
+  s_31ec7d13cde4ed::t_6bf85989b33c42 1-4
+src/test/resources/php-callsites/vendor/acme/widgets/src/Flag.php
+  s_31ec7d13cde4ed::t_ac10fbfa9a842e 1-8
+src/test/resources/php-callsites/vendor/acme/widgets/src/Gadget.php
+  s_31ec7d13cde4ed::t_a9375340841e0a 1-8
+src/test/resources/php-callsites/vendor/acme/widgets/src/Legacy.php
+  s_31ec7d13cde4ed::t_0ce03136c6cef6 1-4
+src/test/resources/php-callsites/vendor/acme/widgets/src/Mark.php
+  s_31ec7d13cde4ed::t_827af5b2c8d9c0 1-5
+src/test/resources/php-callsites/vendor/acme/widgets/src/Shares.php
+  s_31ec7d13cde4ed::t_90770e983199b9 1-7
+src/test/resources/php-callsites/vendor/acme/widgets/src/Widget.php
+  s_31ec7d13cde4ed::t_748da301f5e967 1-8
+src/test/resources/php-callsites/vendor/composer/autoload_classmap.php
+  s_31ec7d13cde4ed::t_b3b97a6c534228 1-12
+src/test/resources/php-callsites/vendor/composer/autoload_psr4.php
+  s_31ec7d13cde4ed::t_6dfbdecf3d6e2f 1-12
+src/test/resources/php-callsites/vendor/composer/installed.json
+  s_31ec7d13cde4ed::t_087b6a441ac04c 1-15
+src/test/scala/io/appthreat/atom/PhpCallSitesTests.scala
+  s_31ec7d13cde4ed::t_db35b4d80a0569 1-226
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7ff7576fe3de28f43a31319d83ab03871fb1a275",
+  "prompts": {},
+  "sessions": {
+    "s_31ec7d13cde4ed": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0d7aa722-72e4-4178-b294-f2ed79df9999",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
