@@ -82,6 +82,18 @@ class PhpCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll
 
   "atom callsites for PHP" should {
 
+      "leave a vendor directory out with either path separator, and nothing named like it" in {
+          val ignored = Atom.PHP_IGNORE_REGEX.r
+          ignored.matches("vendor/acme/util/src/functions.php") shouldBe true
+          ignored.matches("app/vendor/acme/Widget.php") shouldBe true
+          ignored.matches("vendor\\acme\\util\\src\\functions.php") shouldBe true
+          ignored.matches("app\\vendor\\acme\\Widget.php") shouldBe true
+          ignored.matches("src/myvendor/Widget.php") shouldBe false
+          ignored.matches("src\\Vendors\\Widget.php") shouldBe false
+          // the batch generator searches with the same pattern rather than matching it whole
+          ignored.findFirstIn("src/myvendor/Widget.php") shouldBe None
+      }
+
       "emit exactly the records of every shape in the fixture" in {
           in("Shapes.php").map(_.copy(file = "")) shouldBe PhpCallSitesTests.expectedShapes
       }

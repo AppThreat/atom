@@ -152,8 +152,11 @@ object Atom:
       )
   private val COMMON_IGNORE_REGEX = ".*(docs|example|samples|mocks|Documentation|demos).*"
   private val JAVA_IGNORE_REGEX   = ".*(target|build)/(generated|intermediates|outputs|tmp).*"
-  // `vendor/` is Composer's dependency tree, at any depth: dependencies are not project code
-  private val PHP_IGNORE_REGEX  = "(.*(samples|examples|docs).*)|((.*/)?vendor/.*)"
+  // `vendor/` is Composer's dependency tree, at any depth: dependencies are not project code. The
+  // relative path carries the host's separator, and the batch generator searches with the same
+  // pattern where the frontend matches it whole, so the directory is anchored by either form.
+  private[atom] val PHP_IGNORE_REGEX =
+      "(.*(samples|examples|docs).*)|((^|.*[/\\\\])vendor[/\\\\].*)"
   private val RUBY_IGNORE_REGEX = ".*(docs|vendor|spec).*"
 
   private val COMMON_IGNORE_DIRS_ENV = "CHEN_IGNORE_DIRS"
