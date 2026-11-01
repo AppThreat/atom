@@ -82,6 +82,8 @@ Extract local variable and parameter usages
   --min-num-calls <value>  the minimum number of calls required for a usage slice - defaults to 1.
   --include-source         includes method source code in the slices - defaults to false.
   --extract-endpoints      extract http endpoints and convert to openapi format using atom-tools - defaults to false.
+  --also-callsites <value>
+                           also write the callsites slice to the given path: the atom is built and tagged once for both slices.
 Command: callsites
 Extract one record per external call/use site of an imported module (JS/TS)
 Command: reachables [options]

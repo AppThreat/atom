@@ -414,27 +414,6 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                             // pass's or this pass's, never a second typed record
                             DeclarationRefs.receiverOf(fa).foreach(covered += _.id())
                       }
-                  if rootT == RootType.NoType && chainTypes.isEmpty then
-                    // no root type: the raw recovered name of the field access is all there is
-                    moduleOfPrefix(file, fa.methodFullName).foreach { m =>
-                        if !shadowed(m, base) then
-                          collector.add(fa) {
-                              CallSiteRecord(
-                                file,
-                                line(fa),
-                                col(fa),
-                                method.fullName,
-                                m,
-                                fa.methodFullName.stripPrefix(m).stripPrefix("."),
-                                "ref",
-                                "type",
-                                "",
-                                builtin = isStdlib(m)
-                              )
-                          }
-                          DeclarationRefs.receiverOf(fa).foreach(covered += _.id())
-                    }
-                  end if
                   }
     }
 

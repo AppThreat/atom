@@ -19,7 +19,7 @@ import scala.util.Try
   */
 class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
-  private val fixtureCases = Seq("callsites", "decorators", "callsites-fields", "orphans")
+  private val fixtureCases = Seq("callsites", "decorators", "callsites-fields", "orphans", "sfc")
 
   private var workspace: BFile                    = scala.compiletime.uninitialized
   private var slices: Map[String, List[CallSite]] = Map.empty
@@ -107,6 +107,35 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
       records(caseName).filter(r => r.file == file && r.line == line && r.module == module)
 
   "atom callsites" should {
+
+      "record single-file component uses at their script lines (atom#320)" in {
+          // Vue, Svelte and Astro records carry the line the frontmatter or script block sits
+          // on, and a template record only where the binding uses the import.
+          val sfc = records("sfc")
+          sfc.filter(r => r.file.endsWith(".vue")) should contain theSameElementsAs List(
+            CallSite(
+              "src/Comp.vue",
+              16,
+              20,
+              "@/composables/useProfile",
+              "useProfile",
+              "call",
+              "binding"
+            ),
+            CallSite("src/Comp.vue", 17, 14, "vue", "computed", "call", "binding"),
+            CallSite("src/Comp.vue", 18, 13, "vue", "computed", "call", "binding"),
+            CallSite("src/Comp.vue", 21, 9, "axios", "post", "call", "binding")
+          )
+          sfc.filter(r => r.file.endsWith(".svelte")) should contain theSameElementsAs List(
+            CallSite("src/Widget.svelte", 5, 21, "svelte/store", "derived", "call", "binding"),
+            CallSite("src/Widget.svelte", 5, 29, "$app/stores", "page", "arg", "binding"),
+            // the template binding reads the imported store: a real use, at its own line
+            CallSite("src/Widget.svelte", 9, 9, "$app/stores", "page", "ref", "binding")
+          )
+          sfc.filter(r => r.file.endsWith(".astro")) should contain theSameElementsAs List(
+            CallSite("src/Page.astro", 5, 22, "axios", "get", "call", "binding")
+          )
+      }
 
       "slice a project whose destructured arrow parameters the frontend used to detach (outline shape)" in {
           // on the pre-tranche pairing this failed the whole slice with

@@ -26,14 +26,19 @@ object CallSiteSource:
     val language = atom.metaData.language.headOption
     if JsNames.isJs(language) then JsCallSiteSource(atom)
     else if isPython(language) then PythonCallSiteSource(atom)
+    else if isJava(language) then JavaCallSiteSource(atom)
     else EmptyCallSiteSource
 
   private def isPython(language: Option[String]): Boolean =
       language.exists(l => l == Languages.PYTHONSRC || l == Languages.PYTHON)
 
+  private def isJava(language: Option[String]): Boolean =
+      language.exists(l => l == Languages.JAVASRC || l == Languages.JAVA)
+
   /** A language the slice does not cover (yet). */
   object EmptyCallSiteSource extends CallSiteSource:
     def calculate(): ProgramCallSites = ProgramCallSites(Nil)
+end CallSiteSource
 
 /** Collects the records of one source run, and keeps one bad node from failing the whole slice: a
   * record whose construction throws is logged once with the node's id and skipped, and the slice is
@@ -71,7 +76,9 @@ final class RecordCollector(sourceName: String):
       )
 
   private def nodeLine(node: AstNode): String =
-      node.property(io.shiftleft.codepropertygraph.generated.PropertyNames.LINE_NUMBER, "?")
+      node
+          .property(io.shiftleft.codepropertygraph.generated.PropertyNames.LINE_NUMBER, -1)
+          .toString
 
   def result(): ProgramCallSites =
     val failed = failedNodes.size

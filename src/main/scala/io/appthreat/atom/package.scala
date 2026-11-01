@@ -162,7 +162,14 @@ package object atom:
     excludeOperatorCalls: Boolean = true,
     includeMethodSource: Boolean = false,
     extractEndpoints: Boolean = false
-  ) extends AtomConfig
+  ) extends AtomConfig:
+    // A `var` with a wither, not a constructor parameter: a `copy` would drop every mutable
+    // field the trait carries, `-l` among them (see AtomMemorySafetyConfig).
+    var alsoCallsites: Option[File] = None
+
+    def withAlsoCallsites(x: Option[File]): AtomUsagesConfig =
+      this.alsoCallsites = x
+      this
 
   case class AtomCallsitesConfig() extends AtomConfig
 
