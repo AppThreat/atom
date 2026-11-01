@@ -1,0 +1,25 @@
+src/main/resources/META-INF/native-image/resource-config.json
+  s_bf0a61c31b2594::t_26469a0cbe5b46 1
+src/main/resources/callsites/gen-ruby-builtins.rb
+  s_bf0a61c31b2594::t_f04d33de78f92c 1-94
+src/main/resources/callsites/ruby-builtins.txt
+  s_bf0a61c31b2594::t_777829fe90511a 1-3715
+src/main/scala/io/appthreat/atom/slicing/callsites/RubyBuiltins.scala
+  s_bf0a61c31b2594::t_b711fe73de2108 1-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0ebc0f89cf613c60c27a60b7e4a3e9e41d208fe5",
+  "prompts": {},
+  "sessions": {
+    "s_bf0a61c31b2594": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0488d121-8c29-4478-a666-9e40427c2fac",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
