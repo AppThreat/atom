@@ -1,0 +1,25 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/JavaCallSiteSource.scala
+  s_79a7c562b49300::t_7fe19d03b8a049 56-66,113,224-225,228,306,336,338,359,364-387,389
+src/main/scala/io/appthreat/atom/slicing/callsites/PythonCallSiteSource.scala
+  s_79a7c562b49300::t_b0fba59f1fded4 397,406,413-414
+src/test/resources/java-callsites/src/proj/Dto.java
+  s_79a7c562b49300::t_6c327f040739d8 1-16
+src/test/scala/io/appthreat/atom/JavaCallSitesTests.scala
+  s_79a7c562b49300::t_a53d8159e3c83c 552-573
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a4e5e61480c397511f7bf93a8b6edd23c44af01a",
+  "prompts": {},
+  "sessions": {
+    "s_79a7c562b49300": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e06ad8c2-0767-47dd-913e-35689e5f05ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
