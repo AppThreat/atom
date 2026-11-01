@@ -1,0 +1,21 @@
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_79a7c562b49300::t_1578868971c740 155-159
+src/test/scala/io/appthreat/atom/PhpCallSitesTests.scala
+  s_79a7c562b49300::t_44a874cd30ce94 85-96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d981a86cc0b7d18cda309490c1351f5b73731858",
+  "prompts": {},
+  "sessions": {
+    "s_79a7c562b49300": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e06ad8c2-0767-47dd-913e-35689e5f05ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
