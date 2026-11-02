@@ -657,6 +657,16 @@ object Atom:
                   config.withAppPrefixes(config.appPrefixes.getOrElse(Nil) :+ x)
               case _ => c
         )
+    opt[String]("external-paths")
+        .text(
+          "Regular expression of vendored input paths (third_party/, a copied single-header library); matched files are parsed as always but marked external. (C/C++ today; the other frontends accept it and do nothing yet)"
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig =>
+                  config.withFrontendArgs(Map("external-paths" -> x))
+              case _ => c
+        )
     opt[Int]("solver-depth")
         .text("Recursive jar unpacking depth (default: 1). (Jimple/Scala only)")
         .action((x, c) =>
@@ -1295,7 +1305,11 @@ object Atom:
       case u: AtomUsagesConfig if u.alsoCallsites.isDefined =>
           PerfReporter.stage("slicing.callsites", "slicing") {
               val callsitesFile = u.alsoCallsites.get
-              val callSites     = CallSiteSlicing.calculateCallSitesSlice(ag, config.appPrefixes)
+              val callSites = CallSiteSlicing.calculateCallSitesSlice(
+                ag,
+                config.appPrefixes,
+                config.frontendArgs.get("external-paths")
+              )
               SliceFiles.writeAtomically(callsitesFile)(callSites.toJsonFile)
               println(
                 s"Call sites have been successfully written to ${callsitesFile.pathAsString}"
@@ -1316,7 +1330,11 @@ object Atom:
   private def generateCallsitesSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
     println("Slicing the atom for call sites. This might take a few minutes ...")
     runChennaiTags(config, ag)
-    val slice = CallSiteSlicing.calculateCallSitesSlice(ag, config.appPrefixes)
+    val slice = CallSiteSlicing.calculateCallSitesSlice(
+      ag,
+      config.appPrefixes,
+      config.frontendArgs.get("external-paths")
+    )
     SliceFiles.writeAtomically(config.outputSliceFile)(slice.toJsonFile)
     println(s"Call sites have been successfully written to ${config.outputSliceFile.pathAsString}")
     Right("Call sites slice generated successfully")

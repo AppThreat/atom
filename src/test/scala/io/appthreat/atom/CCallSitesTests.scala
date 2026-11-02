@@ -16,56 +16,56 @@ import org.scalatest.wordspec.AnyWordSpec
   *
   * The library lives outside the analysed input, reached through `--include-path`, as a real
   * dependency is. The bad twins must produce nothing: the project's own same-named function, its
-  * own global, enumerator and struct member, a project macro's invocation, and every expansion of
-  * a project macro that wraps a library call (the one record is at the macro's own definition).
+  * own global, enumerator and struct member, a project macro's invocation, and every expansion of a
+  * project macro that wraps a library call (the one record is at the macro's own definition).
   */
 class CCallSitesTests extends AnyWordSpec with Matchers with AppendedClues with BeforeAndAfterAll:
 
   import CCallSitesTests.*
 
-  private var workspace: BFile           = scala.compiletime.uninitialized
-  private var cdt: List[Expected]        = Nil
+  private var workspace: BFile            = scala.compiletime.uninitialized
+  private var cdt: List[Expected]         = Nil
   private var edg: Option[List[Expected]] = None
 
   override protected def beforeAll(): Unit =
-      workspace = BFile.newTemporaryDirectory("atomCCallsites")
-      val fixture = BFile(getClass.getResource("/c-callsites").toURI)
-      val project = workspace / "proj"
-      (fixture / "proj").copyTo(project)
-      val library = workspace / "externlib"
-      (fixture / "externlib").copyTo(library)
-      cdt = run("cdt", extra = Seq("--include-path", library.pathAsString))
-      if edgaAvailable then
-          edg = Some(
-            run(
-              "edg",
-              Seq(
-                "--include-path",
-                library.pathAsString,
-                "--c-frontend",
-                "edg",
-                "--edga-path",
-                sys.env.getOrElse("EDGA_PATH", "edga")
-              )
-            )
+    workspace = BFile.newTemporaryDirectory("atomCCallsites")
+    val fixture = BFile(getClass.getResource("/c-callsites").toURI)
+    val project = workspace / "proj"
+    (fixture / "proj").copyTo(project)
+    val library = workspace / "externlib"
+    (fixture / "externlib").copyTo(library)
+    cdt = run("cdt", extra = Seq("--include-path", library.pathAsString))
+    if edgaAvailable then
+      edg = Some(
+        run(
+          "edg",
+          Seq(
+            "--include-path",
+            library.pathAsString,
+            "--c-frontend",
+            "edg",
+            "--edga-path",
+            sys.env.getOrElse("EDGA_PATH", "edga")
           )
+        )
+      )
   end beforeAll
 
   private def run(frontend: String, extra: Seq[String]): List[Expected] =
-      val atomFile = workspace / s"$frontend.atom"
-      val slice    = workspace / s"$frontend-callsites.json"
-      val result = Atom.run(
-        ("callsites" :: "--cache" :: "none" :: "-l" :: "c" :: extra.toList :::
-            "-o" :: atomFile.pathAsString :: "-s" :: slice.pathAsString :: List(
-              (workspace / "proj").pathAsString
-            )).toArray
-      )
-      result.isRight shouldBe true withClue s"the $frontend run failed: $result"
-      decode[Slice](slice.contentAsString).fold(
-        e => fail(s"the $frontend slice is not JSON: $e"),
-        s => s.callsites.map(r => Expected(r.file, r.line, r.module, r.path, r.kind, r.via, r.builtin))
-      )
-  end run
+    val atomFile = workspace / s"$frontend.atom"
+    val slice    = workspace / s"$frontend-callsites.json"
+    val result = Atom.run(
+      ("callsites" :: "--cache" :: "none" :: "-l" :: "c" :: extra.toList :::
+          "-o" :: atomFile.pathAsString :: "-s" :: slice.pathAsString :: List(
+            (workspace / "proj").pathAsString
+          )).toArray
+    )
+    (result.isRight shouldBe true).withClue(s"the $frontend run failed: $result")
+    decode[Slice](slice.contentAsString).fold(
+      e => fail(s"the $frontend slice is not JSON: $e"),
+      s =>
+          s.callsites.map(r => Expected(r.file, r.line, r.module, r.path, r.kind, r.via, r.builtin))
+    )
 
   private def edgaAvailable: Boolean =
       sys.env.get("EDGA_PATH").orElse(sys.props.get("edga.path")).exists { path =>
@@ -141,6 +141,7 @@ class CCallSitesTests extends AnyWordSpec with Matchers with AppendedClues with 
 
   override protected def afterAll(): Unit =
       workspace.delete(swallowIOExceptions = true)
+end CCallSitesTests
 
 object CCallSitesTests:
   final case class Expected(
@@ -164,3 +165,4 @@ object CCallSitesTests:
   )
 
   final case class Slice(callsites: List[Record])
+end CCallSitesTests

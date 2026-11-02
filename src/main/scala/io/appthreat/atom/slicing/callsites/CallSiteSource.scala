@@ -28,7 +28,11 @@ object CallSiteSource:
     * slice. `appPrefixes` is the bytecode source's explicit application boundary (atom#326); the
     * other sources have no use for it.
     */
-  def forAtom(atom: Cpg, appPrefixes: Option[Seq[String]] = None): CallSiteSource =
+  def forAtom(
+    atom: Cpg,
+    appPrefixes: Option[Seq[String]] = None,
+    externalPaths: Option[String] = None
+  ): CallSiteSource =
     val language = atom.metaData.language.headOption
     if JsNames.isJs(language) then JsCallSiteSource(atom)
     else if isPython(language) then PythonCallSiteSource(atom)
@@ -36,7 +40,7 @@ object CallSiteSource:
     else if isJvmBytecode(language) then JvmBytecodeCallSiteSource(atom, appPrefixes)
     else if isPhp(language) then PhpCallSiteSource(atom)
     else if isRuby(language) then RubyCallSiteSource(atom)
-    else if isC(language) then CCallSiteSource(atom)
+    else if isC(language) then CCallSiteSource(atom, externalPaths)
     else EmptyCallSiteSource
 
   private def isPython(language: Option[String]): Boolean =
