@@ -50,6 +50,14 @@ package object atom:
     // passes take purls and component tags from them.
     var bomFile: Option[File] = None
     var bomDir: Option[File]  = None
+    // The application packages of a bytecode input (an APK, a jar, a class directory), given with
+    // `--app-prefix` (repeatable). An explicit list replaces what the manifest or the jar's
+    // package layout would otherwise derive (atom#326).
+    var appPrefixes: Option[List[String]] = None
+
+    def withAppPrefixes(x: List[String]): AtomConfig =
+      this.appPrefixes = Some(x)
+      this
 
     def withOutputAtomFile(x: File): AtomConfig =
       this.outputAtomFile = x

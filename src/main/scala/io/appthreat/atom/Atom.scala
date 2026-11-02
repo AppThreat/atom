@@ -607,6 +607,16 @@ object Atom:
               case config: AtomConfig => config.withFrontendArg("android", x)
               case _                  => c
         )
+    opt[String]("app-prefix")
+        .text(
+          "Application package(s) of a bytecode input; repeatable. Replaces the boundary the APK or jar manifest would give, and the jar's package prefixes. (Jimple/Android only)"
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig =>
+                  config.withAppPrefixes(config.appPrefixes.getOrElse(Nil) :+ x)
+              case _ => c
+        )
     opt[Int]("solver-depth")
         .text("Recursive jar unpacking depth (default: 1). (Jimple/Scala only)")
         .action((x, c) =>
@@ -1077,6 +1087,24 @@ object Atom:
             BatchedUpdate.applyDiff(atom.graph, diff)
       }
 
+  /** The application boundary of a bytecode input (atom#326), computed once and carried by the atom
+    * as a config file, so the runs that reuse the atom read it instead of re-reading the input.
+    * `--app-prefix` overrides it for the run without replacing the stored value. Only the two slice
+    * commands that read the boundary pay for the read.
+    */
+  private def storeAppBoundary(config: AtomConfig, ag: Cpg): Either[String, Unit] =
+      if config.isInstanceOf[AtomUsagesConfig] || config.isInstanceOf[AtomCallsitesConfig] then
+        ag.metaData.language.headOption match
+          case Some(lang) if lang == Languages.JAVA =>
+              slicing.callsites.JvmAppBoundary.boundaryOf(
+                ag,
+                slicing.callsites.JvmAppBoundary.inputOf(ag),
+                config.appPrefixes
+              )
+              Right(())
+          case _ => Right(())
+      else Right(())
+
   private def newAtomCreatedString(config: AtomConfig): String =
     val absolutePath = config.outputAtomFile.path.toAbsolutePath
     if config.removeAtom then
@@ -1417,6 +1445,7 @@ object Atom:
           else
             for
               _ <- storeBoms(config, ag)
+              _ <- storeAppBoundary(config, ag)
               _ <- enhanceCpg(config, ag, reusing)
               _ <- generateSlice(config, ag)
               _ <- PerfReporter.stage("verification.persist", "verification")(closeCpg(ag))
