@@ -1,0 +1,36 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/CCallSiteSource.scala
+  s_0dbbcb5914c2c5::t_959af95f42b558 192
+  s_0dbbcb5914c2c5::t_68f92ead1d84ae 20-21,45-46,79-89,109-113,115,117,119,121,124-129,156,165-166,171-175,177-179,183-191,193-195,206-219,227-245,247-248,251-261,263-298,305-361,369-397
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_0dbbcb5914c2c5::t_c99e802fb6f158 660-669,1308-1312,1333-1337
+src/main/scala/io/appthreat/atom/frontends/FrontendArgsApplier.scala
+  s_0dbbcb5914c2c5::t_93ed19518390e7 103
+src/main/scala/io/appthreat/atom/slicing/CallSiteSlicing.scala
+  s_0dbbcb5914c2c5::t_4e978f3e7d5bc7 14-15,17
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteSource.scala
+  s_0dbbcb5914c2c5::t_fea9c9f41a9f75 31-35,43
+src/test/resources/c-callsites-vendored/proj/main.c
+  s_0dbbcb5914c2c5::t_392b1b70f49935 1-2
+src/test/resources/c-callsites-vendored/proj/third_party/zlib/zlib.h
+  s_0dbbcb5914c2c5::t_08403d55f9d05e 1-4
+src/test/scala/io/appthreat/atom/CCallSitesTests.scala
+  s_0dbbcb5914c2c5::t_c67ff558a81569 19-20,26-27,31-48,50-51,55-68,144,168
+src/test/scala/io/appthreat/atom/CExternalPathsTests.scala
+  s_0dbbcb5914c2c5::t_5beb7fe4887c1d 1-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "78db09b838ff0f212e3faeb34c364907ae37d847",
+  "prompts": {},
+  "sessions": {
+    "s_0dbbcb5914c2c5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dd7541fb-2df2-4da7-a16f-14967800872a",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
