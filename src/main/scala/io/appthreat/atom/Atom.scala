@@ -11,6 +11,7 @@ import io.appthreat.atom.parsedeps.parseDependencies
 import io.appthreat.atom.passes.TypeHintPass
 import io.appthreat.atom.slicing.*
 import io.appthreat.edg2atom.Edg2Atom
+import io.appthreat.c2cpg.parser.ProjectSources
 import io.appthreat.c2cpg.{C2Cpg, Config as CConfig}
 import io.appthreat.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.appthreat.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
@@ -150,8 +151,15 @@ object Atom:
         "tracker",
         "adware"
       )
-  private val COMMON_IGNORE_REGEX = ".*(docs|example|samples|mocks|Documentation|demos).*"
-  private val JAVA_IGNORE_REGEX   = ".*(target|build)/(generated|intermediates|outputs|tmp).*"
+  // path SEGMENTS under the input root, never a substring of one name: an input directory of
+  // someone's own called `t_demos` or `openssl_docs` is the whole project, not a docs folder of it
+  private val COMMON_IGNORE_DIRS =
+      Seq("docs", "example", "samples", "mocks", "Documentation", "demos")
+  private val COMMON_IGNORE_REGEX =
+      ignoredDirectoriesRegex(COMMON_IGNORE_DIRS).getOrElse(
+        ".*(docs|example|samples|mocks|Documentation|demos).*"
+      )
+  private val JAVA_IGNORE_REGEX = ".*(target|build)/(generated|intermediates|outputs|tmp).*"
   // `vendor/` is Composer's dependency tree, at any depth: dependencies are not project code. The
   // relative path carries the host's separator, and the batch generator searches with the same
   // pattern where the frontend matches it whole, so the directory is anchored by either form.
@@ -241,6 +249,26 @@ object Atom:
     * resolved against the entry's directory, relative to the input root, matched whole. An
     * `--exclude-regex` of the user's own replaces the default, so there is nothing to explain.
     */
+  /** The default C/C++ ignore pattern removing files is normal for a docs folder and silent data
+    * loss for an input whose own paths trip it: say how many files it dropped, so a project that
+    * analyses empty has a reason to read. Counted by walking the input twice, once as configured
+    * and once with no ignored-files pattern; the compilation database narrows both alike.
+    */
+  private def warnWhenIgnoredFilesAreRemoved(finalConfig: CConfig): Unit =
+    val pattern = finalConfig.ignoredFilesRegex
+    if pattern.pattern.toString.nonEmpty then
+      // the config's fields are mutable: the unfiltered walk borrows the config and gives it back
+      finalConfig.withIgnoredFilesRegex("")
+      val all = new ProjectSources(finalConfig).files.length
+      finalConfig.withIgnoredFilesRegex(pattern.pattern.toString)
+      val kept = new ProjectSources(finalConfig).files.length
+      if all > kept then
+        System.err.println(
+          s"atom: the C/C++ ignore pattern '${pattern.pattern.toString}' drops " +
+              s"${all - kept} of $all source and header files under the input. " +
+              "Pass --exclude-regex with a pattern of your own to replace it."
+        )
+
   private def warnWhenIgnoredUnitsAreEverything(config: AtomConfig, pattern: String): Unit =
       if !config.frontendArgs.contains("exclude-regex") then
         for
@@ -1581,6 +1609,7 @@ object Atom:
         .withIncludeTrivialExpressions(false)
         .withIncludePaths(C2ATOM_INCLUDE_PATH)
     val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
+    warnWhenIgnoredFilesAreRemoved(finalConfig)
     new C2Atom().createCpg(C2Cpg.withCensusDefines(finalConfig))
   end createC2Atom
 
@@ -1624,7 +1653,9 @@ object Atom:
         .withImageLocations(false)
         .withIncludeTrivialExpressions(false)
         .withIncludePaths(C2ATOM_INCLUDE_PATH)
-    FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
+    val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
+    warnWhenIgnoredFilesAreRemoved(finalConfig)
+    finalConfig
   end c2CpgConfig
 
   /** `--suggest-defines` without `--auto-defines`: the macro census alone, no atom. */
