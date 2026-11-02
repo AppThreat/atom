@@ -1,0 +1,21 @@
+README.md
+  s_44fb47caf42af9::t_6cb9a65064a150 150-151
+docs/docs/cli.md
+  s_44fb47caf42af9::t_b2af6e7b264bc7 46-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2c613a2c02fa86dfbc21a4fef7a8dc58788d7f3d",
+  "prompts": {},
+  "sessions": {
+    "s_44fb47caf42af9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_da6a6234-7f45-488d-882a-2620703267d5",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
