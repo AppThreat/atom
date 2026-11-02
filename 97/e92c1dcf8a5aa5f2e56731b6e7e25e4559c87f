@@ -1,0 +1,22 @@
+src/test/scala/io/appthreat/atom/CHeaderBodiesAndIgnorePatternTests.scala
+  s_0dbbcb5914c2c5::t_b537ff8e45f70e 1-149
+  s_0dbbcb5914c2c5::t_71a0fa9cb31257 150-151
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_0dbbcb5914c2c5::t_e92707482fb52d 14,154-162,252-271,1612,1656-1658
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "97e92c1dcf8a5aa5f2e56731b6e7e25e4559c87f",
+  "prompts": {},
+  "sessions": {
+    "s_0dbbcb5914c2c5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dd7541fb-2df2-4da7-a16f-14967800872a",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
