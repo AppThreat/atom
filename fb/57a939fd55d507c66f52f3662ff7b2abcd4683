@@ -1,0 +1,41 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/JvmBytecodeCallSiteSource.scala
+  s_44fb47caf42af9::t_f2d1826dee5ee3 259,262-271,274-304,553
+  s_44fb47caf42af9::t_9678dcc62271de 440-442,450,454
+  s_44fb47caf42af9::t_bf9cfb03f42a77 3
+  s_44fb47caf42af9::t_a7848dbc414226 346
+  s_44fb47caf42af9::t_731e3e2cf2af23 1-2,4-21,27-45,48-51,78-117,134-137,139-157,159-162,166-182,186-217,224,227-228,230-241,243-248,250-258,260-261,305,307-309,314,361-367,369-376,380,395-437,443-445,447-449,451-453,457-473,475-482,485-508,524,555
+  s_44fb47caf42af9::t_55946c3b246faa 183-185
+  s_44fb47caf42af9::t_add2ded684e5b4 22-24,52,118-133,138,158,163-165,218-223,225-226,229,242,249,306,310-313,315-339,341-345,352-360,368,377-379,381-394,438,446,455-456,474,483-484,509-519,550
+  s_44fb47caf42af9::t_d5c438c948297d 46-47,53-77
+  s_44fb47caf42af9::t_854e18c8930320 340,348-351
+  s_44fb47caf42af9::t_442bb0f6215db7 272-273
+  s_44fb47caf42af9::t_24efd5ba22655e 525-533
+  s_44fb47caf42af9::t_a1d0ef9810ae85 25-26,347,439,520-523,534-549,551-552,554
+src/main/scala/io/appthreat/atom/slicing/CallSiteSlicing.scala
+  s_44fb47caf42af9::t_b2b72dddeb357c 12-17
+src/main/scala/io/appthreat/atom/slicing/package.scala
+  s_44fb47caf42af9::t_ebaeeb15e12199 190-202,204-221
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteSource.scala
+  s_44fb47caf42af9::t_8df2aaddc7ee90 3
+  s_44fb47caf42af9::t_a2469580380fef 20-24,28-29,31,35-36,44-52
+src/main/resources/callsites/android-platform-packages.txt
+  s_44fb47caf42af9::t_38b9af62d6ad31 1-117
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_44fb47caf42af9::t_498441cf170234 1222,1243
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fb57a939fd55d507c66f52f3662ff7b2abcd4683",
+  "prompts": {},
+  "sessions": {
+    "s_44fb47caf42af9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_da6a6234-7f45-488d-882a-2620703267d5",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
