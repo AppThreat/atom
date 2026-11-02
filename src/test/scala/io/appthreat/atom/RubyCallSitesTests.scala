@@ -2,6 +2,7 @@ package io.appthreat.atom
 
 import better.files.File as BFile
 import io.appthreat.atom.slicing.callsites.RubyGemMap
+import io.appthreat.ruby2atom.parser.RubyAstGenRunner
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -40,7 +41,23 @@ class RubyCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
     )
     result.left.map(_.toString).map(_ => read(sliceFile))
 
+  /** Why the fixture cannot run here: the slice needs a generator with the 2.x JSON contract, and
+    * an older or missing one gives an empty atom rather than an error.
+    */
+  private var unavailable: Option[String] = None
+
+  private def generatorUnavailable(): Option[String] =
+    val rbastgen = RubyAstGenRunner.resolveProgram()
+    val version = scala.util.Try(
+      scala.sys.process.Process(Seq(rbastgen, "--version")).lazyLines_!.headOption.map(_.trim)
+    ).toOption.flatten
+    Option.when(!version.flatMap(_.takeWhile(_.isDigit).toIntOption).exists(_ >= 2))(
+      s"rbastgen '$rbastgen' reports ${version.getOrElse("no version")}; the Ruby fixture needs 2.x"
+    )
+
   override protected def beforeAll(): Unit =
+    unavailable = generatorUnavailable()
+    if unavailable.isDefined then return
     workspace = BFile.newTemporaryDirectory("atomRubyCallsites")
     val fixture = BFile(getClass.getResource("/ruby-callsites").toURI)
     val project = workspace / "proj"
@@ -83,7 +100,7 @@ class RubyCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
           .toList
 
   private def shapes(from: List[Rec] = records): List[Rec] =
-    if !atomRan then cancel("the Ruby fixture run failed")
+    if !atomRan then cancel(unavailable.getOrElse("the Ruby fixture run failed"))
     from.filter(_.file == "shapes.rb")
 
   private def kind(k: String, from: List[Rec] = records): List[Rec] =
@@ -156,7 +173,7 @@ class RubyCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
           // project's own `Paperclip::Transcoder.new` (line 19) is not a use; `class
           // Admin::Account` is lowered under a namespace block, `Migration[7.2]` calls `[]` on its
           // constant, `StandardError` is a bundled superclass and `::Thread` an absolute core class
-          if !atomRan then cancel("the Ruby fixture run failed")
+          if !atomRan then cancel(unavailable.getOrElse("the Ruby fixture run failed"))
           records.filter(r => r.file == "reopened.rb" && r.line < 30).map(
             _.copy(file = "")
           ) shouldBe List(
@@ -174,7 +191,7 @@ class RubyCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
           // `JSON::LD::API` and `Net::LDAP` are gems' additions to library modules, while
           // `JSON::ParserError` is the library's. Without json-ld's sources nothing tells that
           // `TermDefinition` is the reopened class's own, so it stays as written.
-          if !atomRan then cancel("the Ruby fixture run failed")
+          if !atomRan then cancel(unavailable.getOrElse("the Ruby fixture run failed"))
           records.filter(r => r.file == "reopened.rb" && r.line > 30).map(
             _.copy(file = "")
           ) shouldBe
@@ -189,7 +206,7 @@ class RubyCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
       "emit no record for a constant the parser makes up while it lowers" in {
           // `lib/reopened.rb` from line 22: `Array(value)` calls a Kernel function, `raise "boom"`
           // raises a StandardError nobody named and `(..10)` has no Float::INFINITY written
-          if !atomRan then cancel("the Ruby fixture run failed")
+          if !atomRan then cancel(unavailable.getOrElse("the Ruby fixture run failed"))
           records.filter(r => r.file == "reopened.rb" && r.line >= 22 && r.line < 30) shouldBe Nil
       }
 
