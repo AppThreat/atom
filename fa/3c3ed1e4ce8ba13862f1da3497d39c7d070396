@@ -1,0 +1,51 @@
+README.md
+  s_c0804e5357f0c5::t_47c1e77ab4137e 150-151
+docs/docs/cli.md
+  s_c0804e5357f0c5::t_2294c772d72123 46-47
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_c0804e5357f0c5::t_376cffa2548900 604-606,624
+src/main/scala/io/appthreat/atom/slicing/callsites/JvmAppBoundary.scala
+  s_c0804e5357f0c5::t_544d8cf61cdda4 9,79-101,152-153
+src/main/scala/io/appthreat/atom/slicing/callsites/JvmBytecodeCallSiteSource.scala
+  s_797ad76f967931::t_03903122b55929 144-153,176,263-267,411-414,423-425,431,435-454,468-491
+src/main/scala/io/appthreat/atom/slicing/callsites/JvmBytecodeInput.scala
+  s_4d0a36fc9d7809::t_1de352f75c89d0 632-637,644-649,654-655,659-660,664-669,729,732,735,737-749,755-759,767-771,777-781,837,840,842-845,855
+src/test/resources/jvm-callsites/src/me/app/App.java
+  s_c0804e5357f0c5::t_59de6e35340ec8 49-56
+src/test/scala/io/appthreat/atom/BytecodeCallSitesTests.scala
+  s_4d0a36fc9d7809::t_8c2461041be49e 149,218-232,239,301-303,319,379,381,392-393
+src/test/scala/io/appthreat/atom/slicing/callsites/JvmBytecodeInputTests.scala
+  s_c0804e5357f0c5::t_399bb983bdbf42 1-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fa3c3ed1e4ce8ba13862f1da3497d39c7d070396",
+  "prompts": {},
+  "sessions": {
+    "s_4d0a36fc9d7809": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "539011cf-a214-4b55-997c-dcd750a6c350",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_797ad76f967931": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "12ea2e25-5d96-4da2-a7fb-223a0762383c",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_c0804e5357f0c5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75227701-fd30-4fc7-8eae-71a8df8f3a1c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
