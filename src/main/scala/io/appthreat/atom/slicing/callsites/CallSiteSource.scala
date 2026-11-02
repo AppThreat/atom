@@ -36,6 +36,7 @@ object CallSiteSource:
     else if isJvmBytecode(language) then JvmBytecodeCallSiteSource(atom, appPrefixes)
     else if isPhp(language) then PhpCallSiteSource(atom)
     else if isRuby(language) then RubyCallSiteSource(atom)
+    else if isC(language) then CCallSiteSource(atom)
     else EmptyCallSiteSource
 
   private def isPython(language: Option[String]): Boolean =
@@ -56,6 +57,10 @@ object CallSiteSource:
 
   private def isRuby(language: Option[String]): Boolean =
       language.exists(_ == Languages.RUBYSRC)
+
+  /** C and C++, whichever of the two frontends built the atom (both name their language NEWC). */
+  private def isC(language: Option[String]): Boolean =
+      language.exists(l => l == Languages.NEWC || l == Languages.C || l == "CPP" || l == "C++")
 
   /** A language the slice does not cover (yet). */
   object EmptyCallSiteSource extends CallSiteSource:
