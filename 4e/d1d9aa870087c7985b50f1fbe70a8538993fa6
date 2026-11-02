@@ -1,0 +1,23 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/RubyBuiltins.scala
+  s_79a7c562b49300::t_27fd49dce320cd 36-40,43-46
+src/test/resources/ruby-callsites/lib/reopened.rb
+  s_79a7c562b49300::t_0deb3e84514056 30-38
+src/test/scala/io/appthreat/atom/RubyCallSitesTests.scala
+  s_79a7c562b49300::t_491b4097dd5a61 160-162,172-188,193
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4ed1d9aa870087c7985b50f1fbe70a8538993fa6",
+  "prompts": {},
+  "sessions": {
+    "s_79a7c562b49300": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e06ad8c2-0767-47dd-913e-35689e5f05ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
