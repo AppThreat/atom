@@ -167,6 +167,13 @@ class RubyCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
           )
       }
 
+      "emit no record for a constant the parser makes up while it lowers" in {
+          // `lib/reopened.rb` from line 22: `Array(value)` calls a Kernel function, `raise "boom"`
+          // raises a StandardError nobody named and `(..10)` has no Float::INFINITY written
+          if !atomRan then cancel("the Ruby fixture run failed")
+          records.filter(r => r.file == "reopened.rb" && r.line >= 22) shouldBe Nil
+      }
+
       "emit no record for a require line, a project class, an autoloaded constant or a DSL call" in {
           val lines = shapes().map(_.line).toSet
           // the requires, `class Cart`, `include Trackable`, `has_many`, the project's own classes

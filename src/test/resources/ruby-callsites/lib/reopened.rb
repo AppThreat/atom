@@ -19,3 +19,11 @@ class Slots
     Paperclip::Transcoder.new
   end
 end
+
+class Kernelish
+  def run(value)
+    Array(value)
+    raise "boom" if value.nil?
+    (..10).cover?(value)
+  end
+end

@@ -157,7 +157,10 @@ final class RubyCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "ruby
             // a core class the project reopens is not credited to the library
             val reopened = path.size == 1 && projectNames.contains(path.head)
             if reopened then ()
-            else if lineOf(ref) > 0 && file.nonEmpty && file != "<empty>" then
+            // a constant the parser made up while lowering (`Array` for `Array(value)`) has no
+            // position: nobody wrote it
+            else if lineOf(ref) <= 0 then ()
+            else if file.nonEmpty && file != "<empty>" then
               val (kind, member) = useOf(ref)
               val builtin        = RubyBuiltins.contains(path)
               collector.add(ref) {
