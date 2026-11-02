@@ -28,6 +28,7 @@ object CallSiteSource:
     else if isPython(language) then PythonCallSiteSource(atom)
     else if isJava(language) then JavaCallSiteSource(atom)
     else if isPhp(language) then PhpCallSiteSource(atom)
+    else if isRuby(language) then RubyCallSiteSource(atom)
     else EmptyCallSiteSource
 
   private def isPython(language: Option[String]): Boolean =
@@ -38,6 +39,9 @@ object CallSiteSource:
 
   private def isPhp(language: Option[String]): Boolean =
       language.exists(_ == Languages.PHP)
+
+  private def isRuby(language: Option[String]): Boolean =
+      language.exists(_ == Languages.RUBYSRC)
 
   /** A language the slice does not cover (yet). */
   object EmptyCallSiteSource extends CallSiteSource:
