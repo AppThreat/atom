@@ -1,0 +1,37 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/CCallSiteSource.scala
+  s_0dbbcb5914c2c5::t_959af95f42b558 1-336
+  s_0dbbcb5914c2c5::t_d00b666c2454db 337-374
+src/test/scala/io/appthreat/atom/CCallSitesTests.scala
+  s_0dbbcb5914c2c5::t_5ac34d5f4fe631 1-160
+  s_0dbbcb5914c2c5::t_34fecdf6704dd8 161-166
+build.sbt
+  s_0dbbcb5914c2c5::t_0b682a1b0f27a5 6
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteSource.scala
+  s_0dbbcb5914c2c5::t_92ccaa981491d5 39,61-64
+src/test/resources/c-callsites/externlib/libdir/lib.h
+  s_0dbbcb5914c2c5::t_0d7e38d9823cf9 1-13
+src/test/resources/c-callsites/externlib/libdir/libhpp.h
+  s_0dbbcb5914c2c5::t_0a11fad5dd7e80 1-9
+src/test/resources/c-callsites/proj/klass.cpp
+  s_0dbbcb5914c2c5::t_8e388bbe8b98ba 1-11
+src/test/resources/c-callsites/proj/main.c
+  s_0dbbcb5914c2c5::t_b8320c0f902c68 1-27
+src/test/resources/c-callsites/proj/proj.h
+  s_0dbbcb5914c2c5::t_42de4a5b1aabd5 1-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e67fb57f8c6eea436f674a2c61600063552717d3",
+  "prompts": {},
+  "sessions": {
+    "s_0dbbcb5914c2c5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dd7541fb-2df2-4da7-a16f-14967800872a",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
