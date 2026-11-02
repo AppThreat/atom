@@ -1,0 +1,25 @@
+src/test/scala/io/appthreat/atom/SdkPathTests.scala
+  s_44fb47caf42af9::t_9ffad74c343f0a 1-62
+  s_44fb47caf42af9::t_2a939d99fa50e9 63-64
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_44fb47caf42af9::t_85bc1b3b8ebb62 604-606
+  s_44fb47caf42af9::t_4d768031334b8d 1100-1129
+  s_44fb47caf42af9::t_74f6647e8d7dfc 607-609
+  s_44fb47caf42af9::t_2c533e63e368ed 612-618,1130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1b12d5d1d0b314b19c3a9b02dd77bc821ab71037",
+  "prompts": {},
+  "sessions": {
+    "s_44fb47caf42af9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_da6a6234-7f45-488d-882a-2620703267d5",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
