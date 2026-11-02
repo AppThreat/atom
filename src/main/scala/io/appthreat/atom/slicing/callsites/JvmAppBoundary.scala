@@ -11,7 +11,7 @@ import scala.util.Try
 /** The boundary configuration of one bytecode atom (atom#326): what the input declares as its own,
   * computed once and carried by the atom as a config file, with the rest of what the slice reads
   * from the input: the classes' real file names (atom#327), the synthetic line tables (atom#328),
-  * the JVM bootstrap handles (atom#327).
+  * the bundled Maven artifacts (atom#329) and the JVM bootstrap handles (atom#327).
   *
   * The boundary comes, in this order, from an explicit `--app-prefix` (repeatable, it replaces the
   * rest), what the input names itself (the APK manifest's `package` plus the packages of manifest
@@ -38,6 +38,7 @@ object JvmAppBoundary:
     syntheticLineTables: Int,
     methodsWithLineTables: Int,
     lineQuality: String,
+    artifacts: List[(String, (String, String, String))],
     indySites: List[(String, List[JvmIndySite])]
   ):
     def boundary: AppBoundary = AppBoundary(appPrefixes, appAll, boundarySource)
@@ -112,7 +113,7 @@ object JvmAppBoundary:
   }
 
   /** What the input declares: the boundary, the real file names, the synthetic line tables over the
-    * boundary's classes and the bootstrap handles.
+    * boundary's classes, the Maven artifacts and the bootstrap handles.
     */
   private def compute(atom: Cpg, input: JvmBytecodeInput): BoundaryData =
     val named    = input.namedBoundary
@@ -126,6 +127,7 @@ object JvmAppBoundary:
     val classFiles = input.classes.toList.sortBy((n, _) => n).map((name, info) =>
         name -> info.sourceFile.getOrElse("")
     )
+    val artifacts = input.artifacts.toList.sortBy((k, _) => k)
     val indySites = input.bootstraps.toList.sortBy((k, _) => k)
     BoundaryData(
       inputPath = input.path.toString,
@@ -137,6 +139,7 @@ object JvmAppBoundary:
       syntheticLineTables = tables.synthetic,
       methodsWithLineTables = tables.withPositions,
       lineQuality = if tables.syntheticQuality then "synthetic" else "source",
+      artifacts = artifacts,
       indySites = indySites
     )
   end compute

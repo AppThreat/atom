@@ -245,6 +245,24 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
                 else None
               else None
 
+  // ---------------------------------------------------------------------------------------- purl
+  /** The `purl` of the bundled artifact whose package prefix claims `cls`, when the longest
+    * claiming prefix names exactly one artifact (atom#321, atom#329). Builtins are nobody's
+    * artifact.
+    */
+  private def purlOf(cls: String): String =
+      if cls.isEmpty then ""
+      else
+        index.artifacts
+            .filter((prefix, _) => cls == prefix || cls.startsWith(prefix + "."))
+            .maxByOption((prefix, _) => prefix.length)
+            .map { (_, coords) =>
+              val (group, artifact, version) = coords
+              if version.isEmpty then s"pkg:maven/$group/$artifact"
+              else s"pkg:maven/$group/$artifact@$version"
+            }
+            .getOrElse("")
+
   // --------------------------------------------------------------------------------------- files
   /** The class's real file name, `<package path>/<SourceFile>`; every class of the input has one
     * (R8's literal `SourceFile` becomes the outer class with a `.java` guess, counted in the
@@ -292,7 +310,8 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
                               "ref",
                               "binding",
                               owner,
-                              builtin = builtinLabel(owner).isDefined
+                              builtin = builtinLabel(owner).isDefined,
+                              purl = purlOf(owner)
                             )
                         }
                     end if
@@ -388,7 +407,8 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
                       if isNew then "new" else "call",
                       if isNew || static then "binding" else "type",
                       c.methodFullName,
-                      builtin = builtinLabel(owner).isDefined
+                      builtin = builtinLabel(owner).isDefined,
+                      purl = purlOf(owner)
                     )
                 }
             end if
@@ -419,7 +439,8 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
                           h.kind,
                           h.via,
                           s"${h.owner}.${h.name}",
-                          builtin = builtinLabel(h.owner).isDefined
+                          builtin = builtinLabel(h.owner).isDefined,
+                          purl = purlOf(h.owner)
                         )
                     }
                   else collector.skip(c)
@@ -490,7 +511,8 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
                       "ref",
                       "binding",
                       owner,
-                      builtin = builtinLabel(owner).isDefined
+                      builtin = builtinLabel(owner).isDefined,
+                      purl = purlOf(owner)
                     )
                 }
             end if
@@ -544,7 +566,8 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
                               "ref",
                               "binding",
                               owner,
-                              builtin = builtinLabel(owner).isDefined
+                              builtin = builtinLabel(owner).isDefined,
+                              purl = purlOf(owner)
                             )
                         }
                     end if

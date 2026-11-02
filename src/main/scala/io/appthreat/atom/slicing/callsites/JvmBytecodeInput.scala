@@ -363,10 +363,23 @@ sealed private[callsites] trait JvmBytecodeInput:
     */
   def lineTablesFor(boundary: AppBoundary): LineTables = readLineTables(boundary)
 
+  /** The Maven artifacts the input bundles (atom#329): package prefix to `group:artifact:version`.
+    */
+  lazy val artifacts: Map[String, (String, String, String)] =
+      ArtifactMap.fromMetaEntries(metaEntries, classPackages)
+
   /** The `invokedynamic` sites of every class, for the method-handle records (atom#327). Empty for
     * Dalvik inputs, which the oracle leaves to `invoke-custom`.
     */
   lazy val bootstraps: Map[String, List[JvmIndySite]] = readBootstraps
+
+  /** The packages of every class of the input, which decide whether a `pom.properties` matches its
+    * artifact.
+    */
+  lazy val classPackages: Set[String] = classes.keySet.map(packageOf)
+
+  /** The `META-INF` entries of the input, read for the artifact map (atom#329). */
+  protected def metaEntries: List[(String, Array[Byte])] = Nil
 
   protected def readClasses: Map[String, JvmClassInfo]
   protected def readLineTables(boundary: AppBoundary): LineTables
@@ -471,6 +484,13 @@ private final class ApkInput(val path: java.nio.file.Path, nested: Boolean)
 
   protected def readBootstraps: Map[String, List[JvmIndySite]] = Map.empty
 
+  override protected def metaEntries: List[(String, Array[Byte])] =
+      withZip { zip =>
+          zip.entries().asScala
+              .filter(_.getName.startsWith("META-INF/"))
+              .map(e => e.getName -> zip.getInputStream(e).readAllBytes())
+              .toList
+      }
 end ApkInput
 
 /** A bare `.dex` file: no manifest, so the boundary is empty unless `--app-prefix` names one. */
@@ -539,6 +559,13 @@ private final class JarInput(val path: java.nio.file.Path) extends JvmBytecodeIn
   protected def readBootstraps: Map[String, List[JvmIndySite]] =
       classBytes.flatMap(entry => ClassFileReader.bootstraps(entry._2)).toMap
 
+  override protected def metaEntries: List[(String, Array[Byte])] =
+      withJar(jar =>
+          jar.entries().asScala
+              .filter(_.getName.startsWith("META-INF/"))
+              .map(e => e.getName -> jar.getInputStream(e).readAllBytes())
+              .toList
+      )
 end JarInput
 
 /** A directory of class files: every class of it is application code (the oracle's `--app-all`). */
@@ -598,6 +625,50 @@ private[callsites] object JarPrefixes:
     kept.foreach { p => if !out.exists(o => p.startsWith(o + ".")) then out.addOne(p) }
     if out.isEmpty && counts.nonEmpty then List(counts.maxBy((_, c) => c)._1)
     else out.toList
+
+/** The Maven artifacts an input bundles (atom#329), from its `META-INF` entries. */
+private[callsites] object ArtifactMap:
+
+  /** `META-INF` files named `<group>_<artifact>.version` (`androidx.core_core.version`) and
+    * `pom.properties` files under `META-INF/maven` (any artifact subdirectory). A `pom.properties`
+    * matches when a class package equals its groupId, or its artifactId with the hyphens dotted; a
+    * `.version` file names its artifact in the file name (`group_artifact.version`). Shaded and
+    * relocated classes belong to the jar that carries the metadata.
+    */
+  def fromMetaEntries(
+    entries: List[(String, Array[Byte])],
+    classPackages: Set[String]
+  ): Map[String, (String, String, String)] =
+    val table = mutable.HashMap.empty[String, (String, String, String)]
+    entries.foreach { (name, bytes) =>
+      val base = name.split('/').last
+      if base.endsWith(".version") && base.contains("_") && name.count(_ == '/') == 1 then
+        base.stripSuffix(".version").split("_", 2) match
+          case Array(group, artifact) if group.contains('.') =>
+              table.update(group, (group, artifact, ""))
+          case _ => ()
+      else if name.startsWith("META-INF/maven/") && name.endsWith("/pom.properties") then
+        parseProperties(bytes).foreach { (group, artifact, version) =>
+          val candidates = List(group, artifact.replace('-', '.'))
+          if candidates.exists(c =>
+                classPackages.exists(p => p == c || p.startsWith(c + "."))
+            )
+          then table.update(group, (group, artifact, version))
+        }
+    }
+    table.toMap
+  end fromMetaEntries
+
+  private def parseProperties(bytes: Array[Byte]): Option[(String, String, String)] =
+      Try {
+          val props = new java.util.Properties()
+          props.load(new java.io.ByteArrayInputStream(bytes))
+          val group    = props.getProperty("groupId", "")
+          val artifact = props.getProperty("artifactId", "")
+          val version  = props.getProperty("version", "")
+          Option.when(group.nonEmpty && artifact.nonEmpty)((group, artifact, version))
+      }.toOption.flatten
+end ArtifactMap
 
 /** Reads the binary `AndroidManifest.xml` of an APK with the AXML reader soot pulls in. */
 private[callsites] object ManifestReader:
