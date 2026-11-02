@@ -1,0 +1,19 @@
+src/test/scala/io/appthreat/atom/RubyCallSitesTests.scala
+  s_79a7c562b49300::t_7fadf7a4be0f21 5,44-57,59-60,103,176,194,209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d9a980bdd7db73a585aa9cc62dcb89b08aac7dc9",
+  "prompts": {},
+  "sessions": {
+    "s_79a7c562b49300": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e06ad8c2-0767-47dd-913e-35689e5f05ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
