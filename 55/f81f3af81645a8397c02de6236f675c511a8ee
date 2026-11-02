@@ -1,0 +1,64 @@
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_44fb47caf42af9::t_9f8b9daafbf8b6 1135
+  s_c0804e5357f0c5::t_2028ab1cfb81d3 1136-1137,1140-1154
+src/main/resources/META-INF/native-image/resource-config.json
+  s_c0804e5357f0c5::t_2c398257158997 1
+src/main/resources/callsites/android-platform-packages.txt
+  s_c0804e5357f0c5::t_242347c71bb74d 1-2,9-12,17-21,25-34,38-52,55,57,59-63,65,67,72-79,81-97,100-101,103-111,114-130,132-133,136-139,142,147,149-169,171,175-183,185-188,191,193-202,205,208,211,215-219,223-229,231-234,238-241,243-254,256-259,261-266,269-277,279-285
+src/main/resources/callsites/jdk-runtime-packages.txt
+  s_c0804e5357f0c5::t_3c67c980a19b17 1-903
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteRecord.scala
+  s_c0804e5357f0c5::t_86b920b3527a2d 67-70,72,74
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteSource.scala
+  s_c0804e5357f0c5::t_54187b2c4fc5af 69,111,123-128
+src/main/scala/io/appthreat/atom/slicing/callsites/JvmAppBoundary.scala
+  s_c0804e5357f0c5::t_c31f6c4fab96ad 42,127,136-138,150,156,158-162,169,173
+src/main/scala/io/appthreat/atom/slicing/callsites/JvmBytecodeCallSiteSource.scala
+  s_c0804e5357f0c5::t_1e694cfec983a1 46-48,122-123,127,143-147,157-162,164,169-173,176-177,187-189,191-193,195,197-199,201-204,234-236,245-254,258-260,328-330,335,342,344,352,358,362-382,386-405,410,415-424,453,455-468,471-477,480,546,563
+src/main/scala/io/appthreat/atom/slicing/callsites/JvmBytecodeInput.scala
+  s_79a7c562b49300::t_d0e7222700c9c2 25-27,31-32,223-232,243-246,248,324-328,343,378,386-389,393-399,405,414-415,420,433,453-454,473-475,477-480,483-484,487-489,491,508-528,549-550,570-571,588-592,659-665,685-702,730-872
+src/test/resources/jvm-callsites/dex/PROVENANCE.md
+  s_c0804e5357f0c5::t_e9844aa88d7c2d 4-5
+src/test/resources/jvm-callsites/src/me/app/App.java
+  s_c0804e5357f0c5::t_7d0a9e6882641a 57-62
+src/test/resources/jvm-callsites/src/me/app/AppSub.java
+  s_c0804e5357f0c5::t_811fb65848cb40 12-15
+src/test/resources/jvm-callsites/src/me/lib/LibGrand.java
+  s_c0804e5357f0c5::t_ba73ae3f9ae9e2 8-11
+src/test/scala/io/appthreat/atom/BytecodeCallSitesTests.scala
+  s_c0804e5357f0c5::t_3252493713e8ce 202-203,205-211,225-243,269-276,285-292,426,435-444
+src/test/scala/io/appthreat/atom/slicing/callsites/JvmBytecodeInputTests.scala
+  s_c0804e5357f0c5::t_c2b99cd3ecb2ef 62-239
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "55f81f3af81645a8397c02de6236f675c511a8ee",
+  "prompts": {},
+  "sessions": {
+    "s_44fb47caf42af9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_da6a6234-7f45-488d-882a-2620703267d5",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_79a7c562b49300": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e06ad8c2-0767-47dd-913e-35689e5f05ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_c0804e5357f0c5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75227701-fd30-4fc7-8eae-71a8df8f3a1c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
