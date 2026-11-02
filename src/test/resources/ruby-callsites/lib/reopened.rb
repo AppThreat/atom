@@ -27,3 +27,12 @@ class Kernelish
     (..10).cover?(value)
   end
 end
+
+class JSON::LD::Context
+  def term(name)
+    TermDefinition.new(name)
+    JSON::LD::API.expand(name)
+    Net::LDAP.new
+    JSON::ParserError
+  end
+end

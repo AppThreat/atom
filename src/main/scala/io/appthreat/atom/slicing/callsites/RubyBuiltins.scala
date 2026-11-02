@@ -33,10 +33,15 @@ private[callsites] object RubyBuiltins:
   /** The entry of exactly this constant path. */
   def exact(path: List[String]): Option[Entry] = entries.get(path.mkString("::"))
 
-  /** Whether the longest known prefix of the path (up to four names) is a core or standard library
-    * constant: `JSON::ParserError`, `Net::HTTP::Post`, and `File::SEPARATOR`, whose own name the
-    * list may not carry but whose owner it does.
+  /** Whether the path is a core or standard library constant: one the list names
+    * (`JSON::ParserError`, `File::SEPARATOR`), or one under a class it names
+    * (`Net::HTTP::Post::Deep`, past the list's depth). Under a module it does not name, the
+    * constant is a gem's: gems add to the library's namespaces (`JSON::LD` is json-ld's,
+    * `Net::LDAP` net-ldap's).
     */
   def contains(path: List[String]): Boolean =
-      (math.min(path.size, Depth) to 1 by -1).exists(k => exact(path.take(k)).isDefined)
+      (math.min(path.size, Depth) to 1 by -1).iterator
+          .flatMap(k => exact(path.take(k)).map(k -> _))
+          .nextOption()
+          .exists((k, entry) => k == path.size || entry.kind == 'c')
 end RubyBuiltins

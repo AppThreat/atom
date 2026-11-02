@@ -157,7 +157,9 @@ class RubyCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
           // Admin::Account` is lowered under a namespace block, `Migration[7.2]` calls `[]` on its
           // constant, `StandardError` is a bundled superclass and `::Thread` an absolute core class
           if !atomRan then cancel("the Ruby fixture run failed")
-          records.filter(_.file == "reopened.rb").map(_.copy(file = "")) shouldBe List(
+          records.filter(r => r.file == "reopened.rb" && r.line < 30).map(
+            _.copy(file = "")
+          ) shouldBe List(
             Rec(2, 21, "Paperclip::Processor", "", "extends", "binding", false, ""),
             Rec(6, 23, "ActiveModel::Serializer", "", "extends", "binding", false, ""),
             Rec(9, 17, "ActiveRecord::Migration", "[]", "call", "binding", false, ""),
@@ -167,11 +169,28 @@ class RubyCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
           )
       }
 
+      "find a gem's constants in a library namespace the project reopens, which are not builtin" in {
+          // `class JSON::LD::Context` reopens json-ld's class under the standard library's `JSON`.
+          // `JSON::LD::API` and `Net::LDAP` are gems' additions to library modules, while
+          // `JSON::ParserError` is the library's. Without json-ld's sources nothing tells that
+          // `TermDefinition` is the reopened class's own, so it stays as written.
+          if !atomRan then cancel("the Ruby fixture run failed")
+          records.filter(r => r.file == "reopened.rb" && r.line > 30).map(
+            _.copy(file = "")
+          ) shouldBe
+              List(
+                Rec(33, 4, "TermDefinition", "new", "new", "binding", false, ""),
+                Rec(34, 4, "JSON::LD::API", "expand", "call", "binding", false, ""),
+                Rec(35, 4, "Net::LDAP", "new", "new", "binding", false, ""),
+                Rec(36, 4, "JSON::ParserError", "", "ref", "binding", true, "")
+              )
+      }
+
       "emit no record for a constant the parser makes up while it lowers" in {
           // `lib/reopened.rb` from line 22: `Array(value)` calls a Kernel function, `raise "boom"`
           // raises a StandardError nobody named and `(..10)` has no Float::INFINITY written
           if !atomRan then cancel("the Ruby fixture run failed")
-          records.filter(r => r.file == "reopened.rb" && r.line >= 22) shouldBe Nil
+          records.filter(r => r.file == "reopened.rb" && r.line >= 22 && r.line < 30) shouldBe Nil
       }
 
       "emit no record for a require line, a project class, an autoloaded constant or a DSL call" in {
