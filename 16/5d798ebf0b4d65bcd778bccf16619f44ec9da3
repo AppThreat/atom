@@ -1,0 +1,32 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/JvmBytecodeInput.scala
+  s_44fb47caf42af9::t_80b4f1c80ac839 367,370,630-631,637-645,650-668,670-671
+  s_44fb47caf42af9::t_39cce7f5c4cac4 366,368-369,376-383,487-493,562-568,629,646-649,669
+  s_44fb47caf42af9::t_d66c6c7164847e 632-636
+  s_44fb47caf42af9::t_744bef2999f7f0 672
+src/main/scala/io/appthreat/atom/slicing/callsites/JvmBytecodeCallSiteSource.scala
+  s_44fb47caf42af9::t_f2d1826dee5ee3 313
+  s_44fb47caf42af9::t_731e3e2cf2af23 248,253-255,258-265,442
+  s_44fb47caf42af9::t_add2ded684e5b4 249-252,256-257,410,514
+  s_44fb47caf42af9::t_02e5c3df2c7b0b 314,411,443,515,569-570
+src/main/scala/io/appthreat/atom/slicing/callsites/JvmAppBoundary.scala
+  s_44fb47caf42af9::t_790b2fd7d1ef43 116
+  s_44fb47caf42af9::t_921386ba288be1 130,142
+  s_44fb47caf42af9::t_493ed07d3bff4f 14
+  s_44fb47caf42af9::t_14fd24a9be590d 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "165d798ebf0b4d65bcd778bccf16619f44ec9da3",
+  "prompts": {},
+  "sessions": {
+    "s_44fb47caf42af9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_da6a6234-7f45-488d-882a-2620703267d5",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
