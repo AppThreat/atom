@@ -601,11 +601,33 @@ object Atom:
               case _                  => c
         )
     opt[String]("android-sdk")
-        .text("Path to android.jar for APK analysis. (Jimple/Android only)")
+        .text(
+          "Path to android.jar, a platform directory holding it, or an SDK directory. (Jimple/Android only)"
+        )
+        .validate(x =>
+            resolveAndroidSdk(x) match
+              case Left(err) => failure(err)
+              case Right(_)  => success
+        )
         .action((x, c) =>
             c match
-              case config: AtomConfig => config.withFrontendArg("android", x)
-              case _                  => c
+              case config: AtomConfig =>
+                  // validated above: the path resolves to an android.jar
+                  val jar = resolveAndroidSdk(x) match
+                    case Right(resolved) => resolved
+                    case Left(_)         => x
+                  config.withFrontendArg("android", jar)
+              case _ => c
+        )
+    opt[String]("app-prefix")
+        .text(
+          "Application package of a bytecode input; repeatable. Replaces the boundary the APK or jar manifest would give, and the jar's package prefixes. (Jimple only)"
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig =>
+                  config.withAppPrefixes(config.appPrefixes.getOrElse(Nil) :+ x)
+              case _ => c
         )
     opt[Int]("solver-depth")
         .text("Recursive jar unpacking depth (default: 1). (Jimple/Scala only)")
@@ -1077,6 +1099,60 @@ object Atom:
             BatchedUpdate.applyDiff(atom.graph, diff)
       }
 
+  /** `--android-sdk` takes the `android.jar` file; a directory is accepted when it holds one,
+    * either directly (a platform directory) or under `platforms/<name>` (an SDK root, whose newest
+    * platform is used). Everything else is an error the run can read (atom#328).
+    */
+  private[atom] def resolveAndroidSdk(path: String): Either[String, String] =
+    val f = File(path)
+    if !f.exists then Left(s"Path does not exist at `$path`, exiting.")
+    else if f.isRegularFile then Right(path)
+    else
+      val direct = f / "android.jar"
+      val platform =
+          if (f / "platforms").isDirectory then
+            (f / "platforms").list.toList
+                .filter(p => p.isDirectory && (p / "android.jar").isRegularFile)
+                .sortBy(p => platformOrder(p.name))
+                .lastOption
+                .map(_ / "android.jar")
+          else None
+      val candidates = List(Option(direct).filter(_.isRegularFile), platform).flatten
+      candidates match
+        case jar :: _ => Right(jar.pathAsString)
+        case Nil =>
+            Left(
+              s"`$path` holds no android.jar. Pass the android.jar file, a platform directory that contains one, or an SDK directory with platforms/<name>/android.jar."
+            )
+  end resolveAndroidSdk
+
+  /** The number after `android-`, so that android-9 sorts below android-35. */
+  private def platformOrder(name: String): Int =
+      name.stripPrefix("android-").toIntOption.getOrElse(Int.MinValue)
+
+  /** The application boundary of a bytecode input (atom#326), computed once and carried by the atom
+    * as a config file, so the runs that reuse the atom read it instead of re-reading the input.
+    * `--app-prefix` overrides it for the run without replacing the stored value. Only the runs that
+    * write a callsites slice pay for the read; a later callsites run on an atom built without it
+    * computes and stores the boundary then.
+    */
+  private def storeAppBoundary(config: AtomConfig, ag: Cpg): Either[String, Unit] =
+    val writesCallsites = config match
+      case _: AtomCallsitesConfig => true
+      case u: AtomUsagesConfig    => u.alsoCallsites.isDefined
+      case _                      => false
+    if writesCallsites then
+      ag.metaData.language.headOption match
+        case Some(lang) if lang == Languages.JAVA =>
+            slicing.callsites.JvmAppBoundary.boundaryOf(
+              ag,
+              slicing.callsites.JvmAppBoundary.inputOf(ag),
+              config.appPrefixes
+            )
+            Right(())
+        case _ => Right(())
+    else Right(())
+
   private def newAtomCreatedString(config: AtomConfig): String =
     val absolutePath = config.outputAtomFile.path.toAbsolutePath
     if config.removeAtom then
@@ -1191,7 +1267,7 @@ object Atom:
       case u: AtomUsagesConfig if u.alsoCallsites.isDefined =>
           PerfReporter.stage("slicing.callsites", "slicing") {
               val callsitesFile = u.alsoCallsites.get
-              val callSites     = CallSiteSlicing.calculateCallSitesSlice(ag)
+              val callSites     = CallSiteSlicing.calculateCallSitesSlice(ag, config.appPrefixes)
               SliceFiles.writeAtomically(callsitesFile)(callSites.toJsonFile)
               println(
                 s"Call sites have been successfully written to ${callsitesFile.pathAsString}"
@@ -1212,7 +1288,7 @@ object Atom:
   private def generateCallsitesSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
     println("Slicing the atom for call sites. This might take a few minutes ...")
     runChennaiTags(config, ag)
-    val slice = CallSiteSlicing.calculateCallSitesSlice(ag)
+    val slice = CallSiteSlicing.calculateCallSitesSlice(ag, config.appPrefixes)
     SliceFiles.writeAtomically(config.outputSliceFile)(slice.toJsonFile)
     println(s"Call sites have been successfully written to ${config.outputSliceFile.pathAsString}")
     Right("Call sites slice generated successfully")
@@ -1417,6 +1493,7 @@ object Atom:
           else
             for
               _ <- storeBoms(config, ag)
+              _ <- storeAppBoundary(config, ag)
               _ <- enhanceCpg(config, ag, reusing)
               _ <- generateSlice(config, ag)
               _ <- PerfReporter.stage("verification.persist", "verification")(closeCpg(ag))

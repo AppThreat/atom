@@ -187,10 +187,38 @@ package object slicing:
 
     def toJsonPretty: String = this.asJson.spaces2
 
-  case class ProgramCallSites(callsites: List[CallSiteRecord]) extends ProgramSlice:
-    def toJson: String = this.asJson.noSpaces
+  /** What the bytecode source reports beside its records: the application boundary it used and the
+    * synthetic (R8-compacted) line tables it counted (atom#326, atom#328). The other sources carry
+    * none, and the slice JSON keeps its shape for them.
+    */
+  case class CallSitesMetadata(
+    appPrefixes: List[String],
+    appAll: Boolean,
+    boundarySource: String,
+    syntheticLineTables: Int,
+    methodsWithLineTables: Int,
+    lineQuality: String,
+    sourceFileGuesses: Int
+  )
 
-    def toJsonPretty: String = this.asJson.spaces2
+  object CallSitesMetadata:
+    implicit val encoder: Encoder[CallSitesMetadata] =
+        io.circe.generic.semiauto.deriveEncoder[CallSitesMetadata]
+
+  case class ProgramCallSites(
+    callsites: List[CallSiteRecord],
+    metadata: Option[CallSitesMetadata] = None
+  ) extends ProgramSlice:
+    def toJson: String = ProgramCallSites.toJsonValue(this).noSpaces
+
+    def toJsonPretty: String = ProgramCallSites.toJsonValue(this).spaces2
+
+  object ProgramCallSites:
+    private def toJsonValue(p: ProgramCallSites): Json =
+        p.metadata match
+          case None => Json.obj("callsites" -> p.callsites.asJson)
+          case Some(meta) =>
+              Json.obj("callsites" -> p.callsites.asJson, "metadata" -> meta.asJson)
 
   implicit val encodeDataFlowSlice: Encoder[DataFlowSlice] =
       Encoder.instance { case DataFlowSlice(nodes, edges) =>

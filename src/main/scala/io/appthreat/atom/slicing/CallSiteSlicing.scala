@@ -9,5 +9,9 @@ import io.shiftleft.codepropertygraph.Cpg
   */
 object CallSiteSlicing:
 
-  def calculateCallSitesSlice(atom: Cpg): ProgramCallSites =
-      CallSiteSource.forAtom(atom).calculate()
+  def calculateCallSitesSlice(
+    atom: Cpg,
+    appPrefixes: Option[Seq[String]] = None
+  ): ProgramCallSites =
+    val source = CallSiteSource.forAtom(atom, appPrefixes)
+    source.calculate().copy(metadata = source.metadata)
