@@ -1,0 +1,38 @@
+src/test/scala/io/appthreat/atom/BytecodeCallSitesTests.scala
+  s_44fb47caf42af9::t_2406d2d678ffa5 1-344
+  s_44fb47caf42af9::t_2dba81473338cd 345-377
+src/test/resources/jvm-callsites/dex/Dexy.java
+  s_44fb47caf42af9::t_db725a79c2060c 1-8
+src/test/resources/jvm-callsites/dex/LibDex.java
+  s_44fb47caf42af9::t_150b66a75eedbf 1-8
+src/test/resources/jvm-callsites/dex/PROVENANCE.md
+  s_44fb47caf42af9::t_d06d1ac6669a3e 1-11
+src/test/resources/jvm-callsites/meta/META-INF/maven/me.lib/lib-lib/pom.properties
+  s_44fb47caf42af9::t_3bda7dd1ee3f3a 1-3
+src/test/resources/jvm-callsites/src/me/app/App.java
+  s_44fb47caf42af9::t_11491040433e1d 1-49
+src/test/resources/jvm-callsites/src/me/app/AppBase.java
+  s_44fb47caf42af9::t_6bbe096bc1963a 1-10
+src/test/resources/jvm-callsites/src/me/app/AppSub.java
+  s_44fb47caf42af9::t_a62b46622c0c2a 1-12
+src/test/resources/jvm-callsites/src/me/lib/Lib.java
+  s_44fb47caf42af9::t_5ea461c01e7c82 1-28
+src/test/resources/jvm-callsites/src/me/lib/LibGrand.java
+  s_44fb47caf42af9::t_671ef5eea9b13b 1-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4bc5c62ee555c0dde0e25a3b30582ac14127a249",
+  "prompts": {},
+  "sessions": {
+    "s_44fb47caf42af9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_da6a6234-7f45-488d-882a-2620703267d5",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
