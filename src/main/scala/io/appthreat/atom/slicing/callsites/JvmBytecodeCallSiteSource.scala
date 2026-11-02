@@ -142,6 +142,16 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
     member: String,
     isField: Boolean
   ): Option[(String, Boolean)] =
+      resolvedOwners.getOrElseUpdate((owner, member, isField), walkOwner(owner, member, isField))
+
+  private val resolvedOwners =
+      mutable.HashMap.empty[(String, String, Boolean), Option[(String, Boolean)]]
+
+  private def walkOwner(
+    owner: String,
+    member: String,
+    isField: Boolean
+  ): Option[(String, Boolean)] =
     val decls = if isField then declaredFields else declaredMethods
     val seen  = mutable.Set.empty[String]
     val queue = mutable.Queue.empty[String]
@@ -163,7 +173,7 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
       case single :: rest if rest.isEmpty => Some((single, true))
       case first :: _                     => Some((first, false))
       case Nil                            => Some(("java.lang.Object", true))
-  end resolveOwner
+  end walkOwner
 
   // -------------------------------------------------------------------------------------- builtin
   private val jdkPackages: Set[String] =
@@ -250,7 +260,11 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
     * claiming prefix names exactly one artifact (atom#321, atom#329). Builtins are nobody's
     * artifact.
     */
-  private def purlOf(cls: String): String =
+  private def purlOf(cls: String): String = purls.getOrElseUpdate(cls, claimingPurl(cls))
+
+  private val purls = mutable.HashMap.empty[String, String]
+
+  private def claimingPurl(cls: String): String =
       if cls.isEmpty then ""
       else
         index.artifacts
@@ -394,7 +408,10 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
               val file = fileOfCaller(callerCls)
               if file.isEmpty then collector.skip(c)
               else
-                val isNew  = member == "<init>"
+                val isInit = member == "<init>"
+                // `super(...)` in a constructor runs the parent's constructor on `this`: no
+                // object is allocated, so it is a reference to the parent, not a `new`
+                val isNew  = isInit && !isSuperConstructor(c, method)
                 val static = c.dispatchType == DispatchTypes.STATIC_DISPATCH
                 collector.add(c) {
                     CallSiteRecord(
@@ -403,16 +420,37 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
                       col,
                       method.fullName,
                       owner,
-                      if isNew then "<init>" else member,
-                      if isNew then "new" else "call",
-                      if isNew || static then "binding" else "type",
+                      if isInit then "<init>" else member,
+                      if isNew then "new" else if isInit then "ref" else "call",
+                      if isInit || static then "binding" else "type",
                       c.methodFullName,
                       builtin = builtinLabel(owner).isDefined,
                       purl = purlOf(owner)
                     )
                 }
+              end if
             end if
   end recordCall
+
+  /** A constructor call in a constructor on a receiver no `new` of that method allocated: the
+    * `super(...)` call on `this`, whatever name the frontend gives the `this` local.
+    */
+  private def isSuperConstructor(c: Call, method: Method): Boolean =
+      method.name == "<init>" && c.argument.argumentIndex(0).exists {
+          case i: Identifier => !allocatedIn(method).contains(i.name)
+          case _             => false
+      }
+
+  /** The locals a method assigns from an allocation (`$r1 = new X`), by method. */
+  private def allocatedIn(method: Method): Set[String] =
+      allocated.getOrElseUpdate(
+        method.fullName,
+        method.call.nameExact("<operator>.assignment").filter(
+          _.argument.argumentIndex(2).isCall.nameExact("<operator>.alloc").nonEmpty
+        ).argument.argumentIndex(1).isIdentifier.name.toSet
+      )
+
+  private val allocated = mutable.HashMap.empty[String, Set[String]]
 
   /** The method handles a JVM `invokedynamic` bootstraps, by their handle's kind at the
     * `invokedynamic` line (atom#327). Concatenation has no handle in its bootstrap, and the dummy
@@ -427,23 +465,30 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
             else
               val file = fileOfCaller(callerCls)
               site.handles.foreach { h =>
-                  if file.nonEmpty then
-                    collector.add(c) {
-                        CallSiteRecord(
-                          file,
-                          line,
-                          col,
-                          method.fullName,
-                          h.owner,
-                          h.name,
-                          h.kind,
-                          h.via,
-                          s"${h.owner}.${h.name}",
-                          builtin = builtinLabel(h.owner).isDefined,
-                          purl = purlOf(h.owner)
-                        )
-                    }
-                  else collector.skip(c)
+                // a handle on an app class (a lambda body, `App::helper`) is the app's own code
+                // unless the member is inherited from outside, as for a call
+                val owner =
+                    if !isAppClass(h.owner) then Some(h.owner)
+                    else if h.kind == "new" then None
+                    else resolveOwner(h.owner, h.name, isField = h.kind == "ref").map(_._1)
+                owner match
+                  case Some(o) if file.nonEmpty =>
+                      collector.add(c) {
+                          CallSiteRecord(
+                            file,
+                            line,
+                            col,
+                            method.fullName,
+                            o,
+                            h.name,
+                            h.kind,
+                            h.via,
+                            s"${o}.${h.name}",
+                            builtin = builtinLabel(o).isDefined,
+                            purl = purlOf(o)
+                          )
+                      }
+                  case _ => collector.skip(c)
               }
             end if
   end handleInvokeDynamic

@@ -629,34 +629,44 @@ private[callsites] object JarPrefixes:
 /** The Maven artifacts an input bundles (atom#329), from its `META-INF` entries. */
 private[callsites] object ArtifactMap:
 
-  /** `META-INF` files named `<group>_<artifact>.version` (`androidx.core_core.version`) and
-    * `pom.properties` files under `META-INF/maven` (any artifact subdirectory). A `pom.properties`
-    * matches when a class package equals its groupId, or its artifactId with the hyphens dotted; a
-    * `.version` file names its artifact in the file name (`group_artifact.version`). Shaded and
+  /** `META-INF` files named `<group>_<artifact>.version` (`androidx.core_core.version`, whose
+    * content is the version) and `pom.properties` files under `META-INF/maven` (any artifact
+    * subdirectory). A `pom.properties` claims the package that equals its groupId, or else its
+    * artifactId with the hyphens dotted, when the input has classes there; a `.version` file claims
+    * its group. A package claimed by two different artifacts (the many `androidx.lifecycle_*`
+    * files) is dropped: a purl is only given when exactly one artifact claims it. Shaded and
     * relocated classes belong to the jar that carries the metadata.
     */
   def fromMetaEntries(
     entries: List[(String, Array[Byte])],
     classPackages: Set[String]
   ): Map[String, (String, String, String)] =
-    val table = mutable.HashMap.empty[String, (String, String, String)]
-    entries.foreach { (name, bytes) =>
+    val claims = mutable.LinkedHashMap.empty[String, List[(String, String, String)]]
+    def claim(prefix: String, coords: (String, String, String)): Unit =
+        claims.update(prefix, claims.getOrElse(prefix, Nil) :+ coords)
+    def hasClasses(prefix: String): Boolean =
+        classPackages.exists(p => p == prefix || p.startsWith(prefix + "."))
+    entries.sortBy(_._1).foreach { (name, bytes) =>
       val base = name.split('/').last
       if base.endsWith(".version") && base.contains("_") && name.count(_ == '/') == 1 then
         base.stripSuffix(".version").split("_", 2) match
           case Array(group, artifact) if group.contains('.') =>
-              table.update(group, (group, artifact, ""))
+              val version = new String(bytes, java.nio.charset.StandardCharsets.UTF_8).trim
+              claim(group, (group, artifact, if version.contains('\n') then "" else version))
           case _ => ()
       else if name.startsWith("META-INF/maven/") && name.endsWith("/pom.properties") then
         parseProperties(bytes).foreach { (group, artifact, version) =>
-          val candidates = List(group, artifact.replace('-', '.'))
-          if candidates.exists(c =>
-                classPackages.exists(p => p == c || p.startsWith(c + "."))
+            List(group, artifact.replace('-', '.')).find(hasClasses).foreach(prefix =>
+                claim(prefix, (group, artifact, version))
             )
-          then table.update(group, (group, artifact, version))
         }
     }
-    table.toMap
+    // one artifact may be named twice (a `.version` file and its `pom.properties`); keep the one
+    // with a version, and drop the packages two artifacts claim
+    claims.view.mapValues { all =>
+      val artifacts = all.groupBy((g, a, _) => (g, a))
+      Option.when(artifacts.size == 1)(all.maxBy(_._3.length))
+    }.collect { case (prefix, Some(coords)) => prefix -> coords }.toMap
   end fromMetaEntries
 
   private def parseProperties(bytes: Array[Byte]): Option[(String, String, String)] =
@@ -716,25 +726,37 @@ end ManifestReader
 private[callsites] object ClassFileReader:
 
   def classInfosOfPath(file: java.nio.file.Path): List[JvmClassInfo] =
-      withBytes(file)(bytes => classInfos(bytes))
+      withBytes(file, Nil)(bytes => classInfos(bytes))
 
   def lineTablesOfPath(file: java.nio.file.Path, isApp: String => Boolean): LineTables =
-      withBytes(file)(bytes => lineTables(bytes, isApp))
+      withBytes(file, LineTables.empty)(bytes => lineTables(bytes, isApp))
 
   def bootstrapsOfPath(file: java.nio.file.Path): Map[String, List[JvmIndySite]] =
-      withBytes(file)(bytes => bootstraps(bytes))
+      withBytes(file, Map.empty)(bytes => bootstraps(bytes))
 
-  private def withBytes[A](file: java.nio.file.Path)(f: Array[Byte] => A): A =
-      f(java.nio.file.Files.readAllBytes(file))
+  private def withBytes[A](file: java.nio.file.Path, orElse: A)(f: Array[Byte] => A): A =
+      Try(java.nio.file.Files.readAllBytes(file)).map(bytes => readOr(orElse)(f(bytes)))
+          .getOrElse(orElse)
+
+  /** `read`, or `orElse` when the class file is truncated or malformed: one unreadable class costs
+    * its own entries, never the slice.
+    */
+  private def readOr[A](orElse: A)(read: => A): A =
+      try read
+      catch
+        case NonFatal(e) =>
+            JvmBytecodeInput.log.debug(s"callsites: could not read a class file: $e")
+            orElse
 
   private def classReader(bytes: Array[Byte]): org.objectweb.asm.ClassReader =
       new org.objectweb.asm.ClassReader(bytes)
 
   /** The class's name and `SourceFile` attribute (`SKIP_CODE`: one pass, no bodies). */
-  def classInfos(bytes: Array[Byte]): List[JvmClassInfo] =
-    val cn = new SourceReader
-    classReader(bytes).accept(cn, org.objectweb.asm.ClassReader.SKIP_CODE)
-    List(JvmBytecodeInput.classInfoOf(cn.className, cn.source))
+  def classInfos(bytes: Array[Byte]): List[JvmClassInfo] = readOr(Nil) {
+      val cn = new SourceReader
+      classReader(bytes).accept(cn, org.objectweb.asm.ClassReader.SKIP_CODE)
+      List(JvmBytecodeInput.classInfoOf(cn.className, cn.source))
+  }
 
   /** The oracle's rule over the app class's methods' `LineNumberTable`, read straight from the
     * class file: the start program counters of the table are read raw, which no visitor callback
@@ -742,17 +764,21 @@ private[callsites] object ClassFileReader:
     * tables point past the current position).
     */
   def lineTables(bytes: Array[Byte], isApp: String => Boolean): LineTables =
-    val parsed = JvmBytecodeInput.JvmClassFile.read(bytes)
-    if isApp(parsed.name) then JvmBytecodeInput.countSynthetic(parsed.tables) else LineTables.empty
+      readOr(LineTables.empty) {
+          val parsed = JvmBytecodeInput.JvmClassFile.read(bytes)
+          if isApp(parsed.name) then JvmBytecodeInput.countSynthetic(parsed.tables)
+          else LineTables.empty
+      }
 
   /** The handles every `invokedynamic` of the class bootstraps, keyed by class, in instruction
     * order. The oracle reads them from the class file's `BootstrapMethods` through `javap`: the
     * handles of the bootstrap's method arguments, never the bootstrap handle itself.
     */
-  def bootstraps(bytes: Array[Byte]): Map[String, List[JvmIndySite]] =
-    val cn = new IndyReader
-    classReader(bytes).accept(cn, 0)
-    if cn.sites.isEmpty then Map.empty else Map(cn.className.toString -> cn.sites.toList)
+  def bootstraps(bytes: Array[Byte]): Map[String, List[JvmIndySite]] = readOr(Map.empty) {
+      val cn = new IndyReader
+      classReader(bytes).accept(cn, 0)
+      if cn.sites.isEmpty then Map.empty else Map(cn.className.toString -> cn.sites.toList)
+  }
 
   /** Collects the class's name and `SourceFile` attribute in one pass over the header. */
   private class SourceReader extends org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9):
@@ -808,13 +834,15 @@ end ClassFileReader
 private[callsites] object DexReader:
 
   def classInfos(bytes: Array[Byte]): List[JvmClassInfo] =
-      withDex(bytes)(JvmBytecodeInput.dexClassInfos)
+      withDex(bytes, Nil)(JvmBytecodeInput.dexClassInfos)
 
   def lineTables(bytes: Array[Byte], isApp: String => Boolean): LineTables =
-      withDex(bytes)(dex => JvmBytecodeInput.dexLineTables(dex, isApp))
+      withDex(bytes, LineTables.empty)(dex => JvmBytecodeInput.dexLineTables(dex, isApp))
 
-  private def withDex[A](bytes: Array[Byte])(f: com.android.tools.smali.dexlib2.iface.DexFile => A)
-    : A =
+  /** `f` over the dex, or `orElse` when the bytes are no readable dex. */
+  private def withDex[A](bytes: Array[Byte], orElse: A)(
+    f: com.android.tools.smali.dexlib2.iface.DexFile => A
+  ): A =
       try
         val dex = new com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile(
           com.android.tools.smali.dexlib2.Opcodes.getDefault,
@@ -824,5 +852,5 @@ private[callsites] object DexReader:
       catch
         case NonFatal(e) =>
             JvmBytecodeInput.log.warn(s"callsites: could not read a dex input: $e")
-            null.asInstanceOf[A]
+            orElse
 end DexReader

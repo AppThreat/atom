@@ -601,7 +601,9 @@ object Atom:
               case _                  => c
         )
     opt[String]("android-sdk")
-        .text("Path to android.jar or to the platform directory holding it. (Jimple/Android only)")
+        .text(
+          "Path to android.jar, a platform directory holding it, or an SDK directory. (Jimple/Android only)"
+        )
         .validate(x =>
             resolveAndroidSdk(x) match
               case Left(err) => failure(err)
@@ -619,7 +621,7 @@ object Atom:
         )
     opt[String]("app-prefix")
         .text(
-          "Application package(s) of a bytecode input; repeatable. Replaces the boundary the APK or jar manifest would give, and the jar's package prefixes. (Jimple/Android only)"
+          "Application package of a bytecode input; repeatable. Replaces the boundary the APK or jar manifest would give, and the jar's package prefixes. (Jimple only)"
         )
         .action((x, c) =>
             c match

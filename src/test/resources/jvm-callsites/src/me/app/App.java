@@ -46,4 +46,12 @@ public class App {
     Predicate<String> handle() {
         return String::isEmpty;
     }
+
+    java.util.function.IntUnaryOperator ownHandle() {
+        return App::base;
+    }
+
+    Predicate<String> lambda() {
+        return s -> s.isBlank();
+    }
 }

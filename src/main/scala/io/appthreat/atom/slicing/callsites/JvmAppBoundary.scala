@@ -6,7 +6,7 @@ import io.shiftleft.codepropertygraph.generated.nodes.NewConfigFile
 import io.shiftleft.semanticcpg.language.*
 import overflowdb.BatchedUpdate
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /** The boundary configuration of one bytecode atom (atom#326): what the input declares as its own,
   * computed once and carried by the atom as a config file, with the rest of what the slice reads
@@ -76,24 +76,29 @@ object JvmAppBoundary:
     input: JvmBytecodeInput,
     appPrefixes: Option[Seq[String]]
   ): BoundaryData =
-      appPrefixes match
-        case Some(prefixes) if prefixes.nonEmpty =>
-            val data = compute(atom, input)
-            data.copy(
-              appPrefixes = prefixes.toList,
-              appAll = false,
-              boundarySource = "app-prefix",
-              syntheticLineTables = lineTablesUnder(
-                data.inputPath,
-                AppBoundary(prefixes.toList, appAll = false, "app-prefix")
-              ).synthetic
-            )
-        case _ =>
-            readStored(atom).getOrElse {
-                val data = compute(atom, input)
-                store(atom, data)
-                data
-            }
+    val stored = readStored(atom).getOrElse {
+        Try(compute(atom, input)) match
+          case Success(data) =>
+              store(atom, data)
+              data
+          case Failure(e) =>
+              // an input the readers cannot open (a corrupt zip): no boundary, so no records
+              log.warn(s"callsites: could not read the bytecode input ${input.path}: $e")
+              unreadable(input)
+    }
+    appPrefixes match
+      case Some(prefixes) if prefixes.nonEmpty =>
+          val boundary = AppBoundary(prefixes.toList, appAll = false, "app-prefix")
+          val tables   = JvmBytecodeInput(stored.inputPath).lineTablesFor(boundary)
+          stored.copy(
+            appPrefixes = boundary.prefixes,
+            appAll = false,
+            boundarySource = boundary.source,
+            syntheticLineTables = tables.synthetic,
+            methodsWithLineTables = tables.withPositions,
+            lineQuality = if tables.syntheticQuality then "synthetic" else "source"
+          )
+      case _ => stored
   end boundaryOf
 
   private given io.circe.Encoder[LineTables] = io.circe.Encoder.instance { t =>
@@ -144,9 +149,8 @@ object JvmAppBoundary:
     )
   end compute
 
-  /** The line tables recomputed under a replaced boundary. */
-  private def lineTablesUnder(inputPath: String, boundary: AppBoundary): LineTables =
-      JvmBytecodeInput(inputPath).lineTablesFor(boundary)
+  private def unreadable(input: JvmBytecodeInput): BoundaryData =
+      BoundaryData(input.path.toString, Nil, false, "none", Nil, 0, 0, 0, "source", Nil, Nil)
 
   /** The BOM's root component name, when the atom carries a BOM whose metadata names one. */
   private def bomRootComponent(atom: Cpg): String =

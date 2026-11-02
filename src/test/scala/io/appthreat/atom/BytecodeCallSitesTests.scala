@@ -146,6 +146,7 @@ class BytecodeCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAft
             // the committed dex: no manifest, so the boundary comes from --app-prefix alone
             val dex = BFile(getClass.getResource("/jvm-callsites/dex/classes.dex").toURI)
             runAtom(dex, "dex", "dex", "dexy.app").foreach(dexRecords = _)
+    end match
   end beforeAll
 
   override protected def afterAll(): Unit =
@@ -214,13 +215,28 @@ class BytecodeCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAft
               List(("java.lang.String", "isEmpty", "call", "type", true))
       }
 
+      "give no record for a method handle on the app's own code" in {
+          // `App::base` (line 51) and the lambda's body method (line 55) are the app's own;
+          // the lambda body's call to `isBlank` is a use like any other
+          app().filter(r => r.line == 51 || r.module.startsWith("me.app")) shouldBe Nil
+          app().filter(_.line == 55).map(r => (r.module, r.path)) shouldBe
+              List(("java.lang.String", "isBlank"))
+      }
+
+      "record a super constructor call as a ref to the parent, not a new" in {
+          app().filter(r => r.path == "<init>" && r.kind == "ref").map(r =>
+              (r.line, r.module)
+          ) shouldBe
+              List((5, "me.lib.LibGrand"), (7, "java.lang.Object"))
+      }
+
       "resolve a member inherited from a library through an app subclass onto the library" in {
           // AppSub.throughGrand() calls `foo()`, which the bytecode names on AppSub; AppBase does
           // not declare it, LibGrand does
           app().filter(_.module == "me.lib.LibGrand").map(r => (r.line, r.path, r.via)).filter(
             _._2 == "foo"
           ) shouldBe
-              List((6, "foo", "type")) // AppBase's implicit super makes the `new` at line 5
+              List((6, "foo", "type")) // AppBase's implicit super is the `ref` at line 5
           app().filter(_.module == "me.lib.LibGrand").foreach(_.builtin shouldBe false)
       }
 
@@ -282,7 +298,9 @@ class BytecodeCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAft
           dirRecords.filter(_.kind == "new").map(_.module).toSet should contain("me.lib.Lib")
           dirRecords.filter(_.builtin).map(_.module).toSet should contain("java.lang.String")
           // nobody outside the dir and the JDK is a record here
-          dirRecords.map(_.module).forall(m => m.startsWith("me.lib") || m.startsWith("java.")) shouldBe
+          dirRecords.map(_.module).forall(m =>
+              m.startsWith("me.lib") || m.startsWith("java.")
+          ) shouldBe
               true
           val slice = ujson.read((workspace / "classes.json").contentAsString)
           slice.obj("metadata").obj("appAll").bool shouldBe true
@@ -298,7 +316,7 @@ class BytecodeCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAft
           // Dexy.check's `s.isEmpty()` and the constructor's implicit super()
           dexRecords.map(r => (r.file, r.module, r.path, r.kind, r.via, r.builtin)) shouldBe
               List(
-                ("dexy/app/Dexy.java", "java.lang.Object", "<init>", "new", "binding", true),
+                ("dexy/app/Dexy.java", "java.lang.Object", "<init>", "ref", "binding", true),
                 ("dexy/app/Dexy.java", "java.lang.String", "isEmpty", "call", "type", true)
               )
           val slice = ujson.read((workspace / "dex.json").contentAsString)
@@ -358,9 +376,9 @@ object BytecodeCallSitesTests:
     */
   // format: off
   val expected: List[Rec] = List(
-    Rec(5, "me.lib.LibGrand", "<init>", "new", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
+    Rec(5, "me.lib.LibGrand", "<init>", "ref", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
     Rec(6, "me.lib.LibGrand", "foo", "call", "type", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
-    Rec(7, "java.lang.Object", "<init>", "new", "binding", true, ""),
+    Rec(7, "java.lang.Object", "<init>", "ref", "binding", true, ""),
     Rec(9, "me.lib.Lib", "CONSTANT", "ref", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
     Rec(11, "me.lib.Lib", "<init>", "new", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
     Rec(14, "me.lib.Lib", "label", "call", "type", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
@@ -371,7 +389,8 @@ object BytecodeCallSitesTests:
     Rec(27, "me.lib.Lib", "", "ref", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
     Rec(31, "me.lib.Lib", "", "ref", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
     Rec(35, "me.lib.Lib", "", "ref", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
-    Rec(47, "java.lang.String", "isEmpty", "call", "type", true, "")
+    Rec(47, "java.lang.String", "isEmpty", "call", "type", true, ""),
+    Rec(55, "java.lang.String", "isBlank", "call", "type", true, "")
   )
   // format: on
 end BytecodeCallSitesTests
