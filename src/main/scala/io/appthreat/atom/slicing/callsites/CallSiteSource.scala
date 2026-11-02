@@ -1,6 +1,6 @@
 package io.appthreat.atom.slicing.callsites
 
-import io.appthreat.atom.slicing.{DeclarationRefs, JsNames, ProgramCallSites}
+import io.appthreat.atom.slicing.{CallSitesMetadata, DeclarationRefs, JsNames, ProgramCallSites}
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.Languages
 import io.shiftleft.codepropertygraph.generated.nodes.*
@@ -17,16 +17,23 @@ import scala.util.control.NonFatal
 trait CallSiteSource:
   def calculate(): ProgramCallSites
 
+  /** Metadata the slice reports beside the records when the source has some to give (the bytecode
+    * source's application boundary and synthetic line tables), `None` for the other languages.
+    */
+  def metadata: Option[CallSitesMetadata] = None
+
 object CallSiteSource:
 
   /** The source for `atom`'s language; every language the slice does not cover returns an empty
-    * slice.
+    * slice. `appPrefixes` is the bytecode source's explicit application boundary (atom#326); the
+    * other sources have no use for it.
     */
-  def forAtom(atom: Cpg): CallSiteSource =
+  def forAtom(atom: Cpg, appPrefixes: Option[Seq[String]] = None): CallSiteSource =
     val language = atom.metaData.language.headOption
     if JsNames.isJs(language) then JsCallSiteSource(atom)
     else if isPython(language) then PythonCallSiteSource(atom)
-    else if isJava(language) then JavaCallSiteSource(atom)
+    else if isJavaSource(language) then JavaCallSiteSource(atom)
+    else if isJvmBytecode(language) then JvmBytecodeCallSiteSource(atom, appPrefixes)
     else if isPhp(language) then PhpCallSiteSource(atom)
     else if isRuby(language) then RubyCallSiteSource(atom)
     else EmptyCallSiteSource
@@ -34,8 +41,15 @@ object CallSiteSource:
   private def isPython(language: Option[String]): Boolean =
       language.exists(l => l == Languages.PYTHONSRC || l == Languages.PYTHON)
 
-  private def isJava(language: Option[String]): Boolean =
-      language.exists(l => l == Languages.JAVASRC || l == Languages.JAVA)
+  /** Java source, whose frontend names its language JAVASRC. */
+  private def isJavaSource(language: Option[String]): Boolean =
+      language.exists(_ == Languages.JAVASRC)
+
+  /** The JVM bytecode inputs (APK, DEX, jar, class directory, Scala), whose frontend names its
+    * language JAVA.
+    */
+  private def isJvmBytecode(language: Option[String]): Boolean =
+      language.exists(_ == Languages.JAVA)
 
   private def isPhp(language: Option[String]): Boolean =
       language.exists(_ == Languages.PHP)

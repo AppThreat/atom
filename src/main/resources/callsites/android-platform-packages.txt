@@ -1,0 +1,117 @@
+# The packages of the Android platform, generated from the android.jar of SDK 35
+# (~/Library/Android/sdk/platforms/android-35/android.jar) with:
+#
+#   python3 - <<'PY'
+#   import zipfile
+#   pkgs = set()
+#   with zipfile.ZipFile('.../android-35/android.jar') as z:
+#       for n in z.namelist():
+#           if n.endswith('.class') and not n.endswith('module-info.class'):
+#               parts = n[:-6].split('/')
+#               if len(parts) >= 2 and parts[0] != 'androidx':
+#                   pkgs.add('.'.join(parts[:2]))
+#   print('\n'.join(sorted(pkgs)))
+#   PY
+#
+# androidx ships as a library to apps; the jar's androidx.annotation stub is not part of
+# the platform an app runs against.
+android.Manifest
+android.Manifest$permission
+android.Manifest$permission_group
+android.R
+android.R$anim
+android.R$animator
+android.R$array
+android.R$attr
+android.R$bool
+android.R$color
+android.R$dimen
+android.R$drawable
+android.R$fraction
+android.R$id
+android.R$integer
+android.R$interpolator
+android.R$layout
+android.R$menu
+android.R$mipmap
+android.R$plurals
+android.R$raw
+android.R$string
+android.R$style
+android.R$transition
+android.R$xml
+android.accessibilityservice
+android.accounts
+android.adservices
+android.animation
+android.annotation
+android.app
+android.appwidget
+android.bluetooth
+android.companion
+android.content
+android.credentials
+android.crypto
+android.database
+android.devicelock
+android.drm
+android.gesture
+android.graphics
+android.hardware
+android.health
+android.icu
+android.inputmethodservice
+android.location
+android.media
+android.mtp
+android.net
+android.nfc
+android.opengl
+android.os
+android.preference
+android.print
+android.printservice
+android.provider
+android.renderscript
+android.sax
+android.se
+android.security
+android.service
+android.speech
+android.system
+android.telecom
+android.telephony
+android.text
+android.transition
+android.util
+android.view
+android.webkit
+android.widget
+android.window
+dalvik.annotation
+dalvik.bytecode
+dalvik.system
+java.awt
+java.beans
+java.io
+java.lang
+java.math
+java.net
+java.nio
+java.security
+java.sql
+java.text
+java.time
+java.util
+javax.annotation
+javax.crypto
+javax.microedition
+javax.net
+javax.security
+javax.sql
+javax.xml
+org.apache
+org.json
+org.w3c
+org.xml
+org.xmlpull
