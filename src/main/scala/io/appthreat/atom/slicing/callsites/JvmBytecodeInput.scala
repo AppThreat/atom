@@ -22,11 +22,14 @@ private[callsites] final case class JvmMethodHandle(
   via: String
 )
 
-/** One `invokedynamic` instruction of a class, named by its enclosing method and the interface
-  * method the instruction calls, so the slice can match a graph call to it.
+/** One `invokedynamic` instruction of a class: its enclosing method (name, and signature in the
+  * graph's `ret(params)` form), its line, and the interface method it calls, so the slice can match
+  * the graph call Soot lowered it to.
   */
 private[callsites] final case class JvmIndySite(
   methodName: String,
+  methodSignature: String,
+  line: Int,
   indyName: String,
   handles: List[JvmMethodHandle]
 )
@@ -170,153 +173,6 @@ object JvmBytecodeInput:
     LineTables(synthetic, withPositions)
   end dexLineTables
 
-  /** The oracle's counts over JVM line tables: a table of at least three entries counts, and one
-    * with the compaction shape is synthetic.
-    */
-  private[callsites] def countSynthetic(
-    tables: List[List[(Int, Int)]]
-  ): LineTables =
-    val counted = tables.map(_.sortBy(_._1)).filter(_.size >= 3)
-    LineTables(
-      synthetic = counted.count(syntheticTable),
-      withPositions = counted.size
-    )
-
-  /** One class file's name, `SourceFile` attribute and per-method line tables, read from the bytes.
-    * The JVM class format is walked by hand for the two things no visitor callback gives: the
-    * `LineNumberTable` program counters and the attribute of every method in one pass.
-    */
-  private[callsites] final case class JvmClassFile(
-    name: String,
-    sourceFile: Option[String],
-    tables: List[List[(Int, Int)]]
-  )
-
-  private[callsites] object JvmClassFile:
-
-    /** One pass over the bytes: the constant pool, the fields (skipped), the methods with the
-      * `LineNumberTable` of their `Code` attribute, then the class attributes for `SourceFile`.
-      */
-    def read(bytes: Array[Byte]): JvmClassFile =
-      val in = new Reader(bytes)
-      in.u4() // magic
-      in.u4() // minor and major version
-      val utf8 = in.constantPool()
-      in.u2() // access flags
-      val thisClass = utf8(in.u2())
-      in.u2()              // superclass
-      in.skip(in.u2() * 2) // interfaces
-      skipMembers(in, utf8)
-      val tables = readMembers(in, utf8)
-      val source = readClassAttributes(in, utf8)
-      JvmClassFile(dexTypeName(thisClass), source, tables)
-
-    private def skipMembers(in: Reader, utf8: Array[String]): Unit =
-      val count = in.u2()
-      var i     = 0
-      while i < count do
-        in.u2() // access flags
-        in.u2() // name
-        in.u2() // descriptor
-        skipAttributes(in, utf8)
-        i += 1
-
-    private def readMembers(in: Reader, utf8: Array[String]): List[List[(Int, Int)]] =
-      val out   = mutable.ListBuffer.empty[List[(Int, Int)]]
-      val count = in.u2()
-      var i     = 0
-      while i < count do
-        in.u2() // access flags
-        in.u2() // name
-        in.u2() // descriptor
-        val attrs = in.u2()
-        var j     = 0
-        while j < attrs do
-          val name = utf8(in.u2())
-          val len  = in.u4()
-          if name == "Code" then
-            in.u2()              // max stack
-            in.u2()              // max locals
-            in.skip(in.u4())     // the code itself
-            in.skip(in.u2() * 8) // the exception table
-            val subAttrs = in.u2()
-            var k        = 0
-            while k < subAttrs do
-              val subName = utf8(in.u2())
-              val subLen  = in.u4()
-              if subName == "LineNumberTable" then
-                val entries = in.u2()
-                out.addOne(List.fill(entries)((in.u2(), in.u2())))
-              else in.skip(subLen)
-              k += 1
-          else in.skip(len)
-          j += 1
-        end while
-        i += 1
-      end while
-      out.toList
-    end readMembers
-
-    private def skipAttributes(in: Reader, utf8: Array[String]): Unit =
-      val count = in.u2()
-      var i     = 0
-      while i < count do
-        in.u2() // name
-        in.skip(in.u4())
-        i += 1
-
-    private def readClassAttributes(in: Reader, utf8: Array[String]): Option[String] =
-      val count  = in.u2()
-      var source = Option.empty[String]
-      var i      = 0
-      while i < count do
-        val name = utf8(in.u2())
-        val len  = in.u4()
-        if name == "SourceFile" then source = Some(utf8(in.u2()))
-        else in.skip(len)
-        i += 1
-      source
-
-    /** A forward reader over the class file bytes. */
-    private final class Reader(bytes: Array[Byte]):
-      import java.nio.charset.StandardCharsets.UTF_8
-      private var pos = 0
-      def u2(): Int =
-        val v = ((bytes(pos) & 0xff) << 8) | (bytes(pos + 1) & 0xff)
-        pos += 2
-        v
-      def u4(): Int =
-        val v = ((bytes(pos) & 0xff) << 24) | ((bytes(pos + 1) & 0xff) << 16) |
-            ((bytes(pos + 2) & 0xff) << 8) | (bytes(pos + 3) & 0xff)
-        pos += 4
-        v
-      def skip(n: Int): Unit = pos += n
-
-      /** The Utf8 constants, indexed by their constant-pool slot. Long and double constants take
-        * two slots.
-        */
-      def constantPool(): Array[String] =
-        val count = u2()
-        val utf8s = mutable.ArrayBuffer.fill(count)("")
-        var i     = 1
-        while i < count do
-          bytes(pos) & 0xff match
-            case 1 => // Utf8
-                pos += 1
-                val len = u2()
-                utf8s(i) = new String(java.util.Arrays.copyOfRange(bytes, pos, pos + len), UTF_8)
-                pos += len
-            case 3 | 4                      => pos += 1; skip(4)
-            case 5 | 6                      => pos += 1; skip(8); i += 1
-            case 7 | 8 | 16 | 19 | 20       => pos += 1; skip(2)
-            case 9 | 10 | 11 | 12 | 17 | 18 => pos += 1; skip(4)
-            case 15                         => pos += 1; skip(3)
-            case _                          => pos += 1; skip(2)
-          i += 1
-        utf8s.toArray
-    end Reader
-  end JvmClassFile
-
   private[callsites] def dexTypeOfHandle(
     tag: Int,
     owner: String,
@@ -351,10 +207,6 @@ sealed private[callsites] trait JvmBytecodeInput:
     */
   def fallbackBoundary: AppBoundary = AppBoundary(Nil, appAll = false, "none")
 
-  /** The input's own boundary, what it names or, failing that, the fallback. */
-  def boundary: AppBoundary =
-      if !namedBoundary.isEmpty then namedBoundary else fallbackBoundary
-
   /** The classes of the input by name, with their real file names (atom#327). */
   lazy val classes: Map[String, JvmClassInfo] = readClasses
 
@@ -368,6 +220,16 @@ sealed private[callsites] trait JvmBytecodeInput:
   lazy val artifacts: Map[String, (String, String, String)] =
       ArtifactMap.fromMetaEntries(metaEntries, classPackages)
 
+  /** The bundled library classes whose artifact the local Gradle or Maven cache can name: the
+    * artifacts the `META-INF` metadata lists, opened in the cache, and every input class found in
+    * exactly one of them (atom#329). Classes of the given boundary are the app's and are skipped.
+    */
+  def cachedClassArtifacts(boundary: AppBoundary): Map[String, (String, String, String)] =
+      LocalArtifactClasses.classArtifacts(
+        ArtifactMap.coordinatesOf(metaEntries, classPackages),
+        classes.keySet.filterNot(boundary.isApp)
+      )
+
   /** The `invokedynamic` sites of every class, for the method-handle records (atom#327). Empty for
     * Dalvik inputs, which the oracle leaves to `invoke-custom`.
     */
@@ -378,18 +240,16 @@ sealed private[callsites] trait JvmBytecodeInput:
     */
   lazy val classPackages: Set[String] = classes.keySet.map(packageOf)
 
+  /** Whether classes of the input sit in `prefix` or under it. */
+  def holdsClasses(prefix: String): Boolean =
+      classPackages.exists(p => p == prefix || p.startsWith(prefix + "."))
+
   /** The `META-INF` entries of the input, read for the artifact map (atom#329). */
-  protected def metaEntries: List[(String, Array[Byte])] = Nil
+  protected lazy val metaEntries: List[(String, Array[Byte])] = Nil
 
   protected def readClasses: Map[String, JvmClassInfo]
   protected def readLineTables(boundary: AppBoundary): LineTables
   protected def readBootstraps: Map[String, List[JvmIndySite]]
-
-  /** The real file name of a class (`<package path>/<SourceFile>`): the oracle's derivation from
-    * the class's own attribute.
-    */
-  def sourceFileOf(className: String): Option[String] =
-      classes.get(className).map(_.sourceFile.getOrElse(s"$className.class"))
 end JvmBytecodeInput
 
 /** An APK, or an APK bundle (`.apks`, `.apkm`, `.xapk`) whose base APK holds the manifest. */
@@ -461,15 +321,11 @@ private final class ApkInput(val path: java.nio.file.Path, nested: Boolean)
   private lazy val dexBytes: List[Array[Byte]] =
       withZip { zip =>
           apkEntries.flatMap { apkEntry =>
-            val inZip = if nested then
-              readNested(zip, apkEntry)(n =>
-                  n.entries().asScala.map(_.getName).filter(n2 => DexEntry.matches(n2)).toList
-              )
-            else zip.entries().asScala.map(_.getName).filter(n2 => DexEntry.matches(n2)).toList
-            inZip.map { dexEntry =>
-                if nested then readNested(zip, apkEntry)(n => readEntryBytes(n, dexEntry))
-                else readEntryBytes(zip, dexEntry)
-            }
+            def dexesOf(z: java.util.zip.ZipFile): List[Array[Byte]] =
+                z.entries().asScala.map(_.getName).filter(n2 => DexEntry.matches(n2)).toList
+                    .sorted.map(readEntryBytes(z, _))
+            // a bundle's nested apk is extracted once for all of its dex entries
+            if nested then readNested(zip, apkEntry)(dexesOf) else dexesOf(zip)
           }
       }
 
@@ -484,7 +340,7 @@ private final class ApkInput(val path: java.nio.file.Path, nested: Boolean)
 
   protected def readBootstraps: Map[String, List[JvmIndySite]] = Map.empty
 
-  override protected def metaEntries: List[(String, Array[Byte])] =
+  override protected lazy val metaEntries: List[(String, Array[Byte])] =
       withZip { zip =>
           zip.entries().asScala
               .filter(_.getName.startsWith("META-INF/"))
@@ -519,7 +375,7 @@ private final class JarInput(val path: java.nio.file.Path) extends JvmBytecodeIn
     try f(jar)
     finally jar.close()
 
-  private def classEntryNames: List[String] =
+  private lazy val classEntryNames: List[String] =
       withJar(jar =>
           jar.entries().asScala.map(_.getName).filter(n =>
               n.endsWith(".class") && !n.startsWith("META-INF/") &&
@@ -527,22 +383,26 @@ private final class JarInput(val path: java.nio.file.Path) extends JvmBytecodeIn
           ).toList
       )
 
+  /** The packages the jar manifest names: `Main-Class` by its package, `Automatic-Module-Name` and
+    * `Bundle-SymbolicName` as they are. A module or bundle name need not be a package
+    * (`kotlin.stdlib`), so a name counts only when classes of the jar sit under it.
+    */
   override def namedBoundary: AppBoundary =
     val named = withJar { jar =>
         Option(jar.getManifest).toList.flatMap { m =>
-            List(
-              "Main-Class",
-              "Automatic-Module-Name",
-              "Bundle-SymbolicName"
-            ).flatMap(attr => Option(m.getMainAttributes.getValue(attr)))
-        }.filter(_.nonEmpty).map(_.takeWhile(_ != ';')).map(_.replace('/', '.')).distinct
-    }
+          val attrs = m.getMainAttributes
+          Option(attrs.getValue("Main-Class")).map(c => packageOf(c.trim.replace('/', '.'))) ++
+              List("Automatic-Module-Name", "Bundle-SymbolicName").flatMap(a =>
+                  Option(attrs.getValue(a)).map(_.takeWhile(_ != ';').trim)
+              )
+        }
+    }.filter(n => n.nonEmpty && holdsClasses(n)).distinct
     AppBoundary(named, appAll = false, "jar-manifest")
 
   override def fallbackBoundary: AppBoundary =
       AppBoundary(JarPrefixes.of(classEntryNames), appAll = false, "jar-prefixes")
 
-  private def classBytes: List[(String, Array[Byte])] =
+  private lazy val classBytes: List[(String, Array[Byte])] =
       withJar(jar =>
           classEntryNames.map(n => n -> jar.getInputStream(jar.getEntry(n)).readAllBytes())
       )
@@ -551,15 +411,13 @@ private final class JarInput(val path: java.nio.file.Path) extends JvmBytecodeIn
       classBytes.flatMap(entry => ClassFileReader.classInfos(entry._2))
           .map(c => c.name -> c).toMap
 
-  protected def readLineTables(boundary: AppBoundary): LineTables =
-      classBytes.foldLeft(LineTables.empty)((acc, entry) =>
-          LineTables.sum(acc, ClassFileReader.lineTables(entry._2, boundary.isApp))
-      )
+  // the oracle counts line-table shapes for Dalvik methods only
+  protected def readLineTables(boundary: AppBoundary): LineTables = LineTables.empty
 
   protected def readBootstraps: Map[String, List[JvmIndySite]] =
       classBytes.flatMap(entry => ClassFileReader.bootstraps(entry._2)).toMap
 
-  override protected def metaEntries: List[(String, Array[Byte])] =
+  override protected lazy val metaEntries: List[(String, Array[Byte])] =
       withJar(jar =>
           jar.entries().asScala
               .filter(_.getName.startsWith("META-INF/"))
@@ -572,7 +430,7 @@ end JarInput
 private final class DirInput(val path: java.nio.file.Path) extends JvmBytecodeInput:
   import JvmBytecodeInput.*
 
-  private def classFiles: List[java.nio.file.Path] =
+  private lazy val classFiles: List[java.nio.file.Path] =
       Try {
           val stream = java.nio.file.Files.walk(path)
           try
@@ -592,10 +450,8 @@ private final class DirInput(val path: java.nio.file.Path) extends JvmBytecodeIn
       classFiles.flatMap(ClassFileReader.classInfosOfPath)
           .map(c => c.name -> c).toMap
 
-  protected def readLineTables(boundary: AppBoundary): LineTables =
-      classFiles.foldLeft(LineTables.empty)((acc, f) =>
-          LineTables.sum(acc, ClassFileReader.lineTablesOfPath(f, boundary.isApp))
-      )
+  // the oracle counts line-table shapes for Dalvik methods only
+  protected def readLineTables(boundary: AppBoundary): LineTables = LineTables.empty
 
   protected def readBootstraps: Map[String, List[JvmIndySite]] =
       classFiles.flatMap(ClassFileReader.bootstrapsOfPath).toMap
@@ -614,17 +470,25 @@ private[callsites] object JarPrefixes:
     * prefixes, as the oracle derives them from the jar's entry names.
     */
   def of(classEntryNames: List[String]): List[String] =
-    val counts = mutable.HashMap.empty[String, Int]
+    // insertion order, so a tie for the most common prefix goes to the first seen, as the oracle's
+    // Counter does
+    val counts = mutable.LinkedHashMap.empty[String, Int]
     classEntryNames.foreach { n =>
-      val pkg = n.stripSuffix(".class").split('/').take(3).mkString(".")
+      val pkg =
+          if n.contains('/') then
+            n.substring(0, n.lastIndexOf('/')).split('/').take(3).mkString(".")
+          else ""
       counts.update(pkg, counts.getOrElse(pkg, 0) + 1)
     }
-    val kept = counts.view.filter((p, c) => p.nonEmpty && c >= 0.10 * classEntryNames.size)
-        .keySet.toList.sorted
+    val kept = counts.filter((p, c) => p.nonEmpty && c >= 0.10 * classEntryNames.size)
+        .keys.toList.sorted
     val out = mutable.ListBuffer.empty[String]
     kept.foreach { p => if !out.exists(o => p.startsWith(o + ".")) then out.addOne(p) }
-    if out.isEmpty && counts.nonEmpty then List(counts.maxBy((_, c) => c)._1)
+    if out.isEmpty && counts.nonEmpty then
+      val top = counts.values.max
+      List(counts.find(_._2 == top).get._1)
     else out.toList
+end JarPrefixes
 
 /** The Maven artifacts an input bundles (atom#329), from its `META-INF` entries. */
 private[callsites] object ArtifactMap:
@@ -641,6 +505,27 @@ private[callsites] object ArtifactMap:
     entries: List[(String, Array[Byte])],
     classPackages: Set[String]
   ): Map[String, (String, String, String)] =
+      // one artifact may be named twice (a `.version` file and its `pom.properties`); keep the one
+      // with a version, and drop the packages two artifacts claim
+      claimsOf(entries, classPackages).view.mapValues { all =>
+        val artifacts = all.groupBy((g, a, _) => (g, a))
+        Option.when(artifacts.size == 1)(all.maxBy(_._3.length))
+      }.collect { case (prefix, Some(coords)) => prefix -> coords }.toMap
+
+  /** Every artifact the `META-INF` entries name, once each, with its version when one is given. */
+  def coordinatesOf(
+    entries: List[(String, Array[Byte])],
+    classPackages: Set[String]
+  ): List[(String, String, String)] =
+      claimsOf(entries, classPackages).values.flatten.toList
+          .groupBy((g, a, _) => (g, a)).values.map(_.maxBy(_._3.length)).toList
+          .sortBy((g, a, _) => (g, a))
+
+  /** The package prefix each artifact's metadata claims, in entry-name order. */
+  private def claimsOf(
+    entries: List[(String, Array[Byte])],
+    classPackages: Set[String]
+  ): mutable.LinkedHashMap[String, List[(String, String, String)]] =
     val claims = mutable.LinkedHashMap.empty[String, List[(String, String, String)]]
     def claim(prefix: String, coords: (String, String, String)): Unit =
         claims.update(prefix, claims.getOrElse(prefix, Nil) :+ coords)
@@ -661,13 +546,8 @@ private[callsites] object ArtifactMap:
             )
         }
     }
-    // one artifact may be named twice (a `.version` file and its `pom.properties`); keep the one
-    // with a version, and drop the packages two artifacts claim
-    claims.view.mapValues { all =>
-      val artifacts = all.groupBy((g, a, _) => (g, a))
-      Option.when(artifacts.size == 1)(all.maxBy(_._3.length))
-    }.collect { case (prefix, Some(coords)) => prefix -> coords }.toMap
-  end fromMetaEntries
+    claims
+  end claimsOf
 
   private def parseProperties(bytes: Array[Byte]): Option[(String, String, String)] =
       Try {
@@ -687,8 +567,8 @@ private[callsites] object ManifestReader:
   private val AndroidNameResourceId = 0x01010003
   private val AndroidNsSuffix       = "apk/res/android"
 
-  /** The manifest `package` and the `android:name` of every component element (and of the
-    * `application`), the values `aapt2 dump badging` and `xmltree` give the oracle.
+  /** The manifest `package` and the `android:name` of every element, the values `aapt2 dump
+    * xmltree` gives the oracle.
     */
   def read(bytes: Array[Byte]): (String, List[String]) =
       Try {
@@ -705,15 +585,11 @@ private[callsites] object ManifestReader:
                 a.resourceId == AndroidNameResourceId ||
                     ((a.ns == null || a.ns.endsWith(AndroidNsSuffix)) && a.name == "name")
             )
-            node.name match
-              case "manifest" =>
-                  node.attrs.asScala.find(_.name == "package").foreach(a =>
-                      pkg.addAll(valueOf(a))
-                  )
-              case "application" | "activity" | "activity-alias" | "service" | "receiver" |
-                  "provider" =>
-                  attrNamed.foreach(a => comps.addOne(valueOf(a)))
-              case _ => ()
+            if node.name == "manifest" then
+              node.attrs.asScala.find(_.name == "package").foreach(a => pkg.addAll(valueOf(a)))
+            // every element's name, as the oracle reads `xmltree`: components, permissions,
+            // intent actions and meta-data alike
+            attrNamed.foreach(a => comps.addOne(valueOf(a)))
             node.children.asScala.foreach(visit)
           axml.firsts.asScala.foreach(visit)
           (pkg.toString, comps.toList)
@@ -727,9 +603,6 @@ private[callsites] object ClassFileReader:
 
   def classInfosOfPath(file: java.nio.file.Path): List[JvmClassInfo] =
       withBytes(file, Nil)(bytes => classInfos(bytes))
-
-  def lineTablesOfPath(file: java.nio.file.Path, isApp: String => Boolean): LineTables =
-      withBytes(file, LineTables.empty)(bytes => lineTables(bytes, isApp))
 
   def bootstrapsOfPath(file: java.nio.file.Path): Map[String, List[JvmIndySite]] =
       withBytes(file, Map.empty)(bytes => bootstraps(bytes))
@@ -758,18 +631,6 @@ private[callsites] object ClassFileReader:
       List(JvmBytecodeInput.classInfoOf(cn.className, cn.source))
   }
 
-  /** The oracle's rule over the app class's methods' `LineNumberTable`, read straight from the
-    * class file: the start program counters of the table are read raw, which no visitor callback
-    * offers (ASM resolves a label's offset only when the reader has passed it, and R8's compacted
-    * tables point past the current position).
-    */
-  def lineTables(bytes: Array[Byte], isApp: String => Boolean): LineTables =
-      readOr(LineTables.empty) {
-          val parsed = JvmBytecodeInput.JvmClassFile.read(bytes)
-          if isApp(parsed.name) then JvmBytecodeInput.countSynthetic(parsed.tables)
-          else LineTables.empty
-      }
-
   /** The handles every `invokedynamic` of the class bootstraps, keyed by class, in instruction
     * order. The oracle reads them from the class file's `BootstrapMethods` through `javap`: the
     * handles of the bootstrap's method arguments, never the bootstrap handle itself.
@@ -795,6 +656,13 @@ private[callsites] object ClassFileReader:
     override def visitSource(source: String, debug: String): Unit =
         this.source = Option(source)
 
+  /** A JVM method descriptor in the graph's signature form: `(Ljava/util/List;)I` is
+    * `int(java.util.List)`.
+    */
+  private[callsites] def graphSignature(desc: String): String =
+    val t = org.objectweb.asm.Type.getMethodType(desc)
+    s"${t.getReturnType.getClassName}(${t.getArgumentTypes.map(_.getClassName).mkString(",")})"
+
   /** Collects the handles of every `invokedynamic` in one pass over the bodies. */
   private class IndyReader extends org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9):
     val className = mutable.StringBuilder()
@@ -814,19 +682,24 @@ private[callsites] object ClassFileReader:
       signature: String,
       exceptions: Array[String]
     ): org.objectweb.asm.MethodVisitor =
-        new org.objectweb.asm.MethodVisitor(org.objectweb.asm.Opcodes.ASM9):
-          override def visitInvokeDynamicInsn(
-            indyName: String,
-            descriptor: String,
-            bootstrapMethodHandle: org.objectweb.asm.Handle,
-            bootstrapMethodArguments: AnyRef*
-          ): Unit =
-            val handles = bootstrapMethodArguments.collect {
-                case h: org.objectweb.asm.Handle =>
-                    JvmBytecodeInput.dexTypeOfHandle(h.getTag, h.getOwner, h.getName)
-            }.flatten.toList
-            if handles.nonEmpty then
-              sites.addOne(JvmIndySite(name, indyName, handles))
+      val methodSignature = graphSignature(desc)
+      new org.objectweb.asm.MethodVisitor(org.objectweb.asm.Opcodes.ASM9):
+        // the line of the instructions that follow, from the line table
+        private var line                                                           = -1
+        override def visitLineNumber(l: Int, start: org.objectweb.asm.Label): Unit = line = l
+        override def visitInvokeDynamicInsn(
+          indyName: String,
+          descriptor: String,
+          bootstrapMethodHandle: org.objectweb.asm.Handle,
+          bootstrapMethodArguments: AnyRef*
+        ): Unit =
+          val handles = bootstrapMethodArguments.collect {
+              case h: org.objectweb.asm.Handle =>
+                  JvmBytecodeInput.dexTypeOfHandle(h.getTag, h.getOwner, h.getName)
+          }.flatten.toList
+          if handles.nonEmpty then
+            sites.addOne(JvmIndySite(name, methodSignature, line, indyName, handles))
+    end visitMethod
   end IndyReader
 end ClassFileReader
 
@@ -854,3 +727,146 @@ private[callsites] object DexReader:
             JvmBytecodeInput.log.warn(s"callsites: could not read a dex input: $e")
             orElse
 end DexReader
+
+/** The class lists of Maven artifacts in the local caches (atom#329): Gradle's
+  * (`$GRADLE_USER_HOME/caches/modules-2/files-2.1`, `~/.gradle` by default) and Maven's
+  * (`~/.m2/repository`). An APK merges every library into its dex files, so its own metadata names
+  * the artifacts but not which classes each one holds; the published `.aar` or `.jar` does. Only
+  * artifacts already in a cache are read, nothing is downloaded.
+  */
+private[callsites] object LocalArtifactClasses:
+
+  private def gradleRoot: Option[java.nio.file.Path] =
+      Option(System.getenv("GRADLE_USER_HOME")).filter(_.nonEmpty)
+          .orElse(Option(System.getProperty("user.home")).map(h => s"$h/.gradle"))
+          .map(r => java.nio.file.Paths.get(r, "caches", "modules-2", "files-2.1"))
+
+  private def mavenRoot: Option[java.nio.file.Path] =
+      Option(System.getProperty("maven.repo.local")).filter(_.nonEmpty)
+          .orElse(Option(System.getProperty("user.home")).map(h => s"$h/.m2/repository"))
+          .map(java.nio.file.Paths.get(_))
+
+  /** The artifact file of `group:artifact:version` in a cache, `.aar` before `.jar`. */
+  def locate(
+    group: String,
+    artifact: String,
+    version: String,
+    gradle: Option[java.nio.file.Path] = gradleRoot,
+    maven: Option[java.nio.file.Path] = mavenRoot
+  ): Option[java.nio.file.Path] =
+    val names    = List("aar", "jar").map(ext => s"$artifact-$version.$ext")
+    val hashDirs = gradleDirs(group, artifact, version, gradle)
+    val mavenDir = maven.map(
+      _.resolve(group.replace('.', '/')).resolve(artifact).resolve(version)
+    ).toList
+    names.iterator
+        .flatMap(n => (hashDirs ++ mavenDir).map(_.resolve(n)))
+        .find(java.nio.file.Files.isRegularFile(_))
+
+  /** The directories Gradle keeps an artifact's files in, one per file hash. */
+  private def gradleDirs(
+    group: String,
+    artifact: String,
+    version: String,
+    gradle: Option[java.nio.file.Path]
+  ): List[java.nio.file.Path] =
+      gradle.map(_.resolve(group).resolve(artifact).resolve(version)).toList
+          .filter(java.nio.file.Files.isDirectory(_))
+          .flatMap(dir =>
+              Try {
+                  val stream = java.nio.file.Files.list(dir)
+                  try stream.iterator().asScala.toList.sortBy(_.toString)
+                  finally stream.close()
+              }.getOrElse(Nil)
+          )
+
+  /** The artifact that holds the Android classes of a Kotlin Multiplatform library, whose root
+    * artifact (`androidx.sqlite:sqlite`) is empty: the `available-at` of the Android variant in the
+    * root's Gradle `.module` file (`androidx.sqlite:sqlite-android`), else of a JVM variant.
+    */
+  def androidTarget(
+    group: String,
+    artifact: String,
+    version: String,
+    gradle: Option[java.nio.file.Path] = gradleRoot
+  ): Option[(String, String, String)] =
+    val module = gradleDirs(group, artifact, version, gradle)
+        .map(_.resolve(s"$artifact-$version.module"))
+        .find(java.nio.file.Files.isRegularFile(_))
+    module.flatMap { file =>
+      val variants = Try(java.nio.file.Files.readString(file)).toOption
+          .flatMap(io.circe.parser.parse(_).toOption)
+          .flatMap(_.hcursor.downField("variants").as[List[io.circe.Json]].toOption)
+          .getOrElse(Nil)
+      def platform(v: io.circe.Json): String =
+          v.hcursor.downField("attributes").downField("org.jetbrains.kotlin.platform.type")
+              .as[String].getOrElse("")
+      def name(v: io.circe.Json): String = v.hcursor.downField("name").as[String].getOrElse("")
+      def target(v: io.circe.Json): Option[(String, String, String)] =
+        val at = v.hcursor.downField("available-at")
+        for
+          g <- at.downField("group").as[String].toOption
+          m <- at.downField("module").as[String].toOption
+          r <- at.downField("version").as[String].toOption
+        yield (g, m, r)
+      val picks: List[io.circe.Json => Boolean] = List(
+        v => platform(v) == "androidJvm",
+        v => platform(v) == "jvm" && name(v).startsWith("android"),
+        v => platform(v) == "jvm"
+      )
+      picks.iterator.flatMap(pick => variants.filter(pick).flatMap(target)).nextOption()
+    }
+  end androidTarget
+
+  /** The class names an `.aar` (its `classes.jar` and the jars under `libs/`) or a `.jar` carries,
+    * `$` kept.
+    */
+  def classesOf(file: java.nio.file.Path): Set[String] =
+      Try {
+          val zip = new java.util.zip.ZipFile(file.toFile)
+          try
+              if file.toString.endsWith(".aar") then
+                zip.entries().asScala.map(_.getName)
+                    .filter(n =>
+                        n == "classes.jar" || (n.startsWith("libs/") && n.endsWith(".jar"))
+                    )
+                    .toList
+                    .flatMap(n => classNames(zip.getInputStream(zip.getEntry(n))))
+                    .toSet
+              else zip.entries().asScala.map(_.getName).filter(isClassEntry).map(classOfEntry).toSet
+          finally zip.close()
+      }.getOrElse(Set.empty)
+
+  private def classNames(in: java.io.InputStream): List[String] =
+    val zis = new java.util.zip.ZipInputStream(in)
+    try
+        Iterator.continually(zis.getNextEntry).takeWhile(_ != null).map(_.getName)
+            .filter(isClassEntry).map(classOfEntry).toList
+    finally zis.close()
+
+  private def isClassEntry(name: String): Boolean =
+      name.endsWith(".class") && !name.startsWith("META-INF/") &&
+          !name.endsWith("module-info.class")
+
+  private def classOfEntry(name: String): String = name.stripSuffix(".class").replace('/', '.')
+
+  /** Each of `wanted` that exactly one of the cached artifacts carries, with that artifact. */
+  def classArtifacts(
+    coordinates: List[(String, String, String)],
+    wanted: Set[String],
+    gradle: Option[java.nio.file.Path] = gradleRoot,
+    maven: Option[java.nio.file.Path] = mavenRoot
+  ): Map[String, (String, String, String)] =
+    val holders = mutable.HashMap.empty[String, List[(String, String, String)]]
+    def holds(coords: (String, String, String)): Unit =
+      val (group, artifact, version) = coords
+      locate(group, artifact, version, gradle, maven).foreach { file =>
+          classesOf(file).filter(wanted.contains).foreach(cls =>
+              holders.update(cls, coords :: holders.getOrElse(cls, Nil))
+          )
+      }
+    val listed            = coordinates.filter(_._3.nonEmpty)
+    val platformArtifacts = listed.flatMap((g, a, v) => androidTarget(g, a, v, gradle))
+    (listed ++ platformArtifacts).distinct.foreach(holds)
+    holders.collect { case (cls, single :: Nil) => cls -> single }.toMap
+end LocalArtifactClasses

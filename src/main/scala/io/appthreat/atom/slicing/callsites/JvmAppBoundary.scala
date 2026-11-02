@@ -39,6 +39,7 @@ object JvmAppBoundary:
     methodsWithLineTables: Int,
     lineQuality: String,
     artifacts: List[(String, (String, String, String))],
+    classArtifacts: List[(String, (String, String, String))],
     indySites: List[(String, List[JvmIndySite])]
   ):
     def boundary: AppBoundary = AppBoundary(appPrefixes, appAll, boundarySource)
@@ -123,7 +124,7 @@ object JvmAppBoundary:
   private def compute(atom: Cpg, input: JvmBytecodeInput): BoundaryData =
     val named    = input.namedBoundary
     val fallback = input.fallbackBoundary
-    val bomRoot  = bomRootComponent(atom)
+    val bomRoot  = bomRootComponent(atom, input)
     val boundary =
         if !named.isEmpty then named
         else if bomRoot.nonEmpty then AppBoundary(List(bomRoot), appAll = false, "bom-root")
@@ -132,8 +133,9 @@ object JvmAppBoundary:
     val classFiles = input.classes.toList.sortBy((n, _) => n).map((name, info) =>
         name -> info.sourceFile.getOrElse("")
     )
-    val artifacts = input.artifacts.toList.sortBy((k, _) => k)
-    val indySites = input.bootstraps.toList.sortBy((k, _) => k)
+    val artifacts      = input.artifacts.toList.sortBy((k, _) => k)
+    val classArtifacts = input.cachedClassArtifacts(boundary).toList.sortBy((k, _) => k)
+    val indySites      = input.bootstraps.toList.sortBy((k, _) => k)
     BoundaryData(
       inputPath = input.path.toString,
       appPrefixes = boundary.prefixes,
@@ -145,26 +147,30 @@ object JvmAppBoundary:
       methodsWithLineTables = tables.withPositions,
       lineQuality = if tables.syntheticQuality then "synthetic" else "source",
       artifacts = artifacts,
+      classArtifacts = classArtifacts,
       indySites = indySites
     )
   end compute
 
   private def unreadable(input: JvmBytecodeInput): BoundaryData =
-      BoundaryData(input.path.toString, Nil, false, "none", Nil, 0, 0, 0, "source", Nil, Nil)
+      BoundaryData(input.path.toString, Nil, false, "none", Nil, 0, 0, 0, "source", Nil, Nil, Nil)
 
-  /** The BOM's root component name, when the atom carries a BOM whose metadata names one. */
-  private def bomRootComponent(atom: Cpg): String =
+  /** The BOM root component's group (a Maven groupId such as `org.example.app`), used as a package
+    * prefix only when the input has classes under it: cdxgen's `name` is an artifactId, never a
+    * package.
+    */
+  private def bomRootComponent(atom: Cpg, input: JvmBytecodeInput): String =
       atom.configFile.l
           .filter(f => BomFiles.isBom(f.name))
           .sortBy(_.name)
           .headOption
           .flatMap { bom =>
               io.circe.parser.parse(bom.content).toOption.flatMap { json =>
-                  json.hcursor.downField("metadata").downField("component").downField("name")
+                  json.hcursor.downField("metadata").downField("component").downField("group")
                       .as[String].toOption
               }
           }
-          .filter(name => name.contains('.'))
+          .filter(group => group.contains('.') && input.holdsClasses(group))
           .getOrElse("")
 
   private def readStored(atom: Cpg): Option[BoundaryData] =

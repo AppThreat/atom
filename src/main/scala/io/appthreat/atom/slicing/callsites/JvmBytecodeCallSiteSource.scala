@@ -43,6 +43,9 @@ import scala.util.Try
 final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]] = None)
     extends BaseCallSiteSource(atom, "jvm-bytecode"):
 
+  // bytecode positions carry a line and no column
+  override protected def dedupeByMember: Boolean = true
+
   private val index: JvmAppBoundary.BoundaryData =
       JvmAppBoundary.boundaryOf(atom, JvmAppBoundary.inputOf(atom), appPrefixes)
 
@@ -75,11 +78,6 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
       sourceFileGuesses = index.sourceFileGuesses
     )
   )
-
-  /** The input's own classes, which the hierarchy walk treats as declared code: everything the
-    * graph carries as `isExternal=false` (the bundled libraries included), never a package guess.
-    */
-  private val inputClasses: Set[String] = atom.typeDecl.isExternal(false).fullName.toSet
 
   private def unresolved(cls: String): Boolean =
       cls.isEmpty || cls.startsWith("<unresolved") || cls.startsWith("<unknown") ||
@@ -121,14 +119,12 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
   private val declaredMethods: mutable.HashMap[String, Set[String]] = mutable.HashMap.empty
   private val declaredFields: mutable.HashMap[String, Set[String]]  = mutable.HashMap.empty
   private val parentsOf: mutable.HashMap[String, List[String]]      = mutable.HashMap.empty
-  atom.typeDecl.foreach { t =>
-    declaredMethods.update(t.fullName, t.method.name.toSet)
+  atom.typeDecl.filter(t => inputClassesByName.contains(t.fullName)).foreach { t =>
+    declaredMethods.update(t.fullName, t.method.map(m => s"${m.name}:${m.signature}").toSet)
     declaredFields.update(t.fullName, t.member.name.toSet)
     parentsOf.update(
       t.fullName,
-      t.inheritsFromTypeFullName.toList.filterNot(b =>
-          b == "ANY" || b.isEmpty || b == "java.lang.Object"
-      )
+      t.inheritsFromTypeFullName.toList.filterNot(b => b.isEmpty || b == "ANY")
     )
   }
 
@@ -144,6 +140,11 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
   ): Option[(String, Boolean)] =
       resolvedOwners.getOrElseUpdate((owner, member, isField), walkOwner(owner, member, isField))
 
+  /** A method member as the index keys it, `name:signature`, so an overload the app class does not
+    * declare is still inherited (the oracle matches the name and the descriptor).
+    */
+  private def methodKey(c: Call): String = s"${c.name}:${c.signature}"
+
   private val resolvedOwners =
       mutable.HashMap.empty[(String, String, Boolean), Option[(String, Boolean)]]
 
@@ -153,20 +154,27 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
     isField: Boolean
   ): Option[(String, Boolean)] =
     val decls = if isField then declaredFields else declaredMethods
-    val seen  = mutable.Set.empty[String]
-    val queue = mutable.Queue.empty[String]
-    queue.enqueue(owner)
+    // a handle names its member without a descriptor: any overload of that name declares it
+    def declares(members: Set[String]): Boolean =
+        members.contains(member) || (!isField && !member.contains(':') &&
+            members.exists(_.startsWith(member + ":")))
+    val seen     = mutable.Set.empty[String]
+    val queue    = mutable.Queue.empty[String]
     val frontier = mutable.ListBuffer.empty[String]
+    queue.enqueue(owner)
     while queue.nonEmpty do
       val n = queue.dequeue()
       if seen.add(n) then
         decls.get(n) match
-          case Some(declared) if declared.contains(member) =>
+          case None =>
+              // the first ancestor outside the input names the record: the oracle reads only the
+              // input's classes and never walks the platform's or a library's own hierarchy
+              frontier.addOne(n)
+          case Some(declared) if declares(declared) =>
               // an input class declares the member: app means no use, library names the record
               return if isAppClass(n) then None else Some((n, true))
-          case _ =>
-              if !inputClasses.contains(n) then frontier.addOne(n)
-              // phantom types (outside the input) carry no heritage in the graph
+          case Some(_) =>
+              // the superclass first, then the interfaces, as the frontend lists them
               parentsOf.get(n).foreach(_.foreach(queue.enqueue))
     val candidates = frontier.toList.filter(_ != "java.lang.Object")
     candidates match
@@ -176,53 +184,24 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
   end walkOwner
 
   // -------------------------------------------------------------------------------------- builtin
-  private val jdkPackages: Set[String] =
-      Try {
-          val stream = getClass.getResourceAsStream("/callsites/jdk-packages.txt")
-          val text   = Try(scala.io.Source.fromInputStream(stream, "UTF-8").mkString).toOption
-          stream.close()
-          text.getOrElse("")
-      }.getOrElse("").split("\n").map(_.trim).filter(_.nonEmpty).toSet
-
-  private val androidPlatformPackages: Set[String] =
-      Try {
-          val stream = getClass.getResourceAsStream("/callsites/android-platform-packages.txt")
-          val text   = Try(scala.io.Source.fromInputStream(stream, "UTF-8").mkString).toOption
-          stream.close()
-          text.getOrElse("")
-      }.getOrElse("").split("\n").map(_.trim).filter(line =>
-          line.nonEmpty && !line.startsWith("#")
-      ).toSet
-
-  /** The JDK's `javax` packages, which `javax.*` alone would overreach (`javax.inject` is a
-    * library).
+  /** The JDK's packages: the list the Java source adapter uses and every package of the JDK's
+    * system modules, internal ones included (`sun.misc`, `jdk.internal.misc`). Both are generated.
     */
-  private val JdkJavax =
-      Set(
-        "crypto",
-        "net",
-        "security",
-        "sql",
-        "xml",
-        "naming",
-        "management",
-        "script",
-        "tools",
-        "imageio",
-        "swing",
-        "print",
-        "sound",
-        "lang",
-        "annotation.processing",
-        "smartcardio",
-        "rmi",
-        "accessibility",
-        "transaction.xa",
-        "sql.rowset",
-        "security.auth",
-        "security.cert",
-        "xml.parsers"
+  private val jdkPackages: Set[String] =
+      packageList("/callsites/jdk-packages.txt") ++ packageList(
+        "/callsites/jdk-runtime-packages.txt"
       )
+
+  /** The packages of the Android platform, generated from the SDK's `android.jar`. */
+  private val androidPlatformPackages: Set[String] =
+      packageList("/callsites/android-platform-packages.txt")
+
+  private def packageList(resource: String): Set[String] =
+      Try {
+          val stream = getClass.getResourceAsStream(resource)
+          try scala.io.Source.fromInputStream(stream, "UTF-8").mkString
+          finally stream.close()
+      }.getOrElse("").split("\n").map(_.trim).filter(l => l.nonEmpty && !l.startsWith("#")).toSet
 
   private val CompilerSupportExact = Set("kotlin.Metadata", "kotlin.jvm.JvmStatic")
 
@@ -249,16 +228,12 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
               val pkg = fqn.substring(0, i)
               if jdkPackages.contains(pkg) then Some("jdk")
               else if androidPlatformPackages.contains(pkg) then Some("android-platform")
-              else if pkg.startsWith("javax") then
-                if JdkJavax.exists(j => pkg == s"javax.$j" || pkg.startsWith(s"javax.$j.")) then
-                  Some("jdk")
-                else None
               else None
 
   // ---------------------------------------------------------------------------------------- purl
-  /** The `purl` of the bundled artifact whose package prefix claims `cls`, when the longest
-    * claiming prefix names exactly one artifact (atom#321, atom#329). Builtins are nobody's
-    * artifact.
+  /** The `purl` of the bundled artifact that holds `cls` (atom#329, atom#321): the one cached
+    * artifact whose published `.aar` or `.jar` carries the class, else the one artifact whose
+    * `META-INF` metadata claims the class's longest package prefix. Builtins are nobody's artifact.
     */
   private def purlOf(cls: String): String = purls.getOrElseUpdate(cls, claimingPurl(cls))
 
@@ -267,15 +242,21 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
   private def claimingPurl(cls: String): String =
       if cls.isEmpty then ""
       else
-        index.artifacts
-            .filter((prefix, _) => cls == prefix || cls.startsWith(prefix + "."))
-            .maxByOption((prefix, _) => prefix.length)
-            .map { (_, coords) =>
-              val (group, artifact, version) = coords
-              if version.isEmpty then s"pkg:maven/$group/$artifact"
-              else s"pkg:maven/$group/$artifact@$version"
+        classArtifacts.get(cls)
+            .orElse(
+              index.artifacts
+                  .filter((prefix, _) => cls == prefix || cls.startsWith(prefix + "."))
+                  .maxByOption((prefix, _) => prefix.length)
+                  .map(_._2)
+            )
+            .map { (group, artifact, version) =>
+                if version.isEmpty then s"pkg:maven/$group/$artifact"
+                else s"pkg:maven/$group/$artifact@$version"
             }
             .getOrElse("")
+
+  private val classArtifacts: Map[String, (String, String, String)] =
+      index.classArtifacts.toMap
 
   // --------------------------------------------------------------------------------------- files
   /** The class's real file name, `<package path>/<SourceFile>`; every class of the input has one
@@ -344,20 +325,23 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
     * bootstrap site when a method carries several with the same name.
     */
   private def calls(): Unit =
-    val indyCalls = mutable.HashMap.empty[(String, String, String), mutable.ListBuffer[Call]]
+    // by (class, method name, method signature, line): the key an `invokedynamic` site carries
+    val indyCalls =
+        mutable.LinkedHashMap.empty[(String, String, String, Int), mutable.ListBuffer[Call]]
     atom.call.filterNot(_.name.startsWith("<operator>")).foreach { c =>
       val callerCls = classOfMethod(c.method.fullName)
       if isAppClass(callerCls) then
-        val owner  = classOfMethod(c.methodFullName)
         val member = c.name
+        val owner  = arrayElementOwner(c).getOrElse(classOfMethod(c.methodFullName))
         if owner == "soot.dummy.InvokeDynamic" ||
           // soot lowers a lambda's invokedynamic into a synthetic bootstrap class it
           // generates itself (`App$isEmpty__1.bootstrap$`): it is in no input, and its handle
           // site is the one the input's class file records
           (member == "bootstrap$" && !inputClassesByName.contains(owner))
         then
+          val m = c.method
           indyCalls.getOrElseUpdate(
-            (callerCls, c.method.name, c.name),
+            (callerCls, m.name, m.signature, c.lineNumber.map(_.intValue).getOrElse(-1)),
             mutable.ListBuffer.empty
           ).addOne(c)
         else if unresolved(owner) then collector.skip(c)
@@ -365,53 +349,84 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
           val member = c.name
           val resolved =
               if isAppClass(owner) && member != "<init>" then
-                resolveOwner(owner, member, isField = false)
+                resolveOwner(owner, methodKey(c), isField = false)
               else None
           resolved match
             case None =>
                 if !isAppClass(owner) then recordCall(c, callerCls, owner, member)
             case Some((ancestor, _)) =>
-                recordCall(c, callerCls, ancestor, member, inherited = true)
+                recordCall(c, callerCls, ancestor, member)
         end if
       end if
     }
-    indyCalls.toList.foreach { case ((callerCls, methodName, indyName), found) =>
-        val sites = indySitesByClass.getOrElse(callerCls, Nil)
-            .filter(s =>
-                s.methodName == methodName &&
-                    (s.indyName == indyName || indyName == "bootstrap$")
-            )
-        val ordered = found.toList.sortBy(c =>
-            (
-              c.lineNumber.map(_.intValue).getOrElse(-1),
-              c.columnNumber.map(_.intValue).getOrElse(-1)
-            )
-        )
-        ordered.zip(sites).foreach { (c, site) => handleInvokeDynamic(c, callerCls, site) }
-        if ordered.size > sites.size then ordered.drop(sites.size).foreach(c => collector.skip(c))
+    val sitesByKey = indySitesByClass.toList.flatMap { (cls, sites) =>
+        sites.map(site => (cls, site.methodName, site.methodSignature, site.line) -> site)
+    }.groupMap(_._1)(_._2)
+    indyCalls.foreach { (key, found) =>
+      // each site pairs with one call: the dummy owner's call by the interface method it names,
+      // and Soot's `<Outer>$<member>__N.bootstrap$` by the handle member in its class name
+      val sites = mutable.ListBuffer.from(sitesByKey.getOrElse(key, Nil))
+      def take(matches: JvmIndySite => Boolean): Option[JvmIndySite] =
+          sites.indexWhere(matches) match
+            case -1 => None
+            case i  => Some(sites.remove(i))
+      found.foreach { c =>
+        val site =
+            if c.name == "bootstrap$" then
+              val member = bootstrapMember(classOfMethod(c.methodFullName))
+              take(_.handles.exists(_.name == member)).orElse(take(_ => true))
+            else take(_.indyName == c.name)
+        site match
+          case Some(s) => handleInvokeDynamic(c, key._1, s)
+          case None    => collector.skip(c)
+      }
     }
   end calls
+
+  /** The owner of a call on an array (`args.clone()`), which bytecode names by the array type and
+    * Soot by `java.lang.Object`: the element class, as the oracle names it, or an empty owner (no
+    * record) for an array of primitives.
+    */
+  private def arrayElementOwner(c: Call): Option[String] =
+      // javac names the array type for `clone` only; every other call on an array is Object's
+      if c.name != "clone" then None
+      else
+        c.argument.argumentIndex(0).collectFirst { case i: Identifier => i.typeFullName }
+            .filter(_.endsWith("[]"))
+            .map(classOfType)
+
+  /** The handle member Soot puts in the name of the class it generates for a lambda's
+    * `invokedynamic` (`me.app.App$length__1` for `String::length`; `init` for a constructor).
+    */
+  private def bootstrapMember(generated: String): String =
+    val simple = generated.substring(generated.lastIndexOf('$') + 1)
+    val member = simple.substring(0, math.max(0, simple.lastIndexOf("__")))
+    if member == "init" then "<init>" else member
 
   private def recordCall(
     c: Call,
     callerCls: String,
     owner: String,
-    member: String,
-    inherited: Boolean = false
+    member: String
   ): Unit =
       methodOf(c) match
         case None => collector.skip(c)
         case Some(method) =>
-            val (line, col) = at(c)
+            val isInit = member == "<init>"
+            // `super(...)` in a constructor runs the parent's constructor on `this`: no object is
+            // allocated, so it is a reference to the parent, not a `new`
+            val isNew = isInit && !isSuperConstructor(c, method)
+            // a `new` sits on the line of its allocation, which a constructor call whose
+            // arguments span lines leaves behind
+            val (line, col) =
+                if isNew then
+                  allocationLine(c, method).map(l => (l, Integer.valueOf(-1))).getOrElse(at(c))
+                else at(c)
             if line <= 0 then collector.skip(c)
             else
               val file = fileOfCaller(callerCls)
               if file.isEmpty then collector.skip(c)
               else
-                val isInit = member == "<init>"
-                // `super(...)` in a constructor runs the parent's constructor on `this`: no
-                // object is allocated, so it is a reference to the parent, not a `new`
-                val isNew  = isInit && !isSuperConstructor(c, method)
                 val static = c.dispatchType == DispatchTypes.STATIC_DISPATCH
                 collector.add(c) {
                     CallSiteRecord(
@@ -428,7 +443,6 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
                       purl = purlOf(owner)
                     )
                 }
-              end if
             end if
   end recordCall
 
@@ -436,21 +450,34 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
     * `super(...)` call on `this`, whatever name the frontend gives the `this` local.
     */
   private def isSuperConstructor(c: Call, method: Method): Boolean =
-      method.name == "<init>" && c.argument.argumentIndex(0).exists {
-          case i: Identifier => !allocatedIn(method).contains(i.name)
-          case _             => false
-      }
+      method.name == "<init>" && receiverOf(c).exists(r => !allocatedIn(method).contains(r))
 
-  /** The locals a method assigns from an allocation (`$r1 = new X`), by method. */
-  private def allocatedIn(method: Method): Set[String] =
+  private def receiverOf(c: Call): Option[String] =
+      c.argument.argumentIndex(0).collectFirst { case i: Identifier => i.name }
+
+  /** The line of the allocation a constructor call initialises: the latest allocation into its
+    * receiver at or before the call's line (Soot reuses its stack locals).
+    */
+  private def allocationLine(c: Call, method: Method): Option[Integer] =
+    val callLine = c.lineNumber.map(_.intValue).getOrElse(Int.MaxValue)
+    receiverOf(c).flatMap(r => allocatedIn(method).get(r))
+        .flatMap(_.filter(_ <= callLine).maxOption)
+        .map(Integer.valueOf)
+
+  /** The lines of the allocations (`$r1 = new X`) of a method, by the local they assign. */
+  private def allocatedIn(method: Method): Map[String, List[Int]] =
       allocated.getOrElseUpdate(
         method.fullName,
-        method.call.nameExact("<operator>.assignment").filter(
-          _.argument.argumentIndex(2).isCall.nameExact("<operator>.alloc").nonEmpty
-        ).argument.argumentIndex(1).isIdentifier.name.toSet
+        method.call.nameExact("<operator>.assignment").flatMap { a =>
+            for
+              target <- a.argument.argumentIndex(1).isIdentifier.name.headOption
+              alloc  <- a.argument.argumentIndex(2).isCall.nameExact("<operator>.alloc").headOption
+              line   <- alloc.lineNumber.orElse(a.lineNumber)
+            yield target -> line.intValue
+        }.l.groupMap(_._1)(_._2)
       )
 
-  private val allocated = mutable.HashMap.empty[String, Set[String]]
+  private val allocated = mutable.HashMap.empty[String, Map[String, List[Int]]]
 
   /** The method handles a JVM `invokedynamic` bootstraps, by their handle's kind at the
     * `invokedynamic` line (atom#327). Concatenation has no handle in its bootstrap, and the dummy
@@ -516,7 +543,7 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
                     case None =>
                         if !isAppClass(owner) then recordField(fa, callerCls, owner, m)
                     case Some((ancestor, _)) =>
-                        recordField(fa, callerCls, ancestor, m, inherited = true)
+                        recordField(fa, callerCls, ancestor, m)
               }
           }
         end if
@@ -533,8 +560,7 @@ final class JvmBytecodeCallSiteSource(atom: Cpg, appPrefixes: Option[Seq[String]
     fa: Call,
     callerCls: String,
     owner: String,
-    member: String,
-    inherited: Boolean = false
+    member: String
   ): Unit =
       methodOf(fa) match
         case None => collector.skip(fa)

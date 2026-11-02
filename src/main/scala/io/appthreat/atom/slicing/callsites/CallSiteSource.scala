@@ -66,7 +66,7 @@ end CallSiteSource
   * record whose construction throws is logged once with the node's id and skipped, and the slice is
   * always written (atom#317).
   */
-final class RecordCollector(sourceName: String):
+final class RecordCollector(sourceName: String, byMember: Boolean = false):
 
   private val logger      = LoggerFactory.getLogger(getClass)
   private val records     = mutable.LinkedHashSet.empty[CallSiteRecord]
@@ -108,7 +108,7 @@ final class RecordCollector(sourceName: String):
       println(
         s"Call sites: skipped $failed node(s) that failed and $skipped node(s) with no method"
       )
-    ProgramCallSites(CallSiteRecord.dedupe(records))
+    ProgramCallSites(CallSiteRecord.dedupe(records, byMember))
 end RecordCollector
 
 /** The lookups every language source shares. Some frontends leave AST-detached nodes (outline's
@@ -120,7 +120,12 @@ abstract class BaseCallSiteSource(protected val atom: Cpg, sourceName: String)
     extends CallSiteSource:
 
   protected val declRefs  = DeclarationRefs(atom)
-  protected val collector = RecordCollector(sourceName)
+  protected val collector = RecordCollector(sourceName, dedupeByMember)
+
+  /** Whether two members of one class at one position are two records (see
+    * `CallSiteRecord.dedupe`); only the sources whose frontends give no columns need it.
+    */
+  protected def dedupeByMember: Boolean = false
 
   /** The method enclosing `n`, through the AST parents; `astParent` throws on detached nodes, so
     * the edge is read directly (see DeclarationRefs.parentOf).

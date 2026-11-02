@@ -64,10 +64,14 @@ object CallSiteRecord:
   /** One record per use site: for each (file, line, col, module) the most specific kind wins, and
     * the order is positional, through the module, path and kind of the record. The order never
     * involves node ids, which vary between runs (callsites plan, determinism rule 3).
+    *
+    * `byMember` adds the path to the site, for sources without columns: bytecode has one line per
+    * statement and no column, so `sb.append(x).toString()` is two uses of one class at one
+    * position, which the column would otherwise tell apart.
     */
-  def dedupe(records: Iterable[CallSiteRecord]): List[CallSiteRecord] =
+  def dedupe(records: Iterable[CallSiteRecord], byMember: Boolean = false): List[CallSiteRecord] =
       records
-          .groupBy(r => (r.file, r.line, r.col, r.module))
+          .groupBy(r => (r.file, r.line, r.col, r.module, if byMember then r.path else ""))
           .map(_._2.minBy(r =>
               (kindRank.getOrElse(r.kind, Int.MaxValue), r.path, r.via, r.resolvedMethod)
           ))

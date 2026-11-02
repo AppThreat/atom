@@ -1132,21 +1132,26 @@ object Atom:
 
   /** The application boundary of a bytecode input (atom#326), computed once and carried by the atom
     * as a config file, so the runs that reuse the atom read it instead of re-reading the input.
-    * `--app-prefix` overrides it for the run without replacing the stored value. Only the two slice
-    * commands that read the boundary pay for the read.
+    * `--app-prefix` overrides it for the run without replacing the stored value. Only the runs that
+    * write a callsites slice pay for the read; a later callsites run on an atom built without it
+    * computes and stores the boundary then.
     */
   private def storeAppBoundary(config: AtomConfig, ag: Cpg): Either[String, Unit] =
-      if config.isInstanceOf[AtomUsagesConfig] || config.isInstanceOf[AtomCallsitesConfig] then
-        ag.metaData.language.headOption match
-          case Some(lang) if lang == Languages.JAVA =>
-              slicing.callsites.JvmAppBoundary.boundaryOf(
-                ag,
-                slicing.callsites.JvmAppBoundary.inputOf(ag),
-                config.appPrefixes
-              )
-              Right(())
-          case _ => Right(())
-      else Right(())
+    val writesCallsites = config match
+      case _: AtomCallsitesConfig => true
+      case u: AtomUsagesConfig    => u.alsoCallsites.isDefined
+      case _                      => false
+    if writesCallsites then
+      ag.metaData.language.headOption match
+        case Some(lang) if lang == Languages.JAVA =>
+            slicing.callsites.JvmAppBoundary.boundaryOf(
+              ag,
+              slicing.callsites.JvmAppBoundary.inputOf(ag),
+              config.appPrefixes
+            )
+            Right(())
+        case _ => Right(())
+    else Right(())
 
   private def newAtomCreatedString(config: AtomConfig): String =
     val absolutePath = config.outputAtomFile.path.toAbsolutePath

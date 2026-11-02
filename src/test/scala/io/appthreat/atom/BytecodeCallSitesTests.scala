@@ -199,9 +199,16 @@ class BytecodeCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAft
       }
 
       "record X.class, instanceof and cast as refs" in {
-          // the class literal at 35, the instanceof at 27 and the cast at 31
+          // the class literal at 35, the instanceof at 27, the cast at 31, and the casts javac
+          // adds for the generic results at 61
           app().filter(_.path.isEmpty).map(r => (r.line, r.module)) shouldBe
-              List((27, "me.lib.Lib"), (31, "me.lib.Lib"), (35, "me.lib.Lib"))
+              List(
+                (27, "me.lib.Lib"),
+                (31, "me.lib.Lib"),
+                (35, "me.lib.Lib"),
+                (61, "java.lang.String"),
+                (61, "java.lang.StringBuilder")
+              )
       }
 
       "give no record for string concatenation through invokedynamic" in {
@@ -213,6 +220,25 @@ class BytecodeCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAft
       "record a method reference by its bootstrap handle at the invokedynamic line" in {
           app().filter(_.line == 47).map(r => (r.module, r.path, r.kind, r.via, r.builtin)) shouldBe
               List(("java.lang.String", "isEmpty", "call", "type", true))
+      }
+
+      "keep two members of one class used on one line as two records" in {
+          // bytecode has no columns: `append(...).toString()` and the cast before them are three
+          // uses of StringBuilder at line 61
+          app().filter(r => r.line == 61 && r.module == "java.lang.StringBuilder").map(
+            _.path
+          ) shouldBe
+              List("", "append", "toString")
+      }
+
+      "pair each invokedynamic of a method with its own handle" in {
+          app().filter(r => r.line == 59 || r.line == 60).map(r =>
+              (r.line, r.module, r.path, r.kind)
+          ) shouldBe
+              List(
+                (59, "java.lang.String", "length", "call"),
+                (60, "java.lang.StringBuilder", "<init>", "new")
+              )
       }
 
       "give no record for a method handle on the app's own code" in {
@@ -240,6 +266,14 @@ class BytecodeCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAft
           app().filter(_.module == "me.lib.LibGrand").foreach(_.builtin shouldBe false)
       }
 
+      "resolve an overload the app class does not declare onto the library" in {
+          // AppBase declares bar(); bar(String) is LibGrand's, so AppSub's bar("x") is a use
+          app().filter(r => r.file.contains("AppSub") && r.line == 14).map(r =>
+              (r.module, r.path)
+          ) shouldBe
+              List(("me.lib.LibGrand", "bar"))
+      }
+
       "give no record for an app method called through an app subclass" in {
           // AppSub.throughBase() calls `bar()`, which AppBase declares: the app's own member
           app().filter(r => r.file.contains("AppSub") && r.line == 10).shouldBe(Nil)
@@ -248,7 +282,14 @@ class BytecodeCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAft
 
       "mark the JDK builtin and the bundled library not, and give the library its purl" in {
           app().filter(_.builtin).map(_.module).toSet shouldBe
-              Set("java.lang.String", "java.lang.Object")
+              Set(
+                "java.lang.Object",
+                "java.lang.String",
+                "java.lang.StringBuilder",
+                "java.util.List",
+                "java.util.function.Function",
+                "java.util.function.Supplier"
+              )
           app().filterNot(_.builtin).map(_.module).toSet shouldBe
               Set("me.lib.Lib", "me.lib.LibGrand")
           app().filter(_.module == "me.lib.Lib").map(_.purl).toSet shouldBe
@@ -382,6 +423,7 @@ object BytecodeCallSitesTests:
     Rec(9, "me.lib.Lib", "CONSTANT", "ref", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
     Rec(11, "me.lib.Lib", "<init>", "new", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
     Rec(14, "me.lib.Lib", "label", "call", "type", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
+    Rec(14, "me.lib.LibGrand", "bar", "call", "type", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
     Rec(18, "me.lib.Lib", "util", "call", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
     Rec(22, "me.lib.Lib", "count", "ref", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
     Rec(23, "java.lang.String", "valueOf", "call", "binding", true, ""),
@@ -390,7 +432,16 @@ object BytecodeCallSitesTests:
     Rec(31, "me.lib.Lib", "", "ref", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
     Rec(35, "me.lib.Lib", "", "ref", "binding", false, "pkg:maven/me.lib/lib-lib@0.1.0"),
     Rec(47, "java.lang.String", "isEmpty", "call", "type", true, ""),
-    Rec(55, "java.lang.String", "isBlank", "call", "type", true, "")
+    Rec(55, "java.lang.String", "isBlank", "call", "type", true, ""),
+    Rec(59, "java.lang.String", "length", "call", "type", true, ""),
+    Rec(60, "java.lang.StringBuilder", "<init>", "new", "binding", true, ""),
+    Rec(61, "java.lang.String", "", "ref", "binding", true, ""),
+    Rec(61, "java.lang.StringBuilder", "", "ref", "binding", true, ""),
+    Rec(61, "java.lang.StringBuilder", "append", "call", "type", true, ""),
+    Rec(61, "java.lang.StringBuilder", "toString", "call", "type", true, ""),
+    Rec(61, "java.util.List", "get", "call", "type", true, ""),
+    Rec(61, "java.util.function.Function", "apply", "call", "type", true, ""),
+    Rec(61, "java.util.function.Supplier", "get", "call", "type", true, "")
   )
   // format: on
 end BytecodeCallSitesTests

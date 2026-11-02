@@ -9,4 +9,8 @@ public class AppSub extends AppBase {
     int throughBase() {
         return bar();
     }
+
+    int throughOverload() {
+        return bar("x");
+    }
 }

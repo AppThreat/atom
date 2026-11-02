@@ -54,4 +54,10 @@ public class App {
     Predicate<String> lambda() {
         return s -> s.isBlank();
     }
+
+    String twoHandles(java.util.List<String> xs) {
+        java.util.function.Function<String, Integer> length = String::length;
+        java.util.function.Supplier<StringBuilder> builder = StringBuilder::new;
+        return builder.get().append(length.apply(xs.get(0))).toString();
+    }
 }
