@@ -601,11 +601,21 @@ object Atom:
               case _                  => c
         )
     opt[String]("android-sdk")
-        .text("Path to android.jar for APK analysis. (Jimple/Android only)")
+        .text("Path to android.jar or to the platform directory holding it. (Jimple/Android only)")
+        .validate(x =>
+            resolveAndroidSdk(x) match
+              case Left(err) => failure(err)
+              case Right(_)  => success
+        )
         .action((x, c) =>
             c match
-              case config: AtomConfig => config.withFrontendArg("android", x)
-              case _                  => c
+              case config: AtomConfig =>
+                  // validated above: the path resolves to an android.jar
+                  val jar = resolveAndroidSdk(x) match
+                    case Right(resolved) => resolved
+                    case Left(_)         => x
+                  config.withFrontendArg("android", jar)
+              case _ => c
         )
     opt[String]("app-prefix")
         .text(
@@ -1086,6 +1096,37 @@ object Atom:
             )
             BatchedUpdate.applyDiff(atom.graph, diff)
       }
+
+  /** `--android-sdk` takes the `android.jar` file; a directory is accepted when it holds one,
+    * either directly (a platform directory) or under `platforms/<name>` (an SDK root, whose newest
+    * platform is used). Everything else is an error the run can read (atom#328).
+    */
+  private[atom] def resolveAndroidSdk(path: String): Either[String, String] =
+    val f = File(path)
+    if !f.exists then Left(s"Path does not exist at `$path`, exiting.")
+    else if f.isRegularFile then Right(path)
+    else
+      val direct = f / "android.jar"
+      val platform =
+          if (f / "platforms").isDirectory then
+            (f / "platforms").list.toList
+                .filter(p => p.isDirectory && (p / "android.jar").isRegularFile)
+                .sortBy(p => platformOrder(p.name))
+                .lastOption
+                .map(_ / "android.jar")
+          else None
+      val candidates = List(Option(direct).filter(_.isRegularFile), platform).flatten
+      candidates match
+        case jar :: _ => Right(jar.pathAsString)
+        case Nil =>
+            Left(
+              s"`$path` holds no android.jar. Pass the android.jar file, a platform directory that contains one, or an SDK directory with platforms/<name>/android.jar."
+            )
+  end resolveAndroidSdk
+
+  /** The number after `android-`, so that android-9 sorts below android-35. */
+  private def platformOrder(name: String): Int =
+      name.stripPrefix("android-").toIntOption.getOrElse(Int.MinValue)
 
   /** The application boundary of a bytecode input (atom#326), computed once and carried by the atom
     * as a config file, so the runs that reuse the atom read it instead of re-reading the input.
