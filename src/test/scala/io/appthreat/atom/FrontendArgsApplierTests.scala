@@ -143,6 +143,25 @@ class FrontendArgsApplierTests extends AnyFunSuite with Matchers with Inside:
     result.tsTypes shouldBe false
     result.flow shouldBe true
 
+  test("applyJs forwards astgen-types, which sets ASTGEN_TYPES for astgen"):
+    def applied(args: Map[String, String]) =
+        FrontendArgsApplier.applyJs(JSConfig().withInputPath(inputPath), args).astGenTypes
+    applied(Map("astgen-types" -> "native")) shouldBe Some("native")
+    applied(Map("astgen-types" -> "ts6")) shouldBe Some("ts6")
+    applied(Map("astgen-types" -> " NATIVE ")) shouldBe Some("native")
+
+  test("applyJs leaves the default alone when astgen-types is absent, empty or not a known engine"):
+    def applied(args: Map[String, String]) =
+        FrontendArgsApplier.applyJs(JSConfig().withInputPath(inputPath), args).astGenTypes
+    applied(Map.empty) shouldBe None
+    applied(Map("astgen-types" -> "")) shouldBe None
+    applied(Map("astgen-types" -> "tsgo")) shouldBe None
+
+  test("the supported frontend keys for js list astgen-types"):
+    for lang <- Seq("js", "ts") do
+      FrontendArgsApplier.keysForLanguage(lang).map(_.name) should contain("astgen-types")
+    FrontendArgsApplier.keysForLanguage("python").map(_.name) should not contain "astgen-types"
+
   test("applyJimple forwards depth, full-resolver and android"):
     val args   = Map("depth" -> "5", "full-resolver" -> "true", "android" -> "/opt/android.jar")
     val result = FrontendArgsApplier.applyJimple(JimpleConfig().withInputPath(inputPath), args)
