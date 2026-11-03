@@ -1,0 +1,23 @@
+README.md
+  s_0dbbcb5914c2c5::t_487874c8032192 152-153,815
+docs/docs/cli.md
+  s_0dbbcb5914c2c5::t_14856ac9c9e04e 48-49,412
+src/test/scala/io/appthreat/atom/IgnoredUnitsWarningTests.scala
+  s_0dbbcb5914c2c5::t_ddbd0245e77b08 23-24,58-60,69,81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e836052cd7cbdd47c317884ffd93f0c85089ae66",
+  "prompts": {},
+  "sessions": {
+    "s_0dbbcb5914c2c5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dd7541fb-2df2-4da7-a16f-14967800872a",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
