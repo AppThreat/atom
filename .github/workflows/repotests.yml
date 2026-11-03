@@ -1,10 +1,7 @@
 name: repotests
 on:
   pull_request:
-    # a change to the documentation alone builds nothing
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
+  merge_group:
   push:
     branches:
       - main
@@ -28,12 +25,49 @@ env:
   COURSIER_REPOSITORIES: "ivy2Local|https://maven-central.storage-download.googleapis.com/maven2|https://repo1.maven.org/maven2|https://maven.google.com|https://oss.sonatype.org/content/repositories/public|https://packages.atlassian.com/mvn/maven-atlassian-external|https://repo.gradle.org/gradle/libs-releases|https://maven.pkg.github.com/appthreat/chen"
 
 jobs:
+  # Whether anything but documentation (docs/, Markdown) changed: a workflow that does not run
+  # never reports its required check, so this one always runs and its tests skip instead.
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      code: ${{ steps.files.outputs.code }}
+    steps:
+      - id: files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          PR: ${{ github.event.pull_request.number }}
+          BASE: ${{ github.event.merge_group.base_sha }}
+          HEAD: ${{ github.event.merge_group.head_sha }}
+        run: |
+          set -euo pipefail
+          files=""
+          case "$EVENT" in
+            pull_request) files=$(gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[].filename') ;;
+            # the compare API lists at most 300 files: more counts as code
+            merge_group) files=$(gh api "repos/$REPO/compare/$BASE...$HEAD" \
+              --jq 'if (.files | length) < 300 then .files[].filename else "more" end') ;;
+          esac
+          code=true
+          if [ -n "$files" ] && ! grep -qvE '^docs/|\.md$' <<<"$files"; then code=false; fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "Code changed: $code" >> "$GITHUB_STEP_SUMMARY"
+
   jvm-testing:
-    if: github.event_name != 'merge_group'
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     strategy:
+      fail-fast: false
       matrix:
+        # the required jvm on every OS; pull requests also try the other jvms, the merge queue
+        # runs the required one only
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-latest, windows-latest]
-        java-version: ['23', '25', '26']
+        java-version: ['25']
+        include: ${{ fromJSON(github.event_name == 'merge_group' && '[]' || '[{"os":"ubuntu-24.04","java-version":"23"},{"os":"ubuntu-24.04","java-version":"26"},{"os":"ubuntu-24.04-arm","java-version":"23"},{"os":"ubuntu-24.04-arm","java-version":"26"},{"os":"macos-latest","java-version":"23"},{"os":"macos-latest","java-version":"26"},{"os":"windows-latest","java-version":"23"},{"os":"windows-latest","java-version":"26"}]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -238,3 +272,26 @@ jobs:
         if: runner.os != 'Windows'
         env:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+
+  # The required check for this workflow: one name that stays the same whatever the matrices
+  # hold. It passes when every jvm-testing leg passed, or were skipped because only documentation changed.
+  repotests:
+    needs: [changes, jvm-testing]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every leg passed
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          CODE: ${{ needs.changes.outputs.code }}
+        run: |
+          set -euo pipefail
+          [ "$CHANGES" = success ] || { echo "changes: $CHANGES"; exit 1; }
+          check() {
+            case "$2" in
+              success) ;;
+              skipped) [ "$CODE" != true ] || { echo "$1 skipped although code changed"; exit 1; } ;;
+              *) echo "$1: $2"; exit 1 ;;
+            esac
+          }
+          check jvm-testing "${{ needs.jvm-testing.result }}"
