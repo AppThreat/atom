@@ -11,7 +11,8 @@ object CallSiteSlicing:
 
   def calculateCallSitesSlice(
     atom: Cpg,
-    appPrefixes: Option[Seq[String]] = None
+    appPrefixes: Option[Seq[String]] = None,
+    externalPaths: Option[String] = None
   ): ProgramCallSites =
-    val source = CallSiteSource.forAtom(atom, appPrefixes)
+    val source = CallSiteSource.forAtom(atom, appPrefixes, externalPaths)
     source.calculate().copy(metadata = source.metadata)

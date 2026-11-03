@@ -100,6 +100,7 @@ object FrontendArgsApplier:
     r = r.withIncludeFiles(r.includeFiles ++ csv(args, "include-files"))
     r = r.withMacroFiles(r.macroFiles ++ csv(args, "macro-files"))
     r = r.withCppStandard(str(args, "cpp-standard", r.cppStandard))
+    r = r.withExternalPaths(str(args, "external-paths", r.externalPaths))
     r = r.withCompileCommands(str(args, "compile-commands", r.compileCommands))
     r = r.withCompileCommandsOnly(bool(args, "compile-commands-only", r.compileCommandsOnly))
     r = r.withIncludeComments(bool(args, "include-comments", r.includeComments))
