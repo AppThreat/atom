@@ -22,6 +22,7 @@ import scala.util.Try
 class VendoredCodeTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
   import VendoredCodeTests.*
+  private def cLang = VendoredCodeTests.cLang
 
   private var workspace: BFile = scala.compiletime.uninitialized
   private val runs             = mutable.HashMap.empty[(String, String), Either[String, List[Rec]]]
@@ -54,7 +55,9 @@ class VendoredCodeTests extends AnyWordSpec with Matchers with BeforeAndAfterAll
     unavailable(lang.fixture).foreach(reason => return Left(reason))
     val dir     = workspace / lang.fixture / variant
     val project = dir / "proj"
-    BFile(getClass.getResource(s"/vendored/${lang.fixture}").toURI).copyTo(project)
+    BFile(getClass.getResource(s"/vendored/${lang.fixture.stripSuffix("-edg")}").toURI).copyTo(
+      project
+    )
     val bom = dir / "bom.json"
     val extra = variant match
       case "none"    => Nil
@@ -155,14 +158,23 @@ class VendoredCodeTests extends AnyWordSpec with Matchers with BeforeAndAfterAll
   }
 
   "C through EDG" should {
-      "mark third_party and not not_third_party, when edga is available" in {
-          assume(edgaPath.isDefined, "edga is not installed (set EDGA_PATH)")
-          val lang = VendoredCodeTests.cLang.copy(extraArgs =
-              List("--c-frontend", "edg", "--edga-path", edgaPath.get)
-          )
-          val rs = records(lang, "pattern")
-          rs.map(_.module) should contain("third_party")
-          rs.map(_.path) should not contain "project_helper"
+      def edg: Lang =
+        assume(edgaPath.isDefined, "edga is not installed (set EDGA_PATH or put edga on PATH)")
+        VendoredCodeTests.cLang.copy(
+          fixture = "c-edg",
+          extraArgs = List("--c-frontend", "edg", "--edga-path", edgaPath.get)
+        )
+      "give the project's slice without the option" in {
+          records(edg, "none") shouldBe cLang.none
+      }
+      "name the vendored directory as module with the pattern, and leave not_third_party alone" in {
+          records(edg, "pattern") shouldBe cLang.pattern
+      }
+      "name the BOM component and its purl for a component located in the input" in {
+          records(edg, "bomone") shouldBe cLang.bomOne
+      }
+      "leave a path two components claim unmarked" in {
+          records(edg, "bomtwo") shouldBe cLang.none
       }
   }
 end VendoredCodeTests
@@ -190,7 +202,7 @@ object VendoredCodeTests:
   private val Purl = "pkg:generic/vendlib@1.2.3"
 
   // the JavaScript source does not flag Node built-ins (`builtin` is for the other languages)
-  private val fs = Rec("main.js", 9, "fs", "readFileSync", "call", "")
+  private val fs = Rec("main.js", 11, "fs", "readFileSync", "call", "")
 
   private def rec(file: String, line: Int, module: String, path: String, kind: String) =
       Rec(file, line, module, path, kind, "")
@@ -259,14 +271,16 @@ object VendoredCodeTests:
       pattern = vendored(
         "third_party",
         "",
-        ("main.js", 5, "Base", "extends"),
-        ("main.js", 7, "run", "call")
+        ("main.js", 6, "Base", "extends"),
+        ("main.js", 8, "run", "call"),
+        ("main.js", 9, "run", "call")
       ) :+ fs,
       bomOne = vendored(
         "vendlib",
         Purl,
-        ("main.js", 5, "Base", "extends"),
-        ("main.js", 7, "run", "call")
+        ("main.js", 6, "Base", "extends"),
+        ("main.js", 8, "run", "call"),
+        ("main.js", 9, "run", "call")
       ) :+ fs
     ),
     Lang(
