@@ -1,0 +1,16 @@
+src/test/resources/vendored/javascript/main.js
+  h_0926447d100ad2 2,9
+src/test/scala/io/appthreat/atom/VendoredCodeTests.scala
+  h_0926447d100ad2 25,58-60,161-177,205,274-276,281-283
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3183cf3d37d782087ac8c9f760aa96685673cb2e",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
