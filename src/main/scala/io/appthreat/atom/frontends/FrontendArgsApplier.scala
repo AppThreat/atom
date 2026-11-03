@@ -50,11 +50,19 @@ object FrontendArgsApplier:
       args.get(key).map(_.trim).filter(_.nonEmpty)
 
   /** The engine that writes astgen's type maps: `native` or `ts6` (case does not matter). Any other
-    * value is ignored, like an unparseable boolean, so that astgen keeps its own default; nothing
-    * here changes a default.
+    * value is reported on stderr and ignored, so that astgen keeps its own default; nothing here
+    * changes a default.
     */
-  def astgenTypes(args: Map[String, String]): Option[String] =
-      strOpt(args, "astgen-types").map(_.toLowerCase).filter(Set("native", "ts6").contains)
+  def astgenTypes(
+    args: Map[String, String],
+    warn: String => Unit = m => System.err.println(m)
+  ): Option[String] =
+      strOpt(args, "astgen-types").map(_.toLowerCase).flatMap { v =>
+          if Set("native", "ts6").contains(v) then Some(v)
+          else
+            warn(s"atom: astgen-types=$v is not one of native, ts6 and is ignored")
+            None
+      }
 
   /** Applies the keys shared by every frontend (the `X2CpgConfig` surface): path/file exclusions
     * and early schema validation. These mutate the config in place because the underlying fields

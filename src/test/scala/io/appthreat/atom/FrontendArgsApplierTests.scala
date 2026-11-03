@@ -156,6 +156,11 @@ class FrontendArgsApplierTests extends AnyFunSuite with Matchers with Inside:
     applied(Map.empty) shouldBe None
     applied(Map("astgen-types" -> "")) shouldBe None
     applied(Map("astgen-types" -> "tsgo")) shouldBe None
+    val warnings = scala.collection.mutable.ListBuffer.empty[String]
+    FrontendArgsApplier.astgenTypes(Map("astgen-types" -> "nativ"), warnings += _) shouldBe None
+    warnings.toList shouldBe List(
+      "atom: astgen-types=nativ is not one of native, ts6 and is ignored"
+    )
 
   test("the supported frontend keys for js list astgen-types"):
     for lang <- Seq("js", "ts") do
