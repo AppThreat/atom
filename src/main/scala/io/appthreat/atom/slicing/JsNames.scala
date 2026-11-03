@@ -99,6 +99,60 @@ object JsNames:
       s.nonEmpty && !s.startsWith(".") && !s.startsWith("/") && !s.startsWith("#") &&
           !s.contains("://")
 
+  /** The modules `require("module").builtinModules` lists on Node 24 (internal `_`-prefixed ones
+    * left out), by the name before any subpath. Several are also npm packages (`events`, `buffer`,
+    * `punycode`, `util`); a specifier with one of these names is the built-in, because Node
+    * resolves it before `node_modules`.
+    */
+  private val nodeBuiltinNames: Set[String] = Set(
+    "assert",
+    "async_hooks",
+    "buffer",
+    "child_process",
+    "cluster",
+    "console",
+    "constants",
+    "crypto",
+    "dgram",
+    "diagnostics_channel",
+    "dns",
+    "domain",
+    "events",
+    "fs",
+    "http",
+    "http2",
+    "https",
+    "inspector",
+    "module",
+    "net",
+    "os",
+    "path",
+    "perf_hooks",
+    "process",
+    "punycode",
+    "querystring",
+    "readline",
+    "repl",
+    "stream",
+    "string_decoder",
+    "sys",
+    "timers",
+    "tls",
+    "trace_events",
+    "tty",
+    "url",
+    "util",
+    "v8",
+    "vm",
+    "wasi",
+    "worker_threads",
+    "zlib"
+  )
+
+  /** Whether a module specifier names a Node built-in: `fs`, `fs/promises`, `node:test`. */
+  def isNodeBuiltinSpecifier(specifier: String): Boolean =
+      specifier.startsWith("node:") || nodeBuiltinNames.contains(specifier.takeWhile(_ != '/'))
+
   private def nodeBuiltin(fullName: String): Option[String] =
       if fullName.startsWith("node:") then
         fullName.drop(5).takeWhile(_ != ':') match

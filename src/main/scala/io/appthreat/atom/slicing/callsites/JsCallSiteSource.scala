@@ -118,7 +118,9 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
     // Pass C: decorators, heritage clauses, tagged templates and JSX tags, by name (via=name)
     collector.addAll(nameResolvedRecords(atom, js))
 
-    collector.result()
+    val result = collector.result()
+    val purls  = JsPurls(atom)
+    result.copy(callsites = result.callsites.map(purls.attribute))
   end calculate
 
   private val primitiveMembers: Set[String] = Set(
@@ -738,3 +740,27 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
       members.toList
   end BindingResolver
 end JsCallSiteSource
+
+/** The SBOM's purl for the npm package of a record's module (atom#321). No heuristics: the package
+  * is the specifier's package (`JsModules.packageOf`: `lodash/fp` -> `lodash`, `@angular/core/x` ->
+  * `@angular/core`), the purls are those `JsProject.bomPurls` reads from the BOMs the atom carries,
+  * and a record gets one only when the SBOM lists the package once. It stays empty for a Node
+  * built-in (in no SBOM, and `events` or `buffer` would otherwise match the npm package of that
+  * name), for a specifier a tsconfig path alias maps to a project file, for a package with several
+  * purls (several versions) and for one the SBOM does not list.
+  */
+private[callsites] final class JsPurls(atom: Cpg):
+  private val bom     = io.appthreat.x2cpg.passes.taggers.js.JsProject(atom).bomPurls
+  private val aliases = JsPathAliases(atom)
+
+  def attribute(record: CallSiteRecord): CallSiteRecord =
+      if bom.isEmpty then record else record.copy(purl = purlOf(record.file, record.module))
+
+  private def purlOf(file: String, module: String): String =
+      if !JsNames.isBareSpecifier(module) || JsNames.isNodeBuiltinSpecifier(module) then ""
+      else
+        io.appthreat.x2cpg.passes.taggers.js.JsModules.packageOf(module)
+            .filter(_ => aliases.resolve(file, module).isEmpty)
+            .map(pkg => bom.getOrElse(pkg, Nil).distinct)
+            .collect { case Seq(only) => only }
+            .getOrElse("")

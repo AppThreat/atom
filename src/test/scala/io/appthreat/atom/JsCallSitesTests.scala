@@ -19,7 +19,8 @@ import scala.util.Try
   */
 class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
-  private val fixtureCases = Seq("callsites", "decorators", "callsites-fields", "orphans", "sfc")
+  private val fixtureCases =
+      Seq("callsites", "decorators", "callsites-fields", "orphans", "sfc", "purl-bom")
 
   private var workspace: BFile                    = scala.compiletime.uninitialized
   private var slices: Map[String, List[CallSite]] = Map.empty
@@ -32,7 +33,8 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
     module: String,
     path: String,
     kind: String,
-    via: String
+    via: String,
+    purl: String = ""
   )
 
   override def beforeAll(): Unit =
@@ -50,7 +52,7 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
     val atomFile  = workspace / s"$caseName.atom"
     val sliceFile = workspace / s"$caseName-callsites.json"
     val result = Atom.run(
-      Seq(
+      (Seq(
         "callsites",
         "--cache",
         "none",
@@ -59,9 +61,8 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
         "-o",
         atomFile.pathAsString,
         "-s",
-        sliceFile.pathAsString,
-        projectDir.pathAsString
-      ).toArray
+        sliceFile.pathAsString
+      ) ++ bomArgs(caseName, projectDir) :+ projectDir.pathAsString).toArray
     )
     withClue(s"atom callsites failed for $caseName: "):
       result.isRight shouldBe true
@@ -74,10 +75,16 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
               r("module").str,
               r("path").str,
               r("kind").str,
-              r("via").str
+              r("via").str,
+              r.obj.get("purl").map(_.str).getOrElse("")
             )
         ).toList
   end runCallsites
+
+  /** The purl fixture hands its SBOM to atom; the other fixtures have none. */
+  private def bomArgs(caseName: String, projectDir: BFile): Seq[String] =
+      if caseName == "purl-bom" then Seq("--bom-file", (projectDir / "bom.json").pathAsString)
+      else Nil
 
   private def copyFixture(source: BFile, target: BFile): Unit =
       if source.isDirectory then
@@ -107,6 +114,29 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
       records(caseName).filter(r => r.file == file && r.line == line && r.module == module)
 
   "atom callsites" should {
+
+      "carry the SBOM's purl of the npm package, and none where the SBOM cannot say (atom#321)" in {
+          val purls = records("purl-bom").filter(_.file == "src/app.js").map(r =>
+              (r.module, r.line) -> r.purl
+          ).toMap
+          // one purl: the package, also behind an encoded scope
+          purls(("express", 9)) shouldBe "pkg:npm/express@4.19.2"
+          purls(("@babel/parser", 13)) shouldBe "pkg:npm/%40babel/parser@7.24.0"
+          // two versions of lodash: unsure, so none
+          purls(("lodash", 10)) shouldBe ""
+          // Node built-ins, even `events`, which the SBOM also lists as an npm package
+          purls(("fs", 11)) shouldBe ""
+          purls(("events", 12)) shouldBe ""
+          // a tsconfig path alias for a project file, which the SBOM lists as `@lib/db` anyway
+          records("purl-bom").filter(_.module == "@lib/db").map(_.purl).distinct should
+              contain only ""
+          // a package the SBOM does not list
+          purls(("left-pad", 15)) shouldBe ""
+      }
+
+      "leave purl out of every record when the atom carries no SBOM (atom#321)" in {
+          records("callsites").map(_.purl).distinct shouldBe List("")
+      }
 
       "record single-file component uses at their script lines (atom#320)" in {
           // Vue, Svelte and Astro records carry the line the frontmatter or script block sits
