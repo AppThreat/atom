@@ -56,10 +56,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # pull requests try both node lines, the merge queue the newer one
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
         java-version: ['25']
-        node-version: ${{ fromJSON(github.event_name == 'merge_group' && '["26.x"]' || '["24.x", "26.x"]') }}
+        node-version: ['26.x']
         ruby: ["4.0.5"]
     runs-on: ${{ matrix.os }}
     steps:
