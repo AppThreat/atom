@@ -184,7 +184,7 @@ jobs:
       matrix:
         # pull requests try both jvms, the merge queue the required one
         java-version: ${{ fromJSON(github.event_name == 'merge_group' && '["25"]' || '["23", "25"]') }}
-        node-version: ['25.x']
+        node-version: ['26.x']
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
