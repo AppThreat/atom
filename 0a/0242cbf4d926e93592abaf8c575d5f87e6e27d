@@ -1,0 +1,19 @@
+src/main/resources/META-INF/native-image/resource-config.json
+  s_c0804e5357f0c5::t_c1c2fd7501dc6c 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0a0242cbf4d926e93592abaf8c575d5f87e6e27d",
+  "prompts": {},
+  "sessions": {
+    "s_c0804e5357f0c5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75227701-fd30-4fc7-8eae-71a8df8f3a1c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
