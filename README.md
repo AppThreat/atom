@@ -149,6 +149,8 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
   --ignore-paths <value>   Comma-separated paths to ignore from analysis. (Python only)
   --android-sdk <value>    Path to android.jar, a platform directory holding it, or an SDK directory. (Jimple/Android only)
   --app-prefix <value>     Application package of a bytecode input; repeatable. Replaces the boundary the APK or jar manifest would give, and the jar's package prefixes. (Jimple only)
+  --external-paths <value>
+                           Regular expression of vendored input paths (third_party/, a copied single-header library); matched files are parsed as always but marked external. (C/C++ today; the other frontends accept it and do nothing yet)
   --solver-depth <value>   Recursive jar unpacking depth (default: 1). (Jimple/Scala only)
   --full-resolver          Enable whole-program, transitive call resolution. (Jimple/Scala only)
   --php-ini <value>        php.ini path for the PHP parser. (PHP only)

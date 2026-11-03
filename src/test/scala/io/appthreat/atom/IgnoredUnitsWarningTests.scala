@@ -20,6 +20,8 @@ class IgnoredUnitsWarningTests extends AnyWordSpec with Matchers:
     new String(buffer.toByteArray, java.nio.charset.StandardCharsets.UTF_8)
 
   /** Runs memory-safety over `root` with a one-unit database for `unit`, and returns stderr. */
+  private val warning = "drops 1 of 1 source and header files"
+
   private def warningFor(dir: File, root: File, unit: File, extra: String*): String =
     unit.parent.createDirectories()
     unit.writeText("int main(void) { return 0; }\n")
@@ -49,13 +51,12 @@ class IgnoredUnitsWarningTests extends AnyWordSpec with Matchers:
     }
   end warningFor
 
-  private val warning = "filtered out by the default C/C++ ignore pattern"
-
   "a compile database whose every unit sits under an ignored directory of the input" should {
       "warn, naming the pattern and the option that replaces it" in {
           File.usingTemporaryDirectory("atom-ignored-units") { dir =>
-            val stderr = warningFor(dir, dir, dir / "examples" / "prog" / "main.c")
-            stderr should include(warning)
+            val stderr = warningFor(dir, dir, dir / "example" / "prog" / "main.c")
+            // the per-file count warning now says it, naming the option that replaces the pattern
+            stderr should include("drops 1 of 1 source and header files")
             stderr should include("--exclude-regex")
           }
       }
@@ -64,7 +65,7 @@ class IgnoredUnitsWarningTests extends AnyWordSpec with Matchers:
   "an input root that is itself inside such a directory" should {
       "not warn: the pattern is matched against paths relative to the root" in {
           File.usingTemporaryDirectory("atom-root-inside") { dir =>
-            val root = dir / "examples" / "prog"
+            val root = dir / "example" / "prog"
             (warningFor(dir, root, root / "main.c") should not).include(warning)
           }
       }
@@ -76,7 +77,7 @@ class IgnoredUnitsWarningTests extends AnyWordSpec with Matchers:
             val stderr = warningFor(
               dir,
               dir,
-              dir / "examples" / "prog" / "main.c",
+              dir / "example" / "prog" / "main.c",
               "--exclude-regex",
               ".*vendor.*"
             )

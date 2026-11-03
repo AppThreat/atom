@@ -1,10 +1,7 @@
 name: langtests
 on:
   pull_request:
-    # a change to the documentation alone builds nothing
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
+  merge_group:
   workflow_dispatch:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -21,13 +18,48 @@ env:
   COURSIER_REPOSITORIES: "ivy2Local|https://maven-central.storage-download.googleapis.com/maven2|https://repo1.maven.org/maven2|https://maven.google.com|https://oss.sonatype.org/content/repositories/public|https://packages.atlassian.com/mvn/maven-atlassian-external|https://repo.gradle.org/gradle/libs-releases|https://maven.pkg.github.com/appthreat/chen"
 
 jobs:
+  # Whether anything but documentation (docs/, Markdown) changed: a workflow that does not run
+  # never reports its required check, so this one always runs and its tests skip instead.
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      code: ${{ steps.files.outputs.code }}
+    steps:
+      - id: files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          PR: ${{ github.event.pull_request.number }}
+          BASE: ${{ github.event.merge_group.base_sha }}
+          HEAD: ${{ github.event.merge_group.head_sha }}
+        run: |
+          set -euo pipefail
+          files=""
+          case "$EVENT" in
+            pull_request) files=$(gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[].filename') ;;
+            # the compare API lists at most 300 files: more counts as code
+            merge_group) files=$(gh api "repos/$REPO/compare/$BASE...$HEAD" \
+              --jq 'if (.files | length) < 300 then .files[].filename else "more" end') ;;
+          esac
+          code=true
+          if [ -n "$files" ] && ! grep -qvE '^docs/|\.md$' <<<"$files"; then code=false; fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "Code changed: $code" >> "$GITHUB_STEP_SUMMARY"
+
   lang-testing:
-    if: github.event_name != 'merge_group'
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     strategy:
+      fail-fast: false
       matrix:
+        # pull requests try both node lines, the merge queue the newer one
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
         java-version: ['25']
-        node-version: ['24.x', '26.x']
+        node-version: ${{ fromJSON(github.event_name == 'merge_group' && '["26.x"]' || '["24.x", "26.x"]') }}
         ruby: ["4.0.5"]
     runs-on: ${{ matrix.os }}
     steps:
@@ -145,10 +177,14 @@ jobs:
           rbastgen --help
           which scalasem
   nodejs-testing-windows:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
-        java-version: ['23', '25']
+        # pull requests try both jvms, the merge queue the required one
+        java-version: ${{ fromJSON(github.event_name == 'merge_group' && '["25"]' || '["23", "25"]') }}
         node-version: ['25.x']
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -231,3 +267,28 @@ jobs:
         shell: cmd
         run: |
           atom -l js --remove-atom -o %GITHUB_WORKSPACE%\\repotests\\shiftleft-ts-example\\app.atom %GITHUB_WORKSPACE%\\repotests\\shiftleft-ts-example
+
+  # The required check for this workflow: one name that stays the same whatever the matrices
+  # hold. It passes when every lang-testing and nodejs-testing-windows leg passed, or were skipped
+  # because only documentation changed.
+  langtests:
+    needs: [changes, lang-testing, nodejs-testing-windows]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every leg passed
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          CODE: ${{ needs.changes.outputs.code }}
+        run: |
+          set -euo pipefail
+          [ "$CHANGES" = success ] || { echo "changes: $CHANGES"; exit 1; }
+          check() {
+            case "$2" in
+              success) ;;
+              skipped) [ "$CODE" != true ] || { echo "$1 skipped although code changed"; exit 1; } ;;
+              *) echo "$1: $2"; exit 1 ;;
+            esac
+          }
+          check lang-testing "${{ needs.lang-testing.result }}"
+          check nodejs-testing-windows "${{ needs.nodejs-testing-windows.result }}"

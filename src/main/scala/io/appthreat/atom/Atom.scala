@@ -11,6 +11,7 @@ import io.appthreat.atom.parsedeps.parseDependencies
 import io.appthreat.atom.passes.TypeHintPass
 import io.appthreat.atom.slicing.*
 import io.appthreat.edg2atom.Edg2Atom
+import io.appthreat.c2cpg.parser.ProjectSources
 import io.appthreat.c2cpg.{C2Cpg, Config as CConfig}
 import io.appthreat.javasrc2cpg.{JavaSrc2Cpg, Config as JavaConfig}
 import io.appthreat.jimple2cpg.{Jimple2Cpg, Config as JimpleConfig}
@@ -150,8 +151,15 @@ object Atom:
         "tracker",
         "adware"
       )
-  private val COMMON_IGNORE_REGEX = ".*(docs|example|samples|mocks|Documentation|demos).*"
-  private val JAVA_IGNORE_REGEX   = ".*(target|build)/(generated|intermediates|outputs|tmp).*"
+  // path SEGMENTS under the input root, never a substring of one name: an input directory of
+  // someone's own called `t_demos` or `openssl_docs` is the whole project, not a docs folder of it
+  private val COMMON_IGNORE_DIRS =
+      Seq("docs", "example", "samples", "mocks", "Documentation", "demos")
+  private val COMMON_IGNORE_REGEX =
+      ignoredDirectoriesRegex(COMMON_IGNORE_DIRS).getOrElse(
+        ".*(docs|example|samples|mocks|Documentation|demos).*"
+      )
+  private val JAVA_IGNORE_REGEX = ".*(target|build)/(generated|intermediates|outputs|tmp).*"
   // `vendor/` is Composer's dependency tree, at any depth: dependencies are not project code. The
   // relative path carries the host's separator, and the batch generator searches with the same
   // pattern where the frontend matches it whole, so the directory is anchored by either form.
@@ -241,6 +249,34 @@ object Atom:
     * resolved against the entry's directory, relative to the input root, matched whole. An
     * `--exclude-regex` of the user's own replaces the default, so there is nothing to explain.
     */
+  /** The default C/C++ ignore pattern removing files is normal for a docs folder and silent data
+    * loss for an input whose own paths trip it: say how many files it dropped, so a project that
+    * analyses empty has a reason to read. One walk of the input with no ignore pattern, filtered
+    * with the default; a pattern the user passed needs no explaining.
+    */
+  private def warnWhenIgnoredFilesAreRemoved(finalConfig: CConfig, config: AtomConfig): Unit =
+    val pattern = finalConfig.ignoredFilesRegex.pattern.toString
+    if pattern.nonEmpty && !config.frontendArgs.contains("exclude-regex") then
+      val unfiltered = finalConfig.copy().withInheritedFields(finalConfig).withIgnoredFilesRegex("")
+      val root       = finalConfig.inputPath
+      val all        = new ProjectSources(unfiltered).files
+      val regex      = pattern.r
+      val dropped = all.count(f =>
+        val relative = scala.util.Try(
+          java.nio.file.Paths.get(root).toAbsolutePath.relativize(
+            java.nio.file.Paths.get(f).toAbsolutePath
+          ).toString
+        ).getOrElse(f)
+        regex.matches(relative)
+      )
+      if dropped > 0 then
+        System.err.println(
+          s"atom: the C/C++ ignore pattern '$pattern' drops $dropped of ${all.length} source " +
+              "and header files under the input. Pass --exclude-regex with a pattern of your " +
+              "own to replace it."
+        )
+  end warnWhenIgnoredFilesAreRemoved
+
   private def warnWhenIgnoredUnitsAreEverything(config: AtomConfig, pattern: String): Unit =
       if !config.frontendArgs.contains("exclude-regex") then
         for
@@ -627,6 +663,16 @@ object Atom:
             c match
               case config: AtomConfig =>
                   config.withAppPrefixes(config.appPrefixes.getOrElse(Nil) :+ x)
+              case _ => c
+        )
+    opt[String]("external-paths")
+        .text(
+          "Regular expression of vendored input paths (third_party/, a copied single-header library); matched files are parsed as always but marked external. (C/C++ today; the other frontends accept it and do nothing yet)"
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig =>
+                  config.withFrontendArgs(Map("external-paths" -> x))
               case _ => c
         )
     opt[Int]("solver-depth")
@@ -1153,6 +1199,27 @@ object Atom:
         case _ => Right(())
     else Right(())
 
+  /** Where a C or C++ project's own files live beyond the input root (its compilation database's
+    * build directories, where generated headers are written) and the `--external-paths` pattern,
+    * stored in the atom so a later `callsites` run on it sees what the build saw.
+    */
+  private def storeCProjectLayout(config: AtomConfig, ag: Cpg): Either[String, Unit] =
+    val isC = ag.metaData.language.headOption.exists(l =>
+        l == Languages.NEWC || l == Languages.C || l == "CPP" || l == "C++"
+    )
+    if isC then
+      val root = config.inputPath.path.toAbsolutePath.normalize.toString
+      slicing.callsites.CProjectLayout.store(
+        ag,
+        slicing.callsites.CProjectLayout(
+          config.frontendArgs.get("compile-commands")
+              .map(db => slicing.callsites.CProjectLayout.buildDirsOf(db, root))
+              .getOrElse(Nil),
+          config.frontendArgs.getOrElse("external-paths", "")
+        )
+      )
+    Right(())
+
   private def newAtomCreatedString(config: AtomConfig): String =
     val absolutePath = config.outputAtomFile.path.toAbsolutePath
     if config.removeAtom then
@@ -1267,7 +1334,11 @@ object Atom:
       case u: AtomUsagesConfig if u.alsoCallsites.isDefined =>
           PerfReporter.stage("slicing.callsites", "slicing") {
               val callsitesFile = u.alsoCallsites.get
-              val callSites     = CallSiteSlicing.calculateCallSitesSlice(ag, config.appPrefixes)
+              val callSites = CallSiteSlicing.calculateCallSitesSlice(
+                ag,
+                config.appPrefixes,
+                config.frontendArgs.get("external-paths")
+              )
               SliceFiles.writeAtomically(callsitesFile)(callSites.toJsonFile)
               println(
                 s"Call sites have been successfully written to ${callsitesFile.pathAsString}"
@@ -1288,7 +1359,11 @@ object Atom:
   private def generateCallsitesSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
     println("Slicing the atom for call sites. This might take a few minutes ...")
     runChennaiTags(config, ag)
-    val slice = CallSiteSlicing.calculateCallSitesSlice(ag, config.appPrefixes)
+    val slice = CallSiteSlicing.calculateCallSitesSlice(
+      ag,
+      config.appPrefixes,
+      config.frontendArgs.get("external-paths")
+    )
     SliceFiles.writeAtomically(config.outputSliceFile)(slice.toJsonFile)
     println(s"Call sites have been successfully written to ${config.outputSliceFile.pathAsString}")
     Right("Call sites slice generated successfully")
@@ -1494,6 +1569,7 @@ object Atom:
             for
               _ <- storeBoms(config, ag)
               _ <- storeAppBoundary(config, ag)
+              _ <- storeCProjectLayout(config, ag)
               _ <- enhanceCpg(config, ag, reusing)
               _ <- generateSlice(config, ag)
               _ <- PerfReporter.stage("verification.persist", "verification")(closeCpg(ag))
@@ -1581,6 +1657,7 @@ object Atom:
         .withIncludeTrivialExpressions(false)
         .withIncludePaths(C2ATOM_INCLUDE_PATH)
     val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
+    warnWhenIgnoredFilesAreRemoved(finalConfig, config)
     new C2Atom().createCpg(C2Cpg.withCensusDefines(finalConfig))
   end createC2Atom
 
@@ -1624,7 +1701,9 @@ object Atom:
         .withImageLocations(false)
         .withIncludeTrivialExpressions(false)
         .withIncludePaths(C2ATOM_INCLUDE_PATH)
-    FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
+    val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
+    warnWhenIgnoredFilesAreRemoved(finalConfig, config)
+    finalConfig
   end c2CpgConfig
 
   /** `--suggest-defines` without `--auto-defines`: the macro census alone, no atom. */
