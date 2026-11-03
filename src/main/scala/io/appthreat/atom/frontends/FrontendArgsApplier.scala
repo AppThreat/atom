@@ -49,6 +49,21 @@ object FrontendArgsApplier:
   def strOpt(args: Map[String, String], key: String): Option[String] =
       args.get(key).map(_.trim).filter(_.nonEmpty)
 
+  /** The engine that writes astgen's type maps: `native` or `ts6` (case does not matter). Any other
+    * value is reported on stderr and ignored, so that astgen keeps its own default; nothing here
+    * changes a default.
+    */
+  def astgenTypes(
+    args: Map[String, String],
+    warn: String => Unit = m => System.err.println(m)
+  ): Option[String] =
+      strOpt(args, "astgen-types").map(_.toLowerCase).flatMap { v =>
+          if Set("native", "ts6").contains(v) then Some(v)
+          else
+            warn(s"atom: astgen-types=$v is not one of native, ts6 and is ignored")
+            None
+      }
+
   /** Applies the keys shared by every frontend (the `X2CpgConfig` surface): path/file exclusions
     * and early schema validation. These mutate the config in place because the underlying fields
     * are inherited mutable state.
@@ -155,6 +170,7 @@ object FrontendArgsApplier:
     r = r.withTsTypes(bool(args, "ts-types", r.tsTypes))
     r = r.withFlow(bool(args, "flow", r.flow))
     strOpt(args, "astgen-out").foreach(v => r = r.withAstGenOutDir(v))
+    astgenTypes(args).foreach(v => r = r.withAstGenTypes(v))
     applyUniversal(r, args)
     applyTypeRecovery(r, args, c)
     r
@@ -406,6 +422,13 @@ object FrontendArgsApplier:
     ),
     KeyDoc("flow", "bool", "false", "Enable Flow mode.", Seq("js")),
     KeyDoc("astgen-out", "string", "", "Permanent directory for astgen output.", Seq("js", "ts")),
+    KeyDoc(
+      "astgen-types",
+      "string",
+      "",
+      "Engine for astgen's type maps: native (the atom-parsetools-native binary) or ts6 (TypeScript 6). Sets ASTGEN_TYPES for the astgen process; unset keeps astgen's default.",
+      Seq("js", "ts")
+    ),
     KeyDoc("depth", "int", "1", "Recursive jar unpacking depth.", Seq("jimple", "scala")),
     KeyDoc(
       "full-resolver",
