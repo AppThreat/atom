@@ -63,11 +63,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # the required jvm on every OS; pull requests also try the other jvms, the merge queue
+        # the required jvm on every OS; pull requests also try the other jvms on Linux and Windows
+        # (macOS runners are scarce, so macOS runs the required jvm only), the merge queue
         # runs the required one only
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-latest, windows-latest]
         java-version: ['25']
-        include: ${{ fromJSON(github.event_name == 'merge_group' && '[]' || '[{"os":"ubuntu-24.04","java-version":"23"},{"os":"ubuntu-24.04","java-version":"26"},{"os":"ubuntu-24.04-arm","java-version":"23"},{"os":"ubuntu-24.04-arm","java-version":"26"},{"os":"macos-latest","java-version":"23"},{"os":"macos-latest","java-version":"26"},{"os":"windows-latest","java-version":"23"},{"os":"windows-latest","java-version":"26"}]') }}
+        include: ${{ fromJSON(github.event_name == 'merge_group' && '[]' || '[{"os":"ubuntu-24.04","java-version":"23"},{"os":"ubuntu-24.04","java-version":"26"},{"os":"ubuntu-24.04-arm","java-version":"23"},{"os":"ubuntu-24.04-arm","java-version":"26"},{"os":"windows-latest","java-version":"23"},{"os":"windows-latest","java-version":"26"}]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
