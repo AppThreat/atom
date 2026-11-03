@@ -1,0 +1,16 @@
+src/main/scala/io/appthreat/atom/frontends/FrontendArgsApplier.scala
+  h_0926447d100ad2 52-58,164,416-422
+src/test/scala/io/appthreat/atom/FrontendArgsApplierTests.scala
+  h_0926447d100ad2 146-164
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "22dbbe88c7648ba3530428efa027aca22672a3ca",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
