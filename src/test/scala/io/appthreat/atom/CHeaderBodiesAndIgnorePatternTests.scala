@@ -106,9 +106,13 @@ class CHeaderBodiesAndIgnorePatternTests extends AnyWordSpec with Matchers:
       "be dropped, with a warning that says how many files" in {
           File.usingTemporaryDirectory("atom-docs-under") { dir =>
             writeLibraryProject(dir)
-            // a header, which a database-only run still picks up as the project's own
+            // a header the compiled unit includes, which a database run parses as the project's
+            // own unless the pattern drops it
             (dir / "proj" / "docs").createDirectories()
             (dir / "proj" / "docs" / "guide.h").write("int guide(void);\n")
+            (dir / "proj" / "main.c").write(
+              "#include \"proj_hdr.h\"\n#include \"docs/guide.h\"\nint main(void) { return proj_wrapped(1); }\n"
+            )
             val (methods, stderr) = runUsages(dir, "docs.atom")
             stderr should include("drops 1 of 3 source and header files")
             stderr should include("--exclude-regex")

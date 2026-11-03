@@ -25,3 +25,6 @@ static int use_all(int a, int b) {
   return h + n + q + r + s + sn;
 }
 int main(void) { return use_all(1, 2); }
+int logged(void) {
+  return PROJ_LOGV(lib_func(3));
+}

@@ -251,23 +251,31 @@ object Atom:
     */
   /** The default C/C++ ignore pattern removing files is normal for a docs folder and silent data
     * loss for an input whose own paths trip it: say how many files it dropped, so a project that
-    * analyses empty has a reason to read. Counted by walking the input twice, once as configured
-    * and once with no ignored-files pattern; the compilation database narrows both alike.
+    * analyses empty has a reason to read. One walk of the input with no ignore pattern, filtered
+    * with the default; a pattern the user passed needs no explaining.
     */
-  private def warnWhenIgnoredFilesAreRemoved(finalConfig: CConfig): Unit =
-    val pattern = finalConfig.ignoredFilesRegex
-    if pattern.pattern.toString.nonEmpty then
-      // the config's fields are mutable: the unfiltered walk borrows the config and gives it back
-      finalConfig.withIgnoredFilesRegex("")
-      val all = new ProjectSources(finalConfig).files.length
-      finalConfig.withIgnoredFilesRegex(pattern.pattern.toString)
-      val kept = new ProjectSources(finalConfig).files.length
-      if all > kept then
+  private def warnWhenIgnoredFilesAreRemoved(finalConfig: CConfig, config: AtomConfig): Unit =
+    val pattern = finalConfig.ignoredFilesRegex.pattern.toString
+    if pattern.nonEmpty && !config.frontendArgs.contains("exclude-regex") then
+      val unfiltered = finalConfig.copy().withInheritedFields(finalConfig).withIgnoredFilesRegex("")
+      val root       = finalConfig.inputPath
+      val all        = new ProjectSources(unfiltered).files
+      val regex      = pattern.r
+      val dropped = all.count(f =>
+        val relative = scala.util.Try(
+          java.nio.file.Paths.get(root).toAbsolutePath.relativize(
+            java.nio.file.Paths.get(f).toAbsolutePath
+          ).toString
+        ).getOrElse(f)
+        regex.matches(relative)
+      )
+      if dropped > 0 then
         System.err.println(
-          s"atom: the C/C++ ignore pattern '${pattern.pattern.toString}' drops " +
-              s"${all - kept} of $all source and header files under the input. " +
-              "Pass --exclude-regex with a pattern of your own to replace it."
+          s"atom: the C/C++ ignore pattern '$pattern' drops $dropped of ${all.length} source " +
+              "and header files under the input. Pass --exclude-regex with a pattern of your " +
+              "own to replace it."
         )
+  end warnWhenIgnoredFilesAreRemoved
 
   private def warnWhenIgnoredUnitsAreEverything(config: AtomConfig, pattern: String): Unit =
       if !config.frontendArgs.contains("exclude-regex") then
@@ -1191,6 +1199,27 @@ object Atom:
         case _ => Right(())
     else Right(())
 
+  /** Where a C or C++ project's own files live beyond the input root (its compilation database's
+    * build directories, where generated headers are written) and the `--external-paths` pattern,
+    * stored in the atom so a later `callsites` run on it sees what the build saw.
+    */
+  private def storeCProjectLayout(config: AtomConfig, ag: Cpg): Either[String, Unit] =
+    val isC = ag.metaData.language.headOption.exists(l =>
+        l == Languages.NEWC || l == Languages.C || l == "CPP" || l == "C++"
+    )
+    if isC then
+      val root = config.inputPath.path.toAbsolutePath.normalize.toString
+      slicing.callsites.CProjectLayout.store(
+        ag,
+        slicing.callsites.CProjectLayout(
+          config.frontendArgs.get("compile-commands")
+              .map(db => slicing.callsites.CProjectLayout.buildDirsOf(db, root))
+              .getOrElse(Nil),
+          config.frontendArgs.getOrElse("external-paths", "")
+        )
+      )
+    Right(())
+
   private def newAtomCreatedString(config: AtomConfig): String =
     val absolutePath = config.outputAtomFile.path.toAbsolutePath
     if config.removeAtom then
@@ -1540,6 +1569,7 @@ object Atom:
             for
               _ <- storeBoms(config, ag)
               _ <- storeAppBoundary(config, ag)
+              _ <- storeCProjectLayout(config, ag)
               _ <- enhanceCpg(config, ag, reusing)
               _ <- generateSlice(config, ag)
               _ <- PerfReporter.stage("verification.persist", "verification")(closeCpg(ag))
@@ -1627,7 +1657,7 @@ object Atom:
         .withIncludeTrivialExpressions(false)
         .withIncludePaths(C2ATOM_INCLUDE_PATH)
     val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
-    warnWhenIgnoredFilesAreRemoved(finalConfig)
+    warnWhenIgnoredFilesAreRemoved(finalConfig, config)
     new C2Atom().createCpg(C2Cpg.withCensusDefines(finalConfig))
   end createC2Atom
 
@@ -1672,7 +1702,7 @@ object Atom:
         .withIncludeTrivialExpressions(false)
         .withIncludePaths(C2ATOM_INCLUDE_PATH)
     val finalConfig = FrontendArgsApplier.applyC(baseConfig, config.frontendArgs)
-    warnWhenIgnoredFilesAreRemoved(finalConfig)
+    warnWhenIgnoredFilesAreRemoved(finalConfig, config)
     finalConfig
   end c2CpgConfig
 

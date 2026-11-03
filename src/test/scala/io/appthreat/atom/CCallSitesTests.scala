@@ -98,6 +98,8 @@ class CCallSitesTests extends AnyWordSpec with Matchers with AppendedClues with 
     Expected("main.c", 21, "lib.h", "LIB_MAX", "macro", "macro", builtin = false),
     Expected("main.c", 21, "lib.h", "LIB_VERSION", "macro", "macro", builtin = false),
     Expected("main.c", 23, "lib.h", "LIB_MAX", "macro", "macro", builtin = false),
+    // a library call written in a variadic project macro's arguments is the file's own, at its line
+    Expected("main.c", 29, "lib.h", "lib_func", "call", "binding", builtin = false),
     // proj.h: the project macro that wraps a library call - one record at its definition
     Expected("proj.h", 4, "lib.h", "lib_func", "call", "binding", builtin = false)
   )
@@ -131,6 +133,7 @@ class CCallSitesTests extends AnyWordSpec with Matchers with AppendedClues with 
           val wrapped = records.filter(r => r.path == "lib_func" && r.kind == "call")
           wrapped shouldBe List(
             Expected("main.c", 18, "lib.h", "lib_func", "call", "binding", builtin = false),
+            Expected("main.c", 29, "lib.h", "lib_func", "call", "binding", builtin = false),
             Expected("proj.h", 4, "lib.h", "lib_func", "call", "binding", builtin = false)
           )
           // the project's own classes: no constructor, member or new of theirs

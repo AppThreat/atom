@@ -13,4 +13,5 @@ struct ProjSub : LibClass {
   int own;
 };
 #endif
+#define PROJ_LOGV(...) proj_helper(__VA_ARGS__)
 #endif

@@ -51,7 +51,6 @@ class IgnoredUnitsWarningTests extends AnyWordSpec with Matchers:
     }
   end warningFor
 
-
   "a compile database whose every unit sits under an ignored directory of the input" should {
       "warn, naming the pattern and the option that replaces it" in {
           File.usingTemporaryDirectory("atom-ignored-units") { dir =>
