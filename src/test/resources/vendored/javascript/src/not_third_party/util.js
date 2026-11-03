@@ -1,0 +1,1 @@
+exports.helper = () => 1;

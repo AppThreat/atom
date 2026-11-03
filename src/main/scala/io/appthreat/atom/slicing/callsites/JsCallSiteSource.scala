@@ -15,9 +15,13 @@ import scala.util.Try
   * template, typed and name passes, and the resolver that links identifiers to the imports the
   * frontend lowered to assignments.
   */
-final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
+final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
+    extends BaseCallSiteSource(atom, "js"):
 
-  private val js = JsNames(atom)
+  // vendored code is reached through relative specifiers and path aliases (decision 0001, P5)
+  private val vendoredSpecifiers =
+      JsVendoredSpecifiers(atom, VendoredCode.forAtom(atom, externalPaths))
+  private val js = JsNames(atom, vendoredSpecifiers.moduleOf)
   // the templates read the regexes declared further down, so these wait for them
   private lazy val templates = componentTemplates(atom)
   // template statements write component members (`(click)="open = true"`)
@@ -119,7 +123,7 @@ final class JsCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "js"):
     collector.addAll(nameResolvedRecords(atom, js))
 
     val result = collector.result()
-    val purls  = JsPurls(atom)
+    val purls  = JsPurls(atom, vendoredSpecifiers)
     result.copy(callsites = result.callsites.map(purls.attribute))
   end calculate
 
@@ -749,12 +753,16 @@ end JsCallSiteSource
   * name), for a specifier a tsconfig path alias maps to a project file, for a package with several
   * purls (several versions) and for one the SBOM does not list.
   */
-private[callsites] final class JsPurls(atom: Cpg):
+private[callsites] final class JsPurls(atom: Cpg, vendored: JsVendoredSpecifiers):
   private val bom     = io.appthreat.x2cpg.passes.taggers.js.JsProject(atom).bomPurls
   private val aliases = JsPathAliases(atom)
 
   def attribute(record: CallSiteRecord): CallSiteRecord =
-      if bom.isEmpty then record else record.copy(purl = purlOf(record.file, record.module))
+      // vendored code carries its BOM component's purl or none, never an npm package's
+      vendored.purlOf(record.module) match
+        case Some(purl) => record.copy(purl = purl)
+        case None =>
+            if bom.isEmpty then record else record.copy(purl = purlOf(record.file, record.module))
 
   private def purlOf(file: String, module: String): String =
       if !JsNames.isBareSpecifier(module) || JsNames.isNodeBuiltinSpecifier(module) then ""
@@ -764,3 +772,48 @@ private[callsites] final class JsPurls(atom: Cpg):
             .map(pkg => bom.getOrElse(pkg, Nil).distinct)
             .collect { case Seq(only) => only }
             .getOrElse("")
+
+/** The module a specifier names when it resolves to a file of vendored code: a relative specifier
+  * (`./third_party/lib`, extension and `index` optional) from the importing file, or a path alias
+  * of a tsconfig. The module is [[VendoredCode]]'s (the vendored directory, or the BOM component's
+  * name); a specifier to a project file is none. Remembers what it produced, so the purl pass can
+  * tell vendored modules from npm packages.
+  */
+private[callsites] final class JsVendoredSpecifiers(atom: Cpg, vendored: VendoredCode):
+  private val aliases  = JsPathAliases(atom)
+  private val produced = new java.util.concurrent.ConcurrentHashMap[String, String]()
+
+  private val extensions =
+      List("", ".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx", ".mts", ".cts", ".json")
+
+  private lazy val files: Set[String] =
+      atom.file.name.map(_.replace('\\', '/').stripPrefix("./")).toSet
+
+  /** The vendored module for `specifier` imported in `fromFile`. */
+  def moduleOf(fromFile: String, specifier: String): Option[String] =
+      if vendored.isEmpty || fromFile.isEmpty then None
+      else
+        base(fromFile, specifier).iterator
+            .flatMap(b => extensions.iterator.flatMap(e => List(b + e, s"$b/index$e")))
+            .filter(files.contains)
+            .flatMap(vendored.of(_))
+            .nextOption()
+            .map { v =>
+              produced.put(v.module, v.purl)
+              v.module
+            }
+
+  /** The purl of a module this produced: the BOM component's, or empty. */
+  def purlOf(module: String): Option[String] = Option(produced.get(module))
+
+  private def base(fromFile: String, specifier: String): Option[String] =
+      if specifier.startsWith(".") then
+        val dir = fromFile.replace('\\', '/').split('/').dropRight(1).toList
+        val parts = (dir ++ specifier.split('/').toList).foldLeft(List.empty[String]) {
+            case (acc, segment) if segment == "." || segment.isEmpty => acc
+            case (acc, "..")                                         => acc.dropRight(1)
+            case (acc, segment)                                      => acc :+ segment
+        }
+        Some(parts.mkString("/"))
+      else aliases.resolve(fromFile, specifier).map(_.replace('\\', '/'))
+end JsVendoredSpecifiers

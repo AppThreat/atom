@@ -667,7 +667,7 @@ object Atom:
         )
     opt[String]("external-paths")
         .text(
-          "Regular expression of vendored input paths (third_party/, a copied single-header library); matched files are parsed as always but marked external. (C/C++ today; the other frontends accept it and do nothing yet)"
+          "Regular expression of vendored input paths (third_party/, a copied single-header library); matched files are parsed as always but their methods and types are marked external, and uses of them from the project become callsites records. The match is relative to the input root, with / as separator, and begins at a path segment (third_party does not match src/not_third_party). A BOM given with --bom-file or --bom-dir marks the directories of its components (cdx:vendored:path) the same way. (Not for bytecode inputs.)"
         )
         .action((x, c) =>
             c match
@@ -1220,6 +1220,20 @@ object Atom:
       )
     Right(())
 
+  /** Vendored code (decision 0001, P5): the `--external-paths` pattern, which the source frontends
+    * applied while building, and the directories the BOMs give their components, marked external
+    * here because the BOMs only reach the atom after the frontend ran. Both are stored in the atom
+    * for a later `callsites` run. Bytecode inputs keep their own application boundary.
+    */
+  private def storeVendoredCode(config: AtomConfig, ag: Cpg): Either[String, Unit] =
+    val bytecode = ag.metaData.language.headOption.contains(Languages.JAVA)
+    if !bytecode then
+      slicing.callsites.VendoredCode.storeAndMark(
+        ag,
+        config.frontendArgs.getOrElse("external-paths", "")
+      )
+    Right(())
+
   private def newAtomCreatedString(config: AtomConfig): String =
     val absolutePath = config.outputAtomFile.path.toAbsolutePath
     if config.removeAtom then
@@ -1570,10 +1584,12 @@ object Atom:
               _ <- storeBoms(config, ag)
               _ <- storeAppBoundary(config, ag)
               _ <- storeCProjectLayout(config, ag)
+              _ <- storeVendoredCode(config, ag)
               _ <- enhanceCpg(config, ag, reusing)
               _ <- generateSlice(config, ag)
               _ <- PerfReporter.stage("verification.persist", "verification")(closeCpg(ag))
             yield "Atom generation successful"
+    end match
   end generateForLanguage
 
   private def getOrCreateAtom(

@@ -7,10 +7,10 @@ import org.scalatest.{AppendedClues, BeforeAndAfterAll}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-/** `--external-paths`: a call into a vendored library under the input is no record while the
+/** `--external-paths` for C: a call into a vendored library under the input is no record while the
   * library is project code, and names the vendored path as its module once the option says the path
-  * is external. The option is accepted for the other languages too, where it does nothing yet: a
-  * JavaScript run's slice is byte-identical with and without it.
+  * is external. The other languages are in [[VendoredCodeTests]]; a pattern that names nothing of a
+  * project leaves its slice byte-identical, which the JavaScript case here pins.
   */
 class CExternalPathsTests extends AnyWordSpec with Matchers with AppendedClues
     with BeforeAndAfterAll:
@@ -51,8 +51,8 @@ class CExternalPathsTests extends AnyWordSpec with Matchers with AppendedClues
       }
   }
 
-  "the option on a language whose frontend does not apply it yet" should {
-      "be accepted, with the slice byte-identical" in {
+  "a pattern that names nothing of a JavaScript project" should {
+      "leave the slice byte-identical" in {
           val project = workspace / "jsproj"
           if !project.exists then
             project.createDirectories()

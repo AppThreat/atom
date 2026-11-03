@@ -62,8 +62,7 @@ final class CCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
   private val stored = CProjectLayout.read(atom)
 
   /** The vendored-code pattern of this run, else the one the atom was built with. */
-  private val vendored: Option[scala.util.matching.Regex] =
-      externalPaths.orElse(stored.map(_.externalPaths)).filter(_.nonEmpty).map(_.r)
+  private val vendored: VendoredCode = VendoredCode.forAtom(atom, externalPaths)
 
   /** The input root as the metadata names it and as the file system resolves it, and the build
     * directories: the declaring-header tags spell absolute paths, through symlinks or not.
@@ -97,10 +96,7 @@ final class CCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
   private def moduleOf(header: String): Option[(String, Boolean)] =
       if header.isEmpty || header.startsWith("<") || !Paths.get(header).isAbsolute then None
       else if CHeaders.under(header, roots) then
-        vendored.flatMap(_.findFirstMatchIn(projectRelative(header)).map { m =>
-          val path = if m.groupCount > 0 && m.group(1) != null then m.group(1) else m.matched
-          path.stripSuffix("/") -> false
-        })
+        vendored.of(projectRelative(header)).map(v => v.module -> false)
       else if CHeaders.under(header, buildDirs) then None
       else Some(CHeaders.external(header))
 
@@ -200,7 +196,16 @@ final class CCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
     calls()
     references()
     fieldAccesses()
-    collector.result()
+    val result = collector.result()
+    // a record of a BOM component's code carries the component's purl (decision 0001, P5)
+    val purlOfModule = vendored.components.groupBy(_.module).collect {
+        case (m, cs) if cs.map(_.purl).distinct.size == 1 => m -> cs.head.purl
+    }
+    if purlOfModule.isEmpty then result
+    else
+      result.copy(callsites =
+          result.callsites.map(r => r.copy(purl = purlOfModule.getOrElse(r.module, r.purl)))
+      )
 
   /** Every macro invocation at a project site whose macro a header outside the project defines: the
     * invocation's own call, each macro it names in its expansion at the same site, and the

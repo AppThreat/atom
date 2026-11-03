@@ -15,7 +15,10 @@ import io.shiftleft.semanticcpg.language.*
   * recognised without an import. Project files (relative specifiers, `::program` names) and the JS
   * runtime (`__ecma.*`, `__whatwg.*`) have no module.
   */
-final class JsNames(atom: Cpg):
+final class JsNames(
+  atom: Cpg,
+  vendoredSpecifier: (String, String) => Option[String] = (_, _) => None
+):
 
   /** Bare module specifiers imported anywhere in the project, longest first. */
   private val knownModules: List[String] =
@@ -68,8 +71,14 @@ final class JsNames(atom: Cpg):
             case call: Call if call.name == "<operator>.await" =>
                 call.argument.collectFirst { case b: Expression => b }.flatMap(go(_, depth + 1))
             case _ => None
-    go(c, 0).filter((m, _) => JsNames.isBareSpecifier(m))
-        .map((m, p) => m -> Option(p.mkString(".")).filter(_.nonEmpty))
+    // a specifier that names a file of vendored code is that code's module (decision 0001, P5);
+    // any other relative specifier is the project's own and has no module
+    val file = scala.util.Try(c.method.filename).getOrElse("")
+    go(c, 0).flatMap { (m, p) =>
+        vendoredSpecifier(file, m).orElse(Option.when(JsNames.isBareSpecifier(m))(m))
+            .map(_ -> Option(p.mkString(".")).filter(_.nonEmpty))
+    }
+  end ofImportExpression
 end JsNames
 
 object JsNames:
