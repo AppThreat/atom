@@ -133,9 +133,20 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
   def calculate(): ProgramCallSites =
     // import origins per declaration, and assignment counts (the single-assignment rule)
     val bindings    = mutable.HashMap.empty[Long, Binding]
+    val importedAt  = mutable.HashMap.empty[Long, (Int, Int)]
     val importBound = mutable.HashSet.empty[Long]
     val assignCount = mutable.HashMap.empty[Long, Int].withDefaultValue(0)
     val fileModules = mutable.HashMap.empty[String, mutable.Set[String]]
+
+    /** Binds a declaration to an import. A name imported twice (`try: from urllib.parse import
+      * quote` and `except ImportError: from urllib import quote`) is bound by the import written
+      * last, not by the one the graph holds last.
+      */
+    def bind(d: Declaration, importCall: AstNode, binding: Binding): Unit =
+      val written = (line(importCall).intValue, col(importCall).intValue)
+      if importedAt.get(d.id()).forall(Ordering[(Int, Int)].lteq(_, written)) then
+        importedAt(d.id()) = written
+        bindings(d.id()) = binding
 
     def declOf(id: Identifier): Option[Declaration] =
         id._refOut.collectFirst { case d: Declaration => declRefs.outermost(d) }
@@ -167,7 +178,7 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                       methodOf(a).map(_.filename).filter(_.nonEmpty).foreach { file =>
                           if !isProject then
                             fileModules.getOrElseUpdate(file, mutable.Set.empty) += module
-                            bindings(d.id()) = Binding(file, module, path)
+                            bind(d, a, Binding(file, module, path))
                       }
                   case _ =>
               }
@@ -576,10 +587,23 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
                       )
                   }
                   .orElse {
+                      // the identifiers of that name on that line, in any file: the decorator's
+                      // own file first, then the other files by name, then by column and type, so
+                      // the type read is not the one of whichever file the graph holds first
                       val baseTypes = atom.identifier.nameExact(base)
                           .filter(i =>
                               i.lineNumber.map(_.intValue) == a.lineNumber.map(_.intValue)
                           )
+                          .l
+                          .sortBy { i =>
+                            val where = fileOf(i).getOrElse("")
+                            (
+                              where != file,
+                              where,
+                              i.columnNumber.map(_.intValue).getOrElse(-1),
+                              i.typeFullName
+                            )
+                          }
                           .flatMap(i => i.typeFullName +: i.dynamicTypeHintFullName)
                           .filterNot(t => t == "ANY" || t.isEmpty)
                       baseTypes.collectFirst { t =>

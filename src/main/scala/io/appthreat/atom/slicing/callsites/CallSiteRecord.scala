@@ -61,9 +61,42 @@ object CallSiteRecord:
     "ref"        -> 8
   )
 
-  /** One record per use site: for each (file, line, col, module) the most specific kind wins, and
-    * the order is positional, through the module, path and kind of the record. The order never
-    * involves node ids, which vary between runs (callsites plan, determinism rule 3).
+  /** The order in which records of one use site compete: the most specific kind first, then the
+    * path, `via` and the resolved method. Two different records can still tie on those (the same
+    * kind rank with two kinds, or two enclosing methods), so every other field follows, which makes
+    * the order total: the winner of a group is the same record whatever order the group came in,
+    * and the order a source walks the graph in (node ids, completion order) cannot reach the
+    * output. The rest is a rule, not a preference: an empty `method` (text no method owns) before a
+    * named one, then the names in order; `false` before `true`; an empty `declaringModule` and
+    * `purl` before a filled one.
+    */
+  private def winnerKey(r: CallSiteRecord): (
+    Int,
+    String,
+    String,
+    String,
+    String,
+    String,
+    Boolean,
+    String,
+    String
+  ) =
+      (
+        kindRank.getOrElse(r.kind, Int.MaxValue),
+        r.path,
+        r.via,
+        r.resolvedMethod,
+        r.kind,
+        r.method,
+        r.builtin,
+        r.declaringModule,
+        r.purl
+      )
+
+  /** One record per use site: for each (file, line, col, module) the most specific kind wins (see
+    * [[winnerKey]] for ties), and the order is positional, through the module, path and kind of the
+    * record, which no two winners share. The order never involves node ids, which vary between runs
+    * (callsites plan, determinism rule 3).
     *
     * `byMember` adds the path to the site, for sources without columns: bytecode has one line per
     * statement and no column, so `sb.append(x).toString()` is two uses of one class at one
@@ -72,9 +105,7 @@ object CallSiteRecord:
   def dedupe(records: Iterable[CallSiteRecord], byMember: Boolean = false): List[CallSiteRecord] =
       records
           .groupBy(r => (r.file, r.line, r.col, r.module, if byMember then r.path else ""))
-          .map(_._2.minBy(r =>
-              (kindRank.getOrElse(r.kind, Int.MaxValue), r.path, r.via, r.resolvedMethod)
-          ))
+          .map(_._2.minBy(winnerKey))
           .toList
           .sortBy(r => (r.file, r.line.intValue, r.col.intValue, r.module, r.path, r.kind))
 end CallSiteRecord

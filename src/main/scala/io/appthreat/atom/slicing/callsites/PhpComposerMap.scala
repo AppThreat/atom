@@ -26,9 +26,14 @@ final class PhpComposerMap(atom: Cpg):
 
   private final case class Package(root: String, name: String, version: String)
 
+  /** The metadata files, those nearest the input root first and then by name. The graph holds
+    * config files in the order their parts finished, which differs between builds; a class that the
+    * maps of two Composer trees (a project and a tool directory with a `vendor/` each) both name
+    * belongs to the nearest tree, whatever order the graph holds them in.
+    */
   private val metadata = atom.configFile.l.filter(f =>
       PhpComposerMap.FileNames.exists(n => normalised(f.name).endsWith(s"composer/$n"))
-  )
+  ).sortBy(f => (normalised(f.name).count(_ == '/'), normalised(f.name)))
 
   /** Whether the project carries Composer's installed-package record. */
   val present: Boolean =
@@ -90,8 +95,9 @@ final class PhpComposerMap(atom: Cpg):
         }.toList
       }
 
+  // the first tree's entry wins (the nearest, see `metadata`): the last of the reversed list
   private lazy val classMap: Map[String, (String, String)] =
-      entriesOf("autoload_classmap.php").map { (cls, paths) =>
+      entriesOf("autoload_classmap.php").reverse.map { (cls, paths) =>
           cls.toLowerCase -> (cls, paths.head)
       }.toMap
 

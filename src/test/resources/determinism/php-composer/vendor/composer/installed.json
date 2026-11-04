@@ -1,0 +1,10 @@
+{
+    "packages": [
+        {
+            "name": "acme/widgets",
+            "version": "1.0.0",
+            "install-path": "../acme/widgets"
+        }
+    ],
+    "dev": false
+}

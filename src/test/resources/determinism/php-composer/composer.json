@@ -1,0 +1,6 @@
+{
+    "name": "app/determinism",
+    "require": {
+        "acme/widgets": "^1.0"
+    }
+}
