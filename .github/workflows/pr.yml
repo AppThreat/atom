@@ -1,5 +1,5 @@
 name: pull_request
-# testing and the pr-tests legs are required status checks on main, so this workflow must
+# testing, the pr-tests legs and js-parsetools-main are required status checks on main, so this workflow must
 # trigger on every pull request and on merge-group builds; the heavy language and repo-test
 # matrices skip merge-group builds via their own if:. A change to the documentation alone still
 # reports the required checks, but builds nothing (see `changes`).
@@ -110,7 +110,8 @@ jobs:
 
   # atom's JavaScript tests and a juice-shop run against atom-parsetools main with parsa, so what
   # the next atom-parsetools release ships (native type maps by default) is tested here before it
-  # reaches npm. The other jobs use the release on npm. Not a required check.
+  # reaches npm. The other jobs use the release on npm. A required check, run on pull requests only
+  # (a merge-group build or a documentation change skips it, and a skipped check counts as passed).
   js-parsetools-main:
     needs: changes
     if: github.event_name == 'pull_request' && needs.changes.outputs.code == 'true'
