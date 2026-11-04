@@ -1,0 +1,29 @@
+src/main/scala/io/appthreat/atom/slicing/DeclarationRefs.scala
+  s_c0804e5357f0c5::t_b55eea7013d8ef 137
+src/main/scala/io/appthreat/atom/slicing/JsNames.scala
+  s_c0804e5357f0c5::t_c1cb9e2e4e3bbb 107-113
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteRecord.scala
+  s_c0804e5357f0c5::t_9df87c11622c62 132-145
+src/main/scala/io/appthreat/atom/slicing/callsites/JsCallSiteSource.scala
+  s_c0804e5357f0c5::t_b0c11b339cd106 57,228,455-464,494-499,504-506,571,575-583,858-863,875-879
+src/test/resources/js-usages/side-effect-imports/src/cjs.js
+  s_c0804e5357f0c5::t_65216a70a3540b 14-18
+src/test/scala/io/appthreat/atom/JsCallSitesTests.scala
+  s_c0804e5357f0c5::t_96e16ef6c0950a 499-502,506-509
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2fec8bb0826bdb7f8c4a75170aacda3677addd0d",
+  "prompts": {},
+  "sessions": {
+    "s_c0804e5357f0c5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75227701-fd30-4fc7-8eae-71a8df8f3a1c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
