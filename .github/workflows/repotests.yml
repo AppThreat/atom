@@ -63,10 +63,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # the required jvm on every OS; pull requests also try the other jvms on Linux and Windows
-        # (macOS runners are scarce, so macOS runs the required jvm only), the merge queue
-        # runs the required one only
-        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-latest, windows-latest]
+        # the required jvm on Linux and Windows; pull requests also try the other jvms there, the
+        # merge queue runs the required one only. macOS runners are scarce: pr.yml's macOS leg
+        # runs the unit tests, and the repo scans run on Linux and Windows only.
+        os: [ubuntu-24.04, ubuntu-24.04-arm, windows-latest]
         java-version: ['25']
         include: ${{ fromJSON(github.event_name == 'merge_group' && '[]' || '[{"os":"ubuntu-24.04","java-version":"23"},{"os":"ubuntu-24.04","java-version":"26"},{"os":"ubuntu-24.04-arm","java-version":"23"},{"os":"ubuntu-24.04-arm","java-version":"26"},{"os":"windows-latest","java-version":"23"},{"os":"windows-latest","java-version":"26"}]') }}
     runs-on: ${{ matrix.os }}
