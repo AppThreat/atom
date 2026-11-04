@@ -220,16 +220,19 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
       }
 
   /** The heritage clauses of project classes: the first base the frontend records is the
-    * superclass, the rest are interfaces; an implicit `java.lang.Object` is nobody's writing and
-    * never a record (decision 0001, P1). A lambda's TYPE_DECL, which has no position, inherits the
-    * functional interface it implements, which no heritage clause names either.
+    * superclass, the rest are interfaces (all of them when the first is the implicit object); an
+    * implicit `java.lang.Object` is nobody's writing and never a record (decision 0001, P1). A
+    * lambda's TYPE_DECL, which has no position, inherits the functional interface it implements,
+    * which no heritage clause names either.
     */
   private def heritage(): Unit =
       atom.typeDecl.isExternal(false).filter(_.lineNumber.isDefined).foreach { t =>
         val bases = t.inheritsFromTypeFullName.l.filterNot(b => b == "ANY" || b.isEmpty)
-        val written = bases match
-          case "java.lang.Object" :: rest => rest
-          case _                          => bases
+        // the frontend lists the implicit `java.lang.Object` first for a class that names no
+        // superclass, and then every base it does name is an interface
+        val (written, firstIsSuper) = bases match
+          case "java.lang.Object" :: rest => (rest, false)
+          case _                          => (bases, true)
         val file = fileOf(t).getOrElse("")
         written.zipWithIndex.foreach { (base, idx) =>
             if externalClass(base) then
@@ -241,7 +244,7 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
                     enclosingMethodOf(t).map(_.fullName).getOrElse(""),
                     base,
                     "",
-                    if idx == 0 then "extends" else "implements",
+                    if idx == 0 && firstIsSuper then "extends" else "implements",
                     "binding",
                     base,
                     isJdk(base),

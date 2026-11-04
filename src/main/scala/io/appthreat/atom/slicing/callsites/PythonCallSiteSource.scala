@@ -103,6 +103,33 @@ final class PythonCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "py
         .toMap
   end purlsByModule
 
+  /** The files of the input, for the module-to-file step of vendored code. */
+  private lazy val inputFiles: Set[String] =
+      atom.file.name.map(_.replace('\\', '/').stripPrefix("./")).toSet
+
+  /** A dotted module that names a file of vendored code: `third_party.lib` is `third_party/lib.py`
+    * or `third_party/lib/__init__.py`, by the longest prefix that is one. The frontend names a
+    * directory without `__init__.py` by its last segment, so the import cannot be linked to the
+    * module's methods by name; the file path can.
+    */
+  override private[callsites] def vendoredModuleOf(
+    record: CallSiteRecord,
+    vendored: VendoredCode
+  ): Option[Vendored] =
+      // the module as the import names it (`third_party.lib`, or just `third_party` for
+      // `import third_party.lib as tl`) and the callee's resolved name (`third_party.lib.run`)
+      List(record.module, record.resolvedMethod).filter(_.nonEmpty).iterator
+          .flatMap(name =>
+              Iterator.iterate(name)(m => m.substring(0, math.max(m.lastIndexOf('.'), 0)))
+                  .takeWhile(_.nonEmpty)
+          )
+          .flatMap { m =>
+            val base = m.replace('.', '/')
+            List(s"$base.py", s"$base/__init__.py").filter(inputFiles.contains)
+          }
+          .flatMap(vendored.of(_))
+          .nextOption()
+
   def calculate(): ProgramCallSites =
     // import origins per declaration, and assignment counts (the single-assignment rule)
     val bindings    = mutable.HashMap.empty[Long, Binding]

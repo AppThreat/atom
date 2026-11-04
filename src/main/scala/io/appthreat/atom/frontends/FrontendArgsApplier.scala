@@ -72,6 +72,8 @@ object FrontendArgsApplier:
     val excludes = csv(args, "exclude").toSeq.map(c.createPathForIgnore)
     if excludes.nonEmpty then c.ignoredFiles = c.ignoredFiles ++ excludes
     strOpt(args, "exclude-regex").foreach(r => c.ignoredFilesRegex = r.r)
+    // vendored code (decision 0001, P5): one meaning in every source frontend
+    strOpt(args, "external-paths").foreach(p => c.externalPaths = p)
     if bool(args, "enable-early-schema-checking", default = false) then
       c.withSchemaValidation(ValidationMode.Enabled)
     c
@@ -115,7 +117,6 @@ object FrontendArgsApplier:
     r = r.withIncludeFiles(r.includeFiles ++ csv(args, "include-files"))
     r = r.withMacroFiles(r.macroFiles ++ csv(args, "macro-files"))
     r = r.withCppStandard(str(args, "cpp-standard", r.cppStandard))
-    r = r.withExternalPaths(str(args, "external-paths", r.externalPaths))
     r = r.withCompileCommands(str(args, "compile-commands", r.compileCommands))
     r = r.withCompileCommandsOnly(bool(args, "compile-commands-only", r.compileCommandsOnly))
     r = r.withIncludeComments(bool(args, "include-comments", r.includeComments))
