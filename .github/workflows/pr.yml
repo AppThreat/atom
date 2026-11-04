@@ -139,7 +139,9 @@ jobs:
       - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
       # Before `sbt test`: the workflow tests probe for astgen and cancel without it
       - uses: ./.github/actions/parsetools-from-main
-      - run: sbt --server -batch "testOnly io.appthreat.atom.Js* io.appthreat.atom.ReachablesCrossLanguageWorkflowTests; stage"
+      # only the JavaScript groups of the cross-language suite: a checkout of atom-parsetools has no
+      # plugins/ bundles (php-parser, ruby_ast_gen), which are built when the package is published
+      - run: sbt --server -batch "testOnly io.appthreat.atom.Js*; testOnly io.appthreat.atom.ReachablesCrossLanguageWorkflowTests -- -z javascript -z \"frontend applications\"; stage"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
