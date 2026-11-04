@@ -1,0 +1,56 @@
+src/test/scala/io/appthreat/atom/CallSitesDeterminismTests.scala
+  s_a039e07f1e4369::t_61f888f7cb037b 197-202
+  s_a039e07f1e4369::t_b441447ee294a2 229,231
+  s_a039e07f1e4369::t_801683300365bf 226-228,230,232-250
+docs/docs/lessons/callsites.md
+  s_a039e07f1e4369::t_51361c6fe38840 107-109,119-122
+  s_a039e07f1e4369::t_a294267563acaa 59-60
+  s_a039e07f1e4369::t_6e5ca678b887b3 135-136
+src/test/scala/io/appthreat/atom/JsCallSitesTests.scala
+  s_a039e07f1e4369::t_e7c8521a0b96ed 427-431,439-441,443-445,447-459,463,476,483,485
+  s_a039e07f1e4369::t_6b77fdfc78cf43 17-20
+  s_a039e07f1e4369::t_873a0421d29355 25-33
+  s_a039e07f1e4369::t_21dd07bddff91b 460-462,469-471
+  s_a039e07f1e4369::t_354b1918779e2e 426,432-438,442,446,464-468,472,477-478,484,486-487
+  s_a039e07f1e4369::t_076656ddb5c265 400-401
+  s_a039e07f1e4369::t_0409af229f20ab 473-475,479-482
+src/test/scala/io/appthreat/atom/slicing/callsites/CallSiteRecordTests.scala
+  s_a039e07f1e4369::t_6741c9398310b8 67-76
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteRecord.scala
+  s_a039e07f1e4369::t_f557ebb7e19ee9 61-64
+  s_a039e07f1e4369::t_21215521947fb3 7-8
+src/main/scala/io/appthreat/atom/slicing/callsites/JsCallSiteSource.scala
+  s_a039e07f1e4369::t_20ad8a3f13e4b0 415-439,482
+  s_a039e07f1e4369::t_3e7a8252e69d9d 12
+  s_a039e07f1e4369::t_6ea1275df11e5d 126-129
+  s_a039e07f1e4369::t_54ab5944846a36 440-462,464-473,481
+  s_a039e07f1e4369::t_5d9e9159f173a4 463,474-480
+src/test/resources/js-usages/callsites/src/ui.jsx
+  s_a039e07f1e4369::t_c5ca8c70cefe1c 1
+src/test/resources/js-usages/side-effect-imports/package.json
+  s_a039e07f1e4369::t_fc960b78558d16 1-4
+src/test/resources/js-usages/side-effect-imports/src/forms.js
+  s_a039e07f1e4369::t_0cda998b0822e6 1-15
+src/test/resources/js-usages/side-effect-imports/src/own.js
+  s_a039e07f1e4369::t_62f8ffb9657fbc 1
+src/test/resources/js-usages/side-effect-imports/src/polyfills.ts
+  s_a039e07f1e4369::t_12000e757a6e1d 1-21
+src/test/resources/js-usages/side-effect-imports/src/relative.js
+  s_a039e07f1e4369::t_f4bc03feceb826 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6633d643a50417c123f4af7a84a0f982e6974c53",
+  "prompts": {},
+  "sessions": {
+    "s_a039e07f1e4369": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_27fb9869-d096-45fa-95a6-35294dfedf08",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
