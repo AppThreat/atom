@@ -82,8 +82,7 @@ class VendoredCodeTests extends AnyWordSpec with Matchers with BeforeAndAfterAll
                 .filterNot(r => r.obj.get("builtin").exists(_.bool))
                 .map(r =>
                     Rec(
-                      // Java names files with the platform's separator, as on main
-                      r("file").str.replace('\\', '/'),
+                      r("file").str,
                       r("line").num.toInt,
                       r("module").str,
                       r("path").str,
