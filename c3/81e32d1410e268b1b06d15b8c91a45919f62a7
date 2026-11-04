@@ -1,0 +1,45 @@
+src/test/resources/determinism/js-twin/bom.json
+  s_c809b1cb9c4d37::t_4379efe73e441e 1-26
+src/test/resources/determinism/js-twin/main.js
+  s_c0804e5357f0c5::t_7133bb4c836da0 1-4
+src/test/resources/determinism/js-twin/package.json
+  s_c809b1cb9c4d37::t_d9874d8d5f12e2 1-4
+src/test/resources/determinism/js-twin/third_party/one/index.js
+  s_c809b1cb9c4d37::t_58083f79f8d88a 1
+src/test/resources/determinism/js-twin/third_party/two/index.js
+  s_c809b1cb9c4d37::t_3ef991d38401a9 1
+src/test/resources/determinism/js-twin/use.js
+  s_c0804e5357f0c5::t_637342862fb656 1-4
+src/test/scala/io/appthreat/atom/slicing/callsites/CallSiteRecordTests.scala
+  s_c809b1cb9c4d37::t_6529ed18e3bbf7 1-146
+src/test/scala/io/appthreat/atom/slicing/callsites/GraphReorder.scala
+  s_c809b1cb9c4d37::t_683c1545fe0504 1-102
+src/test/scala/io/appthreat/atom/slicing/callsites/GraphReorderTests.scala
+  s_c809b1cb9c4d37::t_e2b7bbe9405061 1-114
+src/test/scala/io/appthreat/atom/slicing/callsites/VendoredUsesTests.scala
+  s_c809b1cb9c4d37::t_49567acc46eedd 1-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c381e32d1410e268b1b06d15b8c91a45919f62a7",
+  "prompts": {},
+  "sessions": {
+    "s_c0804e5357f0c5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75227701-fd30-4fc7-8eae-71a8df8f3a1c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_c809b1cb9c4d37": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "33563035-9c68-4c0f-aff4-b19a44a58c4f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
