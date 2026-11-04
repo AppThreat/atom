@@ -327,14 +327,14 @@ class CallSitesDeterminismTests extends AnyWordSpec with Matchers with BeforeAnd
             Seq("--frontend-args", s"inference-jar-paths=${(project / "lib").pathAsString}")
           )
           // Lombok's `@Data` puts `@SuppressWarnings` on each setter it generates, all at the
-          // `@Data` (line 6): the setter of the first field, whichever setter the graph holds
-          // first; each getter sits at its own field
+          // `@Data` (line 6): one record, the setter with the smallest name (CallSiteRecord's
+          // tie rule), whichever setter the graph holds first; each getter sits at its own field
           ujson.read(slice).obj("callsites").arr
               .filter(r =>
                   r("file").str.endsWith("Dto.java") && r("module").str.endsWith("SuppressWarnings")
               )
               .map(r => (r("line").num.toInt, r("method").str)).toList shouldBe List(
-            (6, "proj.Dto.setSecurity:void(web.Security)"),
+            (6, "proj.Dto.setCount:void(int)"),
             (8, "proj.Dto.getSecurity:web.Security()"),
             (9, "proj.Dto.getCount:int()"),
             (10, "proj.Dto.getTags:java.lang.String[]()")

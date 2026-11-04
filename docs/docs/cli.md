@@ -126,7 +126,7 @@ that change the records are these:
 | Option | Languages | Effect on the slice |
 | :----- | :-------- | :------------------ |
 | `--external-paths <regex>` | every language except JVM bytecode | Marks matching input paths as vendored code; uses of it become records with the vendored directory as module. |
-| `--bom-file`, `--bom-dir` | every language except JVM bytecode | A BOM supplies the purls of JavaScript and Python modules and the locations of vendored components (`cdx:vendored:path`, `cdx:cmake:sourceDir`). |
+| `--bom-file`, `--bom-dir` | every language | A BOM supplies the purls of JavaScript and Python modules and the locations of vendored components (`cdx:vendored:path`, `cdx:cmake:sourceDir`); for JVM bytecode, its root component's group sets the application boundary instead. |
 | `--app-prefix <package>` | JVM bytecode | The application's packages; everything else is a dependency. Needed for a bare `.dex`. |
 | `--android-sdk`, `--jdk-path` | JVM bytecode, Java | Where the frontend finds the platform classes. |
 | `--compile-commands`, `--include-path`, `--c-frontend` | C and C++ | The project's build directories and header search paths decide which headers are the project's own; `--c-frontend edg` uses `edga`. |

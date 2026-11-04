@@ -54,8 +54,8 @@ Every record has these fields:
   and annotations).
 - `macro`: a C or C++ macro of a header outside the project, used at its invocation site.
 
-A record is unique by file, position and module (C and Java also by path where two members share a
-site); when one site carries several records the most specific kind wins, in the order `call`,
+A record is unique by file, line, column and module (C and JVM bytecode also by path where two
+members share a site); when one site carries several records the most specific kind wins, in the order `call`,
 `new`, `jsx`, `tag`, `decorator`, `arg`, `extends` or `implements`, `decltype`, `ref`, and the
 result is sorted by file, line, column, module, path and kind
 ([`CallSiteRecord.scala`](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteRecord.scala)).
@@ -136,7 +136,9 @@ atom callsites --cache none -l javascript -o /tmp/ex-javascript.atom -s /tmp/ex-
 Kinds: `call`, `arg`, `ref`, `decorator`, `extends`, `decltype`. A name bound by an `import` to a
 module that is not part of the project is a use wherever it is read: called, passed, referenced
 (including in `except` clauses), or used through a typed receiver (`via` `type`). Base classes
-and annotations are `extends` and `decltype` records with `via` `name`. Relative imports and
+and annotations are `extends` and `decltype` records with `via` `name`. A decorator is a
+`decorator` record with `via` `name` when its base is the imported name, and with `via` `type` when
+the base is read through the type of an identifier. Relative imports and
 imports the frontend resolved to a project file are project code and give no record. A local that
 is assigned more than once gets no origin.
 
@@ -156,8 +158,7 @@ atom callsites --cache none -l python -o /tmp/ex-python.atom -s /tmp/ex-python.j
 
 ### Java source
 
-Kinds: `call`, `new`, `annotation`, `extends` (also for `implements`), `ref`, `methodref` and
-`decltype`. A record is a reference whose class is not declared in the project: calls and
+Kinds: `call`, `new`, `annotation`, `extends`, `implements`, `ref`, `methodref` and `decltype`. A record is a reference whose class is not declared in the project: calls and
 constructors, annotations, base types, static fields, enum constants and class literals, method
 references, and the types of parameters, fields, locals, return values, casts, `instanceof` and
 `throws`. An instance call is `via` `type` and takes the receiver's static type as `module`; when

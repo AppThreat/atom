@@ -830,8 +830,8 @@ private[callsites] final class JsVendoredSpecifiers(atom: Cpg, vendored: Vendore
 
   /** The purl of a module this produced: the BOM component's, or empty. Two components can share a
     * name (two versions vendored side by side); a record names the module, not the file it came
-    * from, so the BOM does not say which of the purls is the record's: none, whichever import was
-    * resolved last.
+    * from, so it cannot tell which purl is its own and gets none, rather than the purl of whichever
+    * import happened to be resolved last.
     */
   def purlOf(module: String): Option[String] =
       Option(produced.get(module)).map(purls =>

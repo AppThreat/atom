@@ -171,28 +171,12 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
         end if
       }
 
-  /** The annotations that make a record: one per site and annotation class. Lombok puts
-    * `@SuppressWarnings` and `@Generated` on every method it generates, and every generated method
-    * sits at the position of the class's `@Data`: one site, one candidate per generated method. The
-    * first generated method of the class (the smallest AST order, then the name) names the record,
-    * whichever method the graph holds first.
-    */
-  private def annotationSites: Iterable[Annotation] =
-      atom.annotation.filter(a => externalClass(a.fullName)).l.groupBy(a =>
-          (fileOf(a).getOrElse(""), lineOf(a).intValue, colOf(a).intValue, a.fullName)
-      ).values.map(_.minBy(a =>
-          (
-            enclosingMethodOf(a).map(_.order).getOrElse(0),
-            enclosingMethodOf(a).map(_.fullName).getOrElse("")
-          )
-      ))
-
   /** One record per annotation site: the annotation of a method and that of its parameter are
     * different sites. A class annotation has no enclosing method; its record names the class's file
     * the way the JS source names a decorator's.
     */
   private def annotations(): Unit =
-      annotationSites.foreach { a =>
+      atom.annotation.foreach { a =>
         val cls = a.fullName
         if externalClass(cls) then
           methodOf(a) match
