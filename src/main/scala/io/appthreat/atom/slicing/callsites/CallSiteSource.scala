@@ -34,12 +34,14 @@ object CallSiteSource:
     externalPaths: Option[String] = None
   ): CallSiteSource =
     val language = atom.metaData.language.headOption
-    if JsNames.isJs(language) then JsCallSiteSource(atom)
-    else if isPython(language) then PythonCallSiteSource(atom)
-    else if isJavaSource(language) then JavaCallSiteSource(atom)
+    def withVendored(source: BaseCallSiteSource): CallSiteSource =
+        VendoredCallSiteSource(source, externalPaths)
+    if JsNames.isJs(language) then withVendored(JsCallSiteSource(atom, externalPaths))
+    else if isPython(language) then withVendored(PythonCallSiteSource(atom))
+    else if isJavaSource(language) then withVendored(JavaCallSiteSource(atom))
     else if isJvmBytecode(language) then JvmBytecodeCallSiteSource(atom, appPrefixes)
-    else if isPhp(language) then PhpCallSiteSource(atom)
-    else if isRuby(language) then RubyCallSiteSource(atom)
+    else if isPhp(language) then withVendored(PhpCallSiteSource(atom))
+    else if isRuby(language) then withVendored(RubyCallSiteSource(atom))
     else if isC(language) then CCallSiteSource(atom, externalPaths)
     else EmptyCallSiteSource
 
@@ -163,6 +165,21 @@ abstract class BaseCallSiteSource(protected val atom: Cpg, sourceName: String)
     */
   protected def fileOf(n: AstNode): Option[String] =
       methodOf(n).map(_.filename).orElse(Try(n.file.name.headOption).toOption.flatten)
+
+  /** The vendored code a record's module names when the language's module naming reaches a file of
+    * it without the call graph's help (Python's dotted module of an import); none by default.
+    */
+  private[callsites] def vendoredModuleOf(
+    record: CallSiteRecord,
+    vendored: VendoredCode
+  ): Option[Vendored] = None
+
+  private[callsites] def vendoredCode(externalPaths: Option[String]): VendoredCode =
+      VendoredCode.forAtom(atom, externalPaths)
+
+  /** The uses of vendored code (see [[VendoredUses]]). */
+  private[callsites] def vendoredUses(vendored: VendoredCode): VendoredUses =
+      VendoredUses(atom, vendored, methodOf)
 
   protected def line(n: AstNode): Integer = n match
     case e: Expression => e.lineNumber.getOrElse(-1)

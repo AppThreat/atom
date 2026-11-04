@@ -1,0 +1,12 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "components": [
+    { "type": "library", "name": "express", "purl": "pkg:npm/express@4.19.2" },
+    { "type": "library", "name": "lodash", "purl": "pkg:npm/lodash@4.17.21" },
+    { "type": "library", "name": "lodash", "purl": "pkg:npm/lodash@3.10.1" },
+    { "type": "library", "name": "events", "purl": "pkg:npm/events@3.3.0" },
+    { "type": "library", "name": "parser", "group": "@babel", "purl": "pkg:npm/%40babel/parser@7.24.0" },
+    { "type": "library", "name": "db", "group": "@lib", "purl": "pkg:npm/%40lib/db@1.0.0" }
+  ]
+}
