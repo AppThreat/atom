@@ -88,7 +88,7 @@ Extract local variable and parameter usages
   --also-callsites <value>
                            also write the callsites slice to the given path: the atom is built and tagged once for both slices.
 Command: callsites
-Extract one record per external call/use site of an imported module (JS/TS)
+Extract one record per use of an imported module, class or header, for every language atom reads
 Command: reachables [options]
 Extract reachable data-flow slices based on automated framework tags
   --source-tag <value>     source tag - defaults to framework-input. Comma-separated values allowed.
@@ -114,6 +114,25 @@ Run a graph algorithm over the atom and write the result as JSON
   --max-depth <value>      maximum path depth for the paths algorithm
   --help                   display this help message
 ```
+
+## Call-site records
+
+`callsites` writes one record per use of an imported module, class or header, for JavaScript and
+TypeScript, Python, Java source, PHP, Ruby, JVM bytecode (jar, class directory, dex, APK) and C and
+C++. The records, their `kind` and `via` values and the rules for `builtin` and `purl` are in
+[Lesson 9](lessons/callsites.md). A language that has no source writes an empty slice. The options
+that change the records are these:
+
+| Option | Languages | Effect on the slice |
+| :----- | :-------- | :------------------ |
+| `--external-paths <regex>` | every language except JVM bytecode | Marks matching input paths as vendored code; uses of it become records with the vendored directory as module. |
+| `--bom-file`, `--bom-dir` | every language | A BOM supplies the purls of JavaScript and Python modules and the locations of vendored components (`cdx:vendored:path`, `cdx:cmake:sourceDir`); for JVM bytecode, its root component's group sets the application boundary instead. |
+| `--app-prefix <package>` | JVM bytecode | The application's packages; everything else is a dependency. Needed for a bare `.dex`. |
+| `--android-sdk`, `--jdk-path` | JVM bytecode, Java | Where the frontend finds the platform classes. |
+| `--compile-commands`, `--include-path`, `--c-frontend` | C and C++ | The project's build directories and header search paths decide which headers are the project's own; `--c-frontend edg` uses `edga`. |
+
+`usages --also-callsites <file>` writes the usages slice and the callsites slice from one run.
+The same input gives the same bytes on every run and on every build of the atom.
 
 ## Memory-safety findings as SARIF
 

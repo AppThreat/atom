@@ -312,8 +312,10 @@ jobs:
           retention-days: 30
 
 
+  # macOS runners are scarce, so the macOS binary is built for releases and on request, not for
+  # every pull request
   release-mac:
-    if: github.repository_owner == 'appthreat'
+    if: github.repository_owner == 'appthreat' && github.event_name != 'pull_request'
     concurrency: release-mac
     runs-on: macos-15
     permissions:

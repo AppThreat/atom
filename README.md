@@ -192,7 +192,7 @@ Extract local variable and parameter usages
   --also-callsites <value>
                            also write the callsites slice to the given path: the atom is built and tagged once for both slices.
 Command: callsites
-Extract one record per external call/use site of an imported module (JS/TS)
+Extract one record per use of an imported module, class or header, for every language atom reads
 Command: reachables [options]
 Extract reachable data-flow slices based on automated framework tags
   --source-tag <value>     source tag - defaults to framework-input. Comma-separated values allowed.

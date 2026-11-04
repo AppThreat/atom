@@ -309,23 +309,30 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
         fileOf(a).getOrElse("") match
           case file if file.nonEmpty =>
               js.ofBindingName(file, a.name).map { (module, symbol) =>
-                  CallSiteRecord(
-                    file,
-                    line(a),
-                    col(a),
-                    enclosingMethodOf(a).map(_.fullName).getOrElse(""),
-                    module,
-                    symbol.getOrElse(""),
-                    "decorator",
-                    "name",
-                    a.fullName
-                  )
+                // the annotation of a METHOD node is the decorated method's own
+                val onMethod = DeclarationRefs.parentOf(a).exists(_.isInstanceOf[Method])
+                onMethod -> CallSiteRecord(
+                  file,
+                  line(a),
+                  col(a),
+                  enclosingMethodOf(a).map(_.fullName).getOrElse(""),
+                  module,
+                  symbol.getOrElse(""),
+                  "decorator",
+                  "name",
+                  a.fullName
+                )
               }
           case _ => None
     }
-    // A method's decorator hangs off both its METHOD and its MEMBER node.
+    // A method's decorator hangs off both its METHOD and its MEMBER node, two records that differ
+    // in the enclosing method: the METHOD's names the decorated method and the MEMBER's the scope
+    // around the class. The METHOD's wins, then the smaller method, resolved name and module; the
+    // node that comes first in the graph never decides.
     val uniqueDecorators =
-        decorators.groupBy(r => (r.file, r.line, r.col, r.path)).values.map(_.head)
+        decorators.groupBy((_, r) => (r.file, r.line, r.col, r.path)).values.map(
+          _.minBy((onMethod, r) => (!onMethod, r.method, r.resolvedMethod, r.module))._2
+        )
 
     val heritage = atom.typeDecl.filterNot(_.isExternal).l.flatMap { t =>
       val tagged = heritageOf(t)
@@ -470,16 +477,30 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
             case id: Identifier => localOf(id).flatMap(d => origins.get(d.id()))
             case _              => None
 
-    // assignments per local id, each with its right-hand side
-    private val assignmentsOf: Map[Long, List[Expression]] =
-      val byLocal = mutable.HashMap[Long, List[Expression]]()
+    // assignments per local id, each with its right-hand side, in the order the fixpoint below
+    // takes them: by where the assignment is written (file, line, column, name, right-hand side),
+    // never by node id. A round resolves every local whose source an earlier local of the round
+    // already resolved, so the order decides how many rounds a chain of aliases needs and, with
+    // the rounds capped, how far it gets; an order that follows the ids differs between builds.
+    private val assignmentsOf: Vector[(Long, List[Expression])] =
+      val byLocal = mutable.HashMap[Long, List[((String, Int, Int, String, String), Expression)]]()
       atom.call.nameExact(Operators.assignment).foreach { a =>
           a.argument.l.sortBy(_.argumentIndex) match
             case (lhs: Identifier) :: (rhs: Expression) :: _ =>
-                localOf(lhs).foreach(d => byLocal(d.id()) = rhs :: byLocal.getOrElse(d.id(), Nil))
+                localOf(lhs).foreach { d =>
+                  val written = (
+                    methodOf(a).map(_.filename).getOrElse(""),
+                    line(a).intValue,
+                    col(a).intValue,
+                    lhs.name,
+                    rhs.code
+                  )
+                  byLocal(d.id()) = (written, rhs) :: byLocal.getOrElse(d.id(), Nil)
+                }
             case _ =>
       }
-      byLocal.toMap
+      byLocal.toVector.map((id, writes) => (writes.map(_._1).min, id, writes.map(_._2)))
+          .sortBy(_._1).map((_, id, rhsList) => id -> rhsList)
 
     private def fieldNameOf(fa: Call): Option[String] =
         fa.argument.collectFirst { case f: FieldIdentifier => f.canonicalName }
@@ -780,8 +801,9 @@ private[callsites] final class JsPurls(atom: Cpg, vendored: JsVendoredSpecifiers
   * tell vendored modules from npm packages.
   */
 private[callsites] final class JsVendoredSpecifiers(atom: Cpg, vendored: VendoredCode):
-  private val aliases  = JsPathAliases(atom)
-  private val produced = new java.util.concurrent.ConcurrentHashMap[String, String]()
+  private val aliases = JsPathAliases(atom)
+  private val produced =
+      new java.util.concurrent.ConcurrentHashMap[String, java.util.Set[String]]()
 
   private val extensions =
       List("", ".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx", ".mts", ".cts", ".json")
@@ -799,12 +821,22 @@ private[callsites] final class JsVendoredSpecifiers(atom: Cpg, vendored: Vendore
             .flatMap(vendored.of(_))
             .nextOption()
             .map { v =>
-              produced.put(v.module, v.purl)
+              produced.computeIfAbsent(
+                v.module,
+                _ => java.util.concurrent.ConcurrentHashMap.newKeySet[String]()
+              ).add(v.purl)
               v.module
             }
 
-  /** The purl of a module this produced: the BOM component's, or empty. */
-  def purlOf(module: String): Option[String] = Option(produced.get(module))
+  /** The purl of a module this produced: the BOM component's, or empty. Two components can share a
+    * name (two versions vendored side by side); a record names the module, not the file it came
+    * from, so it cannot tell which purl is its own and gets none, rather than the purl of whichever
+    * import happened to be resolved last.
+    */
+  def purlOf(module: String): Option[String] =
+      Option(produced.get(module)).map(purls =>
+          if purls.size == 1 then purls.iterator.next() else ""
+      )
 
   private def base(fromFile: String, specifier: String): Option[String] =
       if specifier.startsWith(".") then

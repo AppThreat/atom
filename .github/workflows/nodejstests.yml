@@ -56,7 +56,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
+        # macOS runners are scarce; pr.yml's macOS leg covers macOS
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
         java-version: ['25']
         node-version: ['26.x']
         ruby: ["4.0.5"]

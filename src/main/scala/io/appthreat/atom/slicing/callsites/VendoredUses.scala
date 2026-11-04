@@ -92,8 +92,12 @@ private[callsites] final class VendoredUses(
       else
         val out = mutable.ListBuffer.empty[CallSiteRecord]
         atom.call.filterNot(_.name.startsWith("<operator>.")).foreach { c =>
-          val callee =
-              c._callOut.collectFirst { case m: Method if vendoredMethodIds.contains(m.id()) => m }
+          // A call the linkers tie to several vendored methods (dynamic dispatch) is a use of the
+          // one it names, else of the smallest by name; the order of the call's edges, which the
+          // linkers' passes decide, never does.
+          val callee = c._callOut.collect {
+              case m: Method if vendoredMethodIds.contains(m.id()) => m
+          }.toList.minByOption(m => (m.fullName != c.methodFullName, m.fullName))
           for
             m      <- callee
             v      <- vendored.of(m.filename)

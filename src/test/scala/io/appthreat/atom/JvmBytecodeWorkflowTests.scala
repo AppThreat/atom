@@ -174,12 +174,7 @@ class JvmBytecodeWorkflowTests extends AnyWordSpec with Matchers with BeforeAndA
       // BLOCK, and the flow summaries of every data-flow command failed on it.
       "build reachables and data-flow slices for a dex with native methods" in {
           val dex = File(getClass.getResource("/nativemethods/classes.dex").toURI)
-          val hasAndroidJar = Seq(
-            sys.env.get("ANDROID_HOME"),
-            Some(s"${sys.props("user.home")}/Library/Android/sdk")
-          )
-              .flatten.map(File(_)).exists(d => d.isDirectory && d.glob("**/android.jar").hasNext)
-          assume(hasAndroidJar, "dex analysis needs an Android SDK (ANDROID_HOME)")
+          AndroidSdk.missing.foreach(reason => cancel(reason))
           for command <- List("reachables", "data-flow") do
             val atomFile  = workDir / s"dex-$command.atom"
             val sliceFile = workDir / s"dex-$command.json"
