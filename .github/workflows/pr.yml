@@ -1,5 +1,5 @@
 name: pull_request
-# testing and the pr-tests legs are required status checks on main, so this workflow must
+# testing, the pr-tests legs and js-parsetools-main are required status checks on main, so this workflow must
 # trigger on every pull request and on merge-group builds; the heavy language and repo-test
 # matrices skip merge-group builds via their own if:. A change to the documentation alone still
 # reports the required checks, but builds nothing (see `changes`).
@@ -107,6 +107,47 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+
+  # atom's JavaScript tests and a juice-shop run against atom-parsetools main with parsa, so what
+  # the next atom-parsetools release ships (native type maps by default) is tested here before it
+  # reaches npm. The other jobs use the release on npm. A required check, run on pull requests only
+  # (a merge-group build or a documentation change skips it, and a skipped check counts as passed).
+  js-parsetools-main:
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          repository: 'juice-shop/juice-shop'
+          path: 'repotests/juice-shop'
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961  # v5.7.0
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+      - uses: sbt/setup-sbt@bfea3c5f48abd221b04a6df4798aa5eb8b6a2baf  # v1.5.6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with:
+          node-version: '26.x'
+          package-manager-cache: false
+      - uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d  # v8.1.1
+      - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
+      # Before `sbt test`: the workflow tests probe for astgen and cancel without it
+      - uses: ./.github/actions/parsetools-from-main
+      # only the JavaScript groups of the cross-language suite: a checkout of atom-parsetools has no
+      # plugins/ bundles (php-parser, ruby_ast_gen), which are built when the package is published
+      - run: sbt --server -batch "testOnly io.appthreat.atom.Js*; testOnly io.appthreat.atom.ReachablesCrossLanguageWorkflowTests -- -z javascript -z frontend; stage"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+      - name: Reachables on juice-shop with native type maps
+        run: |
+          ./atom.sh --remove-atom -o /tmp/juice.atom -l js "$GITHUB_WORKSPACE/repotests/juice-shop" -Dlog4j.configurationFile=log4j2.xml
 
   testing:
     needs: changes
