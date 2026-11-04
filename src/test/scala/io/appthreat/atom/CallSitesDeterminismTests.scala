@@ -535,6 +535,7 @@ class CallSitesDeterminismTests extends AnyWordSpec with Matchers with BeforeAnd
       }
 
       "give the same bytes for a dex input" in {
+          AndroidSdk.missing.foreach(reason => cancel(reason))
           val dex = BFile(getClass.getResource("/jvm-callsites/dex/classes.dex").toURI)
           deterministic("bytecode-dex", "dex", dex, jdk ++ Seq("--app-prefix", "dexy.app"))
       }

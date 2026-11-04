@@ -97,7 +97,12 @@ class CallSitesLessonTests extends AnyWordSpec with Matchers with BeforeAndAfter
       buildJar,
       ".jar"
     ),
-    Example("dex", () => None, f => resource("jvm-callsites/dex/classes.dex").copyTo(f), ".dex"),
+    Example(
+      "dex",
+      () => AndroidSdk.missing,
+      f => resource("jvm-callsites/dex/classes.dex").copyTo(f),
+      ".dex"
+    ),
     Example("vendored-javascript", () => needsAstgen("astgen"), copyFixture("vendored/javascript"))
   )
 
@@ -128,17 +133,30 @@ class CallSitesLessonTests extends AnyWordSpec with Matchers with BeforeAndAfter
               val slice = tokens(tokens.indexOf("-s") + 1)
               Atom.run(tokens.toArray).isRight shouldBe true
               val written = ujson.read(BFile(slice).contentAsString)
-              val real    = written.obj("callsites").arr.toSet
-              val shown   = block(example.name, "output").filter(_.trim.nonEmpty).map(ujson.read(_))
+              // the Java and PHP sources write the file with the platform's separator, and PHP
+              // repeats it in `method`; the page shows `/`
+              val real = written.obj("callsites").arr.map { r =>
+                val file = r("file").str
+                val out  = ujson.copy(r)
+                out("file") = file.replace('\\', '/')
+                if r("method").str.startsWith(file) then
+                  out("method") = out("file").str + r("method").str.stripPrefix(file)
+                out
+              }.toSet
+              val shown = block(example.name, "output").filter(_.trim.nonEmpty).map(ujson.read(_))
               shown should not be empty
               shown.foreach { record =>
-                  withClue(
-                    s"this record of the ${example.name} example is not in the real output: "
-                  ) {
-                      (real.contains(record) || written.obj.get("metadata").contains(
-                        record
-                      )) shouldBe true
-                  }
+                val sameLine = real.filter(r =>
+                    r.obj.get("line") == record.obj.get("line")
+                )
+                withClue(
+                  s"this record of the ${example.name} example is not in the real output: " +
+                      s"$record; records of that line: ${sameLine.mkString(", ")}: "
+                ) {
+                    (real.contains(record) || written.obj.get("metadata").contains(
+                      record
+                    )) shouldBe true
+                }
               }
           }
       }
