@@ -1,0 +1,23 @@
+src/test/scala/io/appthreat/atom/CallSitesLessonTests.scala
+  s_c0804e5357f0c5::t_fc89ca678a4858 136-137
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteSource.scala
+  s_c0804e5357f0c5::t_ee92565374cfc8 122
+src/test/scala/io/appthreat/atom/slicing/callsites/CallSiteRecordTests.scala
+  s_c0804e5357f0c5::t_9634491293a970 156-186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8b5658b1f234bb81e5ba7655cb7df0e7be60b710",
+  "prompts": {},
+  "sessions": {
+    "s_c0804e5357f0c5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75227701-fd30-4fc7-8eae-71a8df8f3a1c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
