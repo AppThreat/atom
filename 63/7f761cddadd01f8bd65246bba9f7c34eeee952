@@ -1,0 +1,30 @@
+src/test/scala/io/appthreat/atom/JsCallSitesTests.scala
+  s_c0804e5357f0c5::t_24a50952082901 498-503
+  s_c0804e5357f0c5::t_6cfff0e7bcd3ff 496-497
+  s_c0804e5357f0c5::t_fe48a380a7ad04 504
+  s_c0804e5357f0c5::t_73fae7639975dc 455-467
+docs/docs/lessons/callsites.md
+  s_c0804e5357f0c5::t_b07ccd19afacaa 120-124,377-380
+src/main/scala/io/appthreat/atom/slicing/callsites/JsCallSiteSource.scala
+  s_c0804e5357f0c5::t_51087c36bfaa16 416-418,426-427,429,454-463,466-482,490,493-500
+src/test/resources/js-usages/side-effect-imports/src/cjs.js
+  s_c0804e5357f0c5::t_c8caa75f2aaddf 1-13
+src/test/scala/io/appthreat/atom/CallSitesDeterminismTests.scala
+  s_c0804e5357f0c5::t_9e522a9e420f09 233-234,236-241
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "637f761cddadd01f8bd65246bba9f7c34eeee952",
+  "prompts": {},
+  "sessions": {
+    "s_c0804e5357f0c5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75227701-fd30-4fc7-8eae-71a8df8f3a1c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
