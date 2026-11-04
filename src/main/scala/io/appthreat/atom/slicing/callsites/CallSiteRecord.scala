@@ -4,8 +4,8 @@ package io.appthreat.atom.slicing.callsites
   *
   * Every record carries the position of the use itself (the identifier, the member name, the
   * decorator), never a position borrowed from another call. `kind` says what the use is (call, new,
-  * jsx, arg, ref, decorator, extends, implements, decltype, tag); `via` says how the module was
-  * resolved:
+  * jsx, arg, ref, decorator, extends, implements, decltype, tag, import); `via` says how the module
+  * was resolved:
   *   - `binding`: the identifier resolves, scope-correctly through captures, to an imported binding
   *     of its file;
   *   - `type`: the callee's resolved method full name starts with a module specifier this project
@@ -58,7 +58,10 @@ object CallSiteRecord:
     "extends"    -> 6,
     "implements" -> 6,
     "decltype"   -> 7,
-    "ref"        -> 8
+    "ref"        -> 8,
+    // an import that binds nothing is its own site, the whole statement; it competes with no
+    // other kind at one position, so it ranks last
+    "import" -> 9
   )
 
   /** The order in which records of one use site compete: the most specific kind first, then the

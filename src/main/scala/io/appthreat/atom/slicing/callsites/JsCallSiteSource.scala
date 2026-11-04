@@ -9,6 +9,7 @@ import io.shiftleft.semanticcpg.language.*
 
 import java.nio.file.Paths
 import scala.collection.mutable
+import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
 /** The JavaScript/TypeScript source of the callsites slice: the binding, field-alias, Angular
@@ -121,6 +122,10 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
 
     // Pass C: decorators, heritage clauses, tagged templates and JSX tags, by name (via=name)
     collector.addAll(nameResolvedRecords(atom, js))
+
+    // Pass D: imports that bind nothing (decision 0002, Q1): the import runs the module, so the
+    // statement itself is one use, of kind `import`
+    collector.addAll(sideEffectImportRecords(atom, js))
 
     val result = collector.result()
     val purls  = JsPurls(atom, vendoredSpecifiers)
@@ -406,6 +411,74 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
 
     (uniqueDecorators.toList ++ heritage ++ taggedAndJsx)
   end nameResolvedRecords
+
+  /** Records for the imports that bind nothing (decision 0002, Q1): the module runs at the import,
+    * so the statement itself is one use, with kind `import` and no member path. Imports that bind a
+    * name keep their rule: a record exists only where the bound name is used. Three shapes reach
+    * the slice, each told from its binding twin in the graph:
+    *
+    *   - an ESM import with no specifiers (`import 'y'`, `import {} from 'y'`): the frontend lowers
+    *     it to `var y = require("y")` with an IMPORT node whose entity and alias are both the bare
+    *     specifier; a binding import's entity is `<module>:<name>`, and a hand-written `var y =
+    *     require('y')` gets its IMPORT node with the declarator's own code, so only the ESM
+    *     statement's node carries a code that starts with `import` and binds nothing (`=` would
+    *     name `import y = require('y')`, which binds `y`);
+    *   - a `require('y')` or `import('y')` call that is a whole statement: the parent is a block
+    *     and no assignment takes its value, which is what "the value is unused" looks like after
+    *     the lowering;
+    *   - a re-export (`export * from 'y'`, `export {a} from 'y'`, `export * as n from 'y'`): the
+    *     frontend lowers it to a `STATIC_DISPATCH` require (the ESM lowering and every hand-written
+    *     call are dynamic) whose single assignment target is the `_<name>` temporary that the
+    *     exports write reads, machinery no source identifier names.
+    *
+    * The record sits at the statement's own position, and the module is the specifier resolved like
+    * every other record's: bare, or vendored code reached through a relative specifier or a path
+    * alias (decision 0001, P5); a specifier for a project file names nothing external.
+    */
+  private def sideEffectImportRecords(atom: Cpg, js: JsNames): List[CallSiteRecord] =
+      atom.call.nameExact("require", "import").l.flatMap { c =>
+          if !bindingFreeImport(c) then Nil
+          else
+            (for
+              method      <- methodOf(c)
+              (module, _) <- js.ofImportExpression(c)
+            yield CallSiteRecord(
+              method.filename,
+              line(c),
+              col(c),
+              method.fullName,
+              module,
+              "",
+              "import",
+              "binding",
+              ""
+            )).toList
+      }
+  end sideEffectImportRecords
+
+  /** Whether the `require`/`import` call `c` is an import that binds nothing: one of the three
+    * shapes of [[sideEffectImportRecords]], by the graph the frontend wrote.
+    */
+  private def bindingFreeImport(c: Call): Boolean =
+    val statementOrReexport = DeclarationRefs.parentOf(c) match
+      // a statement of its own: no assignment consumes the call's value
+      case Some(_: Block) => true
+      // the re-export lowering: a static require into the `_<name>` temporary
+      case Some(a: Call) if a.name == Operators.assignment =>
+          c.dispatchType == DispatchTypes.STATIC_DISPATCH &&
+          a.argument.collectFirst {
+              case i: Identifier if i.argumentIndex == 1 => i.name
+          }.exists(_.startsWith("_"))
+      case _ => false
+    // the ESM statement `import 'y'`: the IMPORT node of the specifier-only form
+    val esmStatement = c.out("IS_CALL_FOR_IMPORT").asScala.collect {
+        case i: Import
+            if i.importedEntity.exists(e => e == i.importedAs.getOrElse("") && !e.contains(':')) &&
+                i.code.startsWith("import") && !i.code.contains('=') =>
+            i
+    }.nonEmpty
+    statementOrReexport || esmStatement
+  end bindingFreeImport
 
   /** Where identifiers come from: an import binding's origin, (module, export path), resolved
     * through the assignments the frontend lowers imports to.
