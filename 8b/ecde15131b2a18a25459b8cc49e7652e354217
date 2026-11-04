@@ -1,0 +1,33 @@
+.github/actions/parsetools-from-main/action.yml
+  s_79a7c562b49300::t_c04e8e2fcbcfb4 1-43
+.github/workflows/pr.yml
+  s_79a7c562b49300::t_d2ba5ea833c216 111-148
+ci/Dockerfile
+  s_79a7c562b49300::t_6061bb56b862f8 111
+ci/Dockerfile-alpine-ruby
+  s_79a7c562b49300::t_e9e105de75c700 20
+ci/Dockerfile-alpine-ruby3
+  s_79a7c562b49300::t_be8c201172bd88 20
+ci/Dockerfile-ruby
+  s_79a7c562b49300::t_164df0bb70160c 55
+ci/Dockerfile-ruby3
+  s_79a7c562b49300::t_475247cf17a6ab 55
+ci/Dockerfile-sle
+  s_79a7c562b49300::t_85ccb8352199f6 88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8becde15131b2a18a25459b8cc49e7652e354217",
+  "prompts": {},
+  "sessions": {
+    "s_79a7c562b49300": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e06ad8c2-0767-47dd-913e-35689e5f05ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
