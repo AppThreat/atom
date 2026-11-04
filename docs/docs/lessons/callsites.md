@@ -117,9 +117,11 @@ the project's own code unless they lead into vendored code. The sources are the 
    are dropped, because type recovery puts module prefixes on plain strings.
 3. Decorators, heritage clauses, tagged templates and JSX tags (`via` `name`).
 4. Imports that bind nothing (`via` `binding`, kind `import`): the import runs the module, so
-   `import 'y'`, a bare `require('y')` statement and a re-export (`export * from 'y'`) are one
-   record each at the statement. An import that binds a name gives a record only where the name is
-   used.
+   `import 'y'`, a re-export (`export * from 'y'`) and a `require('y')` or `import('y')` whose value
+   no local name takes (a statement of its own, `module.exports = require('y')`,
+   `require('y')(app)`, `await import('y')`) are one record each at the import. An import that
+   binds a local name gives a record only where the name is used, and `require('y').m()` is the
+   record of `m`.
 
 <!-- command: javascript -->
 ```bash
@@ -372,4 +374,7 @@ and tags the atom once; the callsites file is the one `atom callsites` would wri
   handles. Several candidate ancestors of an inherited member keep the first one.
 - C and C++: a header must resolve to an absolute path to count. CDT's C++ recall is lower than
   EDG's, and CDT misses curl's `bool` macro.
-- Side-effect imports (`import "./polyfill"`) are not records yet.
+- Vue: when astgen cannot parse a component's template as written (slot shorthand such as
+  `<template #fallback>`, unclosed void elements such as `<input>`), it parses the script on its
+  own and the component's records sit on the wrong lines (AppThreat/atom#320). Svelte and Astro
+  components keep their lines.

@@ -413,9 +413,9 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
   end nameResolvedRecords
 
   /** Records for the imports that bind nothing (decision 0002, Q1): the module runs at the import,
-    * so the statement itself is one use, with kind `import` and no member path. Imports that bind a
-    * name keep their rule: a record exists only where the bound name is used. Three shapes reach
-    * the slice, each told from its binding twin in the graph:
+    * so the statement itself is one use, with kind `import` and no member path. An import that
+    * binds a local name keeps its rule: a record exists only where the name is used. Two shapes
+    * reach the slice, each told from its binding twin in the graph:
     *
     *   - an ESM import with no specifiers (`import 'y'`, `import {} from 'y'`): the frontend lowers
     *     it to `var y = require("y")` with an IMPORT node whose entity and alias are both the bare
@@ -423,15 +423,10 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
     *     require('y')` gets its IMPORT node with the declarator's own code, so only the ESM
     *     statement's node carries a code that starts with `import` and binds nothing (`=` would
     *     name `import y = require('y')`, which binds `y`);
-    *   - a `require('y')` or `import('y')` call that is a whole statement: the parent is a block
-    *     and no assignment takes its value, which is what "the value is unused" looks like after
-    *     the lowering;
-    *   - a re-export (`export * from 'y'`, `export {a} from 'y'`, `export * as n from 'y'`): the
-    *     frontend lowers it to a `STATIC_DISPATCH` require (the ESM lowering and every hand-written
-    *     call are dynamic) whose single assignment target is the `_<name>` temporary that the
-    *     exports write reads, machinery no source identifier names.
+    *   - a `require('y')` or `import('y')` call whose value no local name takes: see
+    *     [[bindingFreeImport]].
     *
-    * The record sits at the statement's own position, and the module is the specifier resolved like
+    * The record sits at the call's own position, and the module is the specifier resolved like
     * every other record's: bare, or vendored code reached through a relative specifier or a path
     * alias (decision 0001, P5); a specifier for a project file names nothing external.
     */
@@ -456,20 +451,35 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
       }
   end sideEffectImportRecords
 
-  /** Whether the `require`/`import` call `c` is an import that binds nothing: one of the three
-    * shapes of [[sideEffectImportRecords]], by the graph the frontend wrote.
+  /** Whether the `require`/`import` call `c` is an import that binds nothing. Its value is first
+    * followed through `await`, `?:`, `||` and `&&`, which pass it on unchanged. It then binds a
+    * name only when it is assigned to a local identifier, or when it is the receiver of a member
+    * access (`require('y').config()`, which the member's own record already names). Everything else
+    * loads the module without a local name for the slice to follow: a statement of its own, the
+    * body of an `if`, `module.exports = require('y')` and `exports.k = require('y')`,
+    * `require('y')(app)`, or an argument (`use(require('y'))`). The one identifier target that
+    * counts is the re-export lowering (`export * from 'y'`, `export {a} from 'y'`): a
+    * `STATIC_DISPATCH` require (the ESM import lowering and every hand-written call are dynamic)
+    * into the `_<name>` temporary that the exports write reads.
     */
   private def bindingFreeImport(c: Call): Boolean =
-    val statementOrReexport = DeclarationRefs.parentOf(c) match
-      // a statement of its own: no assignment consumes the call's value
-      case Some(_: Block) => true
-      // the re-export lowering: a static require into the `_<name>` temporary
-      case Some(a: Call) if a.name == Operators.assignment =>
-          c.dispatchType == DispatchTypes.STATIC_DISPATCH &&
-          a.argument.collectFirst {
-              case i: Identifier if i.argumentIndex == 1 => i.name
-          }.exists(_.startsWith("_"))
-      case _ => false
+    var value: Expression = c
+    var climbing          = true
+    while climbing do
+      DeclarationRefs.parentOf(value) match
+        case Some(p: Call) if passesValueOn(p, value) => value = p
+        case _                                        => climbing = false
+    val unbound = DeclarationRefs.parentOf(value) match
+      case Some(a: Call) if a.name == Operators.assignment && value.argumentIndex == 2 =>
+          a.argument.find(_.argumentIndex == 1) match
+            case Some(i: Identifier) =>
+                c.dispatchType == DispatchTypes.STATIC_DISPATCH && i.name.startsWith("_")
+            case _ => true
+      case Some(p: Call)
+          if (p.name == Operators.fieldAccess || p.name == Operators.indexAccess) &&
+              value.argumentIndex == 1 =>
+          false
+      case _ => true
     // the ESM statement `import 'y'`: the IMPORT node of the specifier-only form
     val esmStatement = c.out("IS_CALL_FOR_IMPORT").asScala.collect {
         case i: Import
@@ -477,8 +487,16 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
                 i.code.startsWith("import") && !i.code.contains('=') =>
             i
     }.nonEmpty
-    statementOrReexport || esmStatement
+    unbound || esmStatement
   end bindingFreeImport
+
+  /** Whether the operator `p` gives its argument `arg` back as its own value. */
+  private def passesValueOn(p: Call, arg: Expression): Boolean = p.name match
+    case "<operator>.await"                         => true
+    case Operators.logicalOr | Operators.logicalAnd => true
+    // the condition of `?:` is not its value
+    case Operators.conditional => arg.argumentIndex != 1
+    case _                     => false
 
   /** Where identifiers come from: an import binding's origin, (module, export path), resolved
     * through the assignments the frontend lowers imports to.

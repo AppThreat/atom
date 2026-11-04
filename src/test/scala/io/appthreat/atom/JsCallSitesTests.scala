@@ -452,6 +452,19 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
             CallSite("src/forms.js", 4, 0, "axios", "", "import", "binding"),
             CallSite("src/forms.js", 8, 2, "mitt", "", "import", "binding")
           )
+          // In cjs.js: a require whose value no local name takes still loads the module: the
+          // CommonJS re-exports of lines 1 and 2, the module called at once on line 3, the awaited
+          // dynamic import of line 5, the body of an `if` on line 7 and an argument on line 8.
+          records("side-effect-imports").filter(r =>
+              r.file == "src/cjs.js" && r.kind == "import"
+          ).map(r => (r.line, r.module)) should contain theSameElementsAs List(
+            (1, "express"),
+            (2, "koa-router"),
+            (3, "debug"),
+            (5, "pino-pretty"),
+            (7, "why-is-node-running"),
+            (8, "ts-node")
+          )
       }
 
       "give binding imports and relative specifiers no record of their own (atom#367)" in {
@@ -479,6 +492,15 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           ).map(r => (r.line, r.module, r.kind)) shouldBe List(
             (12, "hand-written", "ref"),
             (15, "chalk", "ref")
+          )
+          // cjs.js: the conditional of line 9 binds `maybe` and the dynamic require of line 10
+          // binds `_local` (the re-export lowering is static), so neither has a record of its
+          // own, only `_local`'s use on line 13; `require('dotenv').config()` on line 11 is the
+          // member call's record only
+          records("side-effect-imports").filter(r => r.file == "src/cjs.js" && r.line >= 9)
+              .map(r => (r.line, r.module, r.path, r.kind)) shouldBe List(
+            (11, "dotenv", "config", "call"),
+            (13, "underscored", "", "ref")
           )
           // `export * from './own.js'` and `require('./relative.js')` name the project's own files
           records("side-effect-imports").filter(r =>

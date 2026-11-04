@@ -230,9 +230,15 @@ class CallSitesDeterminismTests extends AnyWordSpec with Matchers with BeforeAnd
             "javascript",
             copyOf("/js-usages/side-effect-imports", "js-side-effect-import-rows")
           )
-          // the records of the pass sit on the import statements themselves, in file order; the
-          // shapes come as IMPORT nodes, unassigned statements and static requires, one per record
+          // the records of the pass sit on the import calls themselves, in file order; the shapes
+          // come as IMPORT nodes, requires no local name takes and static requires, one per record
           rows(slice).filter(_._5 == "import") shouldBe List(
+            ("src/cjs.js", 1, "express", "", "import", "binding", ""),
+            ("src/cjs.js", 2, "koa-router", "", "import", "binding", ""),
+            ("src/cjs.js", 3, "debug", "", "import", "binding", ""),
+            ("src/cjs.js", 5, "pino-pretty", "", "import", "binding", ""),
+            ("src/cjs.js", 7, "why-is-node-running", "", "import", "binding", ""),
+            ("src/cjs.js", 8, "ts-node", "", "import", "binding", ""),
             ("src/forms.js", 1, "left-pad", "", "import", "binding", ""),
             ("src/forms.js", 2, "double-quoted", "", "import", "binding", ""),
             ("src/forms.js", 3, "lodash-es", "", "import", "binding", ""),
