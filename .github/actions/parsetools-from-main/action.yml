@@ -1,0 +1,43 @@
+name: atom-parsetools from main
+description: >-
+  Puts astgen and the other atom-parsetools commands from atom-parsetools main on the PATH, and
+  parsa, the type map binary that main publishes to ghcr.io/appthreat/parsa:<platform>-main, at
+  ASTGEN_NATIVE_BIN. A job that uses it tests what the next atom-parsetools release ships (native
+  type maps by default) instead of the version on npm. Needs Node.js set up first.
+outputs:
+  version:
+    description: What `astgen --version` prints.
+    value: ${{ steps.install.outputs.version }}
+runs:
+  using: composite
+  steps:
+    - uses: oras-project/setup-oras@1d808f7d7f6995cc68b7bf507bfe5c5446e1dc9d  # v2.0.1
+    - name: Install atom-parsetools main and parsa
+      id: install
+      shell: bash
+      env:
+        SRC: ${{ runner.temp }}/atom-parsetools-main
+        BIN: ${{ runner.temp }}/parsa-main
+      run: |
+        set -euo pipefail
+        case "$RUNNER_OS-$RUNNER_ARCH" in
+          Linux-X64) platform=linux-amd64 ;;
+          Linux-ARM64) platform=linux-arm64 ;;
+          macOS-ARM64) platform=darwin-arm64 ;;
+          macOS-X64) platform=darwin-amd64 ;;
+          *) echo "parsa: no build for $RUNNER_OS-$RUNNER_ARCH" >&2; exit 1 ;;
+        esac
+        git clone --depth 1 https://github.com/AppThreat/atom-parsetools.git "$SRC"
+        echo "atom-parsetools main at $(git -C "$SRC" rev-parse HEAD)"
+        (cd "$SRC" && npm ci --no-audit --no-fund)
+        npm install -g "$SRC" --no-audit --no-fund
+        mkdir -p "$BIN"
+        oras pull "ghcr.io/appthreat/parsa:$platform-main" -o "$BIN"
+        (cd "$BIN" && shasum -a 256 -c "parsa-$platform.sha256")
+        mv "$BIN/parsa-$platform" "$BIN/parsa"
+        # oras does not keep a file's mode
+        chmod +x "$BIN/parsa"
+        echo "ASTGEN_NATIVE_BIN=$BIN/parsa" >> "$GITHUB_ENV"
+        version=$(astgen --version)
+        echo "astgen $version, parsa from ghcr.io/appthreat/parsa:$platform-main"
+        echo "version=$version" >> "$GITHUB_OUTPUT"

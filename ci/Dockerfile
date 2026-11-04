@@ -108,7 +108,7 @@ RUN set -e; \
     && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.json \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
     && rm composer.json composer.lock composer-setup.php \
-    && npm install -g @appthreat/atom-parsetools@1.10.1 \
+    && npm install -g @appthreat/atom-parsetools@1.10.6 \
     && which astgen \
     && which phpastgen \
     && phpastgen --parser-info \
