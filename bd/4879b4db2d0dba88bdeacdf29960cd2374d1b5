@@ -1,0 +1,28 @@
+src/test/scala/io/appthreat/atom/CallSitesLessonTests.scala
+  s_53a3fc508a4cc5::t_7cb60c40788e4a 1-133
+  s_53a3fc508a4cc5::t_c6b55ec86e3c9c 134-146
+README.md
+  s_53a3fc508a4cc5::t_bc0fad58ea7e78 195
+docs/docs/cli.md
+  s_53a3fc508a4cc5::t_0fb6f7d439c580 91,118-136
+docs/docs/lessons/callsites.md
+  s_53a3fc508a4cc5::t_aa158c30dee52d 1,5-8,12-19,23-44,48-100,103-124,126-131,134-141,143-147,149,151-154,157,159-166,168-198,200-227,230-352,355-369
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_53a3fc508a4cc5::t_99e4ba97e455fe 918-920
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bd4879b4db2d0dba88bdeacdf29960cd2374d1b5",
+  "prompts": {},
+  "sessions": {
+    "s_53a3fc508a4cc5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "faf98bc7-0146-4062-b04e-290fce1641db",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
