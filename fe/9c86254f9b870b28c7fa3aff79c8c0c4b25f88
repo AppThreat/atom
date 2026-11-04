@@ -1,0 +1,21 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/VendoredUses.scala
+  s_c0804e5357f0c5::t_45727cf9fcab18 204-206
+src/test/scala/io/appthreat/atom/VendoredCodeTests.scala
+  s_c0804e5357f0c5::t_75854e078061f6 85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fe9c86254f9b870b28c7fa3aff79c8c0c4b25f88",
+  "prompts": {},
+  "sessions": {
+    "s_c0804e5357f0c5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75227701-fd30-4fc7-8eae-71a8df8f3a1c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
