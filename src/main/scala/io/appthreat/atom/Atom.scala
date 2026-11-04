@@ -915,7 +915,9 @@ object Atom:
               )
         )
     cmd("callsites")
-        .text("Extract one record per external call/use site of an imported module (JS/TS)")
+        .text(
+          "Extract one record per use of an imported module, class or header, for every language atom reads"
+        )
         .action((_, *) => AtomCallsitesConfig())
     cmd("reachables")
         .text("Extract reachable data-flow slices based on automated framework tags")
