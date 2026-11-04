@@ -194,6 +194,12 @@ class CallSitesDeterminismTests extends AnyWordSpec with Matchers with BeforeAnd
           )
           deterministic("js-plain", "javascript", copyOf("/js-usages/callsites", "js-plain"))
           deterministic("js-sfc", "javascript", copyOf("/js-usages/sfc", "js-sfc"))
+          // the import records of decision 0002 (side-effect imports, re-exports) ride along
+          deterministic(
+            "js-side-effect-imports",
+            "javascript",
+            copyOf("/js-usages/side-effect-imports", "js-side-effect-imports")
+          )
           // an SBOM in the atom: the purls come from it
           val withBom = copyOf("/js-usages/purl-bom", "js-purl-bom")
           deterministic(
@@ -215,6 +221,37 @@ class CallSitesDeterminismTests extends AnyWordSpec with Matchers with BeforeAnd
           ujson.read(slice).obj("callsites").arr.filter(r => r("path").str == "Get")
               .map(r => (r("line").num.toInt, r("method").str)).toList shouldBe
               List((14, "src/cats.ts::program:CatsController:findOne"))
+      }
+
+      "record every import that binds nothing the same way, whatever order the graph was created in" in {
+          requireAstgen()
+          val slice = deterministic(
+            "js-side-effect-import-rows",
+            "javascript",
+            copyOf("/js-usages/side-effect-imports", "js-side-effect-import-rows")
+          )
+          // the records of the pass sit on the import calls themselves, in file order; the shapes
+          // come as IMPORT nodes, requires no local name takes and static requires, one per record
+          rows(slice).filter(_._5 == "import") shouldBe List(
+            ("src/cjs.js", 1, "express", "", "import", "binding", ""),
+            ("src/cjs.js", 2, "koa-router", "", "import", "binding", ""),
+            ("src/cjs.js", 3, "debug", "", "import", "binding", ""),
+            ("src/cjs.js", 5, "pino-pretty", "", "import", "binding", ""),
+            ("src/cjs.js", 7, "why-is-node-running", "", "import", "binding", ""),
+            ("src/cjs.js", 8, "ts-node", "", "import", "binding", ""),
+            ("src/forms.js", 1, "left-pad", "", "import", "binding", ""),
+            ("src/forms.js", 2, "double-quoted", "", "import", "binding", ""),
+            ("src/forms.js", 3, "lodash-es", "", "import", "binding", ""),
+            ("src/forms.js", 4, "axios", "", "import", "binding", ""),
+            ("src/forms.js", 8, "mitt", "", "import", "binding", ""),
+            ("src/polyfills.ts", 1, "zone.js", "", "import", "binding", ""),
+            ("src/polyfills.ts", 2, "core-js/es6/reflect", "", "import", "binding", ""),
+            ("src/polyfills.ts", 3, "classlist.js", "", "import", "binding", ""),
+            ("src/polyfills.ts", 4, "web-animations-js", "", "import", "binding", ""),
+            ("src/polyfills.ts", 8, "mitt", "", "import", "binding", ""),
+            ("src/polyfills.ts", 9, "left-pad", "", "import", "binding", ""),
+            ("src/polyfills.ts", 10, "dot-prop", "", "import", "binding", "")
+          )
       }
 
       "resolve a long chain of aliases the same way, whatever order the graph was created in" in {

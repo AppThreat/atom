@@ -14,13 +14,23 @@ import scala.util.Try
   *
   * The fixtures cover each resolution path: `via=binding` (call, new, arg, ref — including `new` on
   * a destructured dynamic import), `via=name` (tagged template, heritage clause, JSX tag,
-  * decorator). The JavaScript frontend needs the external `astgen` generator, so the suite cancels
-  * (not fails) without one, exactly like [[JsUsagesExternalCallSiteTests]].
+  * decorator), and the imports that bind nothing, which are uses of their own (decision 0002, Q1:
+  * `import 'y'`, a bare `require('y')` statement, a re-export). The JavaScript frontend needs the
+  * external `astgen` generator, so the suite cancels (not fails) without one, exactly like
+  * [[JsUsagesExternalCallSiteTests]].
   */
 class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
   private val fixtureCases =
-      Seq("callsites", "decorators", "callsites-fields", "orphans", "sfc", "purl-bom")
+      Seq(
+        "callsites",
+        "decorators",
+        "callsites-fields",
+        "orphans",
+        "sfc",
+        "purl-bom",
+        "side-effect-imports"
+      )
 
   private var workspace: BFile                    = scala.compiletime.uninitialized
   private var slices: Map[String, List[CallSite]] = Map.empty
@@ -387,8 +397,8 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
       }
 
       "record JSX tags by name until the frontend links them (chen T9)" in {
-          at("callsites", "src/ui.jsx", 3, "antd") should contain theSameElementsAs List(
-            CallSite("src/ui.jsx", 3, 25, "antd", "Button", "jsx", "name")
+          at("callsites", "src/ui.jsx", 4, "antd") should contain theSameElementsAs List(
+            CallSite("src/ui.jsx", 4, 25, "antd", "Button", "jsx", "name")
           )
       }
 
@@ -411,6 +421,96 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           records("callsites").filter(r => r.file == "src/app.js" && r.line == 11) shouldBe empty
           records("callsites").filter(r =>
               r.path.contains("_tmp") || r.module.contains("_tmp")
+          ) shouldBe empty
+      }
+
+      "record each import that binds nothing as one record at the statement (atom#367)" in {
+          // The import runs the module (decision 0002, Q1), so the statement itself is the use.
+          // In polyfills.ts: the side-effect `import 'y'` of lines 1 to 4 (ngx-admin's polyfills),
+          // `import {} from 'mitt'` of line 8, `export * from 'left-pad'` of line 9 and the bare
+          // `require('dot-prop')` statement of line 10.
+          records("side-effect-imports").filter(r =>
+              r.file == "src/polyfills.ts" && r.kind == "import"
+          ) should contain theSameElementsAs List(
+            CallSite("src/polyfills.ts", 1, 0, "zone.js", "", "import", "binding"),
+            CallSite("src/polyfills.ts", 2, 0, "core-js/es6/reflect", "", "import", "binding"),
+            CallSite("src/polyfills.ts", 3, 0, "classlist.js", "", "import", "binding"),
+            CallSite("src/polyfills.ts", 4, 0, "web-animations-js", "", "import", "binding"),
+            CallSite("src/polyfills.ts", 8, 0, "mitt", "", "import", "binding"),
+            CallSite("src/polyfills.ts", 9, 0, "left-pad", "", "import", "binding"),
+            CallSite("src/polyfills.ts", 10, 0, "dot-prop", "", "import", "binding")
+          )
+          // In forms.js: the dynamic `import('left-pad');` and `require("double-quoted");`
+          // statements, the re-exports `export { pick } from 'lodash-es'` and
+          // `export * as nsx from 'axios'`, and the `require('mitt')` statement inside a block.
+          records("side-effect-imports").filter(r =>
+              r.file == "src/forms.js" && r.kind == "import"
+          ) should contain theSameElementsAs List(
+            CallSite("src/forms.js", 1, 0, "left-pad", "", "import", "binding"),
+            CallSite("src/forms.js", 2, 0, "double-quoted", "", "import", "binding"),
+            CallSite("src/forms.js", 3, 0, "lodash-es", "", "import", "binding"),
+            CallSite("src/forms.js", 4, 0, "axios", "", "import", "binding"),
+            CallSite("src/forms.js", 8, 2, "mitt", "", "import", "binding")
+          )
+          // In cjs.js: a require whose value no local name takes still loads the module: the
+          // CommonJS re-exports of lines 1 and 2, the module called at once on line 3, the awaited
+          // dynamic import of line 5, the body of an `if` on line 7 and an argument on line 8.
+          records("side-effect-imports").filter(r =>
+              r.file == "src/cjs.js" && r.kind == "import"
+          ).map(r => (r.line, r.module)) should contain theSameElementsAs List(
+            (1, "express"),
+            (2, "koa-router"),
+            (3, "debug"),
+            (5, "pino-pretty"),
+            (7, "why-is-node-running"),
+            (8, "ts-node")
+          )
+      }
+
+      "give binding imports and relative specifiers no record of their own (atom#367)" in {
+          // the binding twins of polyfills.ts lines 5 to 7 (`import { computed }`, `import type`,
+          // `import * as`) and 11 to 12 (`const flat = require`, hand-written `var pino =
+          // require('pino')`, whose import node looks like a side-effect import's), and the
+          // import-equals of lines 18 and 19 (which binds `vim` and `ioredis`): a record only at
+          // the use, at lines 14 to 17 and 21
+          records("side-effect-imports").filter(r =>
+              r.file == "src/polyfills.ts" && r.via == "binding" && r.kind != "import"
+          ).map(r => (r.line, r.module, r.path)) should contain theSameElementsAs List(
+            (14, "vue", "computed"),
+            (15, "flatted", ""),
+            (16, "axios", ""),
+            (17, "pino", ""),
+            (21, "vim", ""),
+            (21, "ioredis", "")
+          )
+          // the hand-written `var hand = require('hand-written')` of forms.js line 11 and the
+          // `const chalk = require('chalk')` of line 14 (whose XImportsPass import node looks
+          // like a side-effect import's, without a line and without `=` in its code) keep the
+          // same rule: a record only at the use
+          records("side-effect-imports").filter(r =>
+              r.file == "src/forms.js" && r.kind != "import"
+          ).map(r => (r.line, r.module, r.kind)) shouldBe List(
+            (12, "hand-written", "ref"),
+            (15, "chalk", "ref")
+          )
+          // cjs.js: the conditional of line 9 binds `maybe` and the dynamic require of line 10
+          // binds `_local` (the re-export lowering is static), so neither has a record of its
+          // own, only `_local`'s use on line 13; `require('dotenv').config()` on line 11 is the
+          // member call's record only; TypeScript's `__importDefault(require("config"))` on line 14
+          // hands the module to `config_1`, which gives the records at its uses on lines 15 and
+          // 16, the second through the helper's `default`, which is the module itself, as for the
+          // ESM default import; `__importStar` on line 17 gives a namespace, used on line 18
+          records("side-effect-imports").filter(r => r.file == "src/cjs.js" && r.line >= 9)
+              .map(r => (r.line, r.module, r.path, r.kind)) shouldBe List(
+            (11, "dotenv", "config", "call"),
+            (13, "underscored", "", "ref"),
+            (15, "config", "", "ref"),
+            (16, "config", "get", "call"),
+            (18, "ns-pkg", "pick", "call")
+          )
+          // `export * from './own.js'` and `require('./relative.js')` name the project's own files
+          records("side-effect-imports").filter(r =>
+              r.module.startsWith("./") || r.module == "own.js" || r.module == "relative.js"
           ) shouldBe empty
       }
   }

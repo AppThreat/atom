@@ -104,6 +104,13 @@ object JsNames:
           !DefComponent.unresolvedCallPattern.matcher(name).matches() &&
           !name.exists(ch => ch.isWhitespace || sourceTextChars.contains(ch))
 
+  /** The helpers TypeScript (`esModuleInterop`, tslib) and Babel emit around a `require` in
+    * CommonJS output; each returns the module, or an object whose `default` is the module.
+    */
+  val defaultInteropHelpers: Set[String] = Set("__importDefault", "_interopRequireDefault")
+  val interopHelpers: Set[String] =
+      defaultInteropHelpers ++ Set("__importStar", "_interopRequireWildcard")
+
   def isBareSpecifier(s: String): Boolean =
       s.nonEmpty && !s.startsWith(".") && !s.startsWith("/") && !s.startsWith("#") &&
           !s.contains("://")

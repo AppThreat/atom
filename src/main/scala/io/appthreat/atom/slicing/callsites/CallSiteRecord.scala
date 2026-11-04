@@ -4,8 +4,8 @@ package io.appthreat.atom.slicing.callsites
   *
   * Every record carries the position of the use itself (the identifier, the member name, the
   * decorator), never a position borrowed from another call. `kind` says what the use is (call, new,
-  * jsx, arg, ref, decorator, extends, implements, decltype, tag); `via` says how the module was
-  * resolved:
+  * jsx, arg, ref, decorator, extends, implements, decltype, tag, import); `via` says how the module
+  * was resolved:
   *   - `binding`: the identifier resolves, scope-correctly through captures, to an imported binding
   *     of its file;
   *   - `type`: the callee's resolved method full name starts with a module specifier this project
@@ -58,7 +58,10 @@ object CallSiteRecord:
     "extends"    -> 6,
     "implements" -> 6,
     "decltype"   -> 7,
-    "ref"        -> 8
+    "ref"        -> 8,
+    // an import that binds nothing is its own site, the whole statement; it competes with no
+    // other kind at one position, so it ranks last
+    "import" -> 9
   )
 
   /** The order in which records of one use site compete: the most specific kind first, then the
@@ -93,6 +96,22 @@ object CallSiteRecord:
         r.purl
       )
 
+  /** `r` with `/` as the separator of its file, on every platform. The Java and PHP frontends write
+    * a file with the platform's separator, and PHP repeats it at the start of `method`, so a slice
+    * made on Windows would otherwise name the same file differently from one made elsewhere, and a
+    * consumer merging locations from several tools would count one place twice
+    * (AppThreat/atom#373). Only the file and the file prefix of `method` change: the rest of a PHP
+    * method name, `module` and `path` keep the backslashes of PHP namespaces.
+    */
+  def withPortableFile(r: CallSiteRecord): CallSiteRecord =
+      if r.file.indexOf('\\') < 0 then r
+      else
+        val file = r.file.replace('\\', '/')
+        val method =
+            if r.method.startsWith(r.file) then file + r.method.substring(r.file.length)
+            else r.method
+        r.copy(file = file, method = method)
+
   /** One record per use site: for each (file, line, col, module) the most specific kind wins (see
     * [[winnerKey]] for ties), and the order is positional, through the module, path and kind of the
     * record, which no two winners share. The order never involves node ids, which vary between runs
@@ -110,5 +129,17 @@ object CallSiteRecord:
           .sortBy(r => (r.file, r.line.intValue, r.col.intValue, r.module, r.path, r.kind))
 end CallSiteRecord
 
-/** The (module, export path) a use resolves to, shared by the language sources. */
-private[callsites] final case class Origin(module: String, path: List[String])
+/** The (module, export path) a use resolves to, shared by the language sources. `wrapsDefault` is
+  * set on the value of a CommonJS interop helper (`__importDefault(require("x"))`), an object whose
+  * `default` is the module itself: a member chain through it starts after that `default`, as it
+  * would for the ESM default import the helper stands for.
+  */
+private[callsites] final case class Origin(
+  module: String,
+  path: List[String],
+  wrapsDefault: Boolean = false
+):
+  /** The export path of a use that reaches this origin through `members`. */
+  def through(members: List[String]): List[String] =
+      path ++ (if wrapsDefault && members.headOption.contains("default") then members.tail
+               else members)

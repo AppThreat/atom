@@ -56,8 +56,8 @@ Every record has these fields:
 
 A record is unique by file, line, column and module (C and JVM bytecode also by path where two
 members share a site); when one site carries several records the most specific kind wins, in the order `call`,
-`new`, `jsx`, `tag`, `decorator`, `arg`, `extends` or `implements`, `decltype`, `ref`, and the
-result is sorted by file, line, column, module, path and kind
+`new`, `jsx`, `tag`, `decorator`, `arg`, `extends` or `implements`, `decltype`, `ref`, `import`,
+and the result is sorted by file, line, column, module, path and kind
 ([`CallSiteRecord.scala`](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteRecord.scala)).
 The slice is the same bytes for the same input, however the frontend numbered its nodes.
 
@@ -104,9 +104,9 @@ atom callsites -l javascript -o app.atom -s callsites.json /path/to/project
 atom callsites -l javascript --reuse-atom -o app.atom -s callsites.json /path/to/project
 ```
 
-Kinds: `call`, `new`, `jsx`, `arg`, `ref`, `decorator`, `extends`, `implements`, `tag`. The module is
-a bare specifier (`lodash`, `@angular/common/http`, `node:fs`); relative specifiers are the
-project's own code unless they lead into vendored code. The sources are the three passes of
+Kinds: `call`, `new`, `jsx`, `arg`, `ref`, `decorator`, `extends`, `implements`, `tag`, `import`.
+The module is a bare specifier (`lodash`, `@angular/common/http`, `node:fs`); relative specifiers are
+the project's own code unless they lead into vendored code. The sources are the four passes of
 [`JsCallSiteSource`](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/slicing/callsites/JsCallSiteSource.scala):
 
 1. Identifiers that resolve, through closure captures and the frontend's import lowering, to an
@@ -116,6 +116,12 @@ project's own code unless they lead into vendored code. The sources are the thre
    member is one of sixteen string and array methods (`includes`, `replace`, `split`, and so on)
    are dropped, because type recovery puts module prefixes on plain strings.
 3. Decorators, heritage clauses, tagged templates and JSX tags (`via` `name`).
+4. Imports that bind nothing (`via` `binding`, kind `import`): the import runs the module, so
+   `import 'y'`, a re-export (`export * from 'y'`) and a `require('y')` or `import('y')` whose value
+   no local name takes (a statement of its own, `module.exports = require('y')`,
+   `require('y')(app)`, `await import('y')`) are one record each at the import. An import that
+   binds a local name gives a record only where the name is used, and `require('y').m()` is the
+   record of `m`.
 
 <!-- command: javascript -->
 ```bash
@@ -128,7 +134,8 @@ atom callsites --cache none -l javascript -o /tmp/ex-javascript.atom -s /tmp/ex-
 {"file":"src/app.js","line":12,"col":21,"method":"src/app.js::program:list","module":"@aws-sdk/client-s3","path":"S3Client","kind":"new","via":"binding","resolvedMethod":"","builtin":false,"declaringModule":""}
 {"file":"src/app.js","line":13,"col":21,"method":"src/app.js::program:list","module":"jsonwebtoken","path":"sign","kind":"call","via":"binding","resolvedMethod":"jsonwebtoken:jwt:sign","builtin":false,"declaringModule":""}
 {"file":"src/app.js","line":16,"col":-1,"method":"src/app.js::program","module":"sequelize","path":"Model","kind":"extends","via":"name","resolvedMethod":"sequelize.js::program:Model","builtin":false,"declaringModule":""}
-{"file":"src/ui.jsx","line":3,"col":25,"method":"src/ui.jsx::program:App","module":"antd","path":"Button","kind":"jsx","via":"name","resolvedMethod":"","builtin":false,"declaringModule":""}
+{"file":"src/ui.jsx","line":1,"col":0,"method":"src/ui.jsx::program","module":"core-js/stable","path":"","kind":"import","via":"binding","resolvedMethod":"","builtin":false,"declaringModule":""}
+{"file":"src/ui.jsx","line":4,"col":25,"method":"src/ui.jsx::program:App","module":"antd","path":"Button","kind":"jsx","via":"name","resolvedMethod":"","builtin":false,"declaringModule":""}
 ```
 
 ### Python
@@ -367,4 +374,7 @@ and tags the atom once; the callsites file is the one `atom callsites` would wri
   handles. Several candidate ancestors of an inherited member keep the first one.
 - C and C++: a header must resolve to an absolute path to count. CDT's C++ recall is lower than
   EDG's, and CDT misses curl's `bool` macro.
-- Side-effect imports (`import "./polyfill"`) are not records yet.
+- Vue: when astgen cannot parse a component's template as written (slot shorthand such as
+  `<template #fallback>`, unclosed void elements such as `<input>`), it parses the script on its
+  own and the component's records sit on the wrong lines (AppThreat/atom#320). Svelte and Astro
+  components keep their lines.

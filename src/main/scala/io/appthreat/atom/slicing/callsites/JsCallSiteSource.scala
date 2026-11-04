@@ -9,6 +9,7 @@ import io.shiftleft.semanticcpg.language.*
 
 import java.nio.file.Paths
 import scala.collection.mutable
+import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
 /** The JavaScript/TypeScript source of the callsites slice: the binding, field-alias, Angular
@@ -53,7 +54,7 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
                     col(use),
                     method.fullName,
                     origin.module,
-                    (origin.path ++ resolver.membersOf(use)).mkString("."),
+                    origin.through(resolver.membersOf(use, origin.wrapsDefault)).mkString("."),
                     kind,
                     "binding",
                     involvement.map(c => resolvedName(c.methodFullName)).getOrElse("")
@@ -121,6 +122,10 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
 
     // Pass C: decorators, heritage clauses, tagged templates and JSX tags, by name (via=name)
     collector.addAll(nameResolvedRecords(atom, js))
+
+    // Pass D: imports that bind nothing (decision 0002, Q1): the import runs the module, so the
+    // statement itself is one use, of kind `import`
+    collector.addAll(sideEffectImportRecords(atom, js))
 
     val result = collector.result()
     val purls  = JsPurls(atom, vendoredSpecifiers)
@@ -220,7 +225,7 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
                   c,
                   t.method,
                   origin.module,
-                  (origin.path ++ members).mkString("."),
+                  origin.through(members).mkString("."),
                   if called then "call" else "ref",
                   "binding",
                   ""
@@ -407,6 +412,99 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
     (uniqueDecorators.toList ++ heritage ++ taggedAndJsx)
   end nameResolvedRecords
 
+  /** Records for the imports that bind nothing (decision 0002, Q1): the module runs at the import,
+    * so the statement itself is one use, with kind `import` and no member path. An import that
+    * binds a local name keeps its rule: a record exists only where the name is used. Two shapes
+    * reach the slice, each told from its binding twin in the graph:
+    *
+    *   - an ESM import with no specifiers (`import 'y'`, `import {} from 'y'`): the frontend lowers
+    *     it to `var y = require("y")` with an IMPORT node whose entity and alias are both the bare
+    *     specifier; a binding import's entity is `<module>:<name>`, and a hand-written `var y =
+    *     require('y')` gets its IMPORT node with the declarator's own code, so only the ESM
+    *     statement's node carries a code that starts with `import` and binds nothing (`=` would
+    *     name `import y = require('y')`, which binds `y`);
+    *   - a `require('y')` or `import('y')` call whose value no local name takes: see
+    *     [[bindingFreeImport]].
+    *
+    * The record sits at the call's own position, and the module is the specifier resolved like
+    * every other record's: bare, or vendored code reached through a relative specifier or a path
+    * alias (decision 0001, P5); a specifier for a project file names nothing external.
+    */
+  private def sideEffectImportRecords(atom: Cpg, js: JsNames): List[CallSiteRecord] =
+      atom.call.nameExact("require", "import").l.flatMap { c =>
+          if !bindingFreeImport(c) then Nil
+          else
+            (for
+              method      <- methodOf(c)
+              (module, _) <- js.ofImportExpression(c)
+            yield CallSiteRecord(
+              method.filename,
+              line(c),
+              col(c),
+              method.fullName,
+              module,
+              "",
+              "import",
+              "binding",
+              ""
+            )).toList
+      }
+  end sideEffectImportRecords
+
+  /** Whether the `require`/`import` call `c` is an import that binds nothing. Its value is first
+    * followed through `await`, `?:`, `||`, `&&` and the calls that take it as an argument (see
+    * [[passesValueOn]]). It then binds a name only when it is assigned to a local identifier, or
+    * when it is the receiver of a member access (`require('y').config()`, which the member's own
+    * record already names). Everything else loads the module without a local name for the slice to
+    * follow: a statement of its own, the body of an `if`, `module.exports = require('y')` and
+    * `exports.k = require('y')`, `require('y')(app)`, or an argument of a call whose value nobody
+    * takes (`use(require('y'));`). The one identifier target that counts is the re-export lowering
+    * (`export * from 'y'`, `export {a} from 'y'`): a `STATIC_DISPATCH` require (the ESM import
+    * lowering and every hand-written call are dynamic) into the `_<name>` temporary that the
+    * exports write reads.
+    */
+  private def bindingFreeImport(c: Call): Boolean =
+    var value: Expression = c
+    var climbing          = true
+    while climbing do
+      DeclarationRefs.parentOf(value) match
+        case Some(p: Call) if passesValueOn(p, value) => value = p
+        case _                                        => climbing = false
+    val unbound = DeclarationRefs.parentOf(value) match
+      case Some(a: Call) if a.name == Operators.assignment && value.argumentIndex == 2 =>
+          a.argument.find(_.argumentIndex == 1) match
+            case Some(i: Identifier) =>
+                c.dispatchType == DispatchTypes.STATIC_DISPATCH && i.name.startsWith("_")
+            case _ => true
+      case Some(p: Call)
+          if (p.name == Operators.fieldAccess || p.name == Operators.indexAccess) &&
+              value.argumentIndex == 1 =>
+          false
+      case _ => true
+    // the ESM statement `import 'y'`: the IMPORT node of the specifier-only form
+    val esmStatement = c.out("IS_CALL_FOR_IMPORT").asScala.collect {
+        case i: Import
+            if i.importedEntity.exists(e => e == i.importedAs.getOrElse("") && !e.contains(':')) &&
+                i.code.startsWith("import") && !i.code.contains('=') =>
+            i
+    }.nonEmpty
+    unbound || esmStatement
+  end bindingFreeImport
+
+  /** Whether the value of `arg` may reach whatever takes the value of `p`: the operators that give
+    * it back (`await`, `||`, `&&`, the branches of `?:`), and any call that takes it as an
+    * argument, since interop helpers such as TypeScript's `__importDefault(require('y'))` return
+    * the module they are given. A require into a call whose value nobody takes still loads the
+    * module and binds nothing (`register(require('y'));`).
+    */
+  private def passesValueOn(p: Call, arg: Expression): Boolean = p.name match
+    case "<operator>.await"                         => true
+    case Operators.logicalOr | Operators.logicalAnd => true
+    // the condition of `?:` is not its value
+    case Operators.conditional        => arg.argumentIndex != 1
+    case name if name.startsWith("<") => false
+    case _                            => arg.argumentIndex >= 1
+
   /** Where identifiers come from: an import binding's origin, (module, export path), resolved
     * through the assignments the frontend lowers imports to.
     *
@@ -470,10 +568,19 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
             case c: Call if c.name == Operators.fieldAccess =>
                 val field = c.argument.collectFirst { case f: FieldIdentifier => f.canonicalName }
                 baseOf(c).flatMap(originOfExpr(_, depth + 1))
-                    .map(o => o.copy(path = o.path ++ field))
+                    .map(o => Origin(o.module, o.through(field.toList)))
             case c: Call if c.name == "<operator>.await" =>
                 c.argument.collectFirst { case b: Expression => b }
                     .flatMap(originOfExpr(_, depth + 1))
+            // `__importDefault(require("x"))` and the other helpers of compiled CommonJS: the
+            // default helpers wrap the module in `{ default: module }`, the star helpers return a
+            // namespace whose members are the module's
+            case c: Call if JsNames.interopHelpers.contains(c.name) =>
+                baseOf(c).flatMap(originOfExpr(_, depth + 1)).map(o =>
+                    if JsNames.defaultInteropHelpers.contains(c.name) && o.path.isEmpty then
+                      o.copy(wrapsDefault = true)
+                    else o
+                )
             case id: Identifier => localOf(id).flatMap(d => origins.get(d.id()))
             case _              => None
 
@@ -748,8 +855,12 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
     def originOf(id: Identifier): Option[Origin] =
         localOf(id).flatMap(d => origins.get(d.id())).filter(o => JsNames.isBareSpecifier(o.module))
 
-    /** The member names between a use and the top of its member chain (`id.a.b`). */
-    def membersOf(id: Expression): List[String] =
+    /** The member names between a use and the top of its member chain (`id.a.b`). The frontend
+      * lowers the callee `id.a.b()` to `(_tmp_0 = id.a).b`, where the chain stops. With
+      * `wrapsDefault` (see [[Origin]]) a chain that stopped at `id.default` continues through that
+      * temporary by one member, so `config_1.default.get()` names `get` as `config.get()` does.
+      */
+    def membersOf(id: Expression, wrapsDefault: Boolean = false): List[String] =
       val members      = mutable.ListBuffer[String]()
       var top: AstNode = id
       var climbing     = true
@@ -761,6 +872,11 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
               c.argument.collect { case f: FieldIdentifier => f.canonicalName }
                   .foreach(name => members += name)
               top = c
+          case Some(a: Call)
+              if wrapsDefault && members.toList == List("default") &&
+                  a.name == Operators.assignment && DeclarationRefs.isTmpAssignment(a) &&
+                  a.argument.exists(x => x.id() == top.id() && x.argumentIndex == 2) =>
+              top = a
           case _ => climbing = false
       members.toList
   end BindingResolver

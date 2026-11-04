@@ -201,7 +201,9 @@ private[callsites] final class VendoredCallSiteSource(
         case _                        => (r.file, r.line.intValue, r.module, "use", r.path)
       val positions = project.map(r => (r.file, r.line.intValue, r.col.intValue)).toSet
       val keys      = project.map(key).toSet
-      val extra = uses.records().filterNot(r =>
+      // the slice names files with `/` (CallSiteRecord.withPortableFile), the graph with the
+      // frontend's separator, so the graph's records take the slice's form before they compare
+      val extra = uses.records().map(CallSiteRecord.withPortableFile).filterNot(r =>
           positions.contains((r.file, r.line.intValue, r.col.intValue)) || keys.contains(key(r))
       )
       if extra.isEmpty && project == slice.callsites then slice

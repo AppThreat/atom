@@ -64,6 +64,16 @@ class CallSiteRecordTests extends AnyWordSpec with Matchers:
           winner(macroRecord, otherRecord) shouldBe otherRecord
       }
 
+      "let a use of a binding beat an import record of the same site" in {
+          // an import that binds nothing is its own site (decision 0002, Q1), the whole
+          // statement, so it meets no other record at one position; if one ever does (a use
+          // written on the import's line), the use is the more specific kind and wins, in either
+          // order (atom#367)
+          val importRecord = base.copy(kind = "import", path = "", resolvedMethod = "")
+          val use          = base.copy(kind = "ref", path = "", resolvedMethod = "")
+          winner(importRecord, use) shouldBe use
+      }
+
       "keep the same record of two that differ only in the declaring module" in {
           val plain = base.copy(kind = "call", via = "type", resolvedMethod = "java.util.Map.get")
           val declared = plain.copy(declaringModule = "java.util.Map")
@@ -143,4 +153,35 @@ class CallSiteRecordTests extends AnyWordSpec with Matchers:
               """"methodsWithLineTables":0,"lineQuality":"source","sourceFileGuesses":1}}"""
       }
   }
+  "a slice made on Windows" should {
+      // the shape of a php2atom record on Windows: the file with backslashes, repeated at the
+      // start of `method`, and namespace backslashes in the method, module and path
+      val windows = CallSiteRecord(
+        "src\\Controller\\HomeController.php",
+        Integer.valueOf(12),
+        Integer.valueOf(8),
+        "src\\Controller\\HomeController.php:App\\Controller\\HomeController->index",
+        "Symfony\\Component\\HttpFoundation",
+        "Response",
+        "new",
+        "type",
+        ""
+      )
+
+      "name its files with / and keep the namespaces (AppThreat/atom#373)" in {
+          val collector = RecordCollector("test")
+          collector.addAll(List(windows))
+          val r = collector.result().callsites.head
+          r.file shouldBe "src/Controller/HomeController.php"
+          r.method shouldBe "src/Controller/HomeController.php:App\\Controller\\HomeController->index"
+          r.module shouldBe "Symfony\\Component\\HttpFoundation"
+      }
+
+      "leave a record with / untouched" in {
+          val collector = RecordCollector("test")
+          collector.addAll(List(base))
+          collector.result().callsites shouldBe List(base)
+      }
+  }
+
 end CallSiteRecordTests
