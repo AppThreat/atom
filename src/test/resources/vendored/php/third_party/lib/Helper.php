@@ -6,3 +6,7 @@ class Helper {
 }
 
 function helper_fn($x) { return $x; }
+
+class Tool {
+    public function go() { return 1; }
+}

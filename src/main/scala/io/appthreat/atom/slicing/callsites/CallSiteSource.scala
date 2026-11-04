@@ -166,7 +166,6 @@ abstract class BaseCallSiteSource(protected val atom: Cpg, sourceName: String)
   protected def fileOf(n: AstNode): Option[String] =
       methodOf(n).map(_.filename).orElse(Try(n.file.name.headOption).toOption.flatten)
 
-  /** The records for uses of vendored code (see [[VendoredUses]]), */
   /** The vendored code a record's module names when the language's module naming reaches a file of
     * it without the call graph's help (Python's dotted module of an import); none by default.
     */
@@ -178,8 +177,9 @@ abstract class BaseCallSiteSource(protected val atom: Cpg, sourceName: String)
   private[callsites] def vendoredCode(externalPaths: Option[String]): VendoredCode =
       VendoredCode.forAtom(atom, externalPaths)
 
-  private[callsites] def vendoredUses(externalPaths: Option[String]): List[CallSiteRecord] =
-      VendoredUses(atom, VendoredCode.forAtom(atom, externalPaths), methodOf).records()
+  /** The uses of vendored code (see [[VendoredUses]]). */
+  private[callsites] def vendoredUses(vendored: VendoredCode): VendoredUses =
+      VendoredUses(atom, vendored, methodOf)
 
   protected def line(n: AstNode): Integer = n match
     case e: Expression => e.lineNumber.getOrElse(-1)

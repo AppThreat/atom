@@ -93,19 +93,22 @@ class VendoredCodeTests extends AnyWordSpec with Matchers with BeforeAndAfterAll
           )
   end run
 
+  private def sorted(rs: List[Rec]): List[Rec] =
+      rs.sortBy(r => (r.file, r.line, r.module, r.path, r.kind))
+
   private def check(lang: Lang): Unit =
       lang.fixture should {
           "give the project's slice without the option" in {
-              records(lang, "none") shouldBe lang.none
+              records(lang, "none") shouldBe sorted(lang.none)
           }
           "name the vendored directory as module with the pattern, and leave not_third_party alone" in {
-              records(lang, "pattern") shouldBe lang.pattern
+              records(lang, "pattern") shouldBe sorted(lang.pattern)
           }
           "name the BOM component and its purl for a component located in the input" in {
-              records(lang, "bomone") shouldBe lang.bomOne
+              records(lang, "bomone") shouldBe sorted(lang.bomOne)
           }
           "leave a path two components claim unmarked" in {
-              records(lang, "bomtwo") shouldBe lang.none
+              records(lang, "bomtwo") shouldBe sorted(lang.none)
           }
       }
 
@@ -226,87 +229,108 @@ object VendoredCodeTests:
     Lang(
       "python",
       "python",
+      // `third_party` and `src` hold no `__init__.py`: the frontend names their modules by the
+      // last segment, so without the option the imports are uses of modules the project lacks
       none = List(
         rec("main.py", 11, "third_party.lib", "run", "call"),
-        rec("main.py", 12, "src.not_third_party", "helper", "call")
+        rec("main.py", 12, "src.not_third_party", "helper", "call"),
+        rec("use.py", 4, "third_party.lib", "Base", "decltype"),
+        rec("use.py", 5, "third_party.lib", "Base", "call"),
+        rec("use.py", 6, "third_party.lib", "Base.go", "ref"),
+        rec("use.py", 6, "third_party.lib", "Base.go", "ref")
       ),
-      pattern = vendored(
-        "third_party",
-        "",
-        ("main.py", 6, "Base", "extends"),
-        ("main.py", 11, "run", "call")
-      ) :+ rec("main.py", 12, "src.not_third_party", "helper", "call"),
-      bomOne = vendored(
-        "vendlib",
-        Purl,
-        ("main.py", 6, "Base", "extends"),
-        ("main.py", 11, "run", "call")
-      ) :+ rec("main.py", 12, "src.not_third_party", "helper", "call")
+      pattern = pythonVendored("third_party", ""),
+      bomOne = pythonVendored("vendlib", Purl)
     ),
     Lang(
       "java",
       "java",
       none = Nil,
-      pattern = vendored(
-        "third_party",
-        "",
-        ("src/main/java/app/Main.java", 6, "Helper", "extends"),
-        ("src/main/java/app/Main.java", 8, "run", "call"),
-        ("src/main/java/app/Main.java", 9, "<init>", "new"),
-        ("src/main/java/app/Main.java", 9, "go", "call")
-      ),
-      bomOne = vendored(
-        "vendlib",
-        Purl,
-        ("src/main/java/app/Main.java", 6, "Helper", "extends"),
-        ("src/main/java/app/Main.java", 8, "run", "call"),
-        ("src/main/java/app/Main.java", 9, "<init>", "new"),
-        ("src/main/java/app/Main.java", 9, "go", "call")
-      )
+      pattern = javaVendored("third_party", ""),
+      bomOne = javaVendored("vendlib", Purl)
     ),
     Lang(
       "javascript",
       "javascript",
       none = List(fs),
-      pattern = vendored(
-        "third_party",
-        "",
-        ("main.js", 6, "Base", "extends"),
-        ("main.js", 8, "run", "call"),
-        ("main.js", 9, "run", "call")
-      ) :+ fs,
-      bomOne = vendored(
-        "vendlib",
-        Purl,
-        ("main.js", 6, "Base", "extends"),
-        ("main.js", 8, "run", "call"),
-        ("main.js", 9, "run", "call")
-      ) :+ fs
+      pattern = jsVendored("third_party", "") :+ fs,
+      bomOne = jsVendored("vendlib", Purl) :+ fs
     ),
     Lang(
       "php",
       "php",
       none = Nil,
-      pattern = vendored(
-        "third_party",
-        "",
-        ("main.php", 5, "run", "call"),
-        ("main.php", 6, "helper_fn", "call")
-      ),
-      bomOne = vendored(
-        "vendlib",
-        Purl,
-        ("main.php", 5, "run", "call"),
-        ("main.php", 6, "helper_fn", "call")
-      )
+      pattern = phpVendored("third_party", ""),
+      bomOne = phpVendored("vendlib", Purl)
     ),
     Lang(
       "ruby",
       "ruby",
       none = Nil,
-      pattern = vendored("third_party", "", ("main.rb", 4, "run", "call")),
-      bomOne = vendored("vendlib", Purl, ("main.rb", 4, "run", "call"))
+      pattern = rubyVendored("third_party", ""),
+      bomOne = rubyVendored("vendlib", Purl)
     ),
     cLang
+  )
+
+  // Each language source records its uses of vendored code as it records any dependency's, with
+  // its own kinds; the module is the vendored directory (or the BOM component), the path the
+  // member for a call and the type for `new`, `extends`, `implements` and `decltype`.
+
+  private def pythonVendored(module: String, purl: String): List[Rec] = vendored(
+    module,
+    purl,
+    ("main.py", 6, "Base", "extends"),
+    ("main.py", 11, "run", "call"),
+    ("use.py", 4, "Base", "decltype"),
+    ("use.py", 5, "Base", "call"),
+    ("use.py", 6, "Base.go", "ref"),
+    ("use.py", 6, "Base.go", "ref")
+  ) :+ rec("main.py", 12, "src.not_third_party", "helper", "call")
+
+  private def javaVendored(module: String, purl: String): List[Rec] = vendored(
+    module,
+    purl,
+    ("src/main/java/app/Main.java", 6, "Helper", "extends"),
+    ("src/main/java/app/Main.java", 8, "run", "call"),
+    ("src/main/java/app/Main.java", 9, "Helper", "new"),
+    ("src/main/java/app/Main.java", 9, "go", "call"),
+    // a class that names no superclass implements what it names
+    ("src/main/java/app/Use.java", 6, "Shape", "implements"),
+    ("src/main/java/app/Use.java", 7, "Helper", "decltype"),
+    ("src/main/java/app/Use.java", 11, "Helper", "decltype"),
+    ("src/main/java/app/Use.java", 12, "Helper", "new"),
+    ("src/main/java/app/Use.java", 13, "go", "call"),
+    ("src/main/java/app/Use.java", 13, "go", "call")
+  )
+
+  private def jsVendored(module: String, purl: String): List[Rec] = vendored(
+    module,
+    purl,
+    ("main.js", 6, "Base", "extends"),
+    ("main.js", 8, "run", "call"),
+    ("main.js", 9, "run", "call"),
+    ("use.js", 3, "Base", "new")
+  )
+
+  private def phpVendored(module: String, purl: String): List[Rec] = vendored(
+    module,
+    purl,
+    ("main.php", 5, "run", "call"),
+    ("main.php", 6, "helper_fn", "call"),
+    ("use.php", 4, "Helper", "extends"),
+    ("use.php", 6, "Tool", "decltype"),
+    // one record for the typed call, the PHP source's
+    ("use.php", 7, "go", "call"),
+    ("use.php", 10, "Tool", "new")
+  )
+
+  private def rubyVendored(module: String, purl: String): List[Rec] = vendored(
+    module,
+    purl,
+    ("main.rb", 4, "run", "call"),
+    // ruby2atom resolves these constants itself, so the graph's edges give the records
+    ("use.rb", 3, "Tool", "extends"),
+    ("use.rb", 6, "Tool", "new")
   )
 end VendoredCodeTests
