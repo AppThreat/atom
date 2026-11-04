@@ -133,16 +133,8 @@ class CallSitesLessonTests extends AnyWordSpec with Matchers with BeforeAndAfter
               val slice = tokens(tokens.indexOf("-s") + 1)
               Atom.run(tokens.toArray).isRight shouldBe true
               val written = ujson.read(BFile(slice).contentAsString)
-              // the Java and PHP sources write the file with the platform's separator, and PHP
-              // repeats it in `method`; the page shows `/`
-              val real = written.obj("callsites").arr.map { r =>
-                val file = r("file").str
-                val out  = ujson.copy(r)
-                out("file") = file.replace('\\', '/')
-                if r("method").str.startsWith(file) then
-                  out("method") = out("file").str + r("method").str.stripPrefix(file)
-                out
-              }.toSet
+              // compared as written: every source names files with `/` on every platform
+              val real  = written.obj("callsites").arr.toSet
               val shown = block(example.name, "output").filter(_.trim.nonEmpty).map(ujson.read(_))
               shown should not be empty
               shown.foreach { record =>

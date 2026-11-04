@@ -96,6 +96,22 @@ object CallSiteRecord:
         r.purl
       )
 
+  /** `r` with `/` as the separator of its file, on every platform. The Java and PHP frontends write
+    * a file with the platform's separator, and PHP repeats it at the start of `method`, so a slice
+    * made on Windows would otherwise name the same file differently from one made elsewhere, and a
+    * consumer merging locations from several tools would count one place twice
+    * (AppThreat/atom#373). Only the file and the file prefix of `method` change: the rest of a PHP
+    * method name, `module` and `path` keep the backslashes of PHP namespaces.
+    */
+  def withPortableFile(r: CallSiteRecord): CallSiteRecord =
+      if r.file.indexOf('\\') < 0 then r
+      else
+        val file = r.file.replace('\\', '/')
+        val method =
+            if r.method.startsWith(r.file) then file + r.method.substring(r.file.length)
+            else r.method
+        r.copy(file = file, method = method)
+
   /** One record per use site: for each (file, line, col, module) the most specific kind wins (see
     * [[winnerKey]] for ties), and the order is positional, through the module, path and kind of the
     * record, which no two winners share. The order never involves node ids, which vary between runs

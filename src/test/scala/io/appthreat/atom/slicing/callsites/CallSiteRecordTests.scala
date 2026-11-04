@@ -153,4 +153,35 @@ class CallSiteRecordTests extends AnyWordSpec with Matchers:
               """"methodsWithLineTables":0,"lineQuality":"source","sourceFileGuesses":1}}"""
       }
   }
+  "a slice made on Windows" should {
+      // the shape of a php2atom record on Windows: the file with backslashes, repeated at the
+      // start of `method`, and namespace backslashes in the method, module and path
+      val windows = CallSiteRecord(
+        "src\\Controller\\HomeController.php",
+        Integer.valueOf(12),
+        Integer.valueOf(8),
+        "src\\Controller\\HomeController.php:App\\Controller\\HomeController->index",
+        "Symfony\\Component\\HttpFoundation",
+        "Response",
+        "new",
+        "type",
+        ""
+      )
+
+      "name its files with / and keep the namespaces (AppThreat/atom#373)" in {
+          val collector = RecordCollector("test")
+          collector.addAll(List(windows))
+          val r = collector.result().callsites.head
+          r.file shouldBe "src/Controller/HomeController.php"
+          r.method shouldBe "src/Controller/HomeController.php:App\\Controller\\HomeController->index"
+          r.module shouldBe "Symfony\\Component\\HttpFoundation"
+      }
+
+      "leave a record with / untouched" in {
+          val collector = RecordCollector("test")
+          collector.addAll(List(base))
+          collector.result().callsites shouldBe List(base)
+      }
+  }
+
 end CallSiteRecordTests

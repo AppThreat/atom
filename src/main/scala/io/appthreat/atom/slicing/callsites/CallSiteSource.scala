@@ -119,7 +119,7 @@ final class RecordCollector(sourceName: String, byMember: Boolean = false):
       println(
         s"Call sites: skipped $failed node(s) that failed and $skipped node(s) with no method"
       )
-    ProgramCallSites(CallSiteRecord.dedupe(records, byMember))
+    ProgramCallSites(CallSiteRecord.dedupe(records.map(CallSiteRecord.withPortableFile), byMember))
 end RecordCollector
 
 /** The lookups every language source shares. Some frontends leave AST-detached nodes (outline's
