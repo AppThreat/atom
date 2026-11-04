@@ -1,0 +1,49 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteSource.scala
+  s_c0804e5357f0c5::t_de49b706e7f79a 180-181
+  s_c0804e5357f0c5::t_c04501612ea084 182
+src/main/scala/io/appthreat/atom/slicing/callsites/VendoredUses.scala
+  s_c0804e5357f0c5::t_396f795d8e4495 18-23,25,28,36-39,42-138,143,145-148,150-155,157-161,163-168,184-186,188-190,192-197
+  s_c0804e5357f0c5::t_c631f09dbc4e99 198-200
+src/test/resources/vendored/java/src/main/java/app/Use.java
+  s_c0804e5357f0c5::t_224ff12b9b1475 1-15
+src/test/resources/vendored/java/third_party/lib/com/vend/Shape.java
+  s_c0804e5357f0c5::t_bc5ef4f7ce6490 1-5
+src/test/resources/vendored/javascript/use.js
+  s_c0804e5357f0c5::t_0e1698c0b6a806 1-4
+src/test/resources/vendored/php/third_party/lib/Helper.php
+  s_c0804e5357f0c5::t_6ca4e2ba8a3e39 9-12
+src/test/resources/vendored/php/use.php
+  s_c0804e5357f0c5::t_d74b7581dca116 1-10
+src/test/resources/vendored/python/use.py
+  s_c0804e5357f0c5::t_213fd50f0c901e 1-6
+src/test/resources/vendored/ruby/third_party/lib/tool.rb
+  s_c0804e5357f0c5::t_2d1842e7f0f0d5 1-7
+src/test/resources/vendored/ruby/use.rb
+  s_c0804e5357f0c5::t_9e2aa85fcbeff8 1-6
+src/test/scala/io/appthreat/atom/VendoredCodeTests.scala
+  s_79a7c562b49300::t_a2218b119b05ac 96-98,102,105,108,111,232-233,236-240,242-243,249-250,256-257,263-264,270-271,275-335
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "049ef04ad94b6a71b45b367f60ace69b93fd38b2",
+  "prompts": {},
+  "sessions": {
+    "s_79a7c562b49300": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e06ad8c2-0767-47dd-913e-35689e5f05ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_c0804e5357f0c5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75227701-fd30-4fc7-8eae-71a8df8f3a1c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
