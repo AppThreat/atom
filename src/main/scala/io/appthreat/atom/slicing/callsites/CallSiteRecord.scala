@@ -129,5 +129,17 @@ object CallSiteRecord:
           .sortBy(r => (r.file, r.line.intValue, r.col.intValue, r.module, r.path, r.kind))
 end CallSiteRecord
 
-/** The (module, export path) a use resolves to, shared by the language sources. */
-private[callsites] final case class Origin(module: String, path: List[String])
+/** The (module, export path) a use resolves to, shared by the language sources. `wrapsDefault` is
+  * set on the value of a CommonJS interop helper (`__importDefault(require("x"))`), an object whose
+  * `default` is the module itself: a member chain through it starts after that `default`, as it
+  * would for the ESM default import the helper stands for.
+  */
+private[callsites] final case class Origin(
+  module: String,
+  path: List[String],
+  wrapsDefault: Boolean = false
+):
+  /** The export path of a use that reaches this origin through `members`. */
+  def through(members: List[String]): List[String] =
+      path ++ (if wrapsDefault && members.headOption.contains("default") then members.tail
+               else members)

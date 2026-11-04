@@ -11,3 +11,8 @@ var _local = require('underscored');
 require('dotenv').config();
 module.exports.maybe = maybe;
 module.exports.local = _local;
+const config_1 = __importDefault(require("config"));
+module.exports.config = config_1;
+config_1.default.get('x');
+const ns_1 = __importStar(require("ns-pkg"));
+ns_1.pick({}, 'y');

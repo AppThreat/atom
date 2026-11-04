@@ -54,7 +54,7 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
                     col(use),
                     method.fullName,
                     origin.module,
-                    (origin.path ++ resolver.membersOf(use)).mkString("."),
+                    origin.through(resolver.membersOf(use, origin.wrapsDefault)).mkString("."),
                     kind,
                     "binding",
                     involvement.map(c => resolvedName(c.methodFullName)).getOrElse("")
@@ -225,7 +225,7 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
                   c,
                   t.method,
                   origin.module,
-                  (origin.path ++ members).mkString("."),
+                  origin.through(members).mkString("."),
                   if called then "call" else "ref",
                   "binding",
                   ""
@@ -452,15 +452,16 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
   end sideEffectImportRecords
 
   /** Whether the `require`/`import` call `c` is an import that binds nothing. Its value is first
-    * followed through `await`, `?:`, `||` and `&&`, which pass it on unchanged. It then binds a
-    * name only when it is assigned to a local identifier, or when it is the receiver of a member
-    * access (`require('y').config()`, which the member's own record already names). Everything else
-    * loads the module without a local name for the slice to follow: a statement of its own, the
-    * body of an `if`, `module.exports = require('y')` and `exports.k = require('y')`,
-    * `require('y')(app)`, or an argument (`use(require('y'))`). The one identifier target that
-    * counts is the re-export lowering (`export * from 'y'`, `export {a} from 'y'`): a
-    * `STATIC_DISPATCH` require (the ESM import lowering and every hand-written call are dynamic)
-    * into the `_<name>` temporary that the exports write reads.
+    * followed through `await`, `?:`, `||`, `&&` and the calls that take it as an argument (see
+    * [[passesValueOn]]). It then binds a name only when it is assigned to a local identifier, or
+    * when it is the receiver of a member access (`require('y').config()`, which the member's own
+    * record already names). Everything else loads the module without a local name for the slice to
+    * follow: a statement of its own, the body of an `if`, `module.exports = require('y')` and
+    * `exports.k = require('y')`, `require('y')(app)`, or an argument of a call whose value nobody
+    * takes (`use(require('y'));`). The one identifier target that counts is the re-export lowering
+    * (`export * from 'y'`, `export {a} from 'y'`): a `STATIC_DISPATCH` require (the ESM import
+    * lowering and every hand-written call are dynamic) into the `_<name>` temporary that the
+    * exports write reads.
     */
   private def bindingFreeImport(c: Call): Boolean =
     var value: Expression = c
@@ -490,13 +491,19 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
     unbound || esmStatement
   end bindingFreeImport
 
-  /** Whether the operator `p` gives its argument `arg` back as its own value. */
+  /** Whether the value of `arg` may reach whatever takes the value of `p`: the operators that give
+    * it back (`await`, `||`, `&&`, the branches of `?:`), and any call that takes it as an
+    * argument, since interop helpers such as TypeScript's `__importDefault(require('y'))` return
+    * the module they are given. A require into a call whose value nobody takes still loads the
+    * module and binds nothing (`register(require('y'));`).
+    */
   private def passesValueOn(p: Call, arg: Expression): Boolean = p.name match
     case "<operator>.await"                         => true
     case Operators.logicalOr | Operators.logicalAnd => true
     // the condition of `?:` is not its value
-    case Operators.conditional => arg.argumentIndex != 1
-    case _                     => false
+    case Operators.conditional        => arg.argumentIndex != 1
+    case name if name.startsWith("<") => false
+    case _                            => arg.argumentIndex >= 1
 
   /** Where identifiers come from: an import binding's origin, (module, export path), resolved
     * through the assignments the frontend lowers imports to.
@@ -561,10 +568,19 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
             case c: Call if c.name == Operators.fieldAccess =>
                 val field = c.argument.collectFirst { case f: FieldIdentifier => f.canonicalName }
                 baseOf(c).flatMap(originOfExpr(_, depth + 1))
-                    .map(o => o.copy(path = o.path ++ field))
+                    .map(o => Origin(o.module, o.through(field.toList)))
             case c: Call if c.name == "<operator>.await" =>
                 c.argument.collectFirst { case b: Expression => b }
                     .flatMap(originOfExpr(_, depth + 1))
+            // `__importDefault(require("x"))` and the other helpers of compiled CommonJS: the
+            // default helpers wrap the module in `{ default: module }`, the star helpers return a
+            // namespace whose members are the module's
+            case c: Call if JsNames.interopHelpers.contains(c.name) =>
+                baseOf(c).flatMap(originOfExpr(_, depth + 1)).map(o =>
+                    if JsNames.defaultInteropHelpers.contains(c.name) && o.path.isEmpty then
+                      o.copy(wrapsDefault = true)
+                    else o
+                )
             case id: Identifier => localOf(id).flatMap(d => origins.get(d.id()))
             case _              => None
 
@@ -839,8 +855,12 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
     def originOf(id: Identifier): Option[Origin] =
         localOf(id).flatMap(d => origins.get(d.id())).filter(o => JsNames.isBareSpecifier(o.module))
 
-    /** The member names between a use and the top of its member chain (`id.a.b`). */
-    def membersOf(id: Expression): List[String] =
+    /** The member names between a use and the top of its member chain (`id.a.b`). The frontend
+      * lowers the callee `id.a.b()` to `(_tmp_0 = id.a).b`, where the chain stops. With
+      * `wrapsDefault` (see [[Origin]]) a chain that stopped at `id.default` continues through that
+      * temporary by one member, so `config_1.default.get()` names `get` as `config.get()` does.
+      */
+    def membersOf(id: Expression, wrapsDefault: Boolean = false): List[String] =
       val members      = mutable.ListBuffer[String]()
       var top: AstNode = id
       var climbing     = true
@@ -852,6 +872,11 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
               c.argument.collect { case f: FieldIdentifier => f.canonicalName }
                   .foreach(name => members += name)
               top = c
+          case Some(a: Call)
+              if wrapsDefault && members.toList == List("default") &&
+                  a.name == Operators.assignment && DeclarationRefs.isTmpAssignment(a) &&
+                  a.argument.exists(x => x.id() == top.id() && x.argumentIndex == 2) =>
+              top = a
           case _ => climbing = false
       members.toList
   end BindingResolver

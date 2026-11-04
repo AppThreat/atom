@@ -134,7 +134,7 @@ object DeclarationRefs:
         case _ => climbing = false
     top
 
-  private def isTmpAssignment(c: Call): Boolean =
+  def isTmpAssignment(c: Call): Boolean =
       c.argument.exists {
           case i: Identifier => i.argumentIndex == 1 && i.name.startsWith("_tmp_")
           case _             => false

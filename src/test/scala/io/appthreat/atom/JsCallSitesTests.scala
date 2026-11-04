@@ -496,11 +496,17 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           // cjs.js: the conditional of line 9 binds `maybe` and the dynamic require of line 10
           // binds `_local` (the re-export lowering is static), so neither has a record of its
           // own, only `_local`'s use on line 13; `require('dotenv').config()` on line 11 is the
-          // member call's record only
+          // member call's record only; TypeScript's `__importDefault(require("config"))` on line 14
+          // hands the module to `config_1`, which gives the records at its uses on lines 15 and
+          // 16, the second through the helper's `default`, which is the module itself, as for the
+          // ESM default import; `__importStar` on line 17 gives a namespace, used on line 18
           records("side-effect-imports").filter(r => r.file == "src/cjs.js" && r.line >= 9)
               .map(r => (r.line, r.module, r.path, r.kind)) shouldBe List(
             (11, "dotenv", "config", "call"),
-            (13, "underscored", "", "ref")
+            (13, "underscored", "", "ref"),
+            (15, "config", "", "ref"),
+            (16, "config", "get", "call"),
+            (18, "ns-pkg", "pick", "call")
           )
           // `export * from './own.js'` and `require('./relative.js')` name the project's own files
           records("side-effect-imports").filter(r =>
