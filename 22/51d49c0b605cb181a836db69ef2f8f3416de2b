@@ -1,0 +1,21 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/JavaCallSiteSource.scala
+  s_c4b0b47db2bc80::t_d09e062e78a2f7 312-314
+src/test/resources/java-callsites/src/proj/MethodRefs.java
+  s_c4b0b47db2bc80::t_b4cea800aebb2f 13-14,17-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2251d49c0b605cb181a836db69ef2f8f3416de2b",
+  "prompts": {},
+  "sessions": {
+    "s_c4b0b47db2bc80": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_b18a03ea-27c6-410e-9850-2e20127a6d41",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
