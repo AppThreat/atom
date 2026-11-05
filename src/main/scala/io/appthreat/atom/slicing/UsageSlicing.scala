@@ -91,7 +91,13 @@ object UsageSlicing:
     val jsDeclarationSlices =
         jsNames.map(js => jsDecoratorAndHeritageSlices(atom, js)).getOrElse(Nil)
 
-    (mainSlices ++ annotationSlices ++ jsDeclarationSlices)
+    // Java source method references (atom#334): a `Foo::bar` that resolves to an external method
+    // is a use of that method, and the identifier-based slices cannot see it because a METHOD_REF
+    // binds no local name.
+    val javaMethodRefDeclarationSlices =
+        if language.exists(_ == Languages.JAVASRC) then javaMethodReferenceSlices(atom) else Nil
+
+    (mainSlices ++ annotationSlices ++ jsDeclarationSlices ++ javaMethodRefDeclarationSlices)
         .groupBy { case (method, _) => method }
         .view
         .filterKeys(m => !isExcludedMethod(m))
@@ -101,6 +107,43 @@ object UsageSlicing:
             createMethodUsageSlice(method, sliceList.map(_._2).toSet, language, root, config)
         }
   end computeSlices
+
+  /** Java source method references to external methods (`StringUtils::trim`, `Foo::new`), one
+    * entry each in the slice of the enclosing method, at the reference's own position. The
+    * reference's resolved full name is kept whole; a reference that stayed unresolved (the
+    * frontend kept the source text) names no package, so it has no entry.
+    */
+  private def javaMethodReferenceSlices(atom: Cpg): List[(Method, ObjectUsageSlice)] =
+      val projectTypes = atom.typeDecl.isExternal(false).fullName.toSet
+      def enclosingMethod(n: AstNode): Option[Method] =
+          Iterator.iterate(DeclarationRefs.parentOf(n))(_.flatMap(DeclarationRefs.parentOf))
+              .takeWhile(_.isDefined).flatten.collectFirst { case m: Method => m }
+      atom.methodRef.l.flatMap { ref =>
+          val fullName = ref.methodFullName
+          val member   = fullName.takeWhile(_ != ':')
+          val separator = member.lastIndexOf('.')
+          val enclosing = enclosingMethod(ref)
+          if separator <= 0 || fullName.contains("::") || enclosing.isEmpty then Nil
+          else
+              val cls = member.substring(0, separator)
+              if cls.contains('.') && !projectTypes.contains(cls) then
+                  val defComp = CallDef(
+                    member.substring(separator + 1),
+                    "",
+                    Option(fullName),
+                    Option(true),
+                    ref.lineNumber.map(_.intValue()),
+                    ref.columnNumber.map(_.intValue())
+                  )
+                  List(enclosing.get -> ObjectUsageSlice(
+                    targetObj = defComp,
+                    definedBy = Some(defComp),
+                    invokedCalls = List.empty,
+                    argToCalls = List.empty
+                  ))
+              else Nil
+      }
+  end javaMethodReferenceSlices
 
   private def computeUsageSlice(
     atom: Cpg,
