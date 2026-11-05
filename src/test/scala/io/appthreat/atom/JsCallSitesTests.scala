@@ -28,6 +28,7 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
         "callsites-fields",
         "orphans",
         "sfc",
+        "sfc-positions",
         "purl-bom",
         "side-effect-imports"
       )
@@ -49,8 +50,13 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
   override def beforeAll(): Unit =
     workspace = BFile.newTemporaryDirectory("atomJsCallsites")
-    if astgenUsable then
-      slices = fixtureCases.map(caseName => caseName -> runCallsites(caseName)).toMap
+    slices = fixtureCases
+        .filter(caseName =>
+            caseName match
+              case "sfc-positions" => sfcPositionAstgenUsable
+                case _               => astgenUsable
+        )
+        .map(caseName => caseName -> runCallsites(caseName)).toMap
 
   override def afterAll(): Unit =
       if workspace != null then workspace.delete(swallowIOExceptions = true)
@@ -110,15 +116,103 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           .flatten
           .exists(v => v.takeWhile(_.isDigit).toIntOption.exists(_ >= 2))
 
+  /** The astgen command the JavaScript frontend runs, resolved the way chen's AstGenRunner resolves
+    * it, so a probe sees the astgen the fixture will actually use.
+    */
+  private lazy val astgenCommand: Seq[String] =
+      sys.props
+          .get("jssrc2cpg.test.astgenCmd")
+          .map(_.trim)
+          .filter(_.nonEmpty)
+          .orElse(sys.env.get("JSSRC2CPG_TEST_ASTGEN_CMD").map(_.trim).filter(_.nonEmpty))
+          .getOrElse("astgen")
+          .split("\\s+")
+          .toSeq
+
+  /** Runs astgen over one small file and returns its emitted AST, or None when astgen cannot run or
+    * the file produced no AST. Used for behaviour probes: `astgen --version` cannot tell the astgen
+    * releases apart here, because the version it prints was not bumped between the npm release with
+    * the Vue position defect (1.10.6) and the release/1.x branch that fixed it.
+    */
+  private def probeAstgenAst(
+    fileName: String,
+    content: String,
+    fileType: String
+  ): Option[ujson.Value] =
+      Try {
+          val dir = BFile.newTemporaryDirectory("atomJsAstgenProbe")
+          try
+            val out    = dir / "ast_out"
+            val source = dir / "src" / fileName
+            source.parent.createDirectories()
+            source.write(content)
+            val exit = scala.sys.process
+                .Process(astgenCommand ++ Seq(
+                  "-i",
+                  dir.pathAsString,
+                  "-t",
+                  fileType,
+                  "-o",
+                  out.pathAsString
+                ))
+                .!
+            if exit != 0 then None
+            else
+              out.listRecursively()
+                  .find(f => f.name == s"$fileName.json")
+                  .map(f => ujson.read(f.contentAsString)("ast"))
+          finally dir.delete(swallowIOExceptions = true)
+          end try
+      }.toOption.flatten
+
+  /** Whether the astgen in use keeps a Vue single-file component's script positions when the
+    * template holds an unclosed void element (AppThreat/atom-parsetools#83 and #84). With the
+    * defect the whole-file candidate is rejected and the fallback parses the script first, so the
+    * import lands on the wrong line; the probe reads the line the AST reports for the import.
+    */
+  private lazy val sfcPositionAstgenUsable: Boolean =
+    val probeLines = List(
+      "<template>",
+      "  <form><input :disabled=\"off\" type=\"text\"><hr></form>",
+      "</template>",
+      "",
+      "<script setup lang=\"ts\">",
+      "import { computed } from 'vue'",
+      "const label = computed(() => 'x')",
+      "</script>",
+      ""
+    )
+    val expectedLine = probeLines.takeWhile(_ != "import { computed } from 'vue'").size + 1
+    probeAstgenAst("Probe.vue", probeLines.mkString("\n"), "vue")
+        .exists(ast =>
+            ast("program")("body").arr
+                .filter(_("type").str == "ImportDeclaration")
+                .map(_("loc")("start")("line").num.toInt)
+                .headOption
+                .contains(expectedLine)
+        )
+  end sfcPositionAstgenUsable
+
   private def requireAstgen(): Unit =
       if !astgenUsable then
         cancel(
           "astgen unavailable or too old; JavaScript fixture needs the astgen from @appthreat/atom-parsetools on PATH"
         )
 
+  private def requireSfcPositionAstgen(): Unit =
+      if !sfcPositionAstgenUsable then
+        cancel(
+          s"astgen (${astgenCommand.mkString(" ")}) predates the Vue single-file component position fix (AppThreat/atom-parsetools#83, #84); the sfc-positions fixture needs it"
+        )
+
   private def records(caseName: String): List[CallSite] =
     requireAstgen()
     slices.getOrElse(caseName, fail(s"no slice for $caseName"))
+
+  /** The sfc-positions fixture's records, gated on the astgen behaviour they pin. */
+  private def sfcPositionRecords(): List[CallSite] =
+    requireSfcPositionAstgen()
+    slices.getOrElse("sfc-positions", fail("no slice for sfc-positions"))
 
   private def at(caseName: String, file: String, line: Int, module: String): List[CallSite] =
       records(caseName).filter(r => r.file == file && r.line == line && r.module == module)
@@ -146,6 +240,25 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
       "leave purl out of every record when the atom carries no SBOM (atom#321)" in {
           records("callsites").map(_.purl).distinct shouldBe List("")
+      }
+
+      "keep every record of a component with unclosed void elements and slot shorthand on a script line or a template binding (atom#320)" in {
+          // The template holds an unclosed `<input>`, an `<hr>` and a `<template #fallback>` slot,
+          // the shapes that made astgen 1.10.6 reject the whole-file candidate and move every
+          // script line onto the template. Every expected line comes from the source files, and
+          // the whole slice is exactly these six: nothing on a template line that uses no import.
+          val expected = List(
+            // Article.vue: the dayjs template binding at its own line, axios in the script
+            CallSite("src/Article.vue", 10, 13, "dayjs", "", "call", "binding"),
+            CallSite("src/Article.vue", 23, 9, "axios", "post", "call", "binding"),
+            // Card.svelte: the script helper and the template binding beside it
+            CallSite("src/Card.svelte", 5, 9, "date-fns", "format", "call", "binding"),
+            CallSite("src/Card.svelte", 10, 8, "date-fns", "format", "call", "binding"),
+            // Stats.astro: the frontmatter and the template expression
+            CallSite("src/Stats.astro", 4, 19, "marked", "marked.parse", "call", "binding"),
+            CallSite("src/Stats.astro", 6, 19, "marked", "marked.parse", "call", "binding")
+          )
+          sfcPositionRecords() should contain theSameElementsAs expected
       }
 
       "record single-file component uses at their script lines (atom#320)" in {

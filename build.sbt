@@ -3,7 +3,7 @@ ThisBuild / organization := "io.appthreat"
 ThisBuild / version      := "4.0.0"
 ThisBuild / scalaVersion := "3.10.0"
 
-val chenVersion = "4.0.0"
+val chenVersion = "4.0.0-glmjs"
 
 lazy val atom = Projects.atom
 resolvers ++= Seq(
@@ -144,7 +144,7 @@ ThisBuild / Test / exportJars := false
 // The PHP/Ruby frontends run in-process inside the forked test JVM and resolve their generator
 // binary from the environment, so propagate the generator overrides from the launching shell.
 ThisBuild / Test / envVars ++=
-    Seq("PHP_PARSER_BIN", "RBASTGEN_PATH", "RUBY_ASTGEN_BIN")
+    Seq("PHP_PARSER_BIN", "RBASTGEN_PATH", "RUBY_ASTGEN_BIN", "JSSRC2CPG_TEST_ASTGEN_CMD")
         .flatMap(name => sys.env.get(name).map(name -> _))
         .toMap
 Global / onChangedBuildSource          := ReloadOnSourceChanges
