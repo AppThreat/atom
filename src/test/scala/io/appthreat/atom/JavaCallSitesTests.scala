@@ -598,6 +598,13 @@ class JavaCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
               purl = "pkg:maven/com.example/stub-web@1.0.0"
             )
           )
+          // `String[]::new` names the element class like every array type in the slice
+          val arrayRef = in("MethodRefs.java").filter(r =>
+              r.kind == "methodref" && r.module == "java.lang.String"
+          )
+          arrayRef.map(r => (r.line, r.col, r.path, r.builtin)) shouldBe List(
+            (13, 55, "<init>", true)
+          )
       }
 
       "carry the same method references as uses in usages (atom#334)" in {

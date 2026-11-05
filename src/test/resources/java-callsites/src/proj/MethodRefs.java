@@ -10,8 +10,13 @@ public class MethodRefs {
     Supplier<Security> s = Security::http;
     Supplier<Session> m = Session::new;
     Consumer<String> own = new Handler()::handle;
-    use(s, m, own);
+    java.util.function.IntFunction<String[]> arrays = String[]::new;
+    use(s, m, own, arrays);
   }
 
-  void use(Supplier<Security> s, Supplier<Session> m, Consumer<String> own) {}
+  void use(
+      Supplier<Security> s,
+      Supplier<Session> m,
+      Consumer<String> own,
+      java.util.function.IntFunction<String[]> arrays) {}
 }

@@ -309,7 +309,9 @@ final class JavaCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "java
   /** `Foo::bar` and bound method references, which the frontend resolves to METHOD_REF nodes. */
   private def methodRefs(): Unit =
       atom.methodRef.foreach { m =>
-        val cls = classOfMethod(m.methodFullName)
+        // an array constructor reference (`String[]::new`) names the element class, like every
+        // other array type in the slice, and a primitive one names nothing
+        val cls = classOfType(classOfMethod(m.methodFullName))
         if externalClass(cls) then
           methodOf(m) match
             case None => collector.skip(m)
