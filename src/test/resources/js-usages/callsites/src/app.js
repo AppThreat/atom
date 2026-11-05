@@ -20,3 +20,7 @@ export const xs = [[1]].map(flatten);
 export function identity() {
   return jwt;
 }
+
+export async function stamp() {
+  return (await import("dayjs")).unix();
+}

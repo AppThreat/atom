@@ -431,6 +431,18 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           )
       }
 
+      "record a member call on an awaited dynamic import in expression position (atom#322)" in {
+          // `(await import('uuid')).v4()`: no local takes the module, the frontend lowers it to
+          // an assignment of a temporary, and the member read follows that value. The TS twin is
+          // the same shape; the import clause itself still gives no definition-site record.
+          at("callsites", "src/app.js", 25, "dayjs") should contain theSameElementsAs List(
+            CallSite("src/app.js", 25, 9, "dayjs", "unix", "call", "binding")
+          )
+          at("callsites", "src/widgets.ts", 18, "dayjs") should contain theSameElementsAs List(
+            CallSite("src/widgets.ts", 18, 9, "dayjs", "unix", "call", "binding")
+          )
+      }
+
       "record tagged templates by the tag's binding" in {
           at("callsites", "src/app.js", 6, "graphql-tag") should contain theSameElementsAs List(
             CallSite("src/app.js", 6, 17, "graphql-tag", "", "tag", "name")
@@ -466,7 +478,9 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           ) should contain theSameElementsAs List(
             CallSite("src/widgets.ts", 4, 21, "rxjs", "Subject", "ref", "binding"),
             CallSite("src/widgets.ts", 7, 15, "rxjs", "Subject", "new", "binding"),
-            CallSite("src/widgets.ts", 13, 15, "rxjs", "Subject", "new", "binding")
+            CallSite("src/widgets.ts", 13, 15, "rxjs", "Subject", "new", "binding"),
+            // the awaited dynamic import twin of the atom#322 test, in this file too
+            CallSite("src/widgets.ts", 18, 9, "dayjs", "unix", "call", "binding")
           )
       }
 

@@ -572,6 +572,12 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
             case c: Call if c.name == "<operator>.await" =>
                 c.argument.collectFirst { case b: Expression => b }
                     .flatMap(originOfExpr(_, depth + 1))
+            // an assignment in expression position yields the value it just wrote:
+            // `(_tmp_0 = await import('uuid')).v4` lowers the awaited module to a temporary
+            // first, and the member is read off the assignment's value
+            case c: Call if c.name == Operators.assignment =>
+                c.argument.l.filter(_.argumentIndex == 2).collectFirst { case b: Expression => b }
+                    .flatMap(originOfExpr(_, depth + 1))
             // `__importDefault(require("x"))` and the other helpers of compiled CommonJS: the
             // default helpers wrap the module in `{ default: module }`, the star helpers return a
             // namespace whose members are the module's
@@ -815,7 +821,21 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
                   projectTypes.getOrElse(b.name, Nil)
                       .find(_.filename == fa.method.filename)
                       .flatMap(fieldOriginIn(_, name, isStatic = true))
-              case _ => None
+              case _ =>
+                // `(await import('m')).v4`: the base's value is the imported module itself. The
+                // import clause's own member read (`var named = require("m").v4`, how a named
+                // import lowers) is the definition of that binding, not a use of it: the local's
+                // uses are recorded where they happen.
+                val definesBinding = DeclarationRefs.parentOf(fa).exists {
+                    case c: Call if c.name == Operators.assignment =>
+                        c.argument.l.exists(a => a.argumentIndex == 1 && a.isInstanceOf[Identifier])
+                    case _ => false
+                }
+                if definesBinding then None
+                else
+                  baseOf(fa)
+                      .flatMap(b => originOfExpr(b, 0))
+                      .map(o => Origin(o.module, o.through(name :: o.path)))
         }
 
     // to a fixpoint: one round of `_tmp`/alias assignments (and field aliases) resolved per pass
