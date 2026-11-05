@@ -1,0 +1,32 @@
+src/test/scala/io/appthreat/atom/JsCallSitesTests.scala
+  s_c4b0b47db2bc80::t_0b1e13bca802fe 122-133,137-144,167-195,202
+  s_c4b0b47db2bc80::t_d45079099f9c6b 145-149,158-165
+  s_c4b0b47db2bc80::t_5be3497311a3d6 212-216
+  s_c4b0b47db2bc80::t_7530616fa29876 150-157
+  s_c4b0b47db2bc80::t_43b186acb25c9d 246-250,252-261,263
+  s_c4b0b47db2bc80::t_56fd6b27368338 31
+  s_c4b0b47db2bc80::t_bb97f31902c120 53-59
+  s_c4b0b47db2bc80::t_a4cb3b726062f5 119-121,134-136,166,203-207,245,251,262
+src/test/resources/js-usages/sfc-positions/src/Article.vue
+  s_c4b0b47db2bc80::t_e0b6c480d7b98f 1-25
+src/test/resources/js-usages/sfc-positions/src/Card.svelte
+  s_c4b0b47db2bc80::t_cf9e637311c0ff 1-10
+src/test/resources/js-usages/sfc-positions/src/Stats.astro
+  s_c4b0b47db2bc80::t_995accbd5e6e18 1-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "88b6599c779543b26241678834a97ba4a3e59001",
+  "prompts": {},
+  "sessions": {
+    "s_c4b0b47db2bc80": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_b18a03ea-27c6-410e-9850-2e20127a6d41",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
