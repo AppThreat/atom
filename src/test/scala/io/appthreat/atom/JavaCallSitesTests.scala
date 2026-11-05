@@ -596,14 +596,18 @@ class JavaCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
               "methodref",
               "binding",
               purl = "pkg:maven/com.example/stub-web@1.0.0"
+            ),
+            // `String[]::new` names the element class like every array type in the slice
+            Rec(
+              "MethodRefs.java",
+              13,
+              55,
+              "java.lang.String",
+              "<init>",
+              "methodref",
+              "binding",
+              builtin = true
             )
-          )
-          // `String[]::new` names the element class like every array type in the slice
-          val arrayRef = in("MethodRefs.java").filter(r =>
-              r.kind == "methodref" && r.module == "java.lang.String"
-          )
-          arrayRef.map(r => (r.line, r.col, r.path, r.builtin)) shouldBe List(
-            (13, 55, "<init>", true)
           )
       }
 
