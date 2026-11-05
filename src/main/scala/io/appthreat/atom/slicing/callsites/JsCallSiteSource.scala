@@ -822,20 +822,22 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
                       .find(_.filename == fa.method.filename)
                       .flatMap(fieldOriginIn(_, name, isStatic = true))
               case _ =>
-                // `(await import('m')).v4`: the base's value is the imported module itself. The
-                // import clause's own member read (`var named = require("m").v4`, how a named
-                // import lowers) is the definition of that binding, not a use of it: the local's
-                // uses are recorded where they happen.
-                val definesBinding = DeclarationRefs.parentOf(fa).exists {
-                    case c: Call if c.name == Operators.assignment =>
-                        c.argument.l.exists(a => a.argumentIndex == 1 && a.isInstanceOf[Identifier])
-                    case _ => false
-                }
-                if definesBinding then None
-                else
-                  baseOf(fa)
-                      .flatMap(b => originOfExpr(b, 0))
-                      .map(o => Origin(o.module, o.through(name :: o.path)))
+                  // `(await import('m')).v4`: the base's value is the imported module itself. The
+                  // import clause's own member read (`var named = require("m").v4`, how a named
+                  // import lowers) is the definition of that binding, not a use of it: the local's
+                  // uses are recorded where they happen.
+                  val definesBinding = DeclarationRefs.parentOf(fa).exists {
+                      case c: Call if c.name == Operators.assignment =>
+                          c.argument.l.exists(a =>
+                              a.argumentIndex == 1 && a.isInstanceOf[Identifier]
+                          )
+                      case _ => false
+                  }
+                  if definesBinding then None
+                  else
+                    baseOf(fa)
+                        .flatMap(b => originOfExpr(b, 0))
+                        .map(o => Origin(o.module, o.through(name :: o.path)))
         }
 
     // to a fixpoint: one round of `_tmp`/alias assignments (and field aliases) resolved per pass
