@@ -28,6 +28,7 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
         "callsites-fields",
         "orphans",
         "sfc",
+        "accessors",
         "sfc-positions",
         "purl-bom",
         "side-effect-imports"
@@ -54,7 +55,8 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
         .filter(caseName =>
             caseName match
               case "sfc-positions" => sfcPositionAstgenUsable
-                case _               => astgenUsable
+              case "accessors"     => autoAccessorAstgenUsable
+              case _               => astgenUsable
         )
         .map(caseName => caseName -> runCallsites(caseName)).toMap
 
@@ -193,6 +195,23 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
         )
   end sfcPositionAstgenUsable
 
+  /** Whether the astgen in use parses TC39 auto-accessors (AppThreat/atom-parsetools#34): without
+    * the plugin the whole file fails, with it the class body holds a ClassAccessorProperty.
+    */
+  private lazy val autoAccessorAstgenUsable: Boolean =
+      probeAstgenAst("Probe.js", "class A {\n  accessor x = 1;\n}\n", "js").exists { ast =>
+        val types = scala.collection.mutable.ListBuffer.empty[String]
+        def walk(v: ujson.Value): Unit =
+            v match
+              case ujson.Arr(items) => items.foreach(walk)
+              case ujson.Obj(fields) =>
+                  fields.get("type").foreach(t => types += t.str)
+                  fields.values.foreach(walk)
+              case _ =>
+        walk(ast)
+        types.contains("ClassAccessorProperty")
+      }
+
   private def requireAstgen(): Unit =
       if !astgenUsable then
         cancel(
@@ -205,6 +224,12 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           s"astgen (${astgenCommand.mkString(" ")}) predates the Vue single-file component position fix (AppThreat/atom-parsetools#83, #84); the sfc-positions fixture needs it"
         )
 
+  private def requireAutoAccessorAstgen(): Unit =
+      if !autoAccessorAstgenUsable then
+        cancel(
+          s"astgen (${astgenCommand.mkString(" ")}) predates TC39 auto-accessor parsing (AppThreat/atom-parsetools#34); the accessors fixture needs it"
+        )
+
   private def records(caseName: String): List[CallSite] =
     requireAstgen()
     slices.getOrElse(caseName, fail(s"no slice for $caseName"))
@@ -213,6 +238,13 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
   private def sfcPositionRecords(): List[CallSite] =
     requireSfcPositionAstgen()
     slices.getOrElse("sfc-positions", fail("no slice for sfc-positions"))
+
+  /** The accessors fixture's records, gated on astgen parsing auto-accessors. The chen frontend
+    * must handle ClassAccessorProperty too (its own change), which the records below check.
+    */
+  private def accessorRecords(): List[CallSite] =
+    requireAutoAccessorAstgen()
+    slices.getOrElse("accessors", fail("no slice for accessors"))
 
   private def at(caseName: String, file: String, line: Int, module: String): List[CallSite] =
       records(caseName).filter(r => r.file == file && r.line == line && r.module == module)
@@ -259,6 +291,17 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
             CallSite("src/Stats.astro", 6, 19, "marked", "marked.parse", "call", "binding")
           )
           sfcPositionRecords() should contain theSameElementsAs expected
+      }
+
+      "record a call in an auto-accessor's initialiser (atom-parsetools#34)" in {
+          // `accessor id = uuidv4()` lowers to the field assignment `this.id = uuidv4()`, so the
+          // initialiser's call is a use of the imported package, in TypeScript and in JavaScript
+          val expected = List(
+            CallSite("src/accessor.ts", 5, 16, "uuid", "v4", "call", "binding"),
+            CallSite("src/accessor.ts", 6, 21, "dayjs", "", "call", "binding"),
+            CallSite("src/plain.js", 4, 19, "nanoid", "", "call", "binding")
+          )
+          accessorRecords() should contain theSameElementsAs expected
       }
 
       "record single-file component uses at their script lines (atom#320)" in {
