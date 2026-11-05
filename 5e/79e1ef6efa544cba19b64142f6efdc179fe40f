@@ -1,0 +1,25 @@
+src/test/scala/io/appthreat/atom/JsCallSitesTests.scala
+  s_c4b0b47db2bc80::t_56fd6b27368338 31
+  s_c4b0b47db2bc80::t_0b1e13bca802fe 198-214,300
+  s_c4b0b47db2bc80::t_2ec92e79e6f712 58-59,227-232,242-248,296-299,301-306
+src/test/resources/js-usages/accessors/src/accessor.ts
+  s_c4b0b47db2bc80::t_380bc03bd5fa1f 1-7
+src/test/resources/js-usages/accessors/src/plain.js
+  s_c4b0b47db2bc80::t_644eafd35994bd 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5e79e1ef6efa544cba19b64142f6efdc179fe40f",
+  "prompts": {},
+  "sessions": {
+    "s_c4b0b47db2bc80": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_b18a03ea-27c6-410e-9850-2e20127a6d41",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
