@@ -104,9 +104,10 @@ atom callsites -l javascript -o app.atom -s callsites.json /path/to/project
 atom callsites -l javascript --reuse-atom -o app.atom -s callsites.json /path/to/project
 ```
 
-Kinds: `call`, `new`, `jsx`, `arg`, `ref`, `decorator`, `extends`, `implements`, `tag`, `import`.
+Kinds: `call`, `new`, `jsx`, `arg`, `ref`, `decorator`, `extends`, `implements`, `tag`, `import`,
+`decltype`.
 The module is a bare specifier (`lodash`, `@angular/common/http`, `node:fs`); relative specifiers are
-the project's own code unless they lead into vendored code. The sources are the four passes of
+the project's own code unless they lead into vendored code. The sources are the five passes of
 [`JsCallSiteSource`](https://github.com/AppThreat/atom/blob/main/src/main/scala/io/appthreat/atom/slicing/callsites/JsCallSiteSource.scala):
 
 1. Identifiers that resolve, through closure captures and the frontend's import lowering, to an
@@ -114,7 +115,10 @@ the project's own code unless they lead into vendored code. The sources are the 
    written once with such a binding is an alias, so its reads are uses, in Angular templates too.
 2. Calls whose resolved name starts with a module the project imports (`via` `type`). Calls whose
    member is one of sixteen string and array methods (`includes`, `replace`, `split`, and so on)
-   are dropped, because type recovery puts module prefixes on plain strings.
+   are dropped, because type recovery puts module prefixes on plain strings. A call on a project
+   class that the class does not declare and inherits from a package class
+   (`UserModel.findAll()` where `class User extends Model` from `sequelize`) is that package's
+   (`Model.findAll`); a member the class or a project ancestor declares stays the project's.
 3. Decorators, heritage clauses, tagged templates and JSX tags (`via` `name`).
 4. Imports that bind nothing (`via` `binding`, kind `import`): the import runs the module, so
    `import 'y'`, a re-export (`export * from 'y'`) and a `require('y')` or `import('y')` whose value
@@ -122,6 +126,10 @@ the project's own code unless they lead into vendored code. The sources are the 
    `require('y')(app)`, `await import('y')`) are one record each at the import. An import that
    binds a local name gives a record only where the name is used, and `require('y').m()` is the
    record of `m`.
+5. Type positions (`via` `binding`, kind `decltype`): a parameter, member, local or return type, or
+   a generic argument, whose name is an imported binding, type-only imports included
+   (`req: Request` with `import type { Request } from 'express'`). A type the file declares and a
+   global (`Promise`) give none.
 
 <!-- command: javascript -->
 ```bash

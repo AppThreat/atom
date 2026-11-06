@@ -13,3 +13,7 @@ export class WithoutField {
     return new Subject<number>();
   }
 }
+
+export async function tail(): Promise<number> {
+  return (await import("dayjs")).unix();
+}
