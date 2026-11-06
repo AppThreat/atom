@@ -1,0 +1,19 @@
+src/test/scala/io/appthreat/atom/JsCallSitesTests.scala
+  s_c0804e5357f0c5::t_2d60660b74c74c 116-117,119-121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a753ba5c165de9f83f2dab372ee2fc8a0dc8ba8f",
+  "prompts": {},
+  "sessions": {
+    "s_c0804e5357f0c5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75227701-fd30-4fc7-8eae-71a8df8f3a1c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
