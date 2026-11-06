@@ -1,0 +1,6 @@
+---
+import { marked } from 'marked'
+
+const body = await marked.parse('# hello')
+---
+<article set:html={marked.parse(body)} />

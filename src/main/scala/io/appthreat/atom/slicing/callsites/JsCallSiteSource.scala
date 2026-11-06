@@ -93,31 +93,34 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
             methodOf(c) match
               case None => collector.skip(c)
               case Some(method) =>
-                  js.split(c.methodFullName).foreach { (module, symbol) =>
-                    // the symbol path is dotted (`path.includes`); the callee member is its last segment
-                    val member = symbol.map(_.split('.').last).getOrElse("")
-                    if !primitiveMembers.contains(member) then
-                      // `consumer\n  .apply(x)`: report the member name's position, not the chain's start
-                      val memberPos =
-                          c.receiver.collectFirst {
-                              case f: Call if f.name == Operators.fieldAccess =>
-                                  f.argument.collectFirst { case fi: FieldIdentifier => fi }
-                          }.flatten.filter(_.lineNumber.exists(_.intValue > 0))
-                      collector.add(c) {
-                          CallSiteRecord(
-                            method.filename,
-                            memberPos.map(fi => line(fi)).getOrElse(line(c)),
-                            memberPos.map(fi => col(fi)).getOrElse(col(c)),
-                            method.fullName,
-                            module,
-                            symbol.getOrElse(""),
-                            "call",
-                            "type",
-                            c.methodFullName
-                          )
+                  js.split(c.methodFullName)
+                      .orElse(resolver.inheritedFromPackage(c.methodFullName, method.filename))
+                      .orElse(resolver.inheritedThroughReceiver(c))
+                      .foreach { (module, symbol) =>
+                        // the symbol path is dotted (`path.includes`); the callee member is its last segment
+                        val member = symbol.map(_.split('.').last).getOrElse("")
+                        if !primitiveMembers.contains(member) then
+                          // `consumer\n  .apply(x)`: report the member name's position, not the chain's start
+                          val memberPos =
+                              c.receiver.collectFirst {
+                                  case f: Call if f.name == Operators.fieldAccess =>
+                                      f.argument.collectFirst { case fi: FieldIdentifier => fi }
+                              }.flatten.filter(_.lineNumber.exists(_.intValue > 0))
+                          collector.add(c) {
+                              CallSiteRecord(
+                                method.filename,
+                                memberPos.map(fi => line(fi)).getOrElse(line(c)),
+                                memberPos.map(fi => col(fi)).getOrElse(col(c)),
+                                method.fullName,
+                                module,
+                                symbol.getOrElse(""),
+                                "call",
+                                "type",
+                                c.methodFullName
+                              )
+                          }
+                        end if
                       }
-                    end if
-                  }
         }
 
     // Pass C: decorators, heritage clauses, tagged templates and JSX tags, by name (via=name)
@@ -126,6 +129,10 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
     // Pass D: imports that bind nothing (decision 0002, Q1): the import runs the module, so the
     // statement itself is one use, of kind `import`
     collector.addAll(sideEffectImportRecords(atom, js))
+
+    // Pass E: type positions (decision 0001, P1): a parameter, member, local or return type, a
+    // generic argument, that names an imported binding is a use of kind `decltype`
+    collector.addAll(typeReferenceRecords(atom, js))
 
     val result = collector.result()
     val purls  = JsPurls(atom, vendoredSpecifiers)
@@ -451,6 +458,49 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
       }
   end sideEffectImportRecords
 
+  /** Type positions, from the `callsites-typeref` tags the frontend writes on each file's
+    * `:program` method (no node stands for one): each referenced name that resolves through the
+    * file's imports is one `decltype` record, in the innermost method whose lines hold it. A name
+    * the file declares itself, a global (`Promise`, `PDFKit.PDFDocument`) or a type parameter
+    * resolves to no import and gives none.
+    */
+  private def typeReferenceRecords(atom: Cpg, js: JsNames): List[CallSiteRecord] =
+      atom.method.nameExact(":program").l.flatMap { program =>
+        val file = program.filename
+        val tags = program.tag.nameExact("callsites-typeref").value.l
+        if tags.isEmpty then Nil
+        else
+          // innermost first: the latest start, then the earliest end
+          val methods = atom.method.filenameExact(file).l
+              .filter(m => m.lineNumber.isDefined && m.lineNumberEnd.isDefined)
+              .sortBy(m => (-m.lineNumber.get.intValue, m.lineNumberEnd.get.intValue, m.fullName))
+          tags.flatMap { value =>
+              Try(ujson.read(value)).toOption.flatMap { tag =>
+                val line = tag("line").num.toInt
+                for
+                  name             <- tag.obj.get("name").map(_.str)
+                  (module, symbol) <- js.ofBindingName(file, name)
+                  if JsNames.isBareSpecifier(module) && line > 0
+                  enclosing <- methods.find(m =>
+                      m.lineNumber.get.intValue <= line && line <= m.lineNumberEnd.get.intValue
+                  ).orElse(Some(program))
+                yield CallSiteRecord(
+                  file,
+                  Integer.valueOf(line),
+                  Integer.valueOf(tag("column").num.toInt),
+                  enclosing.fullName,
+                  module,
+                  symbol.getOrElse(""),
+                  "decltype",
+                  "binding",
+                  ""
+                )
+              }
+          }
+        end if
+      }
+  end typeReferenceRecords
+
   /** Whether the `require`/`import` call `c` is an import that binds nothing. Its value is first
     * followed through `await`, `?:`, `||`, `&&` and the calls that take it as an argument (see
     * [[passesValueOn]]). It then binds a name only when it is assigned to a local identifier, or
@@ -571,6 +621,12 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
                     .map(o => Origin(o.module, o.through(field.toList)))
             case c: Call if c.name == "<operator>.await" =>
                 c.argument.collectFirst { case b: Expression => b }
+                    .flatMap(originOfExpr(_, depth + 1))
+            // an assignment in expression position yields the value it just wrote:
+            // `(_tmp_0 = await import('uuid')).v4` lowers the awaited module to a temporary
+            // first, and the member is read off the assignment's value
+            case c: Call if c.name == Operators.assignment =>
+                c.argument.l.filter(_.argumentIndex == 2).collectFirst { case b: Expression => b }
                     .flatMap(originOfExpr(_, depth + 1))
             // `__importDefault(require("x"))` and the other helpers of compiled CommonJS: the
             // default helpers wrap the module in `{ default: module }`, the star helpers return a
@@ -754,6 +810,93 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
                 case _               => None
         }
 
+    /** (module, symbol) of a call the frontend resolved to a member of a project class that the
+      * class does not declare and inherits from a package class: `ChallengeModel.bulkCreate()` or
+      * `challenge.save()` where `class ChallengeModel extends Model` and `Model` is imported from
+      * `sequelize` is a use of `sequelize`'s `Model.bulkCreate`. The frontend names such a call
+      * `<file>::program:<Class>:<member>` in the class's own file (a static call through the class
+      * name carries the class's `:<init>` too), and `<specifier>:<export>:<member>` in a file that
+      * imports the class (`../models/user:UserModel:findAll`, `order:OrderModel:count` for
+      * `./order`). A member that the class or a project ancestor declares is the project's own (an
+      * override), and so is a class with no package ancestor.
+      */
+    def inheritedFromPackage(
+      fullName: String,
+      callerFile: String
+    ): Option[(String, Option[String])] =
+      val split = fullName.lastIndexOf(':')
+      if split <= 0 then None
+      else
+        val member = fullName.substring(split + 1)
+        val owner  = fullName.substring(0, split).stripSuffix(":<init>")
+        if member.isEmpty || member.startsWith("<") then None
+        else projectClass(owner, callerFile).flatMap(inheritedMember(_, member))
+
+    /** As [[inheritedFromPackage]], for a call the frontend left unresolved whose receiver is an
+      * identifier it typed with a project class (`User.findAll()` where `User` is imported from
+      * `./model` and the frontend's hint is `src/model.ts::program:User`).
+      */
+    def inheritedThroughReceiver(c: Call): Option[(String, Option[String])] =
+        if JsNames.isResolvedName(c.methodFullName) || c.name.startsWith("<") then None
+        else
+          c.argument.argumentIndex(0).headOption.orElse(c.receiver.headOption).collect {
+              case i: Identifier => i
+          }.flatMap { receiver =>
+              (receiver.typeFullName +: receiver.dynamicTypeHintFullName)
+                  .filter(_.contains("::program:"))
+                  .map(_.stripSuffix(":<init>"))
+                  .flatMap(t => atom.typeDecl.fullNameExact(t).isExternal(false).headOption)
+                  .headOption
+                  .flatMap(inheritedMember(_, c.name))
+          }
+
+    /** The project class `owner` names: a type's full name, or `<relative specifier>:<export>`. */
+    private def projectClass(owner: String, callerFile: String): Option[TypeDecl] =
+        if owner.contains("::program:") then
+          atom.typeDecl.fullNameExact(owner).isExternal(false).headOption
+        else if owner.count(_ == ':') == 1 then
+          // the frontend keeps `../` but drops a leading `./` (`./order` is `order`)
+          val (raw, exported) = owner.splitAt(owner.indexOf(':'))
+          val specifier       = if raw.startsWith(".") then raw else s"./$raw"
+          val target          = JsModules.resolveRelative(callerFile, specifier).stripPrefix("./")
+          val file = filesByStem.getOrElse(target, filesByStem.getOrElse(s"$target/index", ""))
+          if file.isEmpty then None else exportedClass(file, exported.drop(1))
+        else None
+
+    // project files by their path without the extension (`models/user` for `models/user.ts`)
+    private lazy val filesByStem: Map[String, String] =
+        atom.method.nameExact(":program").filename.l.distinct
+            .map(f => f.replaceFirst("\\.[cm]?[jt]sx?$", "") -> f)
+            .toMap
+
+    /** The class a file exports as `name`: `export class Name`, or `export { Local as Name }`,
+      * which the frontend lowers to `exports.Name = Local`.
+      */
+    private def exportedClass(file: String, name: String): Option[TypeDecl] =
+      val local = atom.method.nameExact(":program").filenameExact(file).ast.isCall
+          .nameExact(Operators.assignment).l.flatMap { a =>
+              a.argument.l.sortBy(_.argumentIndex) match
+                case (target: Call) :: (value: Identifier) :: _
+                    if target.name == Operators.fieldAccess &&
+                        target.argument.isIdentifier.nameExact("exports").nonEmpty &&
+                        target.argument.isFieldIdentifier.canonicalNameExact(name).nonEmpty =>
+                    Some(value.name)
+                case _ => None
+          }.headOption.getOrElse(name)
+      atom.typeDecl.fullNameExact(s"$file::program:$local").isExternal(false).headOption
+
+    private def inheritedMember(td: TypeDecl, member: String): Option[(String, Option[String])] =
+      val chain = lineageOf(td)
+      if chain.exists(_.member.nameExact(member).nonEmpty) then None
+      else
+        chain.iterator.flatMap { t =>
+            t.inheritsFromTypeFullName
+                .filterNot(b => b == "ANY" || b.isEmpty || baseClass(t, b).isDefined)
+                .flatMap(b => js.ofBindingName(fileOf(t).getOrElse(t.filename), simpleName(b)))
+                .filter((module, _) => JsNames.isBareSpecifier(module))
+                .map((module, symbol) => module -> Option((symbol.toList :+ member).mkString(".")))
+        }.nextOption()
+
     // A class and its ancestors in the project, nearest first.
     private val lineage = mutable.HashMap[String, List[TypeDecl]]()
     private def lineageOf(td: TypeDecl): List[TypeDecl] =
@@ -802,6 +945,14 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
     def fieldOriginIn(td: TypeDecl, name: String): Option[Origin] =
         fieldOriginIn(td, name, isStatic = false)
 
+    /** Whether `fa` is the right-hand side of an assignment to a local: `x = <fa>`. */
+    private def definesBinding(fa: Call): Boolean =
+        DeclarationRefs.parentOf(fa).exists {
+            case c: Call if c.name == Operators.assignment =>
+                c.argument.l.exists(a => a.argumentIndex == 1 && a.isInstanceOf[Identifier])
+            case _ => false
+        }
+
     /** The origin of a field read: `this.f` in a method of the class (an instance field, or a
       * static one in a static method), or `Klass.f` of a static field.
       */
@@ -815,6 +966,16 @@ final class JsCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
                   projectTypes.getOrElse(b.name, Nil)
                       .find(_.filename == fa.method.filename)
                       .flatMap(fieldOriginIn(_, name, isStatic = true))
+              // `(await import('m')).v4`: the base is the awaited module in expression position,
+              // which the frontend lowers to an assignment of a temporary (`(_tmp = await
+              // import('m')).v4`). Only those two shapes: a chain through named bindings
+              // (`page.data.user`) is resolved where its root binding is read. The import clause's
+              // own member read (`const v4 = (await import('m')).v4`) defines that binding and is
+              // no use of it; the local's uses are recorded where they happen.
+              case Some(b: Call)
+                  if (b.name == Operators.assignment || b.name == "<operator>.await") &&
+                      !definesBinding(fa) =>
+                  originOfExpr(b, 0).map(o => Origin(o.module, o.through(List(name))))
               case _ => None
         }
 

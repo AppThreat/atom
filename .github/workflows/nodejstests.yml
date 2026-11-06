@@ -124,7 +124,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
-      - uses: sbt/setup-sbt@bfea3c5f48abd221b04a6df4798aa5eb8b6a2baf  # v1.5.6
+      - uses: sbt/setup-sbt@67d461eba2c4753196c230e02da850757ba4775e  # v1.5.14
       - uses: coursier/setup-action@9b7939bf01fd1185ce2babe16135168361bf2c62  # v3.0.2
         with:
           apps: scala3 scalac
@@ -236,7 +236,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
-      - uses: sbt/setup-sbt@bfea3c5f48abd221b04a6df4798aa5eb8b6a2baf  # v1.5.6
+      - uses: sbt/setup-sbt@67d461eba2c4753196c230e02da850757ba4775e  # v1.5.14
       - uses: coursier/setup-action@9b7939bf01fd1185ce2babe16135168361bf2c62  # v3.0.2
         with:
           apps: scala3 scalac

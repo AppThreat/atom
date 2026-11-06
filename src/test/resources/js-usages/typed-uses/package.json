@@ -1,0 +1,9 @@
+{
+  "name": "typed-uses-fixture",
+  "version": "1.0.0",
+  "dependencies": {
+    "@angular/core": "^20.0.0",
+    "express": "^5.0.0",
+    "sequelize": "^6.0.0"
+  }
+}

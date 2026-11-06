@@ -571,6 +571,71 @@ class JavaCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAl
           records.filter(r => !r.module.contains('.') || r.module.endsWith("[]")) shouldBe Nil
       }
 
+      "record a method reference to an external method and a constructor reference, and none to a project method (atom#334)" in {
+          // `Security::http` resolves to the stub jar's static method, `Session::new` names its
+          // declaring type with the <init> member (the solver cannot bind a constructor
+          // reference), and `new Handler()::handle` references the project's own method, which is
+          // no use of a dependency
+          in("MethodRefs.java").filter(_.kind == "methodref") shouldBe List(
+            Rec(
+              "MethodRefs.java",
+              10,
+              28,
+              "web.Security",
+              "http",
+              "methodref",
+              "binding",
+              purl = "pkg:maven/com.example/stub-web@1.0.0"
+            ),
+            Rec(
+              "MethodRefs.java",
+              11,
+              27,
+              "web.Session",
+              "<init>",
+              "methodref",
+              "binding",
+              purl = "pkg:maven/com.example/stub-web@1.0.0"
+            ),
+            // `String[]::new` names the element class like every array type in the slice
+            Rec(
+              "MethodRefs.java",
+              13,
+              55,
+              "java.lang.String",
+              "<init>",
+              "methodref",
+              "binding",
+              builtin = true
+            )
+          )
+      }
+
+      "carry the same method references as uses in usages (atom#334)" in {
+          assume(atomRan)
+          val usages = ujson.read((workspace / "usages.json").contentAsString)
+          val runSlice = usages("objectSlices").arr
+              .find(o => o("fullName").str == "proj.MethodRefs.run:void()")
+              .getOrElse(fail("no usages slice for proj.MethodRefs.run"))
+          val refUses = runSlice("usages").arr
+              .filter(u =>
+                  u("targetObj").obj.contains("resolvedMethod") &&
+                      u("targetObj")("resolvedMethod").str.startsWith("web.")
+              )
+              .map(u =>
+                  (
+                    u("targetObj")("name").str,
+                    u("targetObj")("resolvedMethod").str,
+                    u("targetObj")("lineNumber").num.toInt,
+                    u("targetObj")("isExternal").bool
+                  )
+              )
+          refUses should contain theSameElementsAs List(
+            ("http", "web.Security.http:web.Security()", 10, true),
+            ("<init>", "web.Session.<init>:<unresolvedSignature>(0)", 11, true)
+          )
+      }
+
       "map a class to the artifact of the jar that carries it, and no further" in {
           val purls = in("Purl.java").filter(_.kind == "call")
               .map(r => (r.module, r.purl)).sortBy(_._1)

@@ -28,8 +28,11 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
         "callsites-fields",
         "orphans",
         "sfc",
+        "accessors",
+        "sfc-positions",
         "purl-bom",
-        "side-effect-imports"
+        "side-effect-imports",
+        "typed-uses"
       )
 
   private var workspace: BFile                    = scala.compiletime.uninitialized
@@ -49,8 +52,14 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
   override def beforeAll(): Unit =
     workspace = BFile.newTemporaryDirectory("atomJsCallsites")
-    if astgenUsable then
-      slices = fixtureCases.map(caseName => caseName -> runCallsites(caseName)).toMap
+    slices = fixtureCases
+        .filter(caseName =>
+            caseName match
+              case "sfc-positions" => sfcPositionAstgenUsable
+              case "accessors"     => autoAccessorAstgenUsable
+              case _               => astgenUsable
+        )
+        .map(caseName => caseName -> runCallsites(caseName)).toMap
 
   override def afterAll(): Unit =
       if workspace != null then workspace.delete(swallowIOExceptions = true)
@@ -104,11 +113,109 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
         target.parent.createDirectories()
         source.copyTo(target, overwrite = true)
 
+  // the astgen the frontend will run (see astgenCommand): a bare `astgen` on Windows is the npm
+  // shim `astgen.cmd`, which a process builder does not find
   private lazy val astgenUsable: Boolean =
-      Try(scala.sys.process.Process(Seq("astgen", "--version")).lazyLines_!.headOption.map(_.trim))
+      Try(
+        scala.sys.process.Process(astgenCommand :+ "--version").lazyLines_!.headOption.map(_.trim)
+      )
           .toOption
           .flatten
           .exists(v => v.takeWhile(_.isDigit).toIntOption.exists(_ >= 2))
+
+  /** The astgen command the JavaScript frontend runs, resolved the way chen's AstGenRunner resolves
+    * it, so a probe sees the astgen the fixture will actually use.
+    */
+  private lazy val astgenCommand: Seq[String] =
+      sys.props
+          .get("jssrc2cpg.test.astgenCmd")
+          .map(_.trim)
+          .filter(_.nonEmpty)
+          .orElse(sys.env.get("JSSRC2CPG_TEST_ASTGEN_CMD").map(_.trim).filter(_.nonEmpty))
+          .getOrElse("astgen")
+          .split("\\s+")
+          .toSeq
+
+  /** Runs astgen over one small file and returns its emitted AST, or None when astgen cannot run or
+    * the file produced no AST. Used for behaviour probes: `astgen --version` cannot tell the astgen
+    * releases apart here, because the version it prints was not bumped between the npm release with
+    * the Vue position defect (1.10.6) and the release/1.x branch that fixed it.
+    */
+  private def probeAstgenAst(
+    fileName: String,
+    content: String,
+    fileType: String
+  ): Option[ujson.Value] =
+      Try {
+          val dir = BFile.newTemporaryDirectory("atomJsAstgenProbe")
+          try
+            val out    = dir / "ast_out"
+            val source = dir / "src" / fileName
+            source.parent.createDirectories()
+            source.write(content)
+            val exit = scala.sys.process
+                .Process(astgenCommand ++ Seq(
+                  "-i",
+                  dir.pathAsString,
+                  "-t",
+                  fileType,
+                  "-o",
+                  out.pathAsString
+                ))
+                .!
+            if exit != 0 then None
+            else
+              out.listRecursively()
+                  .find(f => f.name == s"$fileName.json")
+                  .map(f => ujson.read(f.contentAsString)("ast"))
+          finally dir.delete(swallowIOExceptions = true)
+          end try
+      }.toOption.flatten
+
+  /** Whether the astgen in use keeps a Vue single-file component's script positions when the
+    * template holds an unclosed void element (AppThreat/atom-parsetools#83 and #84). With the
+    * defect the whole-file candidate is rejected and the fallback parses the script first, so the
+    * import lands on the wrong line; the probe reads the line the AST reports for the import.
+    */
+  private lazy val sfcPositionAstgenUsable: Boolean =
+    val probeLines = List(
+      "<template>",
+      "  <form><input :disabled=\"off\" type=\"text\"><hr></form>",
+      "</template>",
+      "",
+      "<script setup lang=\"ts\">",
+      "import { computed } from 'vue'",
+      "const label = computed(() => 'x')",
+      "</script>",
+      ""
+    )
+    val expectedLine = probeLines.takeWhile(_ != "import { computed } from 'vue'").size + 1
+    probeAstgenAst("Probe.vue", probeLines.mkString("\n"), "vue")
+        .exists(ast =>
+            ast("program")("body").arr
+                .filter(_("type").str == "ImportDeclaration")
+                .map(_("loc")("start")("line").num.toInt)
+                .headOption
+                .contains(expectedLine)
+        )
+  end sfcPositionAstgenUsable
+
+  /** Whether the astgen in use parses TC39 auto-accessors (AppThreat/atom-parsetools#34): without
+    * the plugin the whole file fails, with it the class body holds a ClassAccessorProperty.
+    */
+  private lazy val autoAccessorAstgenUsable: Boolean =
+      probeAstgenAst("Probe.js", "class A {\n  accessor x = 1;\n}\n", "js").exists { ast =>
+        val types = scala.collection.mutable.ListBuffer.empty[String]
+        def walk(v: ujson.Value): Unit =
+            v match
+              case ujson.Arr(items) => items.foreach(walk)
+              case ujson.Obj(fields) =>
+                  fields.get("type").foreach(t => types += t.str)
+                  fields.values.foreach(walk)
+              case _ =>
+        walk(ast)
+        types.contains("ClassAccessorProperty")
+      }
 
   private def requireAstgen(): Unit =
       if !astgenUsable then
@@ -116,9 +223,33 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           "astgen unavailable or too old; JavaScript fixture needs the astgen from @appthreat/atom-parsetools on PATH"
         )
 
+  private def requireSfcPositionAstgen(): Unit =
+      if !sfcPositionAstgenUsable then
+        cancel(
+          s"astgen (${astgenCommand.mkString(" ")}) predates the Vue single-file component position fix (AppThreat/atom-parsetools#83, #84); the sfc-positions fixture needs it"
+        )
+
+  private def requireAutoAccessorAstgen(): Unit =
+      if !autoAccessorAstgenUsable then
+        cancel(
+          s"astgen (${astgenCommand.mkString(" ")}) predates TC39 auto-accessor parsing (AppThreat/atom-parsetools#34); the accessors fixture needs it"
+        )
+
   private def records(caseName: String): List[CallSite] =
     requireAstgen()
     slices.getOrElse(caseName, fail(s"no slice for $caseName"))
+
+  /** The sfc-positions fixture's records, gated on the astgen behaviour they pin. */
+  private def sfcPositionRecords(): List[CallSite] =
+    requireSfcPositionAstgen()
+    slices.getOrElse("sfc-positions", fail("no slice for sfc-positions"))
+
+  /** The accessors fixture's records, gated on astgen parsing auto-accessors. The chen frontend
+    * must handle ClassAccessorProperty too (its own change), which the records below check.
+    */
+  private def accessorRecords(): List[CallSite] =
+    requireAutoAccessorAstgen()
+    slices.getOrElse("accessors", fail("no slice for accessors"))
 
   private def at(caseName: String, file: String, line: Int, module: String): List[CallSite] =
       records(caseName).filter(r => r.file == file && r.line == line && r.module == module)
@@ -146,6 +277,36 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
       "leave purl out of every record when the atom carries no SBOM (atom#321)" in {
           records("callsites").map(_.purl).distinct shouldBe List("")
+      }
+
+      "keep every record of a component with unclosed void elements and slot shorthand on a script line or a template binding (atom#320)" in {
+          // The template holds an unclosed `<input>`, an `<hr>` and a `<template #fallback>` slot,
+          // the shapes that made astgen 1.10.6 reject the whole-file candidate and move every
+          // script line onto the template. Every expected line comes from the source files, and
+          // the whole slice is exactly these six: nothing on a template line that uses no import.
+          val expected = List(
+            // Article.vue: the dayjs template binding at its own line, axios in the script
+            CallSite("src/Article.vue", 10, 13, "dayjs", "", "call", "binding"),
+            CallSite("src/Article.vue", 23, 9, "axios", "post", "call", "binding"),
+            // Card.svelte: the script helper and the template binding beside it
+            CallSite("src/Card.svelte", 5, 9, "date-fns", "format", "call", "binding"),
+            CallSite("src/Card.svelte", 10, 8, "date-fns", "format", "call", "binding"),
+            // Stats.astro: the frontmatter and the template expression
+            CallSite("src/Stats.astro", 4, 19, "marked", "marked.parse", "call", "binding"),
+            CallSite("src/Stats.astro", 6, 19, "marked", "marked.parse", "call", "binding")
+          )
+          sfcPositionRecords() should contain theSameElementsAs expected
+      }
+
+      "record a call in an auto-accessor's initialiser (atom-parsetools#34)" in {
+          // `accessor id = uuidv4()` lowers to the field assignment `this.id = uuidv4()`, so the
+          // initialiser's call is a use of the imported package, in TypeScript and in JavaScript
+          val expected = List(
+            CallSite("src/accessor.ts", 5, 16, "uuid", "v4", "call", "binding"),
+            CallSite("src/accessor.ts", 6, 21, "dayjs", "", "call", "binding"),
+            CallSite("src/plain.js", 4, 19, "nanoid", "", "call", "binding")
+          )
+          accessorRecords() should contain theSameElementsAs expected
       }
 
       "record single-file component uses at their script lines (atom#320)" in {
@@ -275,6 +436,63 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           )
       }
 
+      "record a member call on an awaited dynamic import in expression position (atom#322)" in {
+          // `(await import('uuid')).v4()`: no local takes the module, the frontend lowers it to
+          // an assignment of a temporary, and the member read follows that value. The TS twin is
+          // the same shape; the import clause itself still gives no definition-site record.
+          at("callsites", "src/app.js", 25, "dayjs") should contain theSameElementsAs List(
+            CallSite("src/app.js", 25, 9, "dayjs", "unix", "call", "binding")
+          )
+          at("callsites", "src/widgets.ts", 18, "dayjs") should contain theSameElementsAs List(
+            CallSite("src/widgets.ts", 18, 9, "dayjs", "unix", "call", "binding")
+          )
+      }
+
+      "leave a member read that defines a binding to the binding's uses, and read a member chain once (atom#322)" in {
+          // `const unixOf = (await import("dayjs")).unix` defines a local: its use is the call two
+          // lines down, not the definition. `jwt.decode.options.complete` is one use of the
+          // binding with its whole path, not one per member read.
+          at("callsites", "src/app.js", 29, "dayjs") shouldBe Nil
+          at("callsites", "src/app.js", 30, "dayjs") should contain theSameElementsAs List(
+            CallSite("src/app.js", 30, 9, "dayjs", "unix", "call", "binding")
+          )
+          at("callsites", "src/app.js", 34, "jsonwebtoken") should contain theSameElementsAs List(
+            CallSite(
+              "src/app.js",
+              34,
+              9,
+              "jsonwebtoken",
+              "decode.options.complete",
+              "ref",
+              "binding"
+            )
+          )
+      }
+
+      "record type positions that name an import, type-only imports included (atom#322)" in {
+          // a member, parameter, return and qualified type name each give one decltype record;
+          // a type the file declares itself (`Local`) and a global (`Promise`) give none
+          records("typed-uses").filter(_.kind == "decltype") should contain theSameElementsAs List(
+            CallSite("src/model.ts", 6, 14, "sequelize", "CreationOptional", "decltype", "binding"),
+            CallSite("src/model.ts", 13, 32, "express", "Request", "decltype", "binding"),
+            CallSite("src/model.ts", 13, 46, "express", "Response", "decltype", "binding"),
+            CallSite("src/model.ts", 31, 21, "@angular/core", "Type", "decltype", "binding")
+          )
+      }
+
+      "record a member a project class inherits from a package class, and not one it overrides (atom#322)" in {
+          // `User extends Model` (sequelize): the static `findAll` and the instance `reload` are
+          // sequelize's; `save` is the class's own. In routes.ts the classes are imported, one of
+          // them under the name its file exports it as (`export { Order as OrderModel }`).
+          records("typed-uses").filter(r => r.module == "sequelize" && r.kind == "call") should
+              contain theSameElementsAs List(
+                CallSite("src/model.ts", 14, 27, "sequelize", "Model.findAll", "call", "type"),
+                CallSite("src/model.ts", 20, 10, "sequelize", "Model.reload", "call", "type"),
+                CallSite("src/routes.ts", 5, 27, "sequelize", "Model.findAll", "call", "type"),
+                CallSite("src/routes.ts", 6, 42, "sequelize", "Model.count", "call", "type")
+              )
+      }
+
       "record tagged templates by the tag's binding" in {
           at("callsites", "src/app.js", 6, "graphql-tag") should contain theSameElementsAs List(
             CallSite("src/app.js", 6, 17, "graphql-tag", "", "tag", "name")
@@ -310,7 +528,9 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           ) should contain theSameElementsAs List(
             CallSite("src/widgets.ts", 4, 21, "rxjs", "Subject", "ref", "binding"),
             CallSite("src/widgets.ts", 7, 15, "rxjs", "Subject", "new", "binding"),
-            CallSite("src/widgets.ts", 13, 15, "rxjs", "Subject", "new", "binding")
+            CallSite("src/widgets.ts", 13, 15, "rxjs", "Subject", "new", "binding"),
+            // the awaited dynamic import twin of the atom#322 test, in this file too
+            CallSite("src/widgets.ts", 18, 9, "dayjs", "unix", "call", "binding")
           )
       }
 
@@ -472,11 +692,13 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
           // `import * as`) and 11 to 12 (`const flat = require`, hand-written `var pino =
           // require('pino')`, whose import node looks like a side-effect import's), and the
           // import-equals of lines 18 and 19 (which binds `vim` and `ioredis`): a record only at
-          // the use, at lines 14 to 17 and 21
+          // the use, at lines 14 to 17 and 21. Line 15 has two: `flat`, and `Article` from the
+          // type-only import as the declared type (decision 0001, P1).
           records("side-effect-imports").filter(r =>
               r.file == "src/polyfills.ts" && r.via == "binding" && r.kind != "import"
           ).map(r => (r.line, r.module, r.path)) should contain theSameElementsAs List(
             (14, "vue", "computed"),
+            (15, "flatted", "Article"),
             (15, "flatted", ""),
             (16, "axios", ""),
             (17, "pino", ""),

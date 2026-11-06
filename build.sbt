@@ -141,10 +141,10 @@ Global / excludeLintKeys += testForkedParallel
 // sbt 2 packs test classes+resources into jars (exportJars := true); keep exploded dirs so
 // tests can read their fixtures as plain files
 ThisBuild / Test / exportJars := false
-// The PHP/Ruby frontends run in-process inside the forked test JVM and resolve their generator
-// binary from the environment, so propagate the generator overrides from the launching shell.
+// The PHP/Ruby/JavaScript frontends run in-process inside the forked test JVM and resolve their
+// generator from the environment, so propagate the generator overrides from the launching shell.
 ThisBuild / Test / envVars ++=
-    Seq("PHP_PARSER_BIN", "RBASTGEN_PATH", "RUBY_ASTGEN_BIN")
+    Seq("PHP_PARSER_BIN", "RBASTGEN_PATH", "RUBY_ASTGEN_BIN", "JSSRC2CPG_TEST_ASTGEN_CMD")
         .flatMap(name => sys.env.get(name).map(name -> _))
         .toMap
 Global / onChangedBuildSource          := ReloadOnSourceChanges

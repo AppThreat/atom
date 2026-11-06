@@ -36,7 +36,7 @@ runs:
       with:
         distribution: 'temurin'
         java-version: '25'
-    - uses: sbt/setup-sbt@bfea3c5f48abd221b04a6df4798aa5eb8b6a2baf  # v1.5.6
+    - uses: sbt/setup-sbt@67d461eba2c4753196c230e02da850757ba4775e  # v1.5.14
       if: inputs.setup-jdk == 'true'
     - name: Publish chen main locally
       if: runner.os != 'Windows'
