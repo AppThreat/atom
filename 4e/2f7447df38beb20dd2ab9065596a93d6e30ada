@@ -1,0 +1,42 @@
+src/main/scala/io/appthreat/atom/slicing/UsageSlicing.scala
+  s_c4b0b47db2bc80::t_dca90767956916 111-114,117-145
+  s_c4b0b47db2bc80::t_c6b5279bb56393 94-100,115-116,146
+  s_c4b0b47db2bc80::t_cc1b92ba2e0d29 147
+  s_c0804e5357f0c5::t_d2adf3e94b8511 148-150
+src/test/resources/java-callsites/src/proj/MethodRefs.java
+  s_c4b0b47db2bc80::t_df457d6ce1e6f1 1-12,15-16,22
+  s_c4b0b47db2bc80::t_b4cea800aebb2f 13-14,17-21
+src/test/scala/io/appthreat/atom/JavaCallSitesTests.scala
+  s_c4b0b47db2bc80::t_1b54d5806c84a6 574-598,610-615,623,627,636-637
+  s_c4b0b47db2bc80::t_f750d906fd49d3 599-609
+  s_c4b0b47db2bc80::t_8e9862f5f40cc4 628-630
+  s_c4b0b47db2bc80::t_6d05a7d45a22b2 616-622
+  s_c4b0b47db2bc80::t_51b9fcf7fa1bf4 624-626,632
+  s_c4b0b47db2bc80::t_3d37e711ef55ec 631,633-635,638
+src/main/scala/io/appthreat/atom/slicing/callsites/JavaCallSiteSource.scala
+  s_c4b0b47db2bc80::t_d09e062e78a2f7 312-314
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4e2f7447df38beb20dd2ab9065596a93d6e30ada",
+  "prompts": {},
+  "sessions": {
+    "s_c0804e5357f0c5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "75227701-fd30-4fc7-8eae-71a8df8f3a1c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_c4b0b47db2bc80": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_b18a03ea-27c6-410e-9850-2e20127a6d41",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
