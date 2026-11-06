@@ -1,0 +1,30 @@
+src/main/scala/io/appthreat/atom/parsedeps/PythonDependencyParser.scala
+  s_9a6babc391f0fd::t_ced62e71d8f347 72,74
+  s_9a6babc391f0fd::t_7602897b222a59 19,26-27,30-37,57
+  s_9a6babc391f0fd::t_462596edc95634 38-56,58-71,73,75-77
+  s_9a6babc391f0fd::t_cfcd06a1522087 78
+src/test/scala/io/appthreat/atom/PythonRuntimeVersionTests.scala
+  s_9a6babc391f0fd::t_fdaa09ec013fae 100-101
+  s_9a6babc391f0fd::t_fa724d3b050102 58
+  s_9a6babc391f0fd::t_1e1f8c19870f80 1-2,4-9,11-14,19-21,25-29,38-39,41-45,47
+  s_9a6babc391f0fd::t_7cfa2d76f1ead6 3,10,15-18,22-24,30-37,40,46,48-57,59-99,102-108
+src/main/scala/io/appthreat/atom/parsedeps/package.scala
+  s_9a6babc391f0fd::t_1949dad3d5d5a3 49-50
+  s_9a6babc391f0fd::t_46ea2ce08963db 29-31,33-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c9d53c2a0dd423466a97bdc18d3b7b3afee7607f",
+  "prompts": {},
+  "sessions": {
+    "s_9a6babc391f0fd": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_c0203311-ee3e-42c1-9dfe-cb1e0bdf1f94",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
