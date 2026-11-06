@@ -1,0 +1,23 @@
+src/test/scala/io/appthreat/atom/PythonRuntimeVersionTests.scala
+  s_9a6babc391f0fd::t_35f108ea1306a0 13-14,16-18,24-26,29-31,33-35,37-39,42-46,49-50,79,83-108
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_9a6babc391f0fd::t_35f108ea1306a0 159-161
+src/main/scala/io/appthreat/atom/parsedeps/PythonDependencyParser.scala
+  s_9a6babc391f0fd::t_35f108ea1306a0 31-34,66-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "94cd40dd0907828ac742393cf8e1c167529e169c",
+  "prompts": {},
+  "sessions": {
+    "s_9a6babc391f0fd": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_c0203311-ee3e-42c1-9dfe-cb1e0bdf1f94",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
