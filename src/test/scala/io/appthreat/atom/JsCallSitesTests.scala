@@ -113,8 +113,12 @@ class JsCallSitesTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
         target.parent.createDirectories()
         source.copyTo(target, overwrite = true)
 
+  // the astgen the frontend will run (see astgenCommand): a bare `astgen` on Windows is the npm
+  // shim `astgen.cmd`, which a process builder does not find
   private lazy val astgenUsable: Boolean =
-      Try(scala.sys.process.Process(Seq("astgen", "--version")).lazyLines_!.headOption.map(_.trim))
+      Try(
+        scala.sys.process.Process(astgenCommand :+ "--version").lazyLines_!.headOption.map(_.trim)
+      )
           .toOption
           .flatten
           .exists(v => v.takeWhile(_.isDigit).toIntOption.exists(_ >= 2))
