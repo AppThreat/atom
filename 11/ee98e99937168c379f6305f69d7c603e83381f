@@ -1,0 +1,20 @@
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_9a6babc391f0fd::t_f19af6bbcf06c7 153,159-167
+  s_9a6babc391f0fd::t_d5d8bc0bf1b0d6 168
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "11ee98e99937168c379f6305f69d7c603e83381f",
+  "prompts": {},
+  "sessions": {
+    "s_9a6babc391f0fd": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_c0203311-ee3e-42c1-9dfe-cb1e0bdf1f94",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
