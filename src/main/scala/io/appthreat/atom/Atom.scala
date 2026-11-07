@@ -872,15 +872,19 @@ object Atom:
               )
               .action((x, c) =>
                   c match
-                    case c: AtomDataFlowConfig => c.copy(sliceDepth = x)
-                    case _                     => c
+                    case c: AtomDataFlowConfig =>
+                        c.sliceDepth = x
+                        c
+                    case _ => c
               ),
           opt[String]("sink-filter")
               .text(s"filters on the sink's `code` property. Uses regex.")
               .action((x, c) =>
                   c match
-                    case c: AtomDataFlowConfig => c.copy(sinkPatternFilter = Option(x))
-                    case _                     => c
+                    case c: AtomDataFlowConfig =>
+                        c.sinkPatternFilter = Option(x)
+                        c
+                    case _ => c
               )
         )
     cmd("usages")
@@ -891,15 +895,19 @@ object Atom:
               .text(s"the minimum number of calls required for a usage slice - defaults to 1.")
               .action((x, c) =>
                   c match
-                    case c: AtomUsagesConfig => c.copy(minNumCalls = x)
-                    case _                   => c
+                    case c: AtomUsagesConfig =>
+                        c.minNumCalls = x
+                        c
+                    case _ => c
               ),
           opt[Unit]("include-source")
               .text(s"includes method source code in the slices - defaults to false.")
               .action((_, c) =>
                   c match
-                    case c: AtomUsagesConfig => c.copy(includeMethodSource = true)
-                    case _                   => c
+                    case c: AtomUsagesConfig =>
+                        c.includeMethodSource = true
+                        c
+                    case _ => c
               ),
           opt[Unit]("extract-endpoints")
               .text(
@@ -907,8 +915,10 @@ object Atom:
               )
               .action((_, c) =>
                   c match
-                    case c: AtomUsagesConfig => c.copy(extractEndpoints = true)
-                    case _                   => c
+                    case c: AtomUsagesConfig =>
+                        c.extractEndpoints = true
+                        c
+                    case _ => c
               ),
           opt[String]("also-callsites")
               .text(
@@ -933,18 +943,18 @@ object Atom:
               .text(s"source tag - defaults to framework-input. Comma-separated values allowed.")
               .action((x, c) =>
                   c match
-                    case c: AtomReachablesConfig => c.copy(sourceTag =
-                            x.split("[,|]").map(_.trim).filter(_.nonEmpty).toIndexedSeq
-                        )
+                    case c: AtomReachablesConfig =>
+                        c.sourceTag = x.split("[,|]").map(_.trim).filter(_.nonEmpty).toIndexedSeq
+                        c
                     case _ => c
               ),
           opt[String]("sink-tag")
               .text(s"sink tag - defaults to framework-output. Comma-separated values allowed.")
               .action((x, c) =>
                   c match
-                    case c: AtomReachablesConfig => c.copy(sinkTag =
-                            x.split("[,|]").map(_.trim).filter(_.nonEmpty).toIndexedSeq
-                        )
+                    case c: AtomReachablesConfig =>
+                        c.sinkTag = x.split("[,|]").map(_.trim).filter(_.nonEmpty).toIndexedSeq
+                        c
                     case _ => c
               ),
           opt[Int]("slice-depth")
@@ -953,15 +963,19 @@ object Atom:
               )
               .action((x, c) =>
                   c match
-                    case c: AtomReachablesConfig => c.copy(sliceDepth = x)
-                    case _                       => c
+                    case c: AtomReachablesConfig =>
+                        c.sliceDepth = x
+                        c
+                    case _ => c
               ),
           opt[Unit]("include-crypto")
               .text(s"includes crypto library flows - defaults to false.")
               .action((_, c) =>
                   c match
-                    case c: AtomReachablesConfig => c.copy(includeCryptoFlows = true)
-                    case _                       => c
+                    case c: AtomReachablesConfig =>
+                        c.includeCryptoFlows = true
+                        c
+                    case _ => c
               ),
           opt[String]("profile")
               .text(
@@ -969,8 +983,10 @@ object Atom:
               )
               .action((x, c) =>
                   c match
-                    case c: AtomReachablesConfig => c.copy(profile = x)
-                    case _                       => c
+                    case c: AtomReachablesConfig =>
+                        c.profile = x
+                        c
+                    case _ => c
               )
         )
     cmd("memory-safety")

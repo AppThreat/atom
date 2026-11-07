@@ -338,6 +338,27 @@ class FrontendArgsApplierTests extends AnyFunSuite with Matchers with Inside:
     }
     Atom.parseConfig(List("-l", "c", "--frontend-args", "bare", inputPath)).isLeft shouldBe true
 
+  test("a command's own options keep the flags parsed before them"):
+    val cases = List(
+      List("reachables", "-l", "python", "--source-tag", "ai-model-artifact", "--slice-depth", "4"),
+      List("data-flow", "-l", "python", "--slice-depth", "4"),
+      List("usages", "-l", "python", "--min-num-calls", "2", "--include-source")
+    )
+    for args <- cases do
+      withClue(args.head) {
+          inside(Atom.parseConfig(args :+ inputPath)) { case Right(c: AtomConfig) =>
+              c.language shouldBe "python"
+          }
+      }
+    inside(
+      Atom.parseConfig(
+        List("reachables", "-l", "python", "--source-tag", "ai-model-artifact", inputPath)
+      )
+    ) { case Right(c: AtomReachablesConfig) =>
+        c.sourceTag shouldBe Seq("ai-model-artifact")
+        c.dataDeps shouldBe true
+    }
+
   test("renderKeys produces a readable header for a known language"):
     val rendered = FrontendArgsApplier.renderKeys("python")
     rendered should include("key")
