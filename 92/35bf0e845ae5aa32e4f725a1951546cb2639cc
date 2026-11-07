@@ -1,0 +1,35 @@
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_9a6babc391f0fd::t_1f9f0cbf8ae966 154-156
+  s_9a6babc391f0fd::t_4b661dd5c7418c 113-116
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_9a6babc391f0fd::t_f19af6bbcf06c7 163-165,167
+  s_9a6babc391f0fd::t_35f108ea1306a0 160-162
+  s_4a22fa2e453d92::t_bb168c7d37dbbb 166
+  s_9a6babc391f0fd::t_d5d8bc0bf1b0d6 168
+  s_4a22fa2e453d92::t_49280d38ed0feb 169-177,180-181
+  s_4a22fa2e453d92::t_952b550fc78ddd 153-156,178-179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9235bf0e845ae5aa32e4f725a1951546cb2639cc",
+  "prompts": {},
+  "sessions": {
+    "s_4a22fa2e453d92": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "36064b4e-783b-41b1-ac9c-e4c7b722d407",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_9a6babc391f0fd": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_c0203311-ee3e-42c1-9dfe-cb1e0bdf1f94",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
