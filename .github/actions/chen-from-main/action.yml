@@ -7,7 +7,9 @@ inputs:
   chen-ref:
     description: The chen branch to build, for an atom change that needs a chen pull request not merged yet.
     required: false
-    default: 'main'
+    # temporary: AppThreat/chen#311 adds the memory-safety tags this branch renders; back to main
+    # once it merges
+    default: 'feat/sandbox-render'
   ivy-home:
     description: Ivy home to publish into, for builds that mount their own (Linux and macOS). Defaults to sbt's.
     required: false
