@@ -150,11 +150,34 @@ object MemorySafetyCommands:
       "column"     -> column.asJson,
       "severity"   -> rule.severity.asJson,
       "confidence" -> confidence.asJson,
-      "message"    -> s"${node.code}: ${rule.message}".asJson,
-      "flow"       -> flowOf(node).asJson,
-      "atom"       -> atomFile.pathAsString.asJson
+      "message" -> s"${node.code}: ${rule.message}${debugGuardNote(node)}${reentrantCallNote(node)}"
+          .asJson,
+      "flow" -> flowOf(node).asJson,
+      "atom" -> atomFile.pathAsString.asJson
     ).asJson
   end render
+
+  /** The note a finding carries when the index's only lower bound was an assert's check: the author
+    * wrote a guard that a release build compiles out, which is worth saying in the message the
+    * finding already shows.
+    */
+  private def debugGuardNote(node: AstNode): String =
+      if node.tag.name(MemorySafetyFindingPass.TagDebugGuard).nonEmpty then
+        ". The only lower bound on this index is an assert, which a release build compiles out."
+      else ""
+
+  /** The call that can run Python code between an MS-INVAL-002 read and its use, named in the
+    * message because it is the line a reader has to look at.
+    */
+  private def reentrantCallNote(node: AstNode): String =
+      node.tag.nameExact(MemorySafetyFindingPass.TagReentrantCall).value.headOption match
+        case Some(v) =>
+            val at   = v.lastIndexOf('@')
+            val code = if at >= 0 then v.substring(0, at) else v
+            val line = if at >= 0 then v.substring(at + 1) else ""
+            s". The call in between is `$code`" + (if line.nonEmpty then s" at line $line."
+                                                   else ".")
+        case None => ""
 
   /** The evidence chain: the offending argument, the memory operation it bounds, the origin and
     * guard facts the rule read, and the definitions that produced the value (the REACHING_DEF walk

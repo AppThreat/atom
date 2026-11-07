@@ -110,7 +110,10 @@ object Atom:
         "service-ingress",
         // MCP tool/resource/prompt arguments are attacker-controlled by construction
         // (tagged by the Python framework recognizers)
-        "mcp-input"
+        "mcp-input",
+        // model repository artefacts brought into the process (hub downloads, from_pretrained
+        // loads, chat-template file reads; tagged by the Python framework recognizers)
+        "ai-model-artifact"
       )
   val DEFAULT_SINK_TAGS: Seq[String] =
       Seq(
@@ -148,6 +151,9 @@ object Atom:
         // reaching `ai-prompt`; `ai-invoke` marks model/chain invocations
         "ai-prompt",
         "ai-invoke",
+        // in-process template/expression rendering (Jinja sandbox environments, the restricted
+        // evaluators, chat-template rendering inside the inference libraries)
+        "sandbox-render",
         "tracker",
         "adware"
       )
