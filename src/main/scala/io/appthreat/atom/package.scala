@@ -158,18 +158,23 @@ package object atom:
 
   case class AtomParseDepsConfig() extends AtomConfig
 
+  /** The settings of `data-flow`, `usages` and `reachables` are `var`s set in place by the option
+    * parser, never through `copy`: the base [[AtomConfig]] keeps `language`, `dataDeps` and the
+    * output paths in `var`s of the trait, and a `copy` would put all of those back at their
+    * defaults (`atom reachables -l python --source-tag x` used to lose the `-l`).
+    */
   case class AtomDataFlowConfig(
-    sinkPatternFilter: Option[String] = None,
-    excludeOperatorCalls: Boolean = true,
-    mustEndAtExternalMethod: Boolean = true,
-    sliceDepth: Int = DEFAULT_SLICE_DEPTH
+    var sinkPatternFilter: Option[String] = None,
+    var excludeOperatorCalls: Boolean = true,
+    var mustEndAtExternalMethod: Boolean = true,
+    var sliceDepth: Int = DEFAULT_SLICE_DEPTH
   ) extends AtomConfig
 
   case class AtomUsagesConfig(
-    minNumCalls: Int = 1,
-    excludeOperatorCalls: Boolean = true,
-    includeMethodSource: Boolean = false,
-    extractEndpoints: Boolean = false
+    var minNumCalls: Int = 1,
+    var excludeOperatorCalls: Boolean = true,
+    var includeMethodSource: Boolean = false,
+    var extractEndpoints: Boolean = false
   ) extends AtomConfig:
     // A `var` with a wither, not a constructor parameter: a `copy` would drop every mutable
     // field the trait carries, `-l` among them (see AtomMemorySafetyConfig).
@@ -182,11 +187,11 @@ package object atom:
   case class AtomCallsitesConfig() extends AtomConfig
 
   case class AtomReachablesConfig(
-    sourceTag: Seq[String] = DEFAULT_SOURCE_TAGS,
-    sinkTag: Seq[String] = DEFAULT_SINK_TAGS,
-    sliceDepth: Int = DEFAULT_SLICE_DEPTH,
-    includeCryptoFlows: Boolean = false,
-    profile: String = "generic"
+    var sourceTag: Seq[String] = DEFAULT_SOURCE_TAGS,
+    var sinkTag: Seq[String] = DEFAULT_SINK_TAGS,
+    var sliceDepth: Int = DEFAULT_SLICE_DEPTH,
+    var includeCryptoFlows: Boolean = false,
+    var profile: String = "generic"
   ) extends AtomConfig
 
   /** Run the memory-safety overlay over the input and write the findings JSON to the slice file

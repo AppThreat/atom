@@ -16,14 +16,71 @@ object PythonDependencyParser extends XDependencyParser:
   implicit val engineContext: EngineContext = EngineContext()
   private val SETUP_PY_FILE                 = ".*setup.py"
   private val SETUP_REQUIRES_PATTERN        = "(install_requires|extras_require|tests_require)"
+  private val PYTHON_REQUIRES_PATTERN       = "python_requires"
 
   override def parse(cpg: Cpg): DependencySlice = DependencySlice(
     (parseSetupPy(cpg) ++ parseImports(cpg))
         .groupBy(_.name)
         .map { case (_, slices) => slices.reduce((a, b) => a.merge(b)) }
         .toSeq
-        .sortBy(_.name)
+        .sortBy(_.name),
+    declaredPythonRuntime(cpg)
   )
+
+  /** The Python runtime the project declares, when it declares one: `requires-python` in
+    * pyproject.toml (or Poetry's `python` dependency), `python_requires` in setup.cfg or setup.py,
+    * a `.python-version` file, Heroku's `runtime.txt`, and the base image of a root Dockerfile, in
+    * that order; the first that declares wins. The value is reported as written: whether it is a
+    * supported release is for the consumer to decide.
+    */
+  private def declaredPythonRuntime(cpg: Cpg): Option[String] =
+    val root = ScalaFile(cpg.metaData.root.headOption.getOrElse(JFile.separator))
+    val declared = Seq(
+      textOf(root, "pyproject.toml").flatMap(toml =>
+          firstMatch(toml, """(?m)^\s*requires-python\s*=\s*["']([^"']+)["']""")
+              .orElse(poetryPython(toml))
+      ),
+      textOf(root, "setup.cfg").flatMap(
+        firstMatch(_, """(?m)^\s*python_requires\s*=\s*["']?([^"'\s#]+)""")
+      ),
+      setupPyPythonRequires(cpg),
+      textOf(root, ".python-version").flatMap(
+        _.linesIterator.find(_.trim.nonEmpty)
+      ).map(_.trim),
+      textOf(root, "runtime.txt").flatMap(
+        _.linesIterator.find(_.trim.nonEmpty)
+      ).map(_.trim.stripPrefix("python-").trim),
+      textOf(root, "Dockerfile").flatMap(
+        firstMatch(_, """(?im)^\s*FROM\s+(?:--\S+\s+)*(?:\S+/)?python:(\S+)""")
+      )
+    )
+    declared.flatten.headOption
+  end declaredPythonRuntime
+
+  private def textOf(root: ScalaFile, name: String): Option[String] =
+    val f = root / name
+    if f.exists && f.isRegularFile then scala.util.Try(f.contentAsString).toOption else None
+
+  /** `python = "^3.10"` under `[tool.poetry.dependencies]`. */
+  private def poetryPython(toml: String): Option[String] =
+      firstMatch(toml, """(?s)\[tool\.poetry\.dependencies\](.*?)(?:\n\[|$)""")
+          .flatMap(firstMatch(_, """(?m)^\s*python\s*=\s*["']([^"']+)["']"""))
+
+  private def firstMatch(text: String, regex: String): Option[String] =
+      regex.r.findFirstMatchIn(text).map(_.group(1))
+
+  /** `python_requires='>=3.9'` in setup.py, read the way the dependency reads are: the setup call's
+    * keyword argument, through the graph.
+    */
+  private def setupPyPythonRequires(cpg: Cpg): Option[String] =
+      cpg.call
+          .where(_.file.name(SETUP_PY_FILE))
+          .name("setup")
+          .argument
+          .argumentName(PYTHON_REQUIRES_PATTERN)
+          .collectAll[Literal]
+          .headOption
+          .map(l => X2Cpg.stripQuotes(l.code))
 
   private def parseSetupPy(cpg: Cpg): Set[ModuleWithVersion] =
     val dataFlowEnabled     = cpg.metaData.overlays.contains(OssDataFlow.overlayName)

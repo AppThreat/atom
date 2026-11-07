@@ -26,11 +26,14 @@ package object parsedeps:
   implicit val dependencySliceEncoder: Decoder[DependencySlice] =
       (c: HCursor) =>
           for
-            modules <- c.downField("modules").as[List[ModuleWithVersion]]
-          yield DependencySlice(modules)
+            modules       <- c.downField("modules").as[List[ModuleWithVersion]]
+            pythonVersion <- c.downField("pythonVersion").as[Option[String]]
+          yield DependencySlice(modules, pythonVersion)
   implicit val dependencySliceDecoder: Encoder[DependencySlice] =
-      Encoder.instance { case DependencySlice(modules) =>
-          Json.obj("modules" -> modules.asJson)
+      Encoder.instance { case DependencySlice(modules, pythonVersion) =>
+          Json.fromFields(
+            Seq("modules" -> modules.asJson) ++ pythonVersion.map(v => "pythonVersion" -> v.asJson)
+          )
       }
 
   trait AtomSlice:
@@ -45,7 +48,10 @@ package object parsedeps:
         ModuleWithVersion.apply
       )
 
-  case class DependencySlice(modules: Seq[ModuleWithVersion]) extends AtomSlice:
+  /** `pythonVersion` is the runtime the project declares; the field is left out when nothing does.
+    */
+  case class DependencySlice(modules: Seq[ModuleWithVersion], pythonVersion: Option[String] = None)
+      extends AtomSlice:
     override def toJson: String = this.asJson.noSpaces
 
   case class ModuleWithVersion(
