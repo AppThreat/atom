@@ -1,0 +1,19 @@
+.github/actions/chen-from-main/action.yml
+  s_4a22fa2e453d92::t_826c1691b1fcdb 10-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1d8f9d370d44a152b66fe3854b879579c2ea391d",
+  "prompts": {},
+  "sessions": {
+    "s_4a22fa2e453d92": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "36064b4e-783b-41b1-ac9c-e4c7b722d407",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
