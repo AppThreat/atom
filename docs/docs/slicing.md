@@ -232,6 +232,34 @@ atom reachables -l js --bom-file /tmp/reports/sbom-js.cdx.json -o app.atom -s re
 ]
 ```
 
+## Forwarded-header tags
+
+Three tag pairs mark request values a client can choose through the `Forwarded` and
+`X-Forwarded-*` headers. They ride on CALL nodes, appear in the `tags` field of slice records the
+way `framework-input` does, and are named for what the code does, not for what a deployment is:
+
+| tag | value | on |
+| --- | --- | --- |
+| `proxy-derived` | `client-ip`, `host`, `scheme` | a call that returns the client IP, host or scheme as the framework resolves it (`request.getRemoteAddr()`, `req.ip`, `request.remote_addr`, `$request->getClientIp()`, `request.remote_ip`) |
+| `trusted-proxy-config` | the framework (`express`, `koa`, `fastify`, `spring`, `jetty`, `reactor-netty`, `werkzeug`, `django`, `symfony`, `laravel`, `rails`) | the call or assignment that turns on forwarded-header handling (`app.set('trust proxy', ...)`, `ProxyFix(...)`, `Request::setTrustedProxies(...)`) |
+| `forwarded-header-read` | the header, lower-cased as written (`x-forwarded-for`, `http_x_forwarded_for`) | a direct read of a forwarded header by name, where the name is a literal |
+
+A fourth pair, `trusted-proxy-headers` (`forwarded`, `x-forwarded`, `all`), rides beside
+`trusted-proxy-config` where a literal in the configuration names the header family it trusts.
+
+What these tags do not mean: a `proxy-derived` value is only spoofable behind a reverse proxy
+that passes the headers through to the application, and a `trusted-proxy-config` call only says
+the application turns the handling on, not that the proxies in front of it are configured
+correctly. Static analysis cannot see the proxy, so the tags record where the code reads these
+values and leave the deployment question to the reader.
+
+They are deliberately not among the default source tags, so a default reachables run is
+unchanged. Ask for them explicitly:
+
+```bash
+atom reachables -l js --source-tag proxy-derived -o app.atom -s reachables.json /path/to/project
+```
+
 ## Generate slices
 
 Use the atom cli to generate slices.
