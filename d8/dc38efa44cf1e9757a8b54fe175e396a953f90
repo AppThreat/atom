@@ -1,0 +1,30 @@
+src/test/scala/io/appthreat/atom/ReachabilityLessonTests.scala
+  s_13ae8561aa2fb4::t_f15280cbb6f613 64
+  s_13ae8561aa2fb4::t_7ee6f7943dadfd 59-63,65,67-68
+  s_13ae8561aa2fb4::t_317fa0cec41c82 1-58,66,69-87,93-98
+  s_13ae8561aa2fb4::t_9f309f272a3e50 88-92
+docs/docs/slicing.md
+  s_13ae8561aa2fb4::t_e386d58b430990 235-262
+docs/docs/lessons/reachability.md
+  s_13ae8561aa2fb4::t_ec00b5009a8bb3 83-126
+src/test/resources/forwarded-headers/package.json
+  s_13ae8561aa2fb4::t_f01c4a167de649 1-7
+src/test/resources/forwarded-headers/server.js
+  s_13ae8561aa2fb4::t_9a9bed5f1df3cf 1-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d8dc38efa44cf1e9757a8b54fe175e396a953f90",
+  "prompts": {},
+  "sessions": {
+    "s_13ae8561aa2fb4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_760b7916-e78c-4e1d-80f3-19f6ca82237d",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
