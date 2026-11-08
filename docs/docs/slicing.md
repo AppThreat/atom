@@ -242,7 +242,7 @@ way `framework-input` does, and are named for what the code does, not for what a
 | --- | --- | --- |
 | `proxy-derived` | `client-ip`, `host`, `scheme` | a call that returns the client IP, host or scheme as the framework resolves it (`request.getRemoteAddr()`, `req.ip`, `request.remote_addr`, `$request->getClientIp()`, `request.remote_ip`) |
 | `trusted-proxy-config` | the framework (`express`, `koa`, `fastify`, `spring`, `jetty`, `reactor-netty`, `werkzeug`, `django`, `symfony`, `laravel`, `rails`) | the call or assignment that turns on forwarded-header handling (`app.set('trust proxy', ...)`, `ProxyFix(...)`, `Request::setTrustedProxies(...)`) |
-| `forwarded-header-read` | the header, lower-cased as written (`x-forwarded-for`, `http_x_forwarded_for`) | a direct read of a forwarded header by name, where the name is a literal |
+| `forwarded-header-read` | the header name, lower-cased, with the CGI spelling decoded (`HTTP_X_FORWARDED_FOR` gives `x-forwarded-for`) | a direct read of a forwarded header by name, where the name is a literal |
 
 A fourth pair, `trusted-proxy-headers` (`forwarded`, `x-forwarded`, `all`), rides beside
 `trusted-proxy-config` where a literal in the configuration names the header family it trusts.
@@ -253,8 +253,9 @@ the application turns the handling on, not that the proxies in front of it are c
 correctly. Static analysis cannot see the proxy, so the tags record where the code reads these
 values and leave the deployment question to the reader.
 
-They are deliberately not among the default source tags, so a default reachables run is
-unchanged. Ask for them explicitly:
+They are deliberately not among the default source tags, so they add no flows to a default
+reachables run (records of a default run do show them in their `tags` field). Ask for flows that
+start at them explicitly:
 
 ```bash
 atom reachables -l js --source-tag proxy-derived -o app.atom -s reachables.json /path/to/project

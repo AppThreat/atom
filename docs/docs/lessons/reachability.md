@@ -87,8 +87,8 @@ Behind a reverse proxy that passes the `Forwarded` and `X-Forwarded-*` headers t
 the client IP, host and scheme a framework reports can be chosen by the client. The taggers mark
 those accessors with `proxy-derived` (value `client-ip`, `host` or `scheme`), the configuration
 that turns on forwarded-header handling with `trusted-proxy-config`, and direct reads of the
-headers by name with `forwarded-header-read`. These tags are not default sources: pass
-`--source-tag proxy-derived` to ask for flows that start at them. A `proxy-derived` value is only
+headers by name with `forwarded-header-read`. These tags are not among the default source tags:
+pass `--source-tag proxy-derived` to ask for the flows that start at them. A `proxy-derived` value is only
 spoofable behind a proxy that passes the headers through; the tag names where the application
 reads the value, not that the deployment is vulnerable.
 
@@ -122,5 +122,7 @@ omits them):
 
 The first record is the source: `req.ip`, carrying `proxy-derived` (its value, `client-ip`, rides
 on the tag pair in the atom). The second is the sink: `exec` from `child_process`, tagged
-`shell-exec`. Without `--source-tag proxy-derived` this flow is not reported, because
-`proxy-derived` is deliberately not one of the default source tags.
+`shell-exec`. `req.ip` also carries `framework-input`, because it reads the handler's request
+parameter, so a default run reports this flow as well. `--source-tag proxy-derived` narrows the
+run to the flows that start at a value a forwarded header can set, which is the question this
+example asks.
