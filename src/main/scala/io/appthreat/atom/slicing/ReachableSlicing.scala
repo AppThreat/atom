@@ -1037,6 +1037,14 @@ object ReachableSlicing:
     val purls = effectiveTags.map(_.name).filter(_.startsWith("pkg:")).toSet
     (tagStr, purls)
 
+  /** A tag string with the given package URLs appended, in sorted order, where it lacks them. */
+  private[slicing] def withPurls(tags: String, purls: Set[String]): String =
+    val present = if tags.isEmpty then Set.empty[String] else tags.split(", ").toSet
+    val missing = purls.toList.filterNot(present.contains).sorted
+    if missing.isEmpty then tags
+    else if tags.isEmpty then missing.mkString(", ")
+    else (tags :: missing).mkString(", ")
+
   /** What [[toSlice]] needs of one path element, which is a function of the node alone. */
   private final case class RenderedNode(
     node: Option[SliceNode],
@@ -1095,7 +1103,7 @@ object ReachableSlicing:
       depth += 1
     if shown.code.startsWith("<operator") then call else shown
 
-  private def createSliceNode(
+  private[slicing] def createSliceNode(
     astNode: AstNode,
     sourceSinkTagPattern: Pattern
   ): (Option[SliceNode], Set[String]) =
@@ -1207,6 +1215,11 @@ object ReachableSlicing:
                   resolvedCallee.toList.flatMap(_.tag.name.l).filter(_.startsWith("pkg:")).toSet
                 else Set.empty[String]
             val finalPurls = resolvedPurls ++ calleePurls
+            // A call a tagger marked keeps its own tags, and the callee's package URLs join its
+            // tag string too: without them a tagged call to a library showed no purl while an
+            // untagged call to the same library did (atom#385). The callee's other tags are
+            // still inherited only by an untagged call.
+            val shownTags = withPurls(finalTags, calleePurls)
 
             val isExternal =
                 resolvedCallee.exists(_.isExternal) && !c.methodFullName.startsWith("new ")
@@ -1220,7 +1233,7 @@ object ReachableSlicing:
                 parentMethodSignature = c.method.signature,
                 parentPackageName = c.method.location.packageName,
                 parentClassName = c.method.location.className,
-                tags = finalTags
+                tags = shownTags
               )),
               finalPurls
             )
