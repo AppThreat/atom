@@ -1,0 +1,56 @@
+src/main/scala/io/appthreat/atom/frontends/FrontendArgsApplier.scala
+  s_8808d9e6ee938f::t_87771337357187 430
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_8808d9e6ee938f::t_87771337357187 1076-1078,1107-1109,1137
+  s_8808d9e6ee938f::t_84e60628b789c1 1100-1106
+src/test/scala/io/appthreat/atom/ToolVersionsTests.scala
+  s_8808d9e6ee938f::t_dcccfee7fd2f4a 1-16,20-25,30-47,50-52,54-84,86-107,110-122
+  s_8808d9e6ee938f::t_59775b98d8d45b 53
+  s_8808d9e6ee938f::t_84e60628b789c1 17-19,26-29,48-49,85,108-109
+ci/Dockerfile-ruby3
+  s_8808d9e6ee938f::t_8221b6caff74eb 55
+  s_8808d9e6ee938f::t_fc0298312abb6e 56-57
+src/main/scala/io/appthreat/atom/ToolVersions.scala
+  s_8808d9e6ee938f::t_87771337357187 56-57
+  s_8808d9e6ee938f::t_7da3cc142facb4 1-13,17-42,45-55,58-109,111-120,124-150,154-159,163-171,179-180
+  s_8808d9e6ee938f::t_84e60628b789c1 14-16,43-44,110,121-123,151-153,160-162,172-178
+ci/Dockerfile-alpine-ruby
+  s_8808d9e6ee938f::t_8221b6caff74eb 20
+  s_8808d9e6ee938f::t_fc0298312abb6e 24
+docs/docs/installation.md
+  s_8808d9e6ee938f::t_6821a8155cfac7 17-21
+ci/Dockerfile-sle
+  s_8808d9e6ee938f::t_fc0298312abb6e 89
+  s_8808d9e6ee938f::t_8221b6caff74eb 88
+ci/Dockerfile-alpine-ruby3
+  s_8808d9e6ee938f::t_fc0298312abb6e 24
+  s_8808d9e6ee938f::t_8221b6caff74eb 20
+ci/Dockerfile
+  s_8808d9e6ee938f::t_fc0298312abb6e 129
+  s_8808d9e6ee938f::t_8221b6caff74eb 111
+docs/docs/cli.md
+  s_8808d9e6ee938f::t_59775b98d8d45b 115
+README.md
+  s_8808d9e6ee938f::t_6821a8155cfac7 88,91-92
+  s_8808d9e6ee938f::t_59775b98d8d45b 223
+  s_8808d9e6ee938f::t_3b37b51ef6641a 93
+ci/Dockerfile-ruby
+  s_8808d9e6ee938f::t_fc0298312abb6e 56
+  s_8808d9e6ee938f::t_8221b6caff74eb 55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7e432c960464dfeb52a029c2837833997f2da4ab",
+  "prompts": {},
+  "sessions": {
+    "s_8808d9e6ee938f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5df8b5bb-b1b1-4554-b720-2a19c73c15c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
