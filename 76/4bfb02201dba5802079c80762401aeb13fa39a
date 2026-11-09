@@ -1,0 +1,29 @@
+ci/Dockerfile
+  s_8808d9e6ee938f::t_65901f90263753 111
+ci/Dockerfile-alpine-ruby
+  s_8808d9e6ee938f::t_c9da178c7107ec 20
+ci/Dockerfile-alpine-ruby3
+  s_8808d9e6ee938f::t_44a0371309ef84 20
+ci/Dockerfile-ruby
+  s_8808d9e6ee938f::t_e0e99cb4c141d0 55
+ci/Dockerfile-ruby3
+  s_8808d9e6ee938f::t_03c5135b24886e 55
+ci/Dockerfile-sle
+  s_8808d9e6ee938f::t_886defacaf8cc7 88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "764bfb02201dba5802079c80762401aeb13fa39a",
+  "prompts": {},
+  "sessions": {
+    "s_8808d9e6ee938f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5df8b5bb-b1b1-4554-b720-2a19c73c15c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
