@@ -1073,6 +1073,9 @@ object Atom:
                     case _                       => c
               )
         )
+    opt[Unit]("version")
+        .text("print the versions of atom, chen, atom-parsetools and parsa, then exit")
+        .action((_, c) => c)
     help("help").text("display this help message")
 
   def main(args: Array[String]): Unit =
@@ -1094,7 +1097,16 @@ object Atom:
           System.exit(1)
 
   private[atom] def run(args: Array[String]): Either[String, String] =
-    val parserArgs = args.toList
+      if args.contains("--version") then
+        ToolVersions.current().lines.foreach(println)
+        Right("Displayed versions")
+      else
+        val result = runParsed(args.toList)
+        ToolVersions.appendToPerfReport(ToolVersions.current())
+        result
+  end run
+
+  private def runParsed(parserArgs: List[String]): Either[String, String] =
     parseConfig(parserArgs) match
       case Right(config: AtomConfig) =>
           AtomConfigLoader(config) match
@@ -1122,7 +1134,7 @@ object Atom:
       case Right(_)  => Left("Invalid configuration generated")
       case Left(err) => Left(err)
     end match
-  end run
+  end runParsed
 
   private def run(config: AtomConfig, language: String): Either[String, String] =
       for

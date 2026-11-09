@@ -427,7 +427,7 @@ object FrontendArgsApplier:
       "astgen-types",
       "string",
       "",
-      "Engine for astgen's type maps: native (the atom-parsetools-native binary) or ts6 (TypeScript 6). Sets ASTGEN_TYPES for the astgen process; unset keeps astgen's default.",
+      "Engine for astgen's type maps: native (parsa, which atom-parsetools 2.x installs) or ts6 (TypeScript 6). Sets ASTGEN_TYPES for the astgen process; unset keeps astgen's default.",
       Seq("js", "ts")
     ),
     KeyDoc("depth", "int", "1", "Recursive jar unpacking depth.", Seq("jimple", "scala")),

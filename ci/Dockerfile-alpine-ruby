@@ -17,10 +17,11 @@ WORKDIR /opt
 COPY ./target/atom.zip target/atom.zip
 COPY ./wrapper wrapper
 RUN apk update && apk add --no-cache git build-base ruby-dev bash nodejs npm ruby ruby-bundler openjdk25 python3 python3-dev py3-pip \
-    && npm install -g corepack @appthreat/atom-parsetools@1.10.6 \
+    && npm install -g corepack @appthreat/atom-parsetools@2.0.0-rc.1 \
     && node -v \
     && npm -v \
     && cd /opt/wrapper/nodejs && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar && cd /opt \
+    && atom --version | tee /dev/stderr | grep -q '^parsa [0-9]' \
     && python3 -m pip install atom-tools --break-system-packages \
     && java --version \
     && npm uninstall -g corepack \
