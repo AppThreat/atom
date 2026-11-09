@@ -108,7 +108,7 @@ RUN set -e; \
     && curl -LO https://raw.githubusercontent.com/AppThreat/chen/main/platform/frontends/php2atom/composer.json \
     && composer update --no-progress --prefer-dist --ignore-platform-reqs \
     && rm composer.json composer.lock composer-setup.php \
-    && npm install -g @appthreat/atom-parsetools@1.10.6 \
+    && npm install -g @appthreat/atom-parsetools@2.0.0-rc.1 \
     && which astgen \
     && which phpastgen \
     && phpastgen --parser-info \
@@ -126,6 +126,7 @@ ENV LC_ALL=en_US.UTF-8 \
 COPY ./target/atom.zip target/atom.zip
 COPY ./wrapper wrapper
 RUN cd /opt/wrapper/nodejs && bash build.sh && npm install -g ./packages/atom --omit=optional && npm install -g ./packages/atom-jar && cd /opt \
+    && atom --version | tee /dev/stderr | grep -q '^parsa [0-9]' \
     && rm -rf target \
     && /usr/local/bin/atom --help
 

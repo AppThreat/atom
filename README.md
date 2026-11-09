@@ -85,7 +85,11 @@ which phpastgen
 ```shell
 npm install -g @appthreat/atom @appthreat/atom-parsetools --ignore-scripts
 atom --help
+atom --version
 ```
+
+`atom --version` prints the atom, chen, atom-parsetools and `parsa` versions. atom-parsetools 2.x
+installs `parsa`, its native type map writer, as an optional npm package for the host's platform.
 
 Install cdxgen npm package to generate a Software Bill-of-Materials (SBOM) which is required for reachables slicing.
 
@@ -216,6 +220,7 @@ Run a graph algorithm over the atom and write the result as JSON
   --source <value>         source method full-name pattern for the paths algorithm. Uses regex.
   --target <value>         target method full-name pattern for the paths algorithm. Uses regex.
   --max-depth <value>      maximum path depth for the paths algorithm
+  --version                print the versions of atom, chen, atom-parsetools and parsa, then exit
   --help                   display this help message
 ```
 
