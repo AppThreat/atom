@@ -1,0 +1,56 @@
+.github/actions/edga/action.yml
+  s_97dc7936d49ed3::t_0219cdb01cfcd2 1-46
+ci/Dockerfile-alpine-ruby3
+  s_97dc7936d49ed3::t_1cdd559fa0e048 7
+.github/actions/github-packages/action.yml
+  s_97dc7936d49ed3::t_f75be1a6a7535d 1-18
+.github/workflows/containers.yml
+  s_97dc7936d49ed3::t_f75be1a6a7535d 20-21,109
+  s_97dc7936d49ed3::t_b04a6ee04361d0 83,88,92,115,117,119,132,157,190-191,200
+ci/Dockerfile-ruby
+  s_97dc7936d49ed3::t_1cdd559fa0e048 7
+.github/actions/parsetools-from-main/action.yml
+  s_97dc7936d49ed3::t_ec610fd2bfdaf8 14
+ci/Dockerfile-ruby3
+  s_97dc7936d49ed3::t_1cdd559fa0e048 7
+ci/Dockerfile-alpine-ruby
+  s_97dc7936d49ed3::t_1cdd559fa0e048 7
+ci/Dockerfile
+  s_97dc7936d49ed3::t_1148e0252753d6 20
+  s_97dc7936d49ed3::t_f76be7b679d94d 1-3,5-12
+ci/Dockerfile-sle
+  s_97dc7936d49ed3::t_f76be7b679d94d 1-3,5-12
+  s_97dc7936d49ed3::t_1148e0252753d6 20
+.github/workflows/release.yml
+  s_97dc7936d49ed3::t_b04a6ee04361d0 36,41,63,69,76,102,107,131,150,158,161,205,211,221,248,256,259,288,294,301,330,338,341,365,371,378,404,428,434,441,467,492,516,523,542,623,628
+  s_97dc7936d49ed3::t_f75be1a6a7535d 18-19,48,114,162,260,342,528
+.github/workflows/container-tests.yml
+  s_97dc7936d49ed3::t_f75be1a6a7535d 11-12
+  s_97dc7936d49ed3::t_b04a6ee04361d0 99,104,119,123,125,132
+.github/workflows/nodejstests.yml
+  s_97dc7936d49ed3::t_f75be1a6a7535d 14-15,149,243
+  s_97dc7936d49ed3::t_b04a6ee04361d0 70,74,121,123,128,132,138,194,199,233,235,240
+.github/workflows/repotests.yml
+  s_97dc7936d49ed3::t_f75be1a6a7535d 21-22,195
+  s_97dc7936d49ed3::t_b04a6ee04361d0 157,159,164,168,173,179,182,187
+.github/workflows/pr.yml
+  s_97dc7936d49ed3::t_0219cdb01cfcd2 99,223
+  s_97dc7936d49ed3::t_f75be1a6a7535d 18-19,96,139,221
+  s_97dc7936d49ed3::t_b04a6ee04361d0 82,89,94,129,134,138,162,208,210,218
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fd1edefd41b238f59a0ead254a52a439e32d641a",
+  "prompts": {},
+  "sessions": {
+    "s_97dc7936d49ed3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "02f970fc-c39f-46eb-b8fc-2055b0fe55b0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
