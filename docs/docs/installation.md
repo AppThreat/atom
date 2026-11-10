@@ -7,7 +7,9 @@ title: Installation
 
 ## Installation
 
-Atom comprises a core (standalone chen application developed in scala) with a nodejs wrapper module. It is currently distributed as an npm package.
+Atom is a Scala application built on chen, with a Node.js wrapper. It is distributed as an npm package, as
+[native images](native.md) and as [container images](container.md). The npm package and the JVM distribution
+need Java 23 or later.
 
 ```shell
 npm install @appthreat/atom @appthreat/atom-parsetools
@@ -19,7 +21,8 @@ type maps with TypeScript 7's checker, as an npm package for the host's platform
 set; with `--omit=optional`, or with atom-parsetools 1.x, astgen uses TypeScript 6 instead.
 `atom --version` prints the versions of atom, chen, atom-parsetools and parsa that a run will use.
 
-Install cdxgen to generate a Software Bill-of-Materials which is required for reachables slicing.
+Install cdxgen to generate a CycloneDX SBOM. Reachables and callsites take package URLs from it
+(`--bom-file`, or a BOM in the project directory); JavaScript reachables also work without one.
 
 ```shell
 npm install -g @cdxgen/cdxgen --omit=optional

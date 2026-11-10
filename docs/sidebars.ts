@@ -20,6 +20,7 @@ const sidebars: SidebarsConfig = {
   
   documentation: [
     'intro',
+    'whats-new-4',
     'installation',
     'container',
     'native',

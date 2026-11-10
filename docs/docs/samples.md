@@ -41,7 +41,7 @@ atom data-flow -o app.atom --slice-outfile df.json -l java .
 atom usages -o app.atom --slice-outfile usages.json -l java .
 ```
 
-Learn more about [slices](./specification/docs/slices.md) or view some [samples](https://github.com/AppThreat/atom-samples)
+Learn more about [slices](https://github.com/AppThreat/atom/blob/main/specification/docs/slices.md) or view some [samples](https://github.com/AppThreat/atom-samples)
 
 ### Extract HTTP endpoints in openapi format using atom-tools
 
@@ -56,7 +56,7 @@ A file called `openapi.json` would be created with the endpoints information.
 
 ### Export atom to graphml or dot format
 
-It is possible to export each method along with data dependencies in an atom to graphml or dot format. Simply pass `--export` to enable this feature.
+It is possible to export each method along with data dependencies in an atom to graphml or dot format. Pass `--export-atom` (`-x`) to enable this feature.
 
 ```shell
 atom -o app.atom -l java --export-atom --export-dir <export dir> <path to application>

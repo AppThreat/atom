@@ -173,7 +173,7 @@ atom memory-safety -l c --format sarif -s findings.sarif /path/to/project
 | **ATOM_SCALASEM_REUSE**                 | Set to `true` to reuse an existing scalasem version 2 report of the same project instead of running scalasem again.                                        |
 | **ATOM_SCALASEM_SLICES_FILE**           | scalasem report path; a relative path resolves against the scalasem work directory. When unset, the report is written beside the `-s` slices file, else beside the `-o` atom file, else into the input path. |
 | **ATOM_JVM_ARGS**                       | Overrides the JVM arguments, including heap memory values, constructed by the atom Node.js wrapper.                                                        |
-| **ATOM_JAVA_HOME**                      | Java 21 or above to be used by atom.                                                                                                                       |
+| **ATOM_JAVA_HOME**                      | Java 23 or above to be used by atom.                                                                                                                       |
 | **ATOM_TIMEOUT**                        | Maximum run time in milliseconds, enforced by the atom Node.js wrapper: atom is stopped with SIGTERM, then SIGKILL, and the wrapper exits with status 124. |
 | **ATOM_KILL_GRACE_MS**                  | How long the wrapper waits after SIGTERM before it kills atom with SIGKILL. Default: `10000`.                                                              |
 | **ATOM_PARENT_PID**                     | Supervising process id; cdxgen sets its own. The wrapper stops atom when it exits, and passes its own id on, so atom exits if the wrapper is killed.       |
@@ -345,6 +345,12 @@ spelling of the equivalent key.
 | `--cpp-standard <std>` | C/C++          | C++ standard, e.g. `c++17`, `c++20`.                          |
 | `--define NAME`        | C/C++ (repeat) | Preprocessor define.                                          |
 | `--include-path <dir>` | C/C++ (repeat) | Header include path.                                          |
+| `--compile-commands <file\|dir>` | C/C++ | Parse the units of a compilation database with their own flags. |
+| `--compile-commands-only` | C/C++      | With `--compile-commands`, parse only the database's units.   |
+| `--c-frontend <name>`  | C/C++          | `cdt` (default), `edg` or `edg-fallback`.                     |
+| `--edga-path <file>`   | C/C++          | The edga binary for the EDG frontends (default: `EDGA_PATH`, then `PATH`). |
+| `--auto-defines`       | C/C++          | Define the build-option macros a macro census finds.          |
+| `--suggest-defines <file>` | C/C++      | Write the macro census to `<file>.json` and `<file>.h`.       |
 | `--delombok-mode <m>`  | Java           | `no-delombok` \| `default` \| `types-only` \| `run-delombok`. |
 | `--jdk-path <path>`    | Java, JVM      | JDK used to resolve builtin Java types (also jar/scala/apk).  |
 | `--fetch-deps`         | Java           | Fetch dependency jars for type information.                   |
@@ -352,7 +358,9 @@ spelling of the equivalent key.
 | `--flow`               | JS             | Enable Flow mode.                                             |
 | `--venv-dir <dir>`     | Python         | Virtual-environment directory (default: `.venv`).             |
 | `--ignore-paths <csv>` | Python         | Paths to ignore from analysis.                                |
-| `--android-sdk <path>` | Jimple/Android | Path to `android.jar` for APK analysis.                       |
+| `--android-sdk <path>` | Jimple/Android | `android.jar`, a platform directory holding it, or an SDK directory. |
+| `--app-prefix <pkg>`   | Jimple (repeat) | Application package of a bytecode input.                     |
+| `--external-paths <regex>` | Source languages | Mark vendored paths external; uses of them become call sites. |
 | `--solver-depth N`     | Jimple/Scala   | Recursive jar unpacking depth (default: 1).                   |
 | `--full-resolver`      | Jimple/Scala   | Whole-program, transitive call resolution.                    |
 | `--php-ini <path>`     | PHP            | php.ini path for the PHP parser.                              |

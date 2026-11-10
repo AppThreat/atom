@@ -26,7 +26,7 @@ atom -l c --c-frontend edg-fallback -o app.atom .
 | `--c-frontend edg` | The EDG frontend. A file edga cannot export is left out. |
 | `--c-frontend edg-fallback` | The EDG frontend, with CDT for the files edga cannot export. |
 | `--edga-path <file>` | The edga binary. Otherwise `EDGA_PATH`, then the `PATH`. |
-| `--compile-commands <file>` | A JSON compilation database (`compile_commands.json`), for either frontend. |
+| `--compile-commands <file\|dir>` | A JSON compilation database (`compile_commands.json`, or a directory holding one), for either frontend. |
 
 The same keys work as `--frontend-args c-frontend=edg-fallback,edga-path=/opt/edga`.
 
@@ -69,10 +69,10 @@ another edga build exported is not reused.
 
 ## Getting edga
 
-The atom container images include edga. Elsewhere, download it from the
-[edga releases](https://github.com/AppThreat/edga/releases) - static Linux binaries (glibc and
-musl, amd64 and arm64), macOS arm64, and Windows amd64 and arm64 (from the release after 0.1.1),
-each with its SHA-256 - and put it on the `PATH` as `edga` (`edga.exe` on Windows), or point
+The `atom` and `atom-sle` container images include edga 0.2.0, the version atom 4.0 is tested with.
+Elsewhere, download it from the [edga releases](https://github.com/AppThreat/edga/releases) - static
+Linux binaries (glibc and musl, amd64 and arm64), macOS arm64, and Windows amd64 and arm64, each
+with its SHA-256 - and put it on the `PATH` as `edga` (`edga.exe` on Windows), or point
 `EDGA_PATH` or `--edga-path` at it. To build it, see the [edga README](https://github.com/AppThreat/edga): it compiles the EDG
 sources unmodified.
 

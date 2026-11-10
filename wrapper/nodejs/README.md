@@ -1,8 +1,8 @@
 # Atom npm wrapper
 
-Atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation (a network with nodes and links) is optimised for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and vectoring.
+Atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation (a network with nodes and links) is optimised for operations typically used for application analytics and machine learning, including [slicing](https://github.com/AppThreat/atom/blob/main/specification/docs/slices.md) and vectoring.
 
-This package wraps the atom Java distributable and makes it available via the npm package registry. Ensure Java 21 is available in the PATH.
+This package wraps the atom Java distributable and makes it available via the npm package registry. On platforms without a native image, it needs Java 23 or later on the `PATH` or in `ATOM_JAVA_HOME`.
 
 ## Usage
 
@@ -133,7 +133,7 @@ atom reachables --reuse-atom -o app.atom -s reachables.json -l java .
 | **ATOM_SCALASEM_REUSE**                 | Set to `true` to reuse an existing scalasem version 2 report of the same project instead of running scalasem again.                                        |
 | **ATOM_SCALASEM_SLICES_FILE**           | scalasem report path; a relative path resolves against the scalasem work directory. When unset, the report is written beside the `-s` slices file, else beside the `-o` atom file, else into the input path. |
 | **ATOM_JVM_ARGS**                       | Overrides the JVM arguments, including heap memory values, constructed by the atom Node.js wrapper.                                                        |
-| **ATOM_JAVA_HOME**                      | Java 21 or above to be used by atom.                                                                                                                       |
+| **ATOM_JAVA_HOME**                      | Java 23 or above to be used by atom.                                                                                                                       |
 | **ATOM_TIMEOUT**                        | Maximum run time in milliseconds, enforced by the atom Node.js wrapper: atom is stopped with SIGTERM, then SIGKILL, and the wrapper exits with status 124. |
 | **ATOM_KILL_GRACE_MS**                  | How long the wrapper waits after SIGTERM before it kills atom with SIGKILL. Default: `10000`.                                                              |
 | **ATOM_PARENT_PID**                     | Supervising process id; cdxgen sets its own. The wrapper stops atom when it exits, and passes its own id on, so atom exits if the wrapper is killed.       |
