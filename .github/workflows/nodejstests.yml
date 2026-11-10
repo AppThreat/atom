@@ -11,8 +11,8 @@ permissions:
 # Google's mirror of Maven Central first, with repo1 and every resolver the build declares
 # (see build.sbt) as fallbacks: Maven Central is rate-limited/flaky from CI - the sbt launcher
 # itself failed to download org.scala-sbt:sbt while the artifact existed. This drives the sbt
-# launcher as well as the build's dependency resolution. chen-from-main writes the GitHub
-# Packages credentials coursier needs for the last entry. Coursier requires pipe-separated
+# launcher as well as the build's dependency resolution. the github-packages action writes the
+# GitHub Packages credentials coursier needs for the last entry. Coursier requires pipe-separated
 # entries - a ';' separator or unknown alias makes it ignore the whole list.
 env:
   COURSIER_REPOSITORIES: "ivy2Local|https://maven-central.storage-download.googleapis.com/maven2|https://repo1.maven.org/maven2|https://maven.google.com|https://oss.sonatype.org/content/repositories/public|https://packages.atlassian.com/mvn/maven-atlassian-external|https://repo.gradle.org/gradle/libs-releases|https://maven.pkg.github.com/appthreat/chen"
@@ -67,11 +67,11 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
           package-manager-cache: false
-      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b  # v1.321.0
+      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199  # v1.338.0
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: false
@@ -118,24 +118,24 @@ jobs:
           path: 'repotests/play-samples'
           ref: '0dccba17856e89dbb5e457ab760efb14cc691395'
           persist-credentials: false
-      - uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d  # v8.1.1
+      - uses: coursier/cache-action@ee0650f98295f27a505e4bfd284c9bfaa913a465  # v9.0.1
       - name: Set up JDK
-        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961  # v5.7.0
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78  # v6.2.0
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
       - uses: sbt/setup-sbt@67d461eba2c4753196c230e02da850757ba4775e  # v1.5.14
-      - uses: coursier/setup-action@9b7939bf01fd1185ce2babe16135168361bf2c62  # v3.0.2
+      - uses: coursier/setup-action@d5a17f9aaeb260f9ba336a5b582fb49f79c64ac4  # v3.1.0
         with:
           apps: scala3 scalac
       - name: "Install PHP"
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240  # 2.37.2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962  # 2.40.0
         with:
           coverage: "none"
           php-version: "8.3"
           tools: composer:v2
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: '3.12'
       - name: Install sbt
@@ -146,7 +146,7 @@ jobs:
           sudo apt update -y
           sudo apt install -y zlib1g php-zip
         if: runner.os == 'Linux'
-      - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
+      - uses: ./.github/actions/github-packages
       - name: atom node tests
         run: |
           sbt --server "stage; createDistribution"
@@ -191,12 +191,12 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
           package-manager-cache: false
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -230,17 +230,17 @@ jobs:
           path: 'repotests/play-samples'
           ref: '0dccba17856e89dbb5e457ab760efb14cc691395'
           persist-credentials: false
-      - uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d  # v8.1.1
+      - uses: coursier/cache-action@ee0650f98295f27a505e4bfd284c9bfaa913a465  # v9.0.1
       - name: Set up JDK
-        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961  # v5.7.0
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78  # v6.2.0
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
       - uses: sbt/setup-sbt@67d461eba2c4753196c230e02da850757ba4775e  # v1.5.14
-      - uses: coursier/setup-action@9b7939bf01fd1185ce2babe16135168361bf2c62  # v3.0.2
+      - uses: coursier/setup-action@d5a17f9aaeb260f9ba336a5b582fb49f79c64ac4  # v3.1.0
         with:
           apps: scala3 scalac
-      - uses: ./.github/actions/chen-from-main  # temporary: remove once chen 4.0.0 is published
+      - uses: ./.github/actions/github-packages
       - name: build
         shell: pwsh
         run: |

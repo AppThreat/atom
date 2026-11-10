@@ -1,0 +1,18 @@
+name: GitHub Packages credentials
+description: >-
+  Writes the credentials coursier needs to read AppThreat's packages on GitHub Packages, where
+  chen, cpg2 and overflowdb2 are published. COURSIER_REPOSITORIES in the calling workflows lists
+  that registry for the sbt launcher and the build's dependency resolution, and coursier reads its
+  own credentials file, independent of the build's GitHub Packages resolver.
+runs:
+  using: composite
+  steps:
+    - name: Coursier credentials for GitHub Packages
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        set -euo pipefail
+        dir="${COURSIER_CONFIG_DIR:-$HOME/.config/coursier}"
+        mkdir -p "$dir"
+        printf 'maven.pkg.github.com x-access-token %s\n' "$GITHUB_TOKEN" > "$dir/credentials.properties"

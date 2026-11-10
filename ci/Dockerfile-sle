@@ -1,10 +1,15 @@
-# edga, for the opt-in EDG C/C++ frontend (`--c-frontend edg`): until its next release, the static
-# binary edga's main workflow pushes to ghcr.io/appthreat/edga:main-<platform> with oras
-FROM ghcr.io/oras-project/oras:v1.3.4 AS edga
+# edga, for the opt-in EDG C/C++ frontend (`--c-frontend edg`): the static binary from the edga
+# release, checked against the release's SHA-256 file
+FROM alpine:3.22 AS edga
 ARG TARGETARCH
-ARG EDGA_TAG=main
-RUN oras pull "ghcr.io/appthreat/edga:${EDGA_TAG}-linux-${TARGETARCH}" -o /edga \
-    && chmod 0755 /edga/edga
+ARG EDGA_VERSION=0.2.0
+RUN apk add --no-cache curl \
+    && mkdir /edga && cd /edga \
+    && base="https://github.com/AppThreat/edga/releases/download/v${EDGA_VERSION}" \
+    && curl -fsSL --retry 3 -o "edga-linux-${TARGETARCH}" "${base}/edga-linux-${TARGETARCH}" \
+    && curl -fsSL --retry 3 -o "edga-linux-${TARGETARCH}.sha256" "${base}/edga-linux-${TARGETARCH}.sha256" \
+    && sha256sum -c "edga-linux-${TARGETARCH}.sha256" \
+    && mv "edga-linux-${TARGETARCH}" edga && chmod 0755 edga
 
 FROM ghcr.io/appthreat/bci-lang:main
 
@@ -12,7 +17,7 @@ LABEL maintainer="appthreat" \
       org.opencontainers.image.authors="Team AppThreat <cloud@appthreat.com>" \
       org.opencontainers.image.source="https://github.com/appthreat/atom" \
       org.opencontainers.image.url="https://github.com/appthreat/atom" \
-      org.opencontainers.image.version="3.1.x" \
+      org.opencontainers.image.version="4.0.0" \
       org.opencontainers.image.vendor="appthreat" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="atom" \

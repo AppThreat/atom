@@ -1,0 +1,46 @@
+name: edga
+description: >-
+  Puts a released edga binary on the PATH and in EDGA_PATH, so the EDG C/C++ frontend's tests
+  run instead of cancelling themselves. The binary comes from the AppThreat/edga GitHub release
+  named by `version` and is checked against the release's SHA-256 file.
+inputs:
+  version:
+    description: The edga release to install, without the leading v.
+    default: '0.2.0'
+outputs:
+  path:
+    description: The edga binary.
+    value: ${{ steps.install.outputs.path }}
+runs:
+  using: composite
+  steps:
+    - name: Install edga ${{ inputs.version }}
+      id: install
+      shell: bash
+      env:
+        EDGA_BIN: ${{ runner.temp }}/edga-bin
+        EDGA_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        case "$RUNNER_OS-$RUNNER_ARCH" in
+          Linux-X64) asset=edga-linux-amd64 ;;
+          Linux-ARM64) asset=edga-linux-arm64 ;;
+          macOS-ARM64) asset=edga-darwin-arm64 ;;
+          Windows-X64) asset=edga-windows-amd64.exe ;;
+          Windows-ARM64) asset=edga-windows-arm64.exe ;;
+          *) echo "edga: no release asset for $RUNNER_OS-$RUNNER_ARCH" >&2; exit 1 ;;
+        esac
+        base="https://github.com/AppThreat/edga/releases/download/v$EDGA_VERSION"
+        mkdir -p "$EDGA_BIN"
+        cd "$EDGA_BIN"
+        curl -fsSL --retry 3 -o "$asset" "$base/$asset"
+        curl -fsSL --retry 3 -o "$asset.sha256" "$base/$asset.sha256"
+        if command -v sha256sum >/dev/null; then sha256sum -c "$asset.sha256"; else shasum -a 256 -c "$asset.sha256"; fi
+        name=edga
+        [[ "$asset" == *.exe ]] && name=edga.exe
+        mv "$asset" "$name"
+        chmod +x "$name"
+        "./$name" --version
+        echo "EDGA_PATH=$EDGA_BIN/$name" >> "$GITHUB_ENV"
+        echo "$EDGA_BIN" >> "$GITHUB_PATH"
+        echo "path=$EDGA_BIN/$name" >> "$GITHUB_OUTPUT"
