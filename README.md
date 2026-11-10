@@ -2,65 +2,92 @@
 
 <img src="./docs/static/img/Atom-logo.png" width="200" height="auto" />
 
-atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation (a network with nodes and links) is optimized for operations typically used for application analytics and machine learning, including [slicing](./specification/docs/slices.md) and vectoring.
+atom turns an application into a graph of its code, with types, calls and data flows resolved,
+and answers questions about it: which libraries the code actually uses and where, whether
+attacker-controlled data can reach a dangerous call, which endpoints it serves, and where C and C++
+code can overrun memory. It is a command-line tool and an intermediate representation, built on
+the [chen](https://github.com/AppThreat/chen) code analysis library.
 
-Our vision is to make atom useful for many use cases such as:
-
-- **Supply-chain analysis:** Generate evidence of external library usage including the flow of data from sources to sinks. atom is used by [OWASP cdxgen](https://github.com/CycloneDX/cdxgen) to improve the precision and comprehensiveness of the generated CycloneDX document.
-- **Vulnerability analysis:** Describe vulnerabilities with evidence of affected symbols, call paths, and data-flows. Enable variant and [reachability analysis](https://github.com/AppThreat/atom/blob/main/specification/docs/slices.md#reachables-slice) at scale.
-- **Exploit prediction:** Predict exploits using precise representations of vulnerabilities, libraries, and applications.
-- **Threat-model and attack vectors generation:** Generate precise threat models and attack vectors for applications at scale.
-- **Application context detection:** Generate context useful for summarization and risk-profile generation (e.g. services, endpoints, and data attributes).
-- **Mind-maps for applications:** Automate summarization of large and complex applications as a developer tool.
-
-and more.
+[OWASP cdxgen](https://github.com/cdxgen/cdxgen) runs atom to add usage, call-site and
+reachability evidence to the SBOMs it generates, and [OWASP dep-scan](https://github.com/owasp-dep-scan/dep-scan)
+uses that evidence to decide which vulnerabilities are reachable.
 
 [![SBOM](https://img.shields.io/badge/SBOM-with_%E2%9D%A4%EF%B8%8F_by_cdxgen-FF753D)](https://github.com/cdxgen/cdxgen)
 ![npm](https://img.shields.io/npm/dw/@appthreat/atom)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/AppThreat/atom/total?color=FF753D)
 
-## Languages supported
+**atom 4.0** is built on chen 4.0. It adds the `callsites` slice for every language, the
+`memory-safety` command for C and C++, a C and C++ frontend built on the EDG front end, support for
+vendored code, CycloneDX BOM input, and faster and more deterministic slicing. [What is new in
+atom 4.0](./docs/docs/whats-new-4.md) lists the changes and what consumers of atom's output need to
+know.
 
-- C/C++
-- H (C/C++ Header and pre-processed .i files alone)
-- Java (Requires compilation. Java 8 through Java 26 syntax: records, sealed types, pattern
-  matching for `instanceof` and `switch` with guards and record patterns, switch expressions
-  with `yield`, text blocks, unnamed variables, local classes and records, module imports,
-  flexible constructor bodies, virtual threads and the FFM API. Spring MVC/WebFlux, JAX-RS,
-  Micronaut, servlet, Vert.x, gRPC, JDBC/JPA/MyBatis, AI SDKs, MCP tools, AWS/GCP/Azure, Kafka
-  and JNI/FFM boundaries are tagged automatically - reachables no longer needs a project
-  `chennai.json` to find Java sources and sinks.)
-- Jar
-- Android APK and split bundles (.apkm, .apks, .xapk). Requires Android SDK. Set the environment variable `ANDROID_HOME` or use the container image.
-- JavaScript
-- Flow
-- TypeScript
-- JavaScript frameworks: Vue (`.vue`) and Svelte / SvelteKit (`.svelte`)
-  single-file components. Svelte templates are modelled as JSX-equivalent
-  structure with exact source offsets; `<style>` blocks and HTML comments are
-  not analysed.
-- Python (Supports 3.x to 3.15)
-- PHP (Requires PHP >= 7.4. Supports PHP 7.0 to 8.5 with limited support for PHP 5.x)
-- Ruby (Requires a Ruby runtime with the `rbastgen` generator; the grammar is chosen by
-  capability, not by the runtime version, so Ruby 1.8 - 4.0.x syntax is supported on any
-  supported runtime)
-- Scala (WIP)
+## What atom does
+
+| Command | What it writes |
+| --- | --- |
+| `atom` (no command) | An atom file (`app.atom`): the code property graph, optionally with data dependencies. |
+| `usages` | The usages slice: how each object, call and type is used inside every method. cdxgen's evidence of library use. |
+| `callsites` | One record per use of an imported module, class or header, at the position of the use, with the package it belongs to. |
+| `reachables` | Flows from tagged sources (framework inputs, environment, files) to tagged sinks (SQL, commands, network, crypto), with the packages they pass through. |
+| `data-flow` | Data-flow slices between definitions and uses. |
+| `memory-safety` | Memory-safety findings for C and C++ (bounds, lifetimes, integer widths, allocation state) as JSON or SARIF. |
+| `parsedeps` | The dependencies a project declares, from its build files and imports. |
+| `export` | The graph as GraphML, GraphSON, GEXF, DOT, Neo4j CSV, or JSON arrays for graph neural networks. |
+| `algorithms` | Graph algorithms over the call graph: centrality, cycles, dominators, paths and more. |
+
+The [slices specification](./specification/docs/slices.md) and the
+[lessons](./docs/docs/lessons) describe each output in detail.
+
+## Languages
+
+| Language | `-l` | Notes |
+| --- | --- | --- |
+| C and C++ | `c`, `cpp` | With the Eclipse CDT parser (default) or the EDG front end (`--c-frontend edg`, needs [edga](https://github.com/AppThreat/edga) 0.2.0). Compilation databases, headers and preprocessed `.i` files (`h`, `i`). See [C/C++ frontends](./docs/docs/c-frontends.md). |
+| Java | `java` | Java 8 to Java 26 syntax, Lombok, and the encoding the build declares. Spring, JAX-RS, Micronaut, servlets, Vert.x, gRPC, JDBC/JPA/MyBatis, AI SDKs, MCP tools, cloud SDKs, messaging and JNI/FFM boundaries are tagged automatically. |
+| JVM bytecode | `jar`, `jimple` | JARs and class directories. Reads JDK classes from an installed JDK 8 or later. |
+| Android | `apk`, `dex` | APKs and split bundles (`.apkm`, `.apks`, `.xapk`). Needs the Android SDK (`ANDROID_HOME` or `--android-sdk`) or the container image. |
+| JavaScript and TypeScript | `js`, `ts` | JavaScript, TypeScript and Flow, Vue, Svelte and SvelteKit, and Astro components. Needs `astgen` from [atom-parsetools](https://github.com/AppThreat/atom-parsetools) 2.x (1.x also works). |
+| Python | `python` | Python 3 up to 3.15. |
+| PHP | `php` | PHP 7.0 to 8.5, limited 5.x. Needs PHP 7.4 or later and `phpastgen` from atom-parsetools. |
+| Ruby | `ruby` | Ruby 1.8 to 4.0 syntax. Needs `rbastgen` from atom-parsetools and a Ruby 3.4 or 4.0 runtime. |
+| Scala | `scala` | Work in progress. |
 
 ## Installation
 
-atom comprises a scala core with a Node.js wrapper module. It is currently distributed as standalone binaries and as a npm package.
+atom needs Java 23 or later, except for the native images. The parsers for JavaScript, TypeScript,
+PHP and Ruby come from the `@appthreat/atom-parsetools` npm package.
 
-## atom native-image
+### npm
 
-atom is available as a native image built using graalvm community edition.
+```shell
+npm install -g @appthreat/atom @appthreat/atom-parsetools --ignore-scripts
+atom --version
+```
+
+`atom --version` prints the atom, chen, atom-parsetools and `parsa` versions. atom-parsetools 2.x
+installs `parsa`, its native type map writer, as an optional npm package for the host's platform.
+On Linux x86_64 (glibc and musl), Linux ARM64, macOS ARM64 and Windows x86_64, `@appthreat/atom`
+installs the native image; on other platforms it runs the JVM distribution.
+
+For reachables and package URLs, generate a CycloneDX SBOM with cdxgen and pass it with
+`--bom-file`, or leave it in the project directory. JavaScript reachables also work without one.
+
+```shell
+npm install -g @cdxgen/cdxgen --omit=optional --ignore-scripts
+```
+
+### Native images
+
+Each release carries native images built with GraalVM, each with a `.sha512` file: `atom-amd64`
+and `atom-arm64` for Linux, `atom-linux-musl-amd64` for musl, `atom-darwin-arm64` for macOS on Apple
+silicon, and `atom.exe` for Windows x86_64.
 
 ```shell
 curl -LO https://github.com/AppThreat/atom/releases/latest/download/atom-amd64
 chmod +x atom-amd64
 ./atom-amd64 --help
 ```
-
-On Windows
 
 ```pwsh
 curl -LO https://github.com/AppThreat/atom/releases/latest/download/atom.exe
@@ -70,48 +97,37 @@ curl -LO https://github.com/AppThreat/atom/releases/latest/download/atom.exe
 The JVM bytecode languages (`jar`, `jimple`, `android`, `apk`, `dex`, `scala`, `tasty`, `sbt`) read the
 JDK classes from an installed JDK 8 or later. The native image looks in `--jdk-path`, `ATOM_JAVA_HOME`,
 `JAVA_HOME`, `JDK_HOME`, the `java` on `PATH` and common install locations, in that order. Without a JDK
-the atom is still built, with the JDK types left as phantoms, and atom prints a notice.
+the atom is still built, with the JDK types left as phantoms, and atom prints a notice. The native
+images do not bundle astgen, phpastgen or rbastgen: install `@appthreat/atom-parsetools` for those.
 
-NOTE: Commands such as astgen, rbastgen, phpastgen, etc. are not bundled into this native image. Install the npm package `@appthreat/atom-parsetools` to get these commands.
-
-```shell
-npm install -g @appthreat/atom-parsetools
-which astgen
-which phpastgen
-```
-
-## npm-based installation
-
-```shell
-npm install -g @appthreat/atom @appthreat/atom-parsetools --ignore-scripts
-atom --help
-atom --version
-```
-
-`atom --version` prints the atom, chen, atom-parsetools and `parsa` versions. atom-parsetools 2.x
-installs `parsa`, its native type map writer, as an optional npm package for the host's platform.
-
-Install cdxgen npm package to generate a Software Bill-of-Materials (SBOM) which is required for reachables slicing.
-
-```shell
-npm install -g @cdxgen/cdxgen --omit=optional --ignore-scripts
-```
-
-## container usage
-
-```shell
-docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom --help
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom --help
-```
-
-Example for java project.
+### Containers
 
 ```shell
 docker run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
-# podman run --rm -v /tmp:/tmp -v $HOME:$HOME -v $(pwd):/app:rw -t ghcr.io/appthreat/atom atom -l java -o /app/app.atom /app
 ```
 
-## CLI Usage
+`ghcr.io/appthreat/atom` and `ghcr.io/appthreat/atom-sle` include atom-parsetools, PHP, Ruby, the
+Android SDK, a C++ compiler and edga, so every language and both C/C++ frontends work out of the
+box. The `atom-ruby`, `atom-ruby3`, `atom-alpine-ruby` and `atom-alpine-ruby3` images target Ruby
+projects. All images are built for amd64 and arm64.
+
+## Quick start
+
+```shell
+# the graph, with data dependencies
+atom -l java --with-data-deps -o app.atom .
+# how the code uses its libraries
+atom usages -l python -o app.atom -s usages.json .
+# every use of an imported module, with its package (BOM from cdxgen)
+atom callsites -l js --bom-file bom.json -o app.atom -s callsites.json .
+# reachable flows from inputs to sinks, for a web review
+atom reachables --profile appsec -l python -o app.atom -s reachables.json .
+# memory-safety findings for C, using the build's compilation database
+atom memory-safety -l c --compile-commands build --format sarif -o app.atom -s findings.sarif .
+```
+
+
+## CLI usage
 
 ```
 Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|export|algorithms] [options] [input]
@@ -224,6 +240,161 @@ Run a graph algorithm over the atom and write the result as JSON
   --help                   display this help message
 ```
 
+## Call sites
+
+`callsites` writes one record per use of an imported module, class, function or header: where it
+is (`file`, `line`, `col`), what was used (`module`, `path`, `kind` such as `call`, `new`, `ref`,
+`extends`, `import`, `decorator` or `macro`), how atom found out (`via`: `binding`, `type`, `name`
+or `macro`), whether it is a runtime built-in, and the package URL it belongs to (`purl`). It
+works for JavaScript and TypeScript, Python, Java source, PHP, Ruby, JVM bytecode and C and C++.
+Package URLs come from a BOM (`--bom-file`, `--bom-dir`) or the project's lock files and installed
+packages, depending on the language. The output is byte-identical across runs.
+
+```shell
+atom callsites -l python --bom-file bom.json -o app.atom -s callsites.json .
+atom usages -l js --also-callsites callsites.json -o app.atom -s usages.json .
+```
+
+`usages --also-callsites` writes both slices from one process. Code in vendored directories
+(`--external-paths third_party`, or the directories a BOM records as vendored) is treated as a
+dependency, and uses of it become call sites. [Lesson 9](./docs/docs/lessons/callsites.md)
+describes the records for each language.
+
+## Memory safety
+
+`memory-safety` runs chen's memory-safety overlay over a C or C++ atom and reports out-of-bounds
+access and overlapping copies, use after free and after scope, null dereference, uninitialised
+reads, integer narrowing, overflow, shifts and division, format strings, and check-then-use races. Each finding has a rule id, a CWE, a confidence and the flow that leads
+to it, as JSON or SARIF 2.1.0 (`--format sarif`). `--min-confidence high|medium|low` drops weaker
+findings, and `--memory-api-config` declares in-house allocation and copy wrappers. Both C/C++
+frontends work; the EDG frontend gives the overlay more resolved facts. See
+[C/C++ frontends](./docs/docs/c-frontends.md).
+
+
+## Reachability profiles
+
+The default reachables run is deliberately broad: it reports every flow from a tagged source to a
+tagged sink. For a focused review you can apply a profile with `--profile`, which post-filters the
+flows in a generic, tag-driven way that works across all languages.
+
+```shell
+atom reachables --profile appsec -o app.atom -s reachables.json -l python .
+```
+
+Profiles do two things:
+
+- **Neutraliser barriers**: a flow that passes through a call (or a call to a method) carrying a
+  neutraliser tag is dropped. This builds on the validator/sanitiser handling above and adds
+  declassification barriers such as ORM reads.
+- **Source restriction**: a profile may narrow the source tags considered. An explicit
+  `--source-tag` always overrides this.
+
+| Profile             | Behaviour                                                                                                                                                                                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `generic` (default) | No additional filtering.                                                                                                                                                                                                                                                       |
+| `appsec`            | Web/API review. Drops flows neutralised by `validation`, `sanitization`, `sanitizer`, `encode` or `db-read` (ORM reads), and restricts sources to web-facing inputs (`framework-input`, `framework-route`, `framework`, `service-ingress`), so CLI and driver sources are excluded. |
+
+The `db-read` barrier is what removes the bulk of object-identity false positives: when a request only
+supplies the primary key to an ORM accessor (e.g. `get_object_or_404`), the value read back is stored
+data, not live request input, so flows that merely pass through such a read are pruned.
+
+Profiles are extensible. A profile is a `ReachabilityProfile` (name, neutraliser tags, optional source
+override) registered in `io.appthreat.atom.slicing`; add an entry to the registry to define your own.
+
+## Validators and sanitisers
+
+Reachable flows that pass through a genuine validation or sanitisation routine are usually not real
+findings. You can declare such routines in a JSON file and pass it with `--validation-config`. atom
+tags every call to a declared method as a sanitiser and drops reachable flows that pass through one,
+scoped to the sink categories the sanitiser covers.
+
+The file uses the same schema as `chennai.json`. `sanitizers` and `validators` are treated
+identically; `categories` is optional and, when omitted, the sanitiser covers every flow:
+
+```json
+{
+  "sanitizers": [
+    {
+      "name": "owasp-encode",
+      "methods": ["org\\.owasp\\.encoder\\.Encode\\..*"],
+      "categories": ["http"]
+    },
+    {
+      "name": "sql-escape",
+      "methods": [".*escapeSql.*"],
+      "categories": ["sql"]
+    }
+  ],
+  "validators": [{ "name": "bean-validation", "methods": [".*\\.validate"] }]
+}
+```
+
+`methods` entries are matched against each call's method full name (treated as a regular expression
+when they contain regex characters, otherwise as an exact match). `categories` are matched against
+the tags on a flow's sink, so an HTML encoder declared for `http` does not suppress an SQL-injection
+flow.
+
+```shell
+atom reachables --validation-config validators.json -o app.atom -s reachables.json -l java .
+```
+
+The declarations can also be embedded in the project's `chennai.json` instead of passed on the
+command line. For programmatic use, the dataflow engine exposes `passesThrough` /
+`doesNotPassThrough` on a flow iterator, taking a simple node predicate.
+
+## Data-flow engine
+
+atom computes data dependencies with the **Flux** engine (_Flow-Lattice Update eXecutor_) by default:
+a low-allocation, reaching-definitions solver that produces the same `REACHING_DEF` edges as the classic engine while
+using far less memory and GC time on large (e.g. bundled/transpiled JavaScript) methods. Per-file
+mini-graph (fragment) AST caching is also enabled by default, so unchanged files are restored from a
+`.chen` cache instead of being re-parsed.
+
+Pass `--legacy-dataflow` to fall back to the classic engine and disable fragment caching (useful for
+A/B comparisons or troubleshooting). Caching can also be controlled independently via the
+`-Dchen.cache.disabled=true` system property.
+
+### Storage compression (`-Dodb.storage.compression`)
+
+On large codebases the graph overflows the heap and unused nodes are spilled to disk; the spill/save
+path runs on a single thread, so the compressor it uses can dominate generation and slicing time.
+Choose it with a system property (no rebuild needed):
+
+```
+atom ... -Dodb.storage.compression=none|lzf|deflate
+```
+
+- `deflate` (**default**): slowest but produces the smallest `.atom`; the default because atom file size matters most on large codebases.
+- `lzf`: fast compression; best for large graphs that overflow the heap, where DEFLATE dominates generation/slicing time.
+- `none`: no compression; fastest spill, largest `.atom`.
+
+The compressor is recorded per chunk, so atoms written with any mode remain readable under any other
+(an `lzf` atom loads fine under the `deflate` default). Giving the JVM more heap (`-Xmx`) also
+reduces spilling: the cheapest win is to not overflow at all.
+
+## Method flow summaries
+
+The `reachables` command builds a context-independent flow summary for each method before running the
+backward query. A summary records which parameters of a method reach its return value or its output
+parameters. The reachables engine uses these summaries to skip cross-call work that provably carries
+no taint, for example exploring an argument that the callee never writes, or descending into a callee
+whose return value can carry no taint. The pruning only removes empty work, so the reported flows are
+identical to a run without summaries.
+
+Method flow summaries are part of the default Flux bundle: there is no separate flag. They are
+enabled whenever the Flux engine is used (the default) and turned off only by `--legacy-dataflow`,
+which also reverts to the classic data-flow engine.
+
+Summaries are persisted in two ways: as CPG-native `flow-summary` tags on each `METHOD` node (so they
+serialize with the atom and are reused for free when the atom is reused/cached), and as a
+`flowsummary-<fingerprint>.json` sidecar next to the atom for runs that do not carry the tags. The
+fingerprint changes when any method body changes. The summary caches, like the other caches, can be
+turned off with `-Dchen.cache.disabled=true`.
+
+```shell
+atom reachables -o app.atom -s reachables.json -l java .
+```
+
 ## Export and algorithms commands
 
 The `export` and `algorithms` commands work on an `.atom` file. If the file given with `-o` already
@@ -271,130 +442,6 @@ flags override values from the file. For example, an algorithms config file:
   "out": "paths.json"
 }
 ```
-
-## Data-flow engine
-
-atom computes data dependencies with the **Flux** engine (_Flow-Lattice Update eXecutor_) by default
-— a low-allocation, reaching-definitions solver that produces the same `REACHING_DEF` edges as the classic engine while
-using far less memory and GC time on large (e.g. bundled/transpiled JavaScript) methods. Per-file
-mini-graph (fragment) AST caching is also enabled by default, so unchanged files are restored from a
-`.chen` cache instead of being re-parsed.
-
-Pass `--legacy-dataflow` to fall back to the classic engine and disable fragment caching (useful for
-A/B comparisons or troubleshooting). Caching can also be controlled independently via the
-`-Dchen.cache.disabled=true` system property.
-
-### Storage compression (`-Dodb.storage.compression`)
-
-On large codebases the graph overflows the heap and unused nodes are spilled to disk; the spill/save
-path runs on a single thread, so the compressor it uses can dominate generation and slicing time.
-Choose it with a system property (no rebuild needed):
-
-```
-atom ... -Dodb.storage.compression=none|lzf|deflate
-```
-
-- `deflate` (**default**) — slowest but produces the smallest `.atom`; the default because atom file size matters most on large codebases.
-- `lzf` — fast compression; best for large graphs that overflow the heap, where DEFLATE dominates generation/slicing time.
-- `none` — no compression; fastest spill, largest `.atom`.
-
-The compressor is recorded per chunk, so atoms written with any mode remain readable under any other
-(an `lzf` atom loads fine under the `deflate` default). Giving the JVM more heap (`-Xmx`) also
-reduces spilling — the cheapest win is to not overflow at all.
-
-## Method flow summaries
-
-The `reachables` command builds a context-independent flow summary for each method before running the
-backward query. A summary records which parameters of a method reach its return value or its output
-parameters. The reachables engine uses these summaries to skip cross-call work that provably carries
-no taint, for example exploring an argument that the callee never writes, or descending into a callee
-whose return value can carry no taint. The pruning only removes empty work, so the reported flows are
-identical to a run without summaries.
-
-Method flow summaries are part of the default Flux bundle — there is no separate flag. They are
-enabled whenever the Flux engine is used (the default) and turned off only by `--legacy-dataflow`,
-which also reverts to the classic data-flow engine.
-
-Summaries are persisted in two ways: as CPG-native `flow-summary` tags on each `METHOD` node (so they
-serialize with the atom and are reused for free when the atom is reused/cached), and as a
-`flowsummary-<fingerprint>.json` sidecar next to the atom for runs that do not carry the tags. The
-fingerprint changes when any method body changes. The summary caches, like the other caches, can be
-turned off with `-Dchen.cache.disabled=true`.
-
-```shell
-atom reachables -o app.atom -s reachables.json -l java .
-```
-
-## Validators and sanitisers
-
-Reachable flows that pass through a genuine validation or sanitisation routine are usually not real
-findings. You can declare such routines in a JSON file and pass it with `--validation-config`. atom
-tags every call to a declared method as a sanitiser and drops reachable flows that pass through one,
-scoped to the sink categories the sanitiser covers.
-
-The file uses the same schema as `chennai.json`. `sanitizers` and `validators` are treated
-identically; `categories` is optional and, when omitted, the sanitiser covers every flow:
-
-```json
-{
-  "sanitizers": [
-    {
-      "name": "owasp-encode",
-      "methods": ["org\\.owasp\\.encoder\\.Encode\\..*"],
-      "categories": ["http"]
-    },
-    {
-      "name": "sql-escape",
-      "methods": [".*escapeSql.*"],
-      "categories": ["sql"]
-    }
-  ],
-  "validators": [{ "name": "bean-validation", "methods": [".*\\.validate"] }]
-}
-```
-
-`methods` entries are matched against each call's method full name (treated as a regular expression
-when they contain regex characters, otherwise as an exact match). `categories` are matched against
-the tags on a flow's sink, so an HTML encoder declared for `http` does not suppress an SQL-injection
-flow.
-
-```shell
-atom reachables --validation-config validators.json -o app.atom -s reachables.json -l java .
-```
-
-The declarations can also be embedded in the project's `chennai.json` instead of passed on the
-command line. For programmatic use, the dataflow engine exposes `passesThrough` /
-`doesNotPassThrough` on a flow iterator, taking a simple node predicate.
-
-## Reachability profiles
-
-The default reachables run is deliberately broad: it reports every flow from a tagged source to a
-tagged sink. For a focused review you can apply a profile with `--profile`, which post-filters the
-flows in a generic, tag-driven way that works across all languages.
-
-```shell
-atom reachables --profile appsec -o app.atom -s reachables.json -l python .
-```
-
-Profiles do two things:
-
-- **Neutraliser barriers** — a flow that passes through a call (or a call to a method) carrying a
-  neutraliser tag is dropped. This builds on the validator/sanitiser handling above and adds
-  declassification barriers such as ORM reads.
-- **Source restriction** — a profile may narrow the source tags considered. An explicit
-  `--source-tag` always overrides this.
-
-| Profile             | Behaviour                                                                                                                                                                                                                                                                      |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `generic` (default) | No additional filtering.                                                                                                                                                                                                                                                       |
-| `appsec`            | Web/API review. Drops flows neutralised by `validation`, `sanitization`, `sanitizer`, `encode` or `db-read` (ORM reads), and restricts sources to web-facing inputs (`framework-input`, `framework-route`, `framework`, `service-ingress`) — i.e. excludes CLI/driver sources. |
-
-The `db-read` barrier is what removes the bulk of object-identity false positives: when a request only
-supplies the primary key to an ORM accessor (e.g. `get_object_or_404`), the value read back is stored
-data, not live request input, so flows that merely pass through such a read are pruned.
-
-Profiles are extensible. A profile is a `ReachabilityProfile` (name, neutraliser tags, optional source
-override) registered in `io.appthreat.atom.slicing` — add an entry to the registry to define your own.
 
 ## Sample Invocations
 
@@ -516,7 +563,7 @@ docker run --rm -v /tmp:/tmp -e ATOM_TOOLS_OPENAPI_FILENAME=openapi.json -v $(pw
 
 ### Export atom to graphml or dot format
 
-It is possible to export each method along with data dependencies in an atom to graphml or dot format. Simply pass `--export` to enable this feature.
+It is possible to export each method along with data dependencies in an atom to graphml or dot format. Pass `--export-atom` (`-x`) to enable this feature.
 
 ```shell
 atom -o app.atom -l java --export-atom --export-dir <export dir> <path to application>
@@ -557,13 +604,20 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 | **CHEN_DELOMBOK_MODE**                  | Delombok mode for the Java frontend (`no-delombok`, `default`, `types-only`, `run-delombok`).                                                              |
 | **CHEN_INCLUDE_PATH**                   | Include directories for the C frontend. Separate paths with `:` or `;` (only `;` on Windows).                                                              |
 | **CHEN_ASTGEN_OUT**                     | Existing astgen output directory. Improves performance for JavaScript, TypeScript, and Flow during repeated invocations by reusing existing AST json data. |
+| **EDGA_PATH**                           | The edga binary for `--c-frontend edg` and `edg-fallback`, when `--edga-path` is not given. Otherwise edga is looked up on `PATH`.                          |
+| **ASTGEN_TYPES**                        | Type map engine for astgen 2.x: `native` (parsa, the TypeScript 7 engine) or `ts6`. The `astgen-types` frontend argument sets it for a run.              |
+| **ASTGEN_NATIVE_BIN**                   | Path to `parsa`, the native type map writer of atom-parsetools 2.x, when it is not found next to astgen.                                                    |
+| **ANDROID_HOME**                        | Android SDK directory, used to find `android.jar` for APK, DEX and split-bundle inputs when `--android-sdk` is not given.                                   |
+| **GEM_HOME**, **BUNDLE_PATH**           | Where installed gems are found, for package URLs in the Ruby callsites slice.                                                                              |
+| **GRADLE_USER_HOME**                    | Gradle cache used, with the local Maven repository, to attribute JVM bytecode callsites to packages. Nothing is downloaded.                                 |
+| **ATOM_CONFIG_FILE**                    | JSON config file for the export and algorithms commands, when `--config` is not given.                                                                     |
 | **ATOM_TOOLS_OPENAPI_FORMAT**           | OpenAPI format for atom-tools. Default: `openapi3.1.0`; alternative: `openapi3.0.1`.                                                                       |
 | **ATOM_TOOLS_WORK_DIR**                 | Working directory for atom-tools. Defaults to atom input path.                                                                                             |
 | **ATOM_SCALASEM_WORK_DIR**              | Working directory for scalasem. Defaults to atom input path.                                                                                               |
 | **ATOM_SCALASEM_REUSE**                 | Set to `true` to reuse an existing scalasem version 2 report of the same project instead of running scalasem again.                                        |
 | **ATOM_SCALASEM_SLICES_FILE**           | scalasem report path; a relative path resolves against the scalasem work directory. When unset, the report is written beside the `-s` slices file, else beside the `-o` atom file, else into the input path. |
 | **ATOM_JVM_ARGS**                       | Overrides the JVM arguments, including heap memory values, constructed by the atom Node.js wrapper.                                                        |
-| **ATOM_JAVA_HOME**                      | Java 21 or above to be used by atom.                                                                                                                       |
+| **ATOM_JAVA_HOME**                      | Java 23 or above to be used by atom.                                                                                                                       |
 | **ATOM_TIMEOUT**                        | Maximum run time in milliseconds, enforced by the atom Node.js wrapper: atom is stopped with SIGTERM, then SIGKILL, and the wrapper exits with status 124. |
 | **ATOM_KILL_GRACE_MS**                  | How long the wrapper waits after SIGTERM before it kills atom with SIGKILL. Default: `10000`.                                                              |
 | **ATOM_PARENT_PID**                     | Supervising process id; cdxgen sets its own. The wrapper stops atom when it exits, and passes its own id on, so atom exits if the wrapper is killed.       |
@@ -579,108 +633,6 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 | **ATOM_RUBY_HOME**                      | Ruby installation directory for the `rbastgen` wrapper, when Ruby is not on `PATH`.                                                                        |
 | **RUBY_ASTGEN_BIN**                     | Path to the `ruby_ast_gen` script that the `rbastgen` wrapper runs. The simplest way to test a generator build.                                            |
 | **RBASTGEN_PATH**                       | Path to the `rbastgen` executable itself, overriding the one on `PATH`; the `rbastgen.path` system property takes precedence.                              |
-
-## atom Specification
-
-The intermediate representation used by atom is available under the same open-source license (MIT). The specification is available in [protobuf](./specification/atom.proto), [markdown](./specification/docs/spec.md), and [html](./specification/docs/spec.html) formats.
-
-The current specification version is 1.0.0
-
-## Generating atom files
-
-atom files (app.⚛ or app.atom) are zip files with serialized protobuf data. atom cli is the preferred approach to generate these files. It is possible to author a generator tool from scratch using the [proto specification](./specification/atom.proto). We offer a sample in [Python](./specification/samples/python-atomgen/README.md) for interested users. We also offer proto bindings in additional languages which can be found [here](./specification/bindings/).
-
-Example code snippet for generating an atom in python.
-
-```python
-# Create a method fullname property
-methodFullName = atom.CpgStructNodeProperty(
-    name=atom.NodePropertyName.FULL_NAME, value=atom.PropertyValue("main")
-)
-
-# Create a method node with the fullname property
-method = atom.CpgStructNode(
-    key=1, type=atom.NodeType.METHOD, property=[methodFullName]
-)
-
-# Create an atom with a single node
-atom_struct = atom.CpgStruct(node=[method])
-
-# Create an atom (app.atom) by serializing this data into a zip file
-with ZipFile("app.atom", "w") as zip_file:
-    zip_file.writestr("cpg.proto", bytes(atom_struct))
-```
-
-## License
-
-MIT
-
-## Developing / Contributing
-
-Install Java 21
-Node.js > 21
-
-```shell
-sbt "clean; stage; scalafmt; testFull; createDistribution"
-cd wrapper/nodejs
-bash build.sh && sudo npm install -g .
-```
-
-### Testing Ruby against a specific rbastgen
-
-Ruby support depends on the external [ruby_ast_gen](https://github.com/AppThreat/ruby_ast_gen)
-generator, which atom's Ruby frontend runs as a subprocess. There are two layers, and which knob
-to use depends on which one you are replacing:
-
-- `rbastgen` (from [atom-parsetools](https://github.com/AppThreat/atom-parsetools)) is a Node
-  wrapper. It runs the bundled `ruby_ast_gen` script under a Ruby interpreter, so
-  **`RUBY_ASTGEN_BIN`** points it at a different generator checkout - the simplest way to test a
-  generator branch:
-
-  ```shell
-  RUBY_ASTGEN_BIN=/path/to/ruby_ast_gen/exe/ruby_ast_gen sbt test
-  ```
-
-  `RUBY_CMD` and `ATOM_RUBY_HOME` select the interpreter the wrapper uses; it needs Ruby 3.4.x or
-  4.0.x.
-
-- **`RBASTGEN_PATH`** (or `-Drbastgen.path=`) replaces the `rbastgen` executable itself, for a
-  generator that is not driven by that wrapper. Because atom loads the Ruby frontend in-process it
-  would otherwise inherit whatever `rbastgen` is first on `PATH`:
-
-  ```shell
-  RBASTGEN_PATH=/path/to/rbastgen sbt test
-  sbt -Drbastgen.path=/path/to/rbastgen test
-  ```
-
-Both work for any chen-based tool and for `atom` at runtime. The end-to-end Ruby suite
-(`RubyAtomWorkflowTests` - atom generation, usage slicing and data-flow slicing over a small Ruby
-project) needs a generator implementing the 2.x JSON contract and **cancels itself** when the
-reachable one is older or unusable, rather than reporting assertion failures. A generator that
-fails to parse produces an empty atom, not an error, so check the reported version first if Ruby
-slices come back empty.
-
-## Using atom with chennai
-
-[chennai](https://github.com/AppThreat/chen) is the recommended query interface for working with atom.
-
-```shell
-chennai> importAtom("/home/almalinux/work/sandbox/apollo/app.atom")
-```
-
-## atom tools
-
-Checkout [atom-tools](https://github.com/AppThreat/atom-tools) for some project ideas involving atom slices.
-
-Language-specific profile:
-
-```shell
-# Ruby environment
-devenv --option config.profile:string ruby shell
-
-# php environment
-devenv --option config.profile:string php shell
-```
 
 ## Advanced Configuration
 
@@ -723,6 +675,14 @@ default.
 > **Note:** Boolean values must be passed as the strings `true` or `false`. A list value keeps its
 > own commas: `--frontend-args includes=/a,/b,cpp-standard=c++17` sets two include paths and the
 > standard.
+
+### Supported Arguments (JavaScript and TypeScript)
+
+| Key            | Type   | Description                                                                                                                                   | Example              |
+| :------------- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------- | :------------------- |
+| `astgen-types` | Enum   | Type map engine for astgen 2.x: `native` (parsa, the TypeScript 7 engine) or `ts6`. An unknown value is reported and ignored.                 | `astgen-types=ts6`   |
+
+`atom -l js --frontend-args-keys` lists every key for the language with its default.
 
 ### Supported Arguments (Python)
 
@@ -789,6 +749,102 @@ Run the command again with caching enabled. It will load the pre-computed ASTs f
 atom -l c -o app.atom --frontend-args enable-ast-cache=true,ast-cache-dir=/tmp/cache ./src
 ```
 
+## atom Specification
+
+The intermediate representation used by atom is available under the same open-source license (MIT). The specification is available in [protobuf](./specification/atom.proto), [markdown](./specification/docs/spec.md), and [html](./specification/docs/spec.html) formats.
+
+The current specification version is 1.0.0
+
+## Generating atom files
+
+atom files (app.⚛ or app.atom) are zip files with serialized protobuf data. atom cli is the preferred approach to generate these files. It is possible to author a generator tool from scratch using the [proto specification](./specification/atom.proto). We offer a sample in [Python](./specification/samples/python-atomgen/README.md) for interested users. We also offer proto bindings in additional languages which can be found [here](./specification/bindings/).
+
+Example code snippet for generating an atom in python.
+
+```python
+# Create a method fullname property
+methodFullName = atom.CpgStructNodeProperty(
+    name=atom.NodePropertyName.FULL_NAME, value=atom.PropertyValue("main")
+)
+
+# Create a method node with the fullname property
+method = atom.CpgStructNode(
+    key=1, type=atom.NodeType.METHOD, property=[methodFullName]
+)
+
+# Create an atom with a single node
+atom_struct = atom.CpgStruct(node=[method])
+
+# Create an atom (app.atom) by serializing this data into a zip file
+with ZipFile("app.atom", "w") as zip_file:
+    zip_file.writestr("cpg.proto", bytes(atom_struct))
+```
+
+## Developing and contributing
+
+atom builds with sbt 2 and JDK 23 or later (CI uses JDK 25), and needs Node.js for the parsers and
+the npm wrapper. chen, cpg2 and overflowdb2 come from GitHub Packages, so the build needs a
+`GITHUB_TOKEN` that can read packages.
+
+```shell
+export GITHUB_TOKEN=$(gh auth token)
+sbt "clean; stage; scalafmt; testFull; createDistribution"
+cd wrapper/nodejs
+bash build.sh && sudo npm install -g .
+```
+
+Tests that need an external tool cancel themselves without it: astgen, phpastgen and rbastgen from
+atom-parsetools, PHP, and edga (`EDGA_PATH`) for the EDG frontend.
+
+
+### Testing Ruby against a specific rbastgen
+
+Ruby support depends on the external [ruby_ast_gen](https://github.com/AppThreat/ruby_ast_gen)
+generator, which atom's Ruby frontend runs as a subprocess. There are two layers, and which knob
+to use depends on which one you are replacing:
+
+- `rbastgen` (from [atom-parsetools](https://github.com/AppThreat/atom-parsetools)) is a Node
+  wrapper. It runs the bundled `ruby_ast_gen` script under a Ruby interpreter, so
+  **`RUBY_ASTGEN_BIN`** points it at a different generator checkout - the simplest way to test a
+  generator branch:
+
+  ```shell
+  RUBY_ASTGEN_BIN=/path/to/ruby_ast_gen/exe/ruby_ast_gen sbt test
+  ```
+
+  `RUBY_CMD` and `ATOM_RUBY_HOME` select the interpreter the wrapper uses; it needs Ruby 3.4.x or
+  4.0.x.
+
+- **`RBASTGEN_PATH`** (or `-Drbastgen.path=`) replaces the `rbastgen` executable itself, for a
+  generator that is not driven by that wrapper. Because atom loads the Ruby frontend in-process it
+  would otherwise inherit whatever `rbastgen` is first on `PATH`:
+
+  ```shell
+  RBASTGEN_PATH=/path/to/rbastgen sbt test
+  sbt -Drbastgen.path=/path/to/rbastgen test
+  ```
+
+Both work for any chen-based tool and for `atom` at runtime. The end-to-end Ruby suite
+(`RubyAtomWorkflowTests` - atom generation, usage slicing and data-flow slicing over a small Ruby
+project) needs a generator implementing the 2.x JSON contract and **cancels itself** when the
+reachable one is older or unusable, rather than reporting assertion failures. A generator that
+fails to parse produces an empty atom, not an error, so check the reported version first if Ruby
+slices come back empty.
+
+## Using atom with chennai
+
+[chennai](https://github.com/AppThreat/chen) is the recommended query interface for working with atom.
+
+```shell
+chennai> importAtom("/home/almalinux/work/sandbox/apollo/app.atom")
+```
+
+## atom-tools
+
+[atom-tools](https://github.com/AppThreat/atom-tools) works with atom's slices: it converts usages
+slices to OpenAPI, and filters, queries and validates slices.
+
+
 ## Troubleshooting
 
 ### atom file is incomplete for large JS/TS projects
@@ -812,9 +868,14 @@ export ASTGEN_IGNORE_DIRS=""
 
 Enterprise support including custom language development and integration services is available via AppThreat Ltd.
 
+
 ## Sponsors
 
 YourKit supports open source projects with innovative and intelligent tools for monitoring and profiling Java and .NET applications.
 YourKit is the creator of <a href="https://www.yourkit.com/java/profiler/">YourKit Java Profiler</a>, <a href="https://www.yourkit.com/dotnet-profiler/">YourKit .NET Profiler</a>, and <a href="https://www.yourkit.com/youmonitor/">YourKit YouMonitor</a>.
 
 ![YourKit logo](./specification/yklogo.png)
+
+## License
+
+MIT

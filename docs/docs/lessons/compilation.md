@@ -7,8 +7,8 @@ Understand how `atom` drives the language frontends from the [chen repository](h
 ### Pre-requisites
 
 - **JDK 23+**: OpenJDK, Temurin, or GraalVM.
-- **SBT 1.10+**: Used to build atom (`sbt stage`).
-- **Node.js 20+** and **@appthreat/atom-parsetools** (`npm install -g @appthreat/atom-parsetools`): provides the `astgen`/`rbastgen` binaries for JS/TS/Ruby.
+- **sbt 2**: Used to build atom (`sbt stage`); the build reads chen from GitHub Packages, so set `GITHUB_TOKEN`.
+- **Node.js** and **@appthreat/atom-parsetools** (`npm install -g @appthreat/atom-parsetools`): provides the `astgen`/`rbastgen` binaries for JS/TS/Ruby.
 - **C/C++ toolchain** (`clang++`/`g++`, `make`): only when parsing C/C++.
 - **Local clone of [atom](https://github.com/AppThreat/atom)** built with `sbt stage` — produces `atom.sh`.
 

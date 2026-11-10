@@ -6,7 +6,7 @@ slug: /
 
 # Atom (⚛)
 
-Atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation (a network with nodes and links) is optimized for operations typically used for application analytics and machine learning, including [slicing](static/img/slices.md) and vectoring.
+Atom is a novel intermediate representation for applications and a standalone tool powered by the [chen](https://github.com/AppThreat/chen) library. The intermediate representation (a network with nodes and links) is optimized for operations typically used for application analytics and machine learning, including [slicing](https://github.com/AppThreat/atom/blob/main/specification/docs/slices.md) and vectoring.
 
 Our vision is to make atom useful for many use cases such as:
 
@@ -19,7 +19,9 @@ Our vision is to make atom useful for many use cases such as:
 
 and more.
 
-[![release](https://github.com/appthreat/atom/actions/workflows/npm-release.yml/badge.svg)](https://github.com/appthreat/atom/actions/workflows/npm-release.yml)
+[![release](https://github.com/appthreat/atom/actions/workflows/release.yml/badge.svg)](https://github.com/appthreat/atom/actions/workflows/release.yml)
+
+atom 4.0 is out: see [what is new in atom 4.0](whats-new-4.md).
 ![npm](https://img.shields.io/npm/dw/@appthreat/atom)
 
 ![Atom logo](../static/img/Atom-logo.png)
