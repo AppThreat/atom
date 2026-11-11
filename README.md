@@ -148,6 +148,7 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
                            Maximum iterations of type propagation (applies to supported frontends).
   --cache <value>          Cache mode: all (default) | none | no-ast | no-cpg | no-astgen | no-summary.
   --perf-report <value>    Opt-in per-stage performance report: pass a file path to have atom append NDJSON lines (wall ms, applying-thread CPU ms / allocated MB) for every frontend, pass, dataflow and slicing stage. Separate analysis from verification timing with it.
+  --parse-report <value>   Opt-in per-file parse report: pass a file path to have atom write one JSON document naming every file the frontends left out or only partly read, with the outcome (unparsed, dropped, partial), the stage and the parser's reason. Separate a broken project from a quietly incomplete one with it. Written even when the run fails.
   --cpp-standard <value>   C/C++ standard, e.g. c++17, c++20. (C/C++ only)
   --define <value>         Define a preprocessor name. Repeatable. (C/C++ only)
   --auto-defines           Run a macro census first and define the build-option macros (CONFIG_*, ENABLE_*, template-declared) that hide #if code. Opt-in: it changes what is analysed. (C/C++ only)
