@@ -191,6 +191,9 @@ graalVMNativeImageOptions := Seq(
   // Every charset, not only the standard six: sources are decoded in the encoding their file or
   // build declares (Shift_JIS, GBK, windows-1252, ...), which is known only at run time
   "-H:+AddAllCharsets",
+  // javassist, which JavaParser's JarTypeSolver reads dependency jars with, answers each lookup
+  // with a jar: URL; without the protocol no class in a dependency jar is ever found
+  "--enable-url-protocols=jar",
   "--no-fallback"
 ) ++ libcOptions
 
