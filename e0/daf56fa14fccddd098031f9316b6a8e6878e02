@@ -1,0 +1,23 @@
+.github/actions/github-packages/action.yml
+  s_f10eefff00361f::t_47e6f1719d06aa 6-23,36-73
+.github/workflows/release.yml
+  s_f10eefff00361f::t_6eb22df6950024 426-429,493-496
+build.sbt
+  s_f10eefff00361f::t_7c6fb4509d393e 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e0daf56fa14fccddd098031f9316b6a8e6878e02",
+  "prompts": {},
+  "sessions": {
+    "s_f10eefff00361f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2900ce21-cc07-43d7-9602-deaffad1f75a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
