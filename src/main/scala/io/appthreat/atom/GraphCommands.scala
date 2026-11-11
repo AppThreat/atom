@@ -28,7 +28,7 @@ import scala.util.{Failure, Success, Try}
   */
 object GraphCommands:
 
-  private val supportedFormats =
+  private[atom] val supportedFormats =
       Set("dot", "graphml", "gexf", "graphson", "neo4jcsv", "gnn")
   private val supportedScopes = Set("whole", "methods")
   private val supportedAlgorithms = Set(

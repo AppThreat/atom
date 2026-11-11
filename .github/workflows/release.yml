@@ -154,6 +154,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
           cache: ''
+      # astgen for the TypeScript case of the native smoke test
+      - name: Use Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version: '26.x'
+          package-manager-cache: false
       - uses: sbt/setup-sbt@67d461eba2c4753196c230e02da850757ba4775e  # v1.5.14
       - uses: coursier/setup-action@d5a17f9aaeb260f9ba336a5b582fb49f79c64ac4  # v3.1.0
         with:
@@ -171,6 +177,7 @@ jobs:
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-amd64
           /usr/local/bin/upx -9 --lzma target/graalvm-native-image/atom-amd64
           target/graalvm-native-image/atom-amd64 --help
+          npm install -g @appthreat/atom-parsetools
           bash ci/native-smoke.sh target/graalvm-native-image/atom-amd64
           sha512sum target/graalvm-native-image/atom-amd64 > target/graalvm-native-image/atom-amd64.sha512
         env:
@@ -252,6 +259,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
           cache: ''
+      # astgen for the TypeScript case of the native smoke test
+      - name: Use Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version: '26.x'
+          package-manager-cache: false
       - uses: sbt/setup-sbt@67d461eba2c4753196c230e02da850757ba4775e  # v1.5.14
       - uses: coursier/setup-action@d5a17f9aaeb260f9ba336a5b582fb49f79c64ac4  # v3.1.0
         with:
@@ -268,6 +281,7 @@ jobs:
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-arm64
           /usr/local/bin/upx -9 --lzma target/graalvm-native-image/atom-arm64
           target/graalvm-native-image/atom-arm64 --help
+          npm install -g @appthreat/atom-parsetools
           bash ci/native-smoke.sh target/graalvm-native-image/atom-arm64
           sha512sum target/graalvm-native-image/atom-arm64 > target/graalvm-native-image/atom-arm64.sha512
         env:
@@ -334,6 +348,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
           cache: ''
+      # astgen for the TypeScript case of the native smoke test
+      - name: Use Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version: '26.x'
+          package-manager-cache: false
       - uses: sbt/setup-sbt@67d461eba2c4753196c230e02da850757ba4775e  # v1.5.14
       - uses: coursier/setup-action@d5a17f9aaeb260f9ba336a5b582fb49f79c64ac4  # v3.1.0
         with:
@@ -345,6 +365,7 @@ jobs:
           sbt --server "stage; createDistribution"
           bash ci/native-image.sh
           cp target/graalvm-native-image/atom target/graalvm-native-image/atom-darwin-arm64
+          npm install -g @appthreat/atom-parsetools
           bash ci/native-smoke.sh target/graalvm-native-image/atom-darwin-arm64
           sha512sum target/graalvm-native-image/atom-darwin-arm64 > target/graalvm-native-image/atom-darwin-arm64.sha512
         env:

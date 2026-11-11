@@ -5,10 +5,13 @@
 # classes from an installed JDK's lib/modules. This builds a small jar and class directory (and a
 # Scala 3 one when scalac is on PATH), then checks, for each language, that atom exits 0 and writes
 # a usages slice that resolves JDK calls. It also checks JDK discovery through PATH alone and the
-# no-JDK fallback.
+# no-JDK fallback, and that the Python, Java (Lombok) and TypeScript source frontends keep files
+# whose AST classes they look up by name.
 #
 # usage: bash ci/native-smoke.sh <atom binary>
 #   JAVA_HOME  the JDK for javac and for atom to read (required)
+#   astgen     on PATH for the TypeScript check; without it the check fails under CI and is
+#              skipped elsewhere
 
 set -euo pipefail
 
@@ -109,6 +112,54 @@ mkdir -p "$WORK/py"
 EVAL_FULLWIDTH="$(printf '\357\275\205\357\275\226\357\275\201\357\275\214')"
 printf 'import os\n\ndef run(cmd):\n    return %s(cmd)\n' "$EVAL_FULLWIDTH" > "$WORK/py/app.py"
 check python python "$WORK/py" "\"name\":\"eval\",\"detail\":\"$EVAL_FULLWIDTH\"" env
+
+# The source frontends look AST classes and getters up by name, and a lookup the image has no
+# metadata for loses the whole file without an error. A class with Lombok's @Getter is replayed
+# through the JavaParser getters, so the generated getter shows only when the file survives.
+mkdir -p "$WORK/lombok/src/demo"
+cat > "$WORK/lombok/src/demo/Account.java" <<'EOF'
+package demo;
+
+import lombok.Getter;
+
+@Getter
+public class Account {
+    private String owner;
+
+    public void run(String cmd) throws Exception {
+        Runtime.getRuntime().exec(cmd);
+    }
+}
+EOF
+check lombok java "$WORK/lombok" 'demo.Account.getOwner:java.lang.String()' env
+
+# Each astgen node type becomes its Babel object by name: a type alias, a namespace, a dotted
+# type reference and a non-null assertion before a member access each lost this file before.
+# The JavaScript frontend needs astgen (npm install -g @appthreat/atom-parsetools).
+mkdir -p "$WORK/ts"
+cat > "$WORK/ts/app.ts" <<'EOF'
+import express from "express";
+import { exec } from "child_process";
+
+type Cmd = string;
+namespace Shell {
+  export const prefix: Cmd = "sh";
+}
+
+export function run(req: express.Request, res: express.Response) {
+  const cmd: Cmd = req.params!.name;
+  exec(`${Shell.prefix} ${cmd}`);
+  res.send("ok");
+}
+EOF
+if command -v astgen > /dev/null 2>&1; then
+  check typescript ts "$WORK/ts" '"resolvedMethod":"child_process:exec"' env
+elif [ -n "${CI:-}" ]; then
+  echo "FAIL typescript: astgen is not on PATH"
+  failures=$((failures + 1))
+else
+  echo "skip typescript: astgen is not on PATH"
+fi
 
 # Without any JDK, atom still builds the atom, with phantom JDK types, and says so.
 mkdir -p "$WORK/out/no-jdk"

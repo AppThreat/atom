@@ -1,6 +1,6 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "4.0.0"
+ThisBuild / version      := "4.0.1"
 ThisBuild / scalaVersion := "3.10.0"
 
 val chenVersion = "4.0.0"
@@ -30,6 +30,8 @@ libraryDependencies ++= Seq(
   "io.appthreat"  %% "jimple2cpg"        % Versions.chen,
   "io.appthreat"  %% "php2atom"          % Versions.chen,
   "io.appthreat"  %% "ruby2atom"         % Versions.chen,
+  // `atom export --format neo4jcsv` writes through scala-csv, which the chen artifacts exclude
+  "com.github.tototoshi" %% "scala-csv" % "2.0.0",
   ("io.appthreat" %% "semanticcpg"       % Versions.chen % Test).classifier("tests"),
   ("io.appthreat" %% "x2cpg"             % Versions.chen % Test).classifier("tests"),
   ("io.appthreat" %% "pysrc2cpg"         % Versions.chen % Test).classifier("tests"),
@@ -189,6 +191,9 @@ graalVMNativeImageOptions := Seq(
   // Every charset, not only the standard six: sources are decoded in the encoding their file or
   // build declares (Shift_JIS, GBK, windows-1252, ...), which is known only at run time
   "-H:+AddAllCharsets",
+  // javassist, which JavaParser's JarTypeSolver reads dependency jars with, answers each lookup
+  // with a jar: URL; without the protocol no class in a dependency jar is ever found
+  "--enable-url-protocols=jar",
   "--no-fallback"
 ) ++ libcOptions
 
