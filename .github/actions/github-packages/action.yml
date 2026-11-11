@@ -3,7 +3,24 @@ description: >-
   Writes the credentials coursier needs to read AppThreat's packages on GitHub Packages, where
   chen, cpg2 and overflowdb2 are published. COURSIER_REPOSITORIES in the calling workflows lists
   that registry for the sbt launcher and the build's dependency resolution, and coursier reads its
-  own credentials file, independent of the build's GitHub Packages resolver.
+  own credentials file, independent of the build's GitHub Packages resolver. When chen-ref names a
+  chen branch, that branch is also built and published to the local Ivy repository, for an atom
+  change that needs a chen version not released yet.
+inputs:
+  chen-ref:
+    description: >-
+      The chen branch to build and publish locally, or empty to use the released chen. Temporary:
+      set while atom needs AppThreat/chen#315 before it is released, and emptied once it is.
+    required: false
+    default: 'feat/parse-report'
+  ivy-home:
+    description: Ivy home to publish chen into, for builds that mount their own. Defaults to sbt's.
+    required: false
+    default: ''
+  setup-jdk:
+    description: Set up a JDK and sbt first, for jobs that do not install them.
+    required: false
+    default: 'false'
 runs:
   using: composite
   steps:
@@ -16,3 +33,41 @@ runs:
         dir="${COURSIER_CONFIG_DIR:-$HOME/.config/coursier}"
         mkdir -p "$dir"
         printf 'maven.pkg.github.com x-access-token %s\n' "$GITHUB_TOKEN" > "$dir/credentials.properties"
+    - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961  # v5.7.0
+      if: inputs.chen-ref != '' && inputs.setup-jdk == 'true'
+      with:
+        distribution: 'temurin'
+        java-version: '25'
+    - uses: sbt/setup-sbt@67d461eba2c4753196c230e02da850757ba4775e  # v1.5.14
+      if: inputs.chen-ref != '' && inputs.setup-jdk == 'true'
+    - name: Publish the chen branch locally
+      if: inputs.chen-ref != '' && runner.os != 'Windows'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        CHEN_DIR: ${{ runner.temp }}/chen-branch
+        CHEN_REF: ${{ inputs.chen-ref }}
+        IVY_HOME: ${{ inputs.ivy-home }}
+      run: |
+        set -euo pipefail
+        git clone --quiet --depth 1 --branch "$CHEN_REF" https://github.com/AppThreat/chen.git "$CHEN_DIR"
+        cd "$CHEN_DIR"
+        sbt --server ${IVY_HOME:+"-Dsbt.ivy.home=$IVY_HOME"} -batch \
+          "set ThisBuild / Compile / packageDoc / publishArtifact := false; publishLocal"
+        cd "$RUNNER_TEMP"
+        rm -rf "$CHEN_DIR"
+    - name: Publish the chen branch locally
+      if: inputs.chen-ref != '' && runner.os == 'Windows'
+      shell: pwsh
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        CHEN_DIR: ${{ runner.temp }}\chen-branch
+        CHEN_REF: ${{ inputs.chen-ref }}
+      run: |
+        git clone --quiet --depth 1 --branch "$env:CHEN_REF" https://github.com/AppThreat/chen.git "$env:CHEN_DIR"
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        Push-Location "$env:CHEN_DIR"
+        sbt --server -batch "set ThisBuild / Compile / packageDoc / publishArtifact := false; publishLocal"
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        Pop-Location
+        Remove-Item -Recurse -Force "$env:CHEN_DIR"
