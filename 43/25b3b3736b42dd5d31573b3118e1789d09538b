@@ -1,0 +1,23 @@
+src/main/scala/io/appthreat/atom/GraphCommands.scala
+  s_f10eefff00361f::t_5a578cf77aa2e5 31
+src/test/scala/io/appthreat/atom/GraphCommandsTests.scala
+  s_f10eefff00361f::t_d0910f6f1e8e6d 74-95
+build.sbt
+  s_f10eefff00361f::t_b023f3fa0ef649 33-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4325b3b3736b42dd5d31573b3118e1789d09538b",
+  "prompts": {},
+  "sessions": {
+    "s_f10eefff00361f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2900ce21-cc07-43d7-9602-deaffad1f75a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
