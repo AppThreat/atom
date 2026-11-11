@@ -41,6 +41,7 @@ import io.appthreat.pysrc2cpg.{
 }
 import io.appthreat.ruby2atom.{Ruby2Atom, Config as RubyConfig}
 import io.appthreat.x2cpg.passes.base.AstLinkerPass
+import io.appthreat.x2cpg.parse.ParseReporter
 import io.appthreat.x2cpg.perf.PerfReporter
 import io.appthreat.x2cpg.passes.frontend.{XTypeRecovery, XTypeRecoveryConfig}
 import io.appthreat.x2cpg.passes.taggers.{
@@ -511,6 +512,19 @@ object Atom:
         )
         .action((x, c) =>
           if x.trim.nonEmpty then System.setProperty("chen.perf.report", x.trim)
+          c
+        )
+    // Opt-in per-file parse report (chen#255): what the frontends left out, as one JSON document.
+    // Without it nothing is collected and nothing is written.
+    opt[String]("parse-report")
+        .text(
+          "Opt-in per-file parse report: pass a file path to have atom write one JSON document " +
+              "naming every file the frontends left out or only partly read, with the outcome " +
+              "(unparsed, dropped, partial), the stage and the parser's reason. Separate a broken " +
+              "project from a quietly incomplete one with it. Written even when the run fails."
+        )
+        .action((x, c) =>
+          if x.trim.nonEmpty then System.setProperty("chen.parse.report", x.trim)
           c
         )
     // --- Per-language frontend flags (applied only when -l matches) ---
@@ -1101,14 +1115,48 @@ object Atom:
         ToolVersions.current().lines.foreach(println)
         Right("Displayed versions")
       else
+        // one report per run: the collector starts from empty however often this process runs
+        ParseReporter.reset()
+        parseReportContext = None
         val result = runParsed(args.toList)
         ToolVersions.appendToPerfReport(ToolVersions.current())
+        writeParseReport()
         result
   end run
+
+  /** The language and input root of the run being parsed, for the parse report's header. Set once
+    * the configuration parsed, kept for the report that is written even after a failed run.
+    */
+  private var parseReportContext: Option[(String, String)] = None
+
+  /** Write the parse report `--parse-report` asked for, whatever the run returned, then clear the
+    * property and the records so a later run in the same process starts clean. A run that fails
+    * after the frontend still shows what was lost; a run that failed before any frontend ran writes
+    * the same document with no records.
+    */
+  private def writeParseReport(): Unit =
+      Option(System.getProperty("chen.parse.report")).foreach { path =>
+        val (language, inputRoot) = parseReportContext.getOrElse(("", ""))
+        val records               = if ParseReporter.isEnabled then ParseReporter.records else Nil
+        ParseReport.write(
+          path,
+          ParseReport.document(ToolVersions.current().atom, language, inputRoot, records)
+        ) match
+          case Failure(err) =>
+              System.err.println(
+                s"parse-report: failed to write $path: ${Option(err.getMessage).getOrElse("")}"
+              )
+          case Success(_) =>
+        System.clearProperty("chen.parse.report")
+        ParseReporter.reset()
+      }
+  end writeParseReport
 
   private def runParsed(parserArgs: List[String]): Either[String, String] =
     parseConfig(parserArgs) match
       case Right(config: AtomConfig) =>
+          parseReportContext =
+              Some((config.language, config.inputPath.canonicalPath))
           AtomConfigLoader(config) match
             case Right(loaded) =>
                 if loaded.frontendArgsKeys then
@@ -1131,6 +1179,7 @@ object Atom:
                     )
                   run(loaded, loaded.language)
             case Left(err) => Left(err)
+          end match
       case Right(_)  => Left("Invalid configuration generated")
       case Left(err) => Left(err)
     end match
