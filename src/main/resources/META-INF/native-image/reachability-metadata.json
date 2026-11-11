@@ -36,158 +36,484 @@
     },
     {
       "type": "com.github.javaparser.ast.ArrayCreationLevel",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.CompilationUnit",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.CompilationUnit[]"
     },
     {
+      "type": "com.github.javaparser.ast.ImportDeclaration",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.Modifier",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.Node",
+      "allPublicMethods": true
+    },
+    {
       "type": "com.github.javaparser.ast.PackageDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.AnnotationDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.AnnotationMemberDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.BodyDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.CallableDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.ClassOrInterfaceDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.CompactConstructorDeclaration",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.ConstructorDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.EnumConstantDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.EnumDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.FieldDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.InitializerDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.MethodDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.Parameter",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.ReceiverParameter",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.RecordDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.body.TypeDeclaration",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.body.VariableDeclarator",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.comments.BlockComment",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.comments.Comment",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.comments.JavadocComment",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.comments.LineComment",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.comments.MarkdownComment",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.comments.TraditionalJavadocComment",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.AnnotationExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.ArrayAccessExpr",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.expr.ArrayCreationExpr",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.expr.ArrayInitializerExpr",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.AssignExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.BinaryExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.BooleanLiteralExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.CastExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.CharLiteralExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.ClassExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.ComponentPatternExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.ConditionalExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.DoubleLiteralExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.EnclosedExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.Expression",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.expr.FieldAccessExpr",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.InstanceOfExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.IntegerLiteralExpr",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.expr.LambdaExpr",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.LiteralExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.LiteralStringValueExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.LongLiteralExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.MarkerAnnotationExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.MatchAllPatternExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.MemberValuePair",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.expr.MethodCallExpr",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.expr.MethodReferenceExpr",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.Name",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.NameExpr",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.expr.NormalAnnotationExpr",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.NullLiteralExpr",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.expr.ObjectCreationExpr",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.expr.PatternExpr",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.RecordPatternExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.SimpleName",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.SingleMemberAnnotationExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.StringLiteralExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.SuperExpr",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.expr.SwitchExpr",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.TextBlockLiteralExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.ThisExpr",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.TypeExpr",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.expr.TypePatternExpr",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.expr.UnaryExpr",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.expr.VariableDeclarationExpr",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.modules.ModuleDeclaration",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.modules.ModuleDirective",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.modules.ModuleExportsDirective",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.modules.ModuleOpensDirective",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.modules.ModuleProvidesDirective",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.modules.ModuleRequiresDirective",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.modules.ModuleUsesDirective",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.AssertStmt",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.stmt.BlockStmt",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.BreakStmt",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.CatchClause",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.ContinueStmt",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.DoStmt",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.EmptyStmt",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.ExpressionStmt",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.ForEachStmt",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.stmt.ForStmt",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.IfStmt",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.LabeledStmt",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.LocalClassDeclarationStmt",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.LocalRecordDeclarationStmt",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.ReturnStmt",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.Statement",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.stmt.SwitchEntry",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.stmt.SwitchStmt",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.SynchronizedStmt",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.ThrowStmt",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.stmt.TryStmt",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.UnparsableStmt",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.WhileStmt",
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.stmt.YieldStmt",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.type.ArrayType",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.type.ClassOrInterfaceType",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
+    },
+    {
+      "type": "com.github.javaparser.ast.type.IntersectionType",
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.type.PrimitiveType",
       "allDeclaredFields": true,
+      "allPublicMethods": true,
       "methods": [
         {
           "name": "getType",
@@ -197,11 +523,13 @@
     },
     {
       "type": "com.github.javaparser.ast.type.ReferenceType",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.type.Type",
       "allDeclaredFields": true,
+      "allPublicMethods": true,
       "methods": [
         {
           "name": "getAnnotations",
@@ -211,27 +539,33 @@
     },
     {
       "type": "com.github.javaparser.ast.type.TypeParameter",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.type.UnionType",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.type.UnknownType",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.type.VarType",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.type.VoidType",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.github.javaparser.ast.type.WildcardType",
-      "allDeclaredFields": true
+      "allDeclaredFields": true,
+      "allPublicMethods": true
     },
     {
       "type": "com.sun.management.GcInfo",
@@ -532,6 +866,22 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$AnyTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ArgumentPlaceholder$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ArrayExpression$",
       "fields": [
         {
@@ -541,6 +891,14 @@
     },
     {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ArrayPattern$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ArrayTypeAnnotation$",
       "fields": [
         {
           "name": "MODULE$"
@@ -580,7 +938,23 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$BigIntLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$BinaryExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$BindExpression$",
       "fields": [
         {
           "name": "MODULE$"
@@ -597,6 +971,22 @@
     },
     {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$BooleanLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$BooleanLiteralTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$BooleanTypeAnnotation$",
       "fields": [
         {
           "name": "MODULE$"
@@ -628,6 +1018,22 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ClassAccessorProperty$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ClassBody$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ClassDeclaration$",
       "fields": [
         {
@@ -636,7 +1042,39 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ClassExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ClassImplements$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ClassMethod$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ClassPrivateMethod$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ClassPrivateProperty$",
       "fields": [
         {
           "name": "MODULE$"
@@ -668,7 +1106,143 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DebuggerStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DecimalLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DeclareClass$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DeclareExportAllDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DeclareExportDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DeclareFunction$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DeclareInterface$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DeclareModule$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DeclareModuleExports$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DeclareOpaqueType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DeclareTypeAlias$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DeclareVariable$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DeclaredPredicate$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$Decorator$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$Directive$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DirectiveLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DoExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$DoWhileStatement$",
       "fields": [
         {
           "name": "MODULE$"
@@ -684,6 +1258,102 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$EmptyTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$EnumBooleanBody$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$EnumBooleanMember$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$EnumDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$EnumDefaultedMember$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$EnumNumberBody$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$EnumNumberMember$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$EnumStringBody$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$EnumStringMember$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$EnumSymbolBody$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ExistsTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ExportAllDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ExportDefaultDeclaration$",
       "fields": [
         {
@@ -692,7 +1362,31 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ExportDefaultSpecifier$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ExportNamedDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ExportNamespaceSpecifier$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ExportSpecifier$",
       "fields": [
         {
           "name": "MODULE$"
@@ -756,6 +1450,30 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$FunctionTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$FunctionTypeParam$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$GenericTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$Identifier$",
       "fields": [
         {
@@ -780,6 +1498,14 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ImportAttribute$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ImportDeclaration$",
       "fields": [
         {
@@ -789,6 +1515,14 @@
     },
     {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ImportDefaultSpecifier$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ImportExpression$",
       "fields": [
         {
           "name": "MODULE$"
@@ -812,6 +1546,62 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$IndexedAccessType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$InferredPredicate$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$InterfaceDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$InterfaceExtends$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$InterfaceTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$InterpreterDirective$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$IntersectionTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXAttribute$",
       "fields": [
         {
@@ -828,7 +1618,23 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXClosingFragment$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXElement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXEmptyExpression$",
       "fields": [
         {
           "name": "MODULE$"
@@ -844,6 +1650,38 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXFragment$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXIdentifier$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXMemberExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXNamespacedName$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXOpeningElement$",
       "fields": [
         {
@@ -852,7 +1690,39 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXOpeningFragment$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXSpreadAttribute$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXSpreadChild$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$JSXText$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$LabeledStatement$",
       "fields": [
         {
           "name": "MODULE$"
@@ -876,6 +1746,30 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$MetaProperty$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$MixedTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ModuleExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$NewExpression$",
       "fields": [
         {
@@ -884,7 +1778,55 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$Noop$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$NullLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$NullLiteralTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$NullableTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$NumberLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$NumberLiteralTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$NumberTypeAnnotation$",
       "fields": [
         {
           "name": "MODULE$"
@@ -932,7 +1874,71 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ObjectTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ObjectTypeCallProperty$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ObjectTypeIndexer$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ObjectTypeInternalSlot$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ObjectTypeProperty$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ObjectTypeSpreadProperty$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$OpaqueType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$OptionalCallExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$OptionalIndexedAccessType$",
       "fields": [
         {
           "name": "MODULE$"
@@ -948,7 +1954,71 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ParenthesizedExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$PipelineBareFunction$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$PipelinePrimaryTopicReference$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$PipelineTopicExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$Placeholder$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$PrivateName$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$Program$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$QualifiedTypeIdentifier$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$RecordExpression$",
       "fields": [
         {
           "name": "MODULE$"
@@ -964,7 +2034,23 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$RegexLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$RestElement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$RestProperty$",
       "fields": [
         {
           "name": "MODULE$"
@@ -980,6 +2066,14 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$SequenceExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$SpreadElement$",
       "fields": [
         {
@@ -988,7 +2082,39 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$SpreadProperty$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$StaticBlock$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$StringLiteral$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$StringLiteralTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$StringTypeAnnotation$",
       "fields": [
         {
           "name": "MODULE$"
@@ -1020,6 +2146,14 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$SymbolTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSAnyKeyword$",
       "fields": [
         {
@@ -1044,7 +2178,79 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSBigIntKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSBooleanKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSCallSignatureDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSClassImplements$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSConditionalType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSConstructSignatureDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSConstructorType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSDeclareFunction$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSDeclareMethod$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSEnumBody$",
       "fields": [
         {
           "name": "MODULE$"
@@ -1108,7 +2314,95 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSImportType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSIndexSignature$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSIndexedAccessType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSInferType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSInstantiationExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSInterfaceBody$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSInterfaceDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSInterfaceHeritage$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSIntersectionType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSIntrinsicKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSLiteralType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSMappedType$",
       "fields": [
         {
           "name": "MODULE$"
@@ -1124,7 +2418,79 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSModuleBlock$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSModuleDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSNamedTupleMember$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSNamespaceExportDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSNeverKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSNonNullExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSNullKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSNumberKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSObjectKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSOptionalType$",
       "fields": [
         {
           "name": "MODULE$"
@@ -1140,7 +2506,39 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSParenthesizedType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSPropertySignature$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSQualifiedName$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSRestType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSSatisfiesExpression$",
       "fields": [
         {
           "name": "MODULE$"
@@ -1156,7 +2554,39 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSSymbolKeyword$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTemplateLiteralType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSThisType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTupleType$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeAliasDeclaration$",
       "fields": [
         {
           "name": "MODULE$"
@@ -1172,6 +2602,30 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeAssertion$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeCastExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeLiteral$",
       "fields": [
         {
@@ -1180,7 +2634,63 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeOperator$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeParameter$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeParameterDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeParameterInstantiation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypePredicate$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeQuery$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSTypeReference$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TSUndefinedKeyword$",
       "fields": [
         {
           "name": "MODULE$"
@@ -1212,6 +2722,14 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TaggedTemplateExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TemplateElement$",
       "fields": [
         {
@@ -1236,7 +2754,23 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ThisTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$ThrowStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TopicReference$",
       "fields": [
         {
           "name": "MODULE$"
@@ -1252,6 +2786,78 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TupleExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TupleTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TypeAlias$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TypeCastExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TypeParameter$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TypeParameterDeclaration$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TypeParameterInstantiation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$TypeofTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$UnaryExpression$",
       "fields": [
         {
@@ -1260,7 +2866,23 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$UnionTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$UpdateExpression$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$V8IntrinsicIdentifier$",
       "fields": [
         {
           "name": "MODULE$"
@@ -1284,7 +2906,39 @@
       ]
     },
     {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$Variance$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$VoidTypeAnnotation$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
       "type": "io.appthreat.jssrc2cpg.parser.BabelAst$WhileStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$WithStatement$",
+      "fields": [
+        {
+          "name": "MODULE$"
+        }
+      ]
+    },
+    {
+      "type": "io.appthreat.jssrc2cpg.parser.BabelAst$YieldExpression$",
       "fields": [
         {
           "name": "MODULE$"
