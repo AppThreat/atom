@@ -133,6 +133,31 @@ public class Account {
 EOF
 check lombok java "$WORK/lombok" 'demo.Account.getOwner:java.lang.String()' env
 
+# --parse-report: the file the frontend cannot parse is named in the report, with its outcome and
+# the parser's reason, while its good twin stays out of the report and in the graph (chen#255).
+mkdir -p "$WORK/pr"
+cat > "$WORK/pr/Main.java" <<'EOF'
+import java.security.MessageDigest;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+    }
+}
+EOF
+printf 'class Broken {{{\n' > "$WORK/pr/Broken.java"
+check parse-report java "$WORK/pr" "$DIGEST" env -- --parse-report "$WORK/out/parse-report/parse.json"
+if [ -s "$WORK/out/parse-report/parse.json" ] &&
+  grep -q '"file":"Broken.java"' "$WORK/out/parse-report/parse.json" &&
+  grep -q '"outcome":"unparsed"' "$WORK/out/parse-report/parse.json" &&
+  ! grep -q '"file":"Main.java"' "$WORK/out/parse-report/parse.json"; then
+  echo "ok   parse-report-report"
+else
+  echo "FAIL parse-report-report: the report does not name exactly Broken.java"
+  cat "$WORK/out/parse-report/parse.json" 2>/dev/null | head -5
+  failures=$((failures + 1))
+fi
+
 # Each astgen node type becomes its Babel object by name: a type alias, a namespace, a dotted
 # type reference and a non-null assertion before a member access each lost this file before.
 # The JavaScript frontend needs astgen (npm install -g @appthreat/atom-parsetools).
