@@ -71,6 +71,28 @@ class GraphCommandsTests extends PySrc2CpgFixture(withOssDataflow = false):
           }
       }
 
+      "write the whole graph in every format it accepts" in {
+          // Each format comes from a different exporter with its own dependencies: neo4jcsv needs
+          // scala-csv, which the chen artifacts exclude
+          val cpg = code(sampleCode)
+          GraphCommands.supportedFormats.toList.sorted.foreach { format =>
+              File.usingTemporaryDirectory(s"atom-export-$format") { dir =>
+                val config = AtomExportConfig()
+                    .withExportFormat(format)
+                    .asInstanceOf[AtomExportConfig]
+                    .withScope("whole")
+                    .withExportDir(dir.pathAsString)
+                    .asInstanceOf[AtomExportConfig]
+                withClue(s"$format: ") {
+                    GraphCommands.runExport(cpg, config) shouldBe Right(
+                      "Atom exported successfully"
+                    )
+                    dir.listRecursively.exists(f => f.isRegularFile && f.size > 0) shouldBe true
+                }
+              }
+          }
+      }
+
       "reject an unknown format" in {
           val cpg    = code(sampleCode)
           val config = AtomExportConfig().withExportFormat("bogus").asInstanceOf[AtomExportConfig]

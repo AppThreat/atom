@@ -30,6 +30,8 @@ libraryDependencies ++= Seq(
   "io.appthreat"  %% "jimple2cpg"        % Versions.chen,
   "io.appthreat"  %% "php2atom"          % Versions.chen,
   "io.appthreat"  %% "ruby2atom"         % Versions.chen,
+  // `atom export --format neo4jcsv` writes through scala-csv, which the chen artifacts exclude
+  "com.github.tototoshi" %% "scala-csv" % "2.0.0",
   ("io.appthreat" %% "semanticcpg"       % Versions.chen % Test).classifier("tests"),
   ("io.appthreat" %% "x2cpg"             % Versions.chen % Test).classifier("tests"),
   ("io.appthreat" %% "pysrc2cpg"         % Versions.chen % Test).classifier("tests"),
