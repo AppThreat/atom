@@ -1,6 +1,6 @@
 package io.appthreat.atom
 
-import io.appthreat.x2cpg.parse.{ParseFailureRecord, ParseReporter}
+import io.appthreat.x2cpg.parse.ParseFailureRecord
 import io.circe.Json
 
 import scala.util.{Failure, Success, Try}
@@ -57,9 +57,4 @@ object ParseReport:
           file.write(document.noSpaces)
       }
 
-  /** The records the frontends collected during this run, or `None` when the collector was never
-    * enabled and there is nothing to say.
-    */
-  def collected: Option[List[ParseFailureRecord]] =
-      Option.when(ParseReporter.isEnabled)(ParseReporter.records)
 end ParseReport

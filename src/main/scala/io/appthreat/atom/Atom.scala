@@ -1118,10 +1118,11 @@ object Atom:
         // one report per run: the collector starts from empty however often this process runs
         ParseReporter.reset()
         parseReportContext = None
-        val result = runParsed(args.toList)
-        ToolVersions.appendToPerfReport(ToolVersions.current())
-        writeParseReport()
-        result
+        try
+          val result = runParsed(args.toList)
+          ToolVersions.appendToPerfReport(ToolVersions.current())
+          result
+        finally writeParseReport()
   end run
 
   /** The language and input root of the run being parsed, for the parse report's header. Set once
@@ -1137,7 +1138,7 @@ object Atom:
   private def writeParseReport(): Unit =
       Option(System.getProperty("chen.parse.report")).foreach { path =>
         val (language, inputRoot) = parseReportContext.getOrElse(("", ""))
-        val records               = if ParseReporter.isEnabled then ParseReporter.records else Nil
+        val records               = ParseReporter.records
         ParseReport.write(
           path,
           ParseReport.document(ToolVersions.current().atom, language, inputRoot, records)
