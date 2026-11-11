@@ -1,0 +1,37 @@
+codemeta.json
+  s_f10eefff00361f::t_bc8a6509a5d3b7 10
+ci/Dockerfile
+  s_f10eefff00361f::t_bc8a6509a5d3b7 20
+ci/Dockerfile-ruby
+  s_f10eefff00361f::t_bc8a6509a5d3b7 7
+ci/Dockerfile-sle
+  s_f10eefff00361f::t_bc8a6509a5d3b7 20
+ci/Dockerfile-alpine-ruby
+  s_f10eefff00361f::t_bc8a6509a5d3b7 7
+ci/Dockerfile-ruby3
+  s_f10eefff00361f::t_bc8a6509a5d3b7 7
+ci/Dockerfile-alpine-ruby3
+  s_f10eefff00361f::t_bc8a6509a5d3b7 7
+wrapper/nodejs/packages/atom/package.json
+  s_f10eefff00361f::t_bc8a6509a5d3b7 3,39-47
+build.sbt
+  s_f10eefff00361f::t_bc8a6509a5d3b7 3
+wrapper/nodejs/package-lock.json
+  s_f10eefff00361f::t_e57b2a965fe55c 1294,1303-1311,1316,1327,1338,1343,1357,1371,1385,1399,1410
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7d2c2c462b7f1ec8f84b8ccf3e572825641627f5",
+  "prompts": {},
+  "sessions": {
+    "s_f10eefff00361f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2900ce21-cc07-43d7-9602-deaffad1f75a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
