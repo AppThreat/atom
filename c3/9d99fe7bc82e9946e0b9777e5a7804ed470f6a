@@ -1,0 +1,23 @@
+ci/native-smoke.sh
+  s_f10eefff00361f::t_2cb0d662c7ceaf 8-9,13-14
+  s_f10eefff00361f::t_b8263cc2727035 116-162
+  s_f10eefff00361f::t_0d40db65a7ca2d 163
+.github/workflows/release.yml
+  s_f10eefff00361f::t_ecbbdffbfe14e8 157-162,180,262-267,284,351-356,368
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c39d99fe7bc82e9946e0b9777e5a7804ed470f6a",
+  "prompts": {},
+  "sessions": {
+    "s_f10eefff00361f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2900ce21-cc07-43d7-9602-deaffad1f75a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
