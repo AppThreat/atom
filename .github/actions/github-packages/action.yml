@@ -10,9 +10,10 @@ inputs:
   chen-ref:
     description: >-
       The chen branch to build and publish locally, or empty to use the released chen. Temporary:
-      set while atom needs AppThreat/chen#315 before it is released, and emptied once it is.
+      main while atom needs the parse report collector of AppThreat/chen#315 before chen 4.0.1 is
+      released, and emptied once it is.
     required: false
-    default: 'feat/parse-report'
+    default: 'main'
   ivy-home:
     description: Ivy home to publish chen into, for builds that mount their own. Defaults to sbt's.
     required: false
