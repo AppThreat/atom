@@ -56,6 +56,18 @@ final class PhpCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "php")
 
   private def clean(name: String): String = name.stripPrefix("\\")
 
+  /** The class a call's full name names, read the way `calls()` reads it: an instance call carries
+    * the receiver's class before `->` (php2atom names the constructor of `new Foo` the same way), a
+    * static one the class before `::`. None for a plain function call.
+    */
+  def classOfCallName(full: String): Option[String] =
+      full.indexOf("->") match
+        case i if i > 0 => Some(clean(full.substring(0, i)))
+        case _ =>
+            full.indexOf("::") match
+              case i if i > 0 => Some(clean(full.substring(0, i)))
+              case _          => None
+
   private def unusable(name: String): Boolean =
       name.isEmpty || name.exists(c => c == '<' || c == '$' || c == ' ' || c == '(') ||
           name == "ANY" || PhpCallSiteSource.SpecialNames.contains(name.toLowerCase)
@@ -65,12 +77,19 @@ final class PhpCallSiteSource(atom: Cpg) extends BaseCallSiteSource(atom, "php")
   /** Whether `cls` is a use of something the project does not declare: PHP's own class, or one a
     * Composer package declares (any class the project does not declare, without Composer metadata).
     */
-  private def externalClass(cls: String): Boolean =
+  def externalClass(cls: String): Boolean =
       !unusable(cls) && !projectTypes.contains(cls.toLowerCase) &&
           (isBuiltinClass(cls) || composer.declaredByPackage(cls))
 
-  private def purlOf(cls: String): String =
+  /** The package URL of the Composer package that declares `cls`; a PHP built-in has none. */
+  def purlOf(cls: String): String =
       if isBuiltinClass(cls) then "" else composer.purlOfClass(cls)
+
+  /** The name of the Composer package that declares `cls`, as its purl spells it; a PHP built-in is
+    * none's.
+    */
+  def packageNameOf(cls: String): Option[String] =
+      if isBuiltinClass(cls) then None else composer.packageNameOfClass(cls)
 
   private def lineOf(n: AstNode): Integer = n match
     case e: Expression        => e.lineNumber.getOrElse(-1)

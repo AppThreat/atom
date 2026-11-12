@@ -8,7 +8,7 @@ import io.appthreat.dataflowengineoss.semanticsloader.FlowSemantic
 import io.appthreat.atom.frontends.FrontendArgsApplier
 import io.appthreat.atom.frontends.clike.C2Atom
 import io.appthreat.atom.parsedeps.parseDependencies
-import io.appthreat.atom.passes.TypeHintPass
+import io.appthreat.atom.passes.{PhpDependencySinkTagger, TypeHintPass}
 import io.appthreat.atom.slicing.*
 import io.appthreat.edg2atom.Edg2Atom
 import io.appthreat.c2cpg.parser.ProjectSources
@@ -2190,6 +2190,12 @@ object Atom:
               }
               PerfReporter.stage("taggers.EasyTagsPass", "analysis") {
                   new EasyTagsPass(atom).createAndApply()
+              }
+              // Calls into dependency code that php2atom recorded at the boundary instead of
+              // parsing (`vendor/` left out) become reachables sinks here, with the package URL
+              // the Composer metadata maps them to (atom#395). A no-op on every other language.
+              PerfReporter.stage("taggers.PhpDependencySinkTagger", "analysis") {
+                  new PhpDependencySinkTagger(atom).createAndApply()
               }
               // Unicode that hides what the code does (look-alike names, bidi controls)
               PerfReporter.stage("taggers.SourceIntegrityPass", "analysis") {
