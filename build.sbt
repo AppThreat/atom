@@ -111,7 +111,12 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 maintainer     := "Team AppThreat <cloud@appthreat.com>"
 packageSummary := "Create atom (⚛) representation"
 packageDescription := """Create atom (⚛) representation for your application, packages and libraries."""
-debianPackageDependencies := Seq("java21-runtime-headless")
+// atom 4.x is Java 23 bytecode, so the package must pull in a runtime that can load it. Since
+// openjdk-24, Debian and Ubuntu no longer provide the javaNN-runtime-headless virtuals, so the
+// versioned java-runtime-headless virtual (satisfied by openjdk-25 and later, including
+// default-jre-headless where it points at 25) is paired with a concrete package that exists in
+// Debian trixie and later and Ubuntu 25.04 and later.
+debianPackageDependencies := Seq("java-runtime-headless (>= 23) | openjdk-25-jre-headless")
 rpmVendor                 := "AppThreat"
 
 lazy val createDistribution = taskKey[File]("Create a complete atom distribution")
