@@ -95,10 +95,6 @@ jobs:
         if: env.CODE == 'true'
       - uses: ./.github/actions/github-packages
         if: env.CODE == 'true'
-        with:
-          # Temporary: build chen from the 390 fix branch until AppThreat/chen#316 merges, so the
-          # un-skipped Windows EDG case runs against the tokenizer fix; back to main afterwards.
-          chen-ref: fix/390-edg-header-short-name-attribution
       # Before `sbt test`: the C frontend workflow tests cancel their EDG cases without edga
       - uses: ./.github/actions/edga
         if: env.CODE == 'true'
