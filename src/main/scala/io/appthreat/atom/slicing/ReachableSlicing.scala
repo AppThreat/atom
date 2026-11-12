@@ -985,6 +985,11 @@ object ReachableSlicing:
         t.contains("source") || t.contains("input") || t.contains("route")
     )
 
+    // With the default sink tags on C graphs, the sink categories here are the first five
+    // lowercase tag names the atom carries, not a fixed sink list. EDG graphs carry macro-fact
+    // tags (macro-origin, macro-invocation, macro-argument-copy) and memory-safety-overlay tags
+    // (memory-safety, extent), so entries can be sink-labeled with them; on CDT graphs most
+    // entries already carry overlay-tag labels.
     val sinkFlows = if atomPossibleSinkTags.nonEmpty then
       List(atom.tag.name(s"(${atomPossibleSinkTags.slice(0, 5).mkString("|")})")
           .identifier.reachableByFlows(atom.tag.name(
