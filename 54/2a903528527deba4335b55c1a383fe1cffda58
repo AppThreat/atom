@@ -1,0 +1,21 @@
+ci/native-smoke.sh
+  s_8c92bc68e23a79::t_6dfdccfdb85a7b 8-9
+  s_8c92bc68e23a79::t_f091f3604f6c17 157
+  s_8c92bc68e23a79::t_27088c8b42363c 189-215
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "542a903528527deba4335b55c1a383fe1cffda58",
+  "prompts": {},
+  "sessions": {
+    "s_8c92bc68e23a79": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-d0c963c4-9447-40eb-8061-0692c24dca07-actor_3_3",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
