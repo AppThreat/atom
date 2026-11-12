@@ -99,8 +99,11 @@ DIGEST='java.security.MessageDigest.getInstance:java.security.MessageDigest(java
 check jar jar "$WORK/jarin" "$DIGEST" env
 check jimple jimple "$WORK/classes" "$DIGEST" env
 check scala scala "$SCALA_INPUT" "$DIGEST" env
+# JDK discovery through --jdk-path alone: the environment loses JAVA_HOME, ATOM_JAVA_HOME and
+# JDK_HOME, and the JDK bin goes on PATH only so the launcher script can start, since a macOS
+# java on PATH can be the /usr/bin stub, which does not start without JAVA_HOME.
 check jdk-path jar "$WORK/jarin" "$DIGEST" env -u JAVA_HOME -u ATOM_JAVA_HOME -u JDK_HOME \
-  -- --jdk-path "$JAVA_HOME"
+  PATH="$JAVA_HOME/bin:$PATH" -- --jdk-path "$JAVA_HOME"
 check path-only jimple "$WORK/classes" 'java.sql.DriverManager.getConnection' \
   env -u JAVA_HOME -u ATOM_JAVA_HOME -u JDK_HOME PATH="$JAVA_HOME/bin:/usr/bin:/bin"
 
