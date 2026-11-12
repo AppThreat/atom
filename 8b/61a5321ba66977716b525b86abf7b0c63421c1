@@ -1,0 +1,28 @@
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  s_e00e050274422c::t_6b32e824c5a404 988-992
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  s_e00e050274422c::t_4e43535a415f41 53-54,62-73
+  s_e00e050274422c::t_d5d7d697dbd8e2 708-728
+  s_e00e050274422c::t_bf4f425473076b 7
+  s_e00e050274422c::t_d6887d07d711f7 523-526,532,548-550,560-562,567,569,572-573,578,583-584,587-588,590-593,603-605,609-611,613-614,622,626-629
+  s_e00e050274422c::t_b57c526ff39149 527-531,540-547,552-559,563-566,568,570-571,574-577,579-582,585,589,606-608,615-618,623,625
+  s_e00e050274422c::t_02838842f34ee1 4-6,11
+  s_e00e050274422c::t_bf25320d2e9924 624
+  s_e00e050274422c::t_aa573976399291 37-38,533-539,551,586,594-602,612,619-621
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8b61a5321ba66977716b525b86abf7b0c63421c1",
+  "prompts": {},
+  "sessions": {
+    "s_e00e050274422c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-ac8c0873-1e4f-4a69-8725-04b1b7b0a4ea-actor_3_5",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
