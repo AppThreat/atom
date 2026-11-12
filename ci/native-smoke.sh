@@ -5,8 +5,8 @@
 # classes from an installed JDK's lib/modules. This builds a small jar and class directory (and a
 # Scala 3 one when scalac is on PATH), then checks, for each language, that atom exits 0 and writes
 # a usages slice that resolves JDK calls. It also checks JDK discovery through PATH alone and the
-# no-JDK fallback, and that the Python, Java (Lombok) and TypeScript source frontends keep files
-# whose AST classes they look up by name.
+# no-JDK fallback, and that the Python, Java (Lombok), JavaScript and TypeScript source
+# frontends keep files whose AST classes they look up by name.
 #
 # usage: bash ci/native-smoke.sh <atom binary>
 #   JAVA_HOME  the JDK for javac and for atom to read (required)
@@ -154,7 +154,7 @@ if [ -s "$WORK/out/parse-report/parse.json" ] &&
   echo "ok   parse-report-report"
 else
   echo "FAIL parse-report-report: the report does not name exactly Broken.java"
-  cat "$WORK/out/parse-report/parse.json" 2>/dev/null | head -5
+  cat "$WORK/out/parse-report/parse.json" 2>/dev/null | head -5 || true
   failures=$((failures + 1))
 fi
 
@@ -184,6 +184,33 @@ elif [ -n "${CI:-}" ]; then
   failures=$((failures + 1))
 else
   echo "skip typescript: astgen is not on PATH"
+fi
+
+# Every astgen node type becomes its Babel object by name, and a file whose lookup fails is
+# dropped whole: the Directive and DirectiveLiteral nodes of a "use strict" directive had no
+# metadata at 4.0.0, so every JavaScript file carrying the directive lost its calls from the
+# slice (#396). A require call from the file resolves the module only while the file survives.
+mkdir -p "$WORK/js"
+cat > "$WORK/js/app.js" <<'EOF'
+"use strict";
+
+const { exec } = require("child_process");
+
+// Run cmd through the shell and report whether it succeeded.
+function run(cmd) {
+  exec(cmd, { shell: "/bin/sh" });
+  return true;
+}
+
+module.exports = run;
+EOF
+if command -v astgen > /dev/null 2>&1; then
+  check javascript js "$WORK/js" '"resolvedMethod":"child_process"' env
+elif [ -n "${CI:-}" ]; then
+  echo "FAIL javascript: astgen is not on PATH"
+  failures=$((failures + 1))
+else
+  echo "skip javascript: astgen is not on PATH"
 fi
 
 # Without any JDK, atom still builds the atom, with phantom JDK types, and says so.
