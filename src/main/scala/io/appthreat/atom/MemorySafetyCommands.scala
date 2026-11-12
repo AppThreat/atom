@@ -4,7 +4,7 @@ import better.files.File
 import io.circe.syntax.EncoderOps
 import io.circe.{Json, JsonObject}
 import io.shiftleft.codepropertygraph.generated.Cpg
-import io.shiftleft.codepropertygraph.generated.PropertyNames
+import io.shiftleft.codepropertygraph.generated.{Languages, PropertyNames}
 import io.shiftleft.codepropertygraph.generated.nodes.*
 import io.shiftleft.semanticcpg.language.*
 import io.appthreat.x2cpg.passes.taggers.{
@@ -41,6 +41,12 @@ object MemorySafetyCommands:
 
   private val confidenceOrder = Map("high" -> 3, "medium" -> 2, "low" -> 1)
 
+  /** The languages the C frontends produce. Only on these graphs does the overlay actually tag, so
+    * only on these does a missing overlay marker mean the findings cannot be there (see
+    * [[runMemorySafety]]); every other language legitimately reports zero findings.
+    */
+  private val OverlayLanguages = Set(Languages.C, Languages.NEWC, "CPP", "C++")
+
   /** Render every finding and write it to `config.outputSliceFile`. */
   def runMemorySafety(
     cpg: Cpg,
@@ -59,6 +65,22 @@ object MemorySafetyCommands:
       )
     val minConfidence = confidenceOrder.getOrElse(requested, 0)
     val inputRoot     = config.inputPath.name
+
+    // The findings are tags only the overlay writes, and a graph without them is exactly what a
+    // finding-free program looks like - so when the marker Atom writes alongside the overlay is
+    // missing on a C/C++ graph, refuse instead of rendering an empty (exit 0) report. This guards
+    // `--reuse-atom` against an atom built by another command, and atoms built by atom 4.0.x,
+    // where every dataflow-enhanced command embedded the overlay but nothing recorded it.
+    val language = cpg.metaData.language.headOption.getOrElse("")
+    if OverlayLanguages.contains(language) &&
+      cpg.configFile.name(Atom.MemorySafetyOverlayFileName).isEmpty
+    then
+      return Left(
+        s"The atom at ${atomFile.pathAsString} does not carry memory-safety overlay tags: " +
+            "it was built by a command other than `memory-safety`, or by an atom build that " +
+            "predated overlay marking. Rebuild the atom by running the memory-safety command " +
+            "on the source, and pass --reuse-atom only to an atom that command built."
+      )
 
     val seen = mutable.LinkedHashSet.empty[(Long, String)]
     val findings = cpg.tag
