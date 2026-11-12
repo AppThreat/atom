@@ -1,0 +1,42 @@
+src/test/scala/io/appthreat/atom/PhpAtomWorkflowTests.scala
+  s_ecd89cec396cdc::t_f222a4ab903f70 103,120-121,135,493-495
+  s_ecd89cec396cdc::t_12319d4da1eec1 467-492,496-537
+  s_ecd89cec396cdc::t_6cde772cde9025 87-102,104-119,122-134,136-196
+src/main/scala/io/appthreat/atom/slicing/callsites/PhpComposerMap.scala
+  s_ecd89cec396cdc::t_6ae3e37dd6d75b 125-127
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_ecd89cec396cdc::t_d7bd2445de47ee 11
+  s_ecd89cec396cdc::t_9c14a8bdbb9144 2194-2199
+src/main/scala/io/appthreat/atom/passes/PhpDependencySinkTagger.scala
+  s_ecd89cec396cdc::t_9ec926419fb98d 1-16,22-29,50-61
+  s_ecd89cec396cdc::t_f222a4ab903f70 17,30-49
+  s_ecd89cec396cdc::t_c59a334ede9da5 18-21
+ci/native-smoke.sh
+  s_ecd89cec396cdc::t_8f6f2d0e1cad01 219-221
+  s_ecd89cec396cdc::t_b375326c4abf7f 330,332,334-336,340
+  s_ecd89cec396cdc::t_00eb5437473222 13-17
+  s_ecd89cec396cdc::t_0fda5455b1594b 328-329,331
+  s_ecd89cec396cdc::t_9b3ecad116569f 118
+  s_ecd89cec396cdc::t_8d2167175e313e 101-117,119-126
+  s_ecd89cec396cdc::t_a074abc0db30cc 218,222-327,333,337-339,341-347
+src/main/scala/io/appthreat/atom/slicing/callsites/PhpCallSiteSource.scala
+  s_ecd89cec396cdc::t_6fabe3b94c39e9 59,62-70,80,84-85,90-92
+  s_ecd89cec396cdc::t_f222a4ab903f70 60-61,88-89
+  s_ecd89cec396cdc::t_7b59efabf8773b 93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ea7d4ee6731db0ab134c7dea5379e79bb5ebda41",
+  "prompts": {},
+  "sessions": {
+    "s_ecd89cec396cdc": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-d0c963c4-9447-40eb-8061-0692c24dca07-actor_3_2",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
