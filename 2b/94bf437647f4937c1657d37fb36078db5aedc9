@@ -1,0 +1,19 @@
+build.sbt
+  s_564705cae157c2::t_e22253cb215c69 114-119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2b94bf437647f4937c1657d37fb36078db5aedc9",
+  "prompts": {},
+  "sessions": {
+    "s_564705cae157c2": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_b6e2646d-2c07-45d6-9944-4cfd3c35f7a5",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Team AppThreat <cloud@appthreat.com>"
+    }
+  }
+}
