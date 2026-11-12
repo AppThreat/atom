@@ -137,12 +137,6 @@ class CHeaderBodiesAndIgnorePatternTests extends AnyWordSpec with Matchers:
             },
             "edga is not installed (set EDGA_PATH)"
           )
-          // On Windows the compilation database names the temporary directory by its 8.3 short
-          // name (RUNNER~1), and the header is not attributed to the project; not covered there yet
-          assume(
-            !scala.util.Properties.isWin,
-            "the EDG header attribution is not checked on Windows"
-          )
           File.usingTemporaryDirectory("atom-hdr-bodies-edg") { dir =>
             writeLibraryProject(dir)
             val (methods, _) = runUsages(

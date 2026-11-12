@@ -122,6 +122,9 @@ final class PhpComposerMap(atom: Cpg):
 
   def purlOfClass(cls: String): String = packageOfClass(cls).map(purl).getOrElse("")
 
+  /** The name of the package that declares a class, as `installed.json` spells it. */
+  def packageNameOfClass(cls: String): Option[String] = packageOfClass(cls).map(_.name)
+
   private def namespaceOf(fn: String): Option[String] =
       Option(fn.lastIndexOf('\\')).filter(_ > 0).map(i => fn.substring(0, i + 1))
 
