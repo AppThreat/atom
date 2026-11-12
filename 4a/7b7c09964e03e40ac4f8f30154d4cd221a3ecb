@@ -1,0 +1,29 @@
+ci/native-smoke.sh
+  s_1846f821068a7f::t_c6f4ec3a7feaad 13-17,101-126,248-378
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_1846f821068a7f::t_1658f68df940d6 11,2194-2199
+src/main/scala/io/appthreat/atom/passes/PhpDependencySinkTagger.scala
+  s_1846f821068a7f::t_435d8f21478b06 1-61
+src/main/scala/io/appthreat/atom/slicing/callsites/PhpCallSiteSource.scala
+  s_1846f821068a7f::t_8698bc63029392 59-70,80,84-85,88-93
+src/main/scala/io/appthreat/atom/slicing/callsites/PhpComposerMap.scala
+  s_1846f821068a7f::t_b9caf0d4df3f39 125-127
+src/test/scala/io/appthreat/atom/PhpAtomWorkflowTests.scala
+  s_1846f821068a7f::t_fac6a4cd997cd0 87-196,467-537
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4a7b7c09964e03e40ac4f8f30154d4cd221a3ecb",
+  "prompts": {},
+  "sessions": {
+    "s_1846f821068a7f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_30c45490-22f6-4ee2-98ab-7dcf58d25deb",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
