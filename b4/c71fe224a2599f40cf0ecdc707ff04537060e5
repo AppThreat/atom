@@ -1,0 +1,31 @@
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_291b8fa6c35869::t_b33112b60f027e 11,2229-2236
+  s_291b8fa6c35869::t_28af34cefb3091 2237
+src/main/scala/io/appthreat/atom/passes/JsDependencySinkTagger.scala
+  s_291b8fa6c35869::t_4e6b3baf970ca4 1-4,7-17,20-23,29-35,38-45,47,51-55,59-67,70,81-106
+  s_291b8fa6c35869::t_d4101a1ebf3321 18-19,24-28,36-37,48-50,56-58,68-69
+  s_291b8fa6c35869::t_d851624b5f5d9f 71-80
+  s_291b8fa6c35869::t_57f94ac20ff868 5
+  s_291b8fa6c35869::t_84e5fedc9e556a 6
+  s_291b8fa6c35869::t_d963d9ee48f295 46
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  s_291b8fa6c35869::t_2c74cf48e9d0c0 289-296
+  s_291b8fa6c35869::t_0ee6bf1b6f921e 286-288
+  s_291b8fa6c35869::t_bf74974058d61d 297-299
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b4c71fe224a2599f40cf0ecdc707ff04537060e5",
+  "prompts": {},
+  "sessions": {
+    "s_291b8fa6c35869": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-ac8c0873-1e4f-4a69-8725-04b1b7b0a4ea-actor_3_7",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
