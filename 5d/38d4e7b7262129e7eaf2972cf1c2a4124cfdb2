@@ -1,0 +1,35 @@
+README.md
+  s_1846f821068a7f::t_e15d2157e8ef3c 182,225
+ci/native-smoke.sh
+  s_1846f821068a7f::t_2de93558c047a9 8-9,131-133,135,189,221-248
+docs/docs/cli.md
+  s_1846f821068a7f::t_0fdef77c79c0e8 58,101
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_1846f821068a7f::t_e7a467a1e33ad6 85-92,757-761,1020-1021,2159-2174,2237-2292,2361-2367
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_1846f821068a7f::t_218bc2e785d3e6 7,44-49,69-84
+src/test/scala/io/appthreat/atom/CFrontendWorkflowTests.scala
+  s_1846f821068a7f::t_8a9343e266f848 158-230
+src/test/scala/io/appthreat/atom/DecodedLengthCommandTests.scala
+  s_1846f821068a7f::t_431d1bba12bfdb 188-190
+src/test/scala/io/appthreat/atom/MemorySafetyCommandTests.scala
+  s_1846f821068a7f::t_c0be38a8dbe333 207-209
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  s_1846f821068a7f::t_4b1c451acd3539 47-48,55,57,66-67,77-83,160-208,697-711
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5d38d4e7b7262129e7eaf2972cf1c2a4124cfdb2",
+  "prompts": {},
+  "sessions": {
+    "s_1846f821068a7f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_30c45490-22f6-4ee2-98ab-7dcf58d25deb",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
