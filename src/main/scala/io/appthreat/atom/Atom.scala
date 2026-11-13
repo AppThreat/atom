@@ -63,7 +63,6 @@ import io.appthreat.x2cpg.passes.taggers.{
     ValueOriginPass
 }
 import io.appthreat.x2cpg.passes.taggers.python.PythonFrameworkRecognizersPass
-import io.appthreat.x2cpg.utils.ExternalCommand
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
 import io.shiftleft.codepropertygraph.generated.{Cpg, Languages}
 import io.shiftleft.codepropertygraph.generated.nodes.NewConfigFile
@@ -636,6 +635,17 @@ object Atom:
               case config: AtomConfig => config.withFrontendArg("fetch-dependencies", "true")
               case _                  => c
         )
+    opt[Unit]("no-build-tools")
+        .text(
+          "Never run the project's build tools: no Maven or Gradle dependency fetch and no " +
+              "delombok for Java sources, and no scalasem (sbt) for Scala. Overrides --fetch-deps, " +
+              "--delombok-mode and the same keys from --frontend-args or a config file."
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withBuildTools(false)
+              case _                  => c
+        )
     opt[Boolean]("ts-types")
         .text("Resolve types from TypeScript declarations (default: true). (JS/TS only)")
         .action((x, c) =>
@@ -780,10 +790,23 @@ object Atom:
               case _                  => c
         )
     opt[String]("config")
-        .text("path to a JSON config file for the export and algorithms commands")
+        .text(
+          "path to a JSON config file with frontend options and settings for the export and " +
+              "algorithms commands. An empty file sets nothing."
+        )
         .action((x, c) =>
             c match
               case config: AtomConfig => config.withConfigFile(Option(File(x)))
+              case _                  => c
+        )
+    opt[Unit]("project-config")
+        .text(
+          "read atom.json, .atom/atom.json or .atom/config.json from the input directory when " +
+              "--config is not given. Off by default, since that file comes from the analysed project."
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withProjectConfig(true)
               case _                  => c
         )
     opt[String]("memory-api-config")
@@ -1503,26 +1526,33 @@ object Atom:
                   .toSeq
                   .headOption
                   .map(_.pathAsString)
-        val extraArgs = semanticsPath match
-          case Some(path) => s" -e $path"
-          case None       => ""
-
-        println(
-          s"atom-tools convert -i ${config.outputSliceFile}$extraArgs -t ${config
-                  .language} -f $openapiFormat -o $atomToolsWorkDir${java.io.File.separator}$openapiFileName"
+        val toolArgs = atomToolsConvertArgs(
+          config.outputSliceFile.pathAsString,
+          semanticsPath,
+          config.language,
+          openapiFormat,
+          s"$atomToolsWorkDir${java.io.File.separator}$openapiFileName"
         )
-
-        ExternalCommand.run(
-          s"atom-tools convert -i ${config.outputSliceFile}$extraArgs -t ${config
-                  .language} -f $openapiFormat -o $atomToolsWorkDir${java.io.File.separator}$openapiFileName",
-          atomToolsWorkDir
-        ) match
+        println(("atom-tools" +: toolArgs).mkString(" "))
+        HelperCommand.run("atom-tools", toolArgs, atomToolsWorkDir) match
           case Success(_) =>
               println(s"$openapiFileName created successfully.")
           case Failure(exception) =>
               println(
                 s"Failed to run atom-tools. Use the atom container image or perform 'pip install atom-tools' and re-run this command. Exception: ${exception.getMessage}"
               )
+
+  /** The arguments of `atom-tools convert`, one element per argument. */
+  private[atom] def atomToolsConvertArgs(
+    slicesFile: String,
+    semanticsFile: Option[String],
+    language: String,
+    openapiFormat: String,
+    outputFile: String
+  ): Seq[String] =
+      Seq("convert", "-i", slicesFile) ++
+          semanticsFile.toSeq.flatMap(path => Seq("-e", path)) ++
+          Seq("-t", language, "-f", openapiFormat, "-o", outputFile)
 
   private def generateReachablesSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
     println("Slicing the atom for reachables. This might take a few minutes ...")
@@ -1875,11 +1905,23 @@ object Atom:
         .withInputPath(config.inputPath.pathAsString)
         .withIgnoredFilesRegex(ignoredFilesRegex(JAVA_IGNORE_REGEX, "CHEN_JAVA_IGNORE_DIRS"))
         .withOutputPath(outputAtomFile)
-    val finalConfig = FrontendArgsApplier.applyJava(baseConfig, config.frontendArgs)
+    val finalConfig = javaBuildToolsConfig(
+      FrontendArgsApplier.applyJava(baseConfig, config.frontendArgs),
+      config.buildTools
+    )
     new JavaSrc2Cpg().createCpgWithOverlays(finalConfig)
 
+  /** The Java source frontend runs `mvn dependency:build-classpath` (or Gradle) in the project when
+    * it fetches dependencies, and delombok forks `java` with the class path that fetch produced.
+    * Without build tools both are off, whatever the frontend arguments asked for.
+    */
+  private[atom] def javaBuildToolsConfig(config: JavaConfig, buildTools: Boolean): JavaConfig =
+      if buildTools then config
+      else config.withFetchDependencies(false).withDelombokMode("no-delombok")
+
   private def createScalaCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-    handleScalaSemantics(config)
+    if config.buildTools then handleScalaSemantics(config)
+    else println("scalasem not run: --no-build-tools keeps atom from starting sbt.")
     val baseConfig = JimpleConfig(scalaSdk = Option(System.getProperty("java.class.path")))
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
@@ -1899,7 +1941,7 @@ object Atom:
     if isScalaSemanticsSliceReusable(semanticSlicesFile, workDir) then
       println(s"Semantic slices file '$semanticSlicesFile' reused.")
     else
-      ExternalCommand.run(s"scalasem $workDir $semanticSlicesFile", workDir) match
+      HelperCommand.run("scalasem", Seq(workDir, semanticSlicesFile), workDir) match
         case Success(_) =>
             if File(semanticSlicesFile).exists then
               println(s"Semantic slices file '$semanticSlicesFile' created successfully.")
