@@ -1,0 +1,51 @@
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  s_1846f821068a7f::t_bb82161999cbfd 720-724
+README.md
+  s_1846f821068a7f::t_ee63f1e8412016 167,183,186-187,227,616
+ci/native-smoke.sh
+  s_1846f821068a7f::t_698db14f3a72de 8-9,131-133,135,189,221-248
+docs/docs/cli.md
+  s_1846f821068a7f::t_3627261ee0d03a 43,59,62-63,103,204-205,360,381-382,385-394
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_1846f821068a7f::t_fed6a38074307e 11,84-91,638-648,767-771,793-796,802-811,1043-1044,1529-1537,1545-1556,1908-1911,1914-1921,1923-1924,1944,2201-2216,2271-2279,2288-2343,2412-2418
+src/main/scala/io/appthreat/atom/AtomConfigLoader.scala
+  s_1846f821068a7f::t_a573dda7a78997 16-23,39,41-47,50-56,58-66,68,77-105
+src/main/scala/io/appthreat/atom/HelperCommand.scala
+  s_1846f821068a7f::t_9776b060b6d7cd 1-89
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_1846f821068a7f::t_bbb2fc7309531b 7,44-49,69-84
+src/main/scala/io/appthreat/atom/package.scala
+  s_1846f821068a7f::t_924be6cfa574cb 41-48,147-154
+src/main/scala/io/appthreat/atom/passes/JsDependencySinkTagger.scala
+  s_1846f821068a7f::t_1c0de5e8b5deb0 1-106
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  s_1846f821068a7f::t_4c47e42d4d30bd 50-63,996-999
+src/test/scala/io/appthreat/atom/AtomConfigLoaderTests.scala
+  s_1846f821068a7f::t_13a525e4b49092 23-28,44,56,83,97,113,118,125,148,155-231
+src/test/scala/io/appthreat/atom/BuildToolsOptionTests.scala
+  s_1846f821068a7f::t_0ca8b2768b03fa 1-65
+src/test/scala/io/appthreat/atom/CFrontendWorkflowTests.scala
+  s_1846f821068a7f::t_ad741521d4760d 158-230
+src/test/scala/io/appthreat/atom/DecodedLengthCommandTests.scala
+  s_1846f821068a7f::t_01557d2e59981e 188-190
+src/test/scala/io/appthreat/atom/HelperCommandTests.scala
+  s_1846f821068a7f::t_dabfa4e5b244bc 1-100
+src/test/scala/io/appthreat/atom/MemorySafetyCommandTests.scala
+  s_1846f821068a7f::t_edab10fb305eac 207-209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4354bfbdf36dab72dd1f160c479b056e56d51c9b",
+  "prompts": {},
+  "sessions": {
+    "s_1846f821068a7f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_30c45490-22f6-4ee2-98ab-7dcf58d25deb",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
