@@ -20,6 +20,12 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
     c.withLanguage(language)
     c
 
+  /** As [[configAt]], with `--project-config` so the files in `input` are read. */
+  private def projectConfigAt(input: File, language: String): DefaultAtomConfig =
+    val c = configAt(input, language)
+    c.withProjectConfig(true)
+    c
+
   test("no config file is a no-op"):
     File.usingTemporaryDirectory("atom-loader") { dir =>
       val config = configAt(dir, "java")
@@ -35,7 +41,7 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
       AtomConfigLoader(config).isLeft shouldBe true
     }
 
-  test("atom.json is auto-discovered in the input root"):
+  test("atom.json in the input root is read with --project-config"):
     File.usingTemporaryDirectory("atom-loader") { dir =>
       (dir / "atom.json").write(
         """{
@@ -47,7 +53,7 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
             |  }
             |}""".stripMargin
       )
-      val config = configAt(dir, "java")
+      val config = projectConfigAt(dir, "java")
       AtomConfigLoader(config) shouldBe Right(config)
       config.frontendArgs("no-dummyTypes") shouldBe "true"
       config.frontendArgs("delombok-mode") shouldBe "run-delombok"
@@ -74,7 +80,7 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
       (dir / "atom.json").write(
         """{ "frontend": { "no-dummyTypes": true, "type-prop-iterations": 9 } }""".stripMargin
       )
-      val config = configAt(dir, "python")
+      val config = projectConfigAt(dir, "python")
       config.withFrontendArg("no-dummyTypes", "false")
       AtomConfigLoader(config) shouldBe Right(config)
       // CLI value preserved.
@@ -88,7 +94,7 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
       (dir / "atom.json").write(
         """{ "frontend": { "exclude": ["target/", "node_modules/"] } }""".stripMargin
       )
-      val config = configAt(dir, "js")
+      val config = projectConfigAt(dir, "js")
       AtomConfigLoader(config) shouldBe Right(config)
       val exclude = config.frontendArgs("exclude").split(",").map(_.trim).toSet
       exclude shouldBe Set("target/", "node_modules/")
@@ -104,19 +110,19 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
             |  }
             |}""".stripMargin
       )
-      val config = configAt(dir, "python")
+      val config = projectConfigAt(dir, "python")
       AtomConfigLoader(config) shouldBe Right(config)
       config.frontendArgs("type-prop-iterations") shouldBe "4"
     }
 
-  test("the discovered file under .atom/ is used when no root file exists"):
+  test("the file under .atom/ is read with --project-config when no root file exists"):
     File.usingTemporaryDirectory("atom-loader") { dir =>
       val dotAtom = dir / ".atom"
       dotAtom.createDirectories()
       (dotAtom / "config.json").write(
         """{ "frontend": { "no-dummyTypes": true } }""".stripMargin
       )
-      val config = configAt(dir, "ruby")
+      val config = projectConfigAt(dir, "ruby")
       AtomConfigLoader(config) shouldBe Right(config)
       config.frontendArgs("no-dummyTypes") shouldBe "true"
     }
@@ -139,11 +145,88 @@ class AtomConfigLoaderTests extends AnyFunSuite with Matchers:
       (dir / "atom.json").write(
         """{ "frontend": { "cpp-standard": "c++20", "defines": ["A", "B"] } }""".stripMargin
       )
-      val config = configAt(dir, "cpp")
+      val config = projectConfigAt(dir, "cpp")
       AtomConfigLoader(config) shouldBe Right(config)
       val cConfig = io.appthreat.c2cpg.Config().withInputPath(dir.pathAsString)
       val applied = FrontendArgsApplier.applyC(cConfig, config.frontendArgs)
       applied.cppStandard shouldBe "c++20"
       applied.defines shouldBe Set("A", "B")
+    }
+
+  test("files in the input directory are not read without --project-config"):
+    File.usingTemporaryDirectory("atom-loader") { dir =>
+      (dir / "atom.json").write(
+        """{ "frontend": { "js": { "astgen-out": "out; touch marker" } } }"""
+      )
+      val dotAtom = (dir / ".atom").createDirectories()
+      (dotAtom / "config.json").write("""{ "frontend": { "exclude-regex": "x';touch y;'" } }""")
+      (dotAtom / "atom.json").write("""{ "frontend": { "fetch-dependencies": true } }""")
+      val config = configAt(dir, "js")
+      AtomConfigLoader(config) shouldBe Right(config)
+      config.frontendArgs shouldBe Map.empty
+      AtomConfigLoader.discover(
+        dir.pathAsString,
+        None,
+        env = Map.empty,
+        home = dir / "home"
+      ) shouldBe None
+    }
+
+  test("an explicit config wins over a project file, even with --project-config"):
+    File.usingTemporaryDirectory("atom-loader") { dir =>
+      (dir / "atom.json").write("""{ "frontend": { "astgen-out": "from-project" } }""")
+      val explicit = dir / "explicit.json"
+      explicit.write("{}")
+      val config = projectConfigAt(dir, "js")
+      config.withConfigFile(Some(explicit))
+      AtomConfigLoader(config) shouldBe Right(config)
+      config.frontendArgs shouldBe Map.empty
+    }
+
+  test("an explicit config of {} or an empty file sets nothing"):
+    File.usingTemporaryDirectory("atom-loader") { dir =>
+        Seq("{}", "", "  \n").zipWithIndex.foreach { case (content, i) =>
+            val file = dir / s"empty-$i.json"
+            file.write(content)
+            val config = configAt(dir, "java")
+            config.withConfigFile(Some(file))
+            AtomConfigLoader(config) shouldBe Right(config)
+            config.frontendArgs shouldBe Map.empty
+        }
+    }
+
+  test("ATOM_CONFIG_FILE and the user config are still found without --project-config"):
+    File.usingTemporaryDirectory("atom-loader") { dir =>
+      (dir / "atom.json").write("{}")
+      val fromEnv = dir / "env.json"
+      fromEnv.write("{}")
+      val home   = dir / "home"
+      val global = (home / ".config" / "atom").createDirectories() / "config.json"
+      global.write("{}")
+      AtomConfigLoader.discover(
+        dir.pathAsString,
+        None,
+        env = Map("ATOM_CONFIG_FILE" -> fromEnv.pathAsString),
+        home = home
+      ) shouldBe Some(fromEnv)
+      AtomConfigLoader.discover(dir.pathAsString, None, env = Map.empty, home = home) shouldBe
+          Some(global)
+      AtomConfigLoader.discover(
+        dir.pathAsString,
+        None,
+        includeProject = true,
+        env = Map.empty,
+        home = home
+      ) shouldBe Some(dir / "atom.json")
+    }
+
+  test("--project-config is parsed from the command line"):
+    File.usingTemporaryDirectory("atom-loader") { dir =>
+      Atom.parseConfig(List("-l", "js", dir.pathAsString)) match
+        case Right(c: AtomConfig) => c.projectConfig shouldBe false
+        case other                => fail(s"Unexpected config result: $other")
+      Atom.parseConfig(List("-l", "js", "--project-config", dir.pathAsString)) match
+        case Right(c: AtomConfig) => c.projectConfig shouldBe true
+        case other                => fail(s"Unexpected config result: $other")
     }
 end AtomConfigLoaderTests
