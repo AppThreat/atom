@@ -1,0 +1,19 @@
+.github/actions/github-packages/action.yml
+  s_1846f821068a7f::t_a6f46b9086ffc0 12,14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dbd4117c2c090fdc936f838573aab905cddcd289",
+  "prompts": {},
+  "sessions": {
+    "s_1846f821068a7f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_30c45490-22f6-4ee2-98ab-7dcf58d25deb",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
