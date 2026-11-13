@@ -82,6 +82,14 @@ object Atom:
   /** The config file that records the state the atom's tags were built from (atom#337). */
   val TagStateFileName = "atom-tag-state.json"
 
+  /** The config file written when a fresh build runs the memory-safety overlay (atom#397). Only the
+    * `memory-safety` command reads its tags, so the overlay runs for that command alone and the
+    * marker is how a later `memory-safety --reuse-atom` tells an atom that carries the findings
+    * tags from one that does not - a graph with no ms-finding tags is indistinguishable from a
+    * finding-free program, and silently reporting zero findings would hide the difference.
+    */
+  val MemorySafetyOverlayFileName = "atom-memory-safety-overlay.json"
+
   /** The tagger's own project-level config, read by ChennaiTagsPass from the atom's config files;
     * its content is part of the tagger input state.
     */
@@ -746,7 +754,11 @@ object Atom:
               case _ => c
         )
     opt[Unit]("reuse-atom")
-        .text("reuse existing atom file - defaults to `false`")
+        .text(
+          "reuse existing atom file - defaults to `false`. The memory-safety command reuses only " +
+              "an atom that a memory-safety build wrote; any other atom carries no memory-safety " +
+              "overlay tags and the command reports that instead of zero findings."
+        )
         .action((_, c) =>
             c match
               case config: AtomConfig =>
@@ -1005,7 +1017,8 @@ object Atom:
         )
     cmd("memory-safety")
         .text(
-          "Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF"
+          "Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF. " +
+              "The overlay tags are written only by this command, so --reuse-atom works only on an atom a memory-safety build wrote."
         )
         .action((_, _) => AtomMemorySafetyConfig().withDataDependencies(true))
         .children(
@@ -2143,6 +2156,22 @@ object Atom:
     )
     BatchedUpdate.applyDiff(atom.graph, diff)
 
+  /** Record in the atom that this build ran the memory-safety overlay, so a later `memory-safety
+    * --reuse-atom` can tell the tags are there. The marker is written exactly when the overlay's
+    * passes run, which keeps it independent of what the passes happened to tag: a finding-free
+    * program carries no ms-finding tags yet must still count as overlaid. Like the tag state, it is
+    * a CONFIG_FILE node and serializes with the atom.
+    */
+  private[atom] def storeMemorySafetyOverlayMarker(atom: Cpg): Unit =
+    val diff = new BatchedUpdate.DiffGraphBuilder
+    atom.configFile.name(Atom.MemorySafetyOverlayFileName).foreach(diff.removeNode)
+    diff.addNode(
+      NewConfigFile()
+          .name(Atom.MemorySafetyOverlayFileName)
+          .content(ujson.write(ujson.Obj("overlay" -> "memory-safety")))
+    )
+    BatchedUpdate.applyDiff(atom.graph, diff)
+
   private def enhanceCpg(config: AtomConfig, atom: Cpg, reusing: Boolean): Either[String, Unit] =
       config match
         case x: AtomConfig if needsDataFlowEnhancement(x, reusing) =>
@@ -2205,54 +2234,62 @@ object Atom:
                   new PythonFrameworkRecognizersPass(atom).createAndApply()
               }
               PerfReporter.stage("taggers.ChennaiTagsPass", "analysis")(runChennaiTags(x, atom))
-              // What chen concludes about memory on its own - declared GCC attributes, wrapper
-              // bodies, nullable returns, variable storage - so MemoryApiPass needs no
-              // hand-written project inventory to see a project's allocator layer
-              PerfReporter.stage("taggers.MemorySemanticsPass", "analysis") {
-                  new MemorySemanticsPass(
-                    atom,
-                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
-                  ).createAndApply()
-              }
-              PerfReporter.stage("taggers.MemoryApiPass", "analysis") {
-                  new MemoryApiPass(
-                    atom,
-                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
-                  )
-                      .createAndApply()
-              }
-              // The rest of the memory-safety overlay: Extent reads MemoryApi's
-              // argument tags, Guard reads Extent's. Each pass no-ops on non-C/C++ graphs, so one
-              // unconditional pipeline serves every language.
-              PerfReporter.stage("taggers.ExtentPass", "analysis") {
-                  new ExtentPass(atom).createAndApply()
-              }
-              PerfReporter.stage("taggers.GuardPass", "analysis") {
-                  new GuardPass(
-                    atom,
-                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
-                  )
-                      .createAndApply()
-              }
-              PerfReporter.stage("taggers.ValueOriginPass", "analysis") {
-                  new ValueOriginPass(atom).createAndApply()
-              }
-              // Integer width facts - narrowing, sign-changing casts and attacker-influenced
-              // arithmetic feeding lengths. Facts only; the integer rules read them.
-              PerfReporter.stage("taggers.IntegerWidthPass", "analysis") {
-                  new IntegerWidthPass(atom).createAndApply()
-              }
-              // Per-allocation state facts - allocated/freed/maybe-freed/null/
-              // escaped at each program point. Facts only; the ALLOC rules read them.
-              PerfReporter.stage("taggers.AllocationStatePass", "analysis") {
-                  new AllocationStatePass(atom).createAndApply()
-              }
-              PerfReporter.stage("taggers.MemorySafetyFindingPass", "analysis") {
-                  new MemorySafetyFindingPass(
-                    atom,
-                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
-                  ).createAndApply()
-              }
+              // The memory-safety overlay belongs to the `memory-safety` command alone: nothing
+              // else reads its tags, yet on C projects it dominated the whole run (atom#397: the
+              // eight stages cost about 8.7 s of brotli's 10 s reachables regression against
+              // 3.2.1). Every other dataflow-enhanced command - reachables, data-flow, export,
+              // algorithms - now skips it.
+              if needsMemorySafetyOverlay(x) then
+                // What chen concludes about memory on its own - declared GCC attributes, wrapper
+                // bodies, nullable returns, variable storage - so MemoryApiPass needs no
+                // hand-written project inventory to see a project's allocator layer
+                PerfReporter.stage("taggers.MemorySemanticsPass", "analysis") {
+                    new MemorySemanticsPass(
+                      atom,
+                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                    ).createAndApply()
+                }
+                PerfReporter.stage("taggers.MemoryApiPass", "analysis") {
+                    new MemoryApiPass(
+                      atom,
+                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                    )
+                        .createAndApply()
+                }
+                // The rest of the overlay: Extent reads MemoryApi's
+                // argument tags, Guard reads Extent's. Each pass no-ops on non-C/C++ graphs, so one
+                // pipeline serves every language the command accepts.
+                PerfReporter.stage("taggers.ExtentPass", "analysis") {
+                    new ExtentPass(atom).createAndApply()
+                }
+                PerfReporter.stage("taggers.GuardPass", "analysis") {
+                    new GuardPass(
+                      atom,
+                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                    )
+                        .createAndApply()
+                }
+                PerfReporter.stage("taggers.ValueOriginPass", "analysis") {
+                    new ValueOriginPass(atom).createAndApply()
+                }
+                // Integer width facts - narrowing, sign-changing casts and attacker-influenced
+                // arithmetic feeding lengths. Facts only; the integer rules read them.
+                PerfReporter.stage("taggers.IntegerWidthPass", "analysis") {
+                    new IntegerWidthPass(atom).createAndApply()
+                }
+                // Per-allocation state facts - allocated/freed/maybe-freed/null/
+                // escaped at each program point. Facts only; the ALLOC rules read them.
+                PerfReporter.stage("taggers.AllocationStatePass", "analysis") {
+                    new AllocationStatePass(atom).createAndApply()
+                }
+                PerfReporter.stage("taggers.MemorySafetyFindingPass", "analysis") {
+                    new MemorySafetyFindingPass(
+                      atom,
+                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                    ).createAndApply()
+                }
+                storeMemorySafetyOverlayMarker(atom)
+              end if
               PerfReporter.stage("taggers.JvmTaggers", "analysis")(applyJvmTaggers(atom))
               Right(())
             catch
@@ -2320,6 +2357,13 @@ object Atom:
           config.isInstanceOf[AtomReachablesConfig] ||
           config.isInstanceOf[AtomExportConfig] ||
           config.isInstanceOf[AtomAlgorithmsConfig])
+
+  /** The eight memory-safety overlay stages. Deliberately NOT keyed on `dataDeps`: reachables,
+    * data-flow, export and algorithms all set it by default, so a `dataDeps` clause would run the
+    * overlay for every one of them and bring the atom#397 regression straight back.
+    */
+  private def needsMemorySafetyOverlay(config: AtomConfig): Boolean =
+      config.isInstanceOf[AtomMemorySafetyConfig]
 
   private def closeCpg(cpg: Cpg): Either[String, Unit] =
       try

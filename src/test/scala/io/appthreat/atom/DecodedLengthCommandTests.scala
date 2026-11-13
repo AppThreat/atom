@@ -185,6 +185,9 @@ class DecodedLengthCommandTests extends DataFlowCodeToCpgSuite:
   new IntegerWidthPass(cpg).createAndApply()
   new AllocationStatePass(cpg).createAndApply()
   new MemorySafetyFindingPass(cpg, Some(pairConfig)).createAndApply()
+  // The pipeline writes this alongside the overlay (atom#397); without it the command refuses to
+  // render a C graph, since missing tags and a finding-free program look alike.
+  Atom.storeMemorySafetyOverlayMarker(cpg)
 
   private def rendered(floor: String = "medium"): List[io.circe.Json] =
     val out = File.newTemporaryFile("memory-safety", ".json")

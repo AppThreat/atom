@@ -44,15 +44,17 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
   private def runReachables(
     language: String,
     projectName: String,
-    writeProject: BFile => Unit
+    writeProject: BFile => Unit,
+    perfReport: Option[BFile] = None
   ): Seq[ujson.Value] =
     val projectDir = workspace / projectName
     projectDir.createDirectories()
     writeProject(projectDir)
     val atomFile  = workspace / s"$projectName.atom"
     val sliceFile = workspace / s"$projectName-slices.json"
+    val perfArgs  = perfReport.map(p => Seq("--perf-report", p.pathAsString)).getOrElse(Seq.empty)
     val result = Atom.run(
-      Seq(
+      (Seq(
         "reachables",
         "--cache",
         "none",
@@ -61,9 +63,8 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
         "-o",
         atomFile.pathAsString,
         "-s",
-        sliceFile.pathAsString,
-        projectDir.pathAsString
-      ).toArray
+        sliceFile.pathAsString
+      ) ++ perfArgs ++ Seq(projectDir.pathAsString)).toArray
     )
     result.isRight shouldBe true
     // reachables chunks at 1000 entries per file (`slices.json`, `slices_1.json`, ...): a
@@ -72,6 +73,13 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
     chunks should not be empty
     chunks.flatMap(f => ujson.read(f.contentAsString).arr.toSeq)
   end runReachables
+
+  /** The stage names a `--perf-report` run recorded, read back from its NDJSON. */
+  private def reportedStages(perfReport: BFile): Set[String] =
+      perfReport.lines.toList
+          .filter(_.nonEmpty)
+          .map(line => ujson.read(line).obj("stage").str)
+          .toSet
 
   /** The nodes of one flow entry, for identity assertions. */
   private def nodesOf(entry: ujson.Value): Seq[ujson.Value] =
@@ -146,6 +154,55 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
           // `<operator>.indexAccess` call: the flow must be ROOTED at that call (not at an
           // intermediate local) and terminate at the code-execution sink.
           assertSourceToSinkFlow(flows, "python", "request.args", "getoutput", "code-execution")
+      }
+  }
+
+  "reachables for c" should {
+      "emit source-to-sink flows and run none of the memory-safety overlay stages" in {
+          // The memory-safety overlay used to run for every dataflow-enhanced command and cost
+          // most of a C reachables run on real projects (atom#397: on google/brotli its eight
+          // stages were about 8.7 s of the 10 s regression against 3.2.1). The --perf-report
+          // stage list is the evidence: a reachables run may not execute a single one of them,
+          // and it stays as fast as the pinned flow count suggests. On main this assertion fails
+          // with the overlay stages present in the report.
+          val perfReport = workspace / "c-project-perf.ndjson"
+          try
+            val flows = runReachables(
+              "c",
+              "c-project",
+              perfReport = Some(perfReport),
+              writeProject = dir =>
+                (dir / "src").createDirectories()
+                (dir / "src" / "main.c").write(
+                  """void store_input(const char *in) {
+                        |    (void)in;
+                        |}
+                        |
+                        |int main(int argc, char **argv) {
+                        |    if (argc > 1) {
+                        |        const char *name = argv[1];
+                        |        store_input(name);
+                        |    }
+                        |    return 0;
+                        |}
+                        |""".stripMargin
+                )
+            )
+            // Pinned at 1: the flow from the argv parameter into the store_input call, whose
+            // argument the taggers mark with the event tag. While the memory-safety overlay
+            // ran here, its tags flooded the C default-sink vocabulary (the collector takes
+            // the whole tag vocabulary minus source-like tags) and the count rose with the
+            // overlay's passes instead of with the program.
+            flows.length should be(1)
+            // The command-line argument reaches the helper call the taggers marked as event
+            // input.
+            assertSourceToSinkFlow(flows, "c", "argv", "store_input", "event")
+            val stages = reportedStages(perfReport)
+            stages should not be empty
+            stages should contain("slicing.reachables")
+            stages.intersect(MemorySafetyOverlayStages) shouldBe empty
+          finally System.clearProperty("chen.perf.report")
+          end try
       }
   }
 
@@ -636,6 +693,21 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
   private val C_CONTRACT_SINK_TAGS = Set("library-call", "http", "cloud", "rpc", "device-driver")
 
   // ------------------------------------------------------------------ generator gates
+
+  /** The eight memory-safety overlay stages (atom#397). Only the `memory-safety` command runs them;
+    * a reachables perf report naming any of them means the gating regressed and the run paid for
+    * passes nothing in its output reads.
+    */
+  private val MemorySafetyOverlayStages = Set(
+    "taggers.MemorySemanticsPass",
+    "taggers.MemoryApiPass",
+    "taggers.ExtentPass",
+    "taggers.GuardPass",
+    "taggers.ValueOriginPass",
+    "taggers.IntegerWidthPass",
+    "taggers.AllocationStatePass",
+    "taggers.MemorySafetyFindingPass"
+  )
 
   /** astgen binary the way jssrc2cpg's `AstGenRunner` resolves it: plain `astgen` from `PATH` (the
     * frontend honours no environment override). The probe is the frontend's own: it also runs
