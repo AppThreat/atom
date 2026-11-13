@@ -8,7 +8,7 @@ import io.appthreat.dataflowengineoss.semanticsloader.FlowSemantic
 import io.appthreat.atom.frontends.FrontendArgsApplier
 import io.appthreat.atom.frontends.clike.C2Atom
 import io.appthreat.atom.parsedeps.parseDependencies
-import io.appthreat.atom.passes.{PhpDependencySinkTagger, TypeHintPass}
+import io.appthreat.atom.passes.{JsDependencySinkTagger, PhpDependencySinkTagger, TypeHintPass}
 import io.appthreat.atom.slicing.*
 import io.appthreat.edg2atom.Edg2Atom
 import io.appthreat.c2cpg.parser.ProjectSources
@@ -63,7 +63,6 @@ import io.appthreat.x2cpg.passes.taggers.{
     ValueOriginPass
 }
 import io.appthreat.x2cpg.passes.taggers.python.PythonFrameworkRecognizersPass
-import io.appthreat.x2cpg.utils.ExternalCommand
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
 import io.shiftleft.codepropertygraph.generated.{Cpg, Languages}
 import io.shiftleft.codepropertygraph.generated.nodes.NewConfigFile
@@ -81,6 +80,14 @@ object Atom:
 
   /** The config file that records the state the atom's tags were built from (atom#337). */
   val TagStateFileName = "atom-tag-state.json"
+
+  /** The config file written when a fresh build runs the memory-safety overlay (atom#397). Only the
+    * `memory-safety` command reads its tags, so the overlay runs for that command alone and the
+    * marker is how a later `memory-safety --reuse-atom` tells an atom that carries the findings
+    * tags from one that does not - a graph with no ms-finding tags is indistinguishable from a
+    * finding-free program, and silently reporting zero findings would hide the difference.
+    */
+  val MemorySafetyOverlayFileName = "atom-memory-safety-overlay.json"
 
   /** The tagger's own project-level config, read by ChennaiTagsPass from the atom's config files;
     * its content is part of the tagger input state.
@@ -628,6 +635,17 @@ object Atom:
               case config: AtomConfig => config.withFrontendArg("fetch-dependencies", "true")
               case _                  => c
         )
+    opt[Unit]("no-build-tools")
+        .text(
+          "Never run the project's build tools: no Maven or Gradle dependency fetch and no " +
+              "delombok for Java sources, and no scalasem (sbt) for Scala. Overrides --fetch-deps, " +
+              "--delombok-mode and the same keys from --frontend-args or a config file."
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withBuildTools(false)
+              case _                  => c
+        )
     opt[Boolean]("ts-types")
         .text("Resolve types from TypeScript declarations (default: true). (JS/TS only)")
         .action((x, c) =>
@@ -746,7 +764,11 @@ object Atom:
               case _ => c
         )
     opt[Unit]("reuse-atom")
-        .text("reuse existing atom file - defaults to `false`")
+        .text(
+          "reuse existing atom file - defaults to `false`. The memory-safety command reuses only " +
+              "an atom that a memory-safety build wrote; any other atom carries no memory-safety " +
+              "overlay tags and the command reports that instead of zero findings."
+        )
         .action((_, c) =>
             c match
               case config: AtomConfig =>
@@ -768,10 +790,23 @@ object Atom:
               case _                  => c
         )
     opt[String]("config")
-        .text("path to a JSON config file for the export and algorithms commands")
+        .text(
+          "path to a JSON config file with frontend options and settings for the export and " +
+              "algorithms commands. An empty file sets nothing."
+        )
         .action((x, c) =>
             c match
               case config: AtomConfig => config.withConfigFile(Option(File(x)))
+              case _                  => c
+        )
+    opt[Unit]("project-config")
+        .text(
+          "read atom.json, .atom/atom.json or .atom/config.json from the input directory when " +
+              "--config is not given. Off by default, since that file comes from the analysed project."
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withProjectConfig(true)
               case _                  => c
         )
     opt[String]("memory-api-config")
@@ -1005,7 +1040,8 @@ object Atom:
         )
     cmd("memory-safety")
         .text(
-          "Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF"
+          "Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF. " +
+              "The overlay tags are written only by this command, so --reuse-atom works only on an atom a memory-safety build wrote."
         )
         .action((_, _) => AtomMemorySafetyConfig().withDataDependencies(true))
         .children(
@@ -1490,26 +1526,33 @@ object Atom:
                   .toSeq
                   .headOption
                   .map(_.pathAsString)
-        val extraArgs = semanticsPath match
-          case Some(path) => s" -e $path"
-          case None       => ""
-
-        println(
-          s"atom-tools convert -i ${config.outputSliceFile}$extraArgs -t ${config
-                  .language} -f $openapiFormat -o $atomToolsWorkDir${java.io.File.separator}$openapiFileName"
+        val toolArgs = atomToolsConvertArgs(
+          config.outputSliceFile.pathAsString,
+          semanticsPath,
+          config.language,
+          openapiFormat,
+          s"$atomToolsWorkDir${java.io.File.separator}$openapiFileName"
         )
-
-        ExternalCommand.run(
-          s"atom-tools convert -i ${config.outputSliceFile}$extraArgs -t ${config
-                  .language} -f $openapiFormat -o $atomToolsWorkDir${java.io.File.separator}$openapiFileName",
-          atomToolsWorkDir
-        ) match
+        println(("atom-tools" +: toolArgs).mkString(" "))
+        HelperCommand.run("atom-tools", toolArgs, atomToolsWorkDir) match
           case Success(_) =>
               println(s"$openapiFileName created successfully.")
           case Failure(exception) =>
               println(
                 s"Failed to run atom-tools. Use the atom container image or perform 'pip install atom-tools' and re-run this command. Exception: ${exception.getMessage}"
               )
+
+  /** The arguments of `atom-tools convert`, one element per argument. */
+  private[atom] def atomToolsConvertArgs(
+    slicesFile: String,
+    semanticsFile: Option[String],
+    language: String,
+    openapiFormat: String,
+    outputFile: String
+  ): Seq[String] =
+      Seq("convert", "-i", slicesFile) ++
+          semanticsFile.toSeq.flatMap(path => Seq("-e", path)) ++
+          Seq("-t", language, "-f", openapiFormat, "-o", outputFile)
 
   private def generateReachablesSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
     println("Slicing the atom for reachables. This might take a few minutes ...")
@@ -1862,11 +1905,23 @@ object Atom:
         .withInputPath(config.inputPath.pathAsString)
         .withIgnoredFilesRegex(ignoredFilesRegex(JAVA_IGNORE_REGEX, "CHEN_JAVA_IGNORE_DIRS"))
         .withOutputPath(outputAtomFile)
-    val finalConfig = FrontendArgsApplier.applyJava(baseConfig, config.frontendArgs)
+    val finalConfig = javaBuildToolsConfig(
+      FrontendArgsApplier.applyJava(baseConfig, config.frontendArgs),
+      config.buildTools
+    )
     new JavaSrc2Cpg().createCpgWithOverlays(finalConfig)
 
+  /** The Java source frontend runs `mvn dependency:build-classpath` (or Gradle) in the project when
+    * it fetches dependencies, and delombok forks `java` with the class path that fetch produced.
+    * Without build tools both are off, whatever the frontend arguments asked for.
+    */
+  private[atom] def javaBuildToolsConfig(config: JavaConfig, buildTools: Boolean): JavaConfig =
+      if buildTools then config
+      else config.withFetchDependencies(false).withDelombokMode("no-delombok")
+
   private def createScalaCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-    handleScalaSemantics(config)
+    if config.buildTools then handleScalaSemantics(config)
+    else println("scalasem not run: --no-build-tools keeps atom from starting sbt.")
     val baseConfig = JimpleConfig(scalaSdk = Option(System.getProperty("java.class.path")))
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
@@ -1886,7 +1941,7 @@ object Atom:
     if isScalaSemanticsSliceReusable(semanticSlicesFile, workDir) then
       println(s"Semantic slices file '$semanticSlicesFile' reused.")
     else
-      ExternalCommand.run(s"scalasem $workDir $semanticSlicesFile", workDir) match
+      HelperCommand.run("scalasem", Seq(workDir, semanticSlicesFile), workDir) match
         case Success(_) =>
             if File(semanticSlicesFile).exists then
               println(s"Semantic slices file '$semanticSlicesFile' created successfully.")
@@ -2143,6 +2198,22 @@ object Atom:
     )
     BatchedUpdate.applyDiff(atom.graph, diff)
 
+  /** Record in the atom that this build ran the memory-safety overlay, so a later `memory-safety
+    * --reuse-atom` can tell the tags are there. The marker is written exactly when the overlay's
+    * passes run, which keeps it independent of what the passes happened to tag: a finding-free
+    * program carries no ms-finding tags yet must still count as overlaid. Like the tag state, it is
+    * a CONFIG_FILE node and serializes with the atom.
+    */
+  private[atom] def storeMemorySafetyOverlayMarker(atom: Cpg): Unit =
+    val diff = new BatchedUpdate.DiffGraphBuilder
+    atom.configFile.name(Atom.MemorySafetyOverlayFileName).foreach(diff.removeNode)
+    diff.addNode(
+      NewConfigFile()
+          .name(Atom.MemorySafetyOverlayFileName)
+          .content(ujson.write(ujson.Obj("overlay" -> "memory-safety")))
+    )
+    BatchedUpdate.applyDiff(atom.graph, diff)
+
   private def enhanceCpg(config: AtomConfig, atom: Cpg, reusing: Boolean): Either[String, Unit] =
       config match
         case x: AtomConfig if needsDataFlowEnhancement(x, reusing) =>
@@ -2197,6 +2268,15 @@ object Atom:
               PerfReporter.stage("taggers.PhpDependencySinkTagger", "analysis") {
                   new PhpDependencySinkTagger(atom).createAndApply()
               }
+              // The JavaScript counterpart (atom#402): calls into the npm packages the project
+              // imports (`node_modules` left out) resolve to external stubs and carried no sink,
+              // so flows that cross the dependency boundary came out without a sink. They become
+              // library-call and http-client sinks here; the SBOM's purls follow from chen's
+              // PackageAttribution, which ChennaiTagsPass applies below. A no-op on every other
+              // language.
+              PerfReporter.stage("taggers.JsDependencySinkTagger", "analysis") {
+                  new JsDependencySinkTagger(atom).createAndApply()
+              }
               // Unicode that hides what the code does (look-alike names, bidi controls)
               PerfReporter.stage("taggers.SourceIntegrityPass", "analysis") {
                   new SourceIntegrityPass(atom).createAndApply()
@@ -2205,54 +2285,62 @@ object Atom:
                   new PythonFrameworkRecognizersPass(atom).createAndApply()
               }
               PerfReporter.stage("taggers.ChennaiTagsPass", "analysis")(runChennaiTags(x, atom))
-              // What chen concludes about memory on its own - declared GCC attributes, wrapper
-              // bodies, nullable returns, variable storage - so MemoryApiPass needs no
-              // hand-written project inventory to see a project's allocator layer
-              PerfReporter.stage("taggers.MemorySemanticsPass", "analysis") {
-                  new MemorySemanticsPass(
-                    atom,
-                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
-                  ).createAndApply()
-              }
-              PerfReporter.stage("taggers.MemoryApiPass", "analysis") {
-                  new MemoryApiPass(
-                    atom,
-                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
-                  )
-                      .createAndApply()
-              }
-              // The rest of the memory-safety overlay: Extent reads MemoryApi's
-              // argument tags, Guard reads Extent's. Each pass no-ops on non-C/C++ graphs, so one
-              // unconditional pipeline serves every language.
-              PerfReporter.stage("taggers.ExtentPass", "analysis") {
-                  new ExtentPass(atom).createAndApply()
-              }
-              PerfReporter.stage("taggers.GuardPass", "analysis") {
-                  new GuardPass(
-                    atom,
-                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
-                  )
-                      .createAndApply()
-              }
-              PerfReporter.stage("taggers.ValueOriginPass", "analysis") {
-                  new ValueOriginPass(atom).createAndApply()
-              }
-              // Integer width facts - narrowing, sign-changing casts and attacker-influenced
-              // arithmetic feeding lengths. Facts only; the integer rules read them.
-              PerfReporter.stage("taggers.IntegerWidthPass", "analysis") {
-                  new IntegerWidthPass(atom).createAndApply()
-              }
-              // Per-allocation state facts - allocated/freed/maybe-freed/null/
-              // escaped at each program point. Facts only; the ALLOC rules read them.
-              PerfReporter.stage("taggers.AllocationStatePass", "analysis") {
-                  new AllocationStatePass(atom).createAndApply()
-              }
-              PerfReporter.stage("taggers.MemorySafetyFindingPass", "analysis") {
-                  new MemorySafetyFindingPass(
-                    atom,
-                    x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
-                  ).createAndApply()
-              }
+              // The memory-safety overlay belongs to the `memory-safety` command alone: nothing
+              // else reads its tags, yet on C projects it dominated the whole run (atom#397: the
+              // eight stages cost about 8.7 s of brotli's 10 s reachables regression against
+              // 3.2.1). Every other dataflow-enhanced command - reachables, data-flow, export,
+              // algorithms - now skips it.
+              if needsMemorySafetyOverlay(x) then
+                // What chen concludes about memory on its own - declared GCC attributes, wrapper
+                // bodies, nullable returns, variable storage - so MemoryApiPass needs no
+                // hand-written project inventory to see a project's allocator layer
+                PerfReporter.stage("taggers.MemorySemanticsPass", "analysis") {
+                    new MemorySemanticsPass(
+                      atom,
+                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                    ).createAndApply()
+                }
+                PerfReporter.stage("taggers.MemoryApiPass", "analysis") {
+                    new MemoryApiPass(
+                      atom,
+                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                    )
+                        .createAndApply()
+                }
+                // The rest of the overlay: Extent reads MemoryApi's
+                // argument tags, Guard reads Extent's. Each pass no-ops on non-C/C++ graphs, so one
+                // pipeline serves every language the command accepts.
+                PerfReporter.stage("taggers.ExtentPass", "analysis") {
+                    new ExtentPass(atom).createAndApply()
+                }
+                PerfReporter.stage("taggers.GuardPass", "analysis") {
+                    new GuardPass(
+                      atom,
+                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                    )
+                        .createAndApply()
+                }
+                PerfReporter.stage("taggers.ValueOriginPass", "analysis") {
+                    new ValueOriginPass(atom).createAndApply()
+                }
+                // Integer width facts - narrowing, sign-changing casts and attacker-influenced
+                // arithmetic feeding lengths. Facts only; the integer rules read them.
+                PerfReporter.stage("taggers.IntegerWidthPass", "analysis") {
+                    new IntegerWidthPass(atom).createAndApply()
+                }
+                // Per-allocation state facts - allocated/freed/maybe-freed/null/
+                // escaped at each program point. Facts only; the ALLOC rules read them.
+                PerfReporter.stage("taggers.AllocationStatePass", "analysis") {
+                    new AllocationStatePass(atom).createAndApply()
+                }
+                PerfReporter.stage("taggers.MemorySafetyFindingPass", "analysis") {
+                    new MemorySafetyFindingPass(
+                      atom,
+                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                    ).createAndApply()
+                }
+                storeMemorySafetyOverlayMarker(atom)
+              end if
               PerfReporter.stage("taggers.JvmTaggers", "analysis")(applyJvmTaggers(atom))
               Right(())
             catch
@@ -2320,6 +2408,13 @@ object Atom:
           config.isInstanceOf[AtomReachablesConfig] ||
           config.isInstanceOf[AtomExportConfig] ||
           config.isInstanceOf[AtomAlgorithmsConfig])
+
+  /** The eight memory-safety overlay stages. Deliberately NOT keyed on `dataDeps`: reachables,
+    * data-flow, export and algorithms all set it by default, so a `dataDeps` clause would run the
+    * overlay for every one of them and bring the atom#397 regression straight back.
+    */
+  private def needsMemorySafetyOverlay(config: AtomConfig): Boolean =
+      config.isInstanceOf[AtomMemorySafetyConfig]
 
   private def closeCpg(cpg: Cpg): Either[String, Unit] =
       try

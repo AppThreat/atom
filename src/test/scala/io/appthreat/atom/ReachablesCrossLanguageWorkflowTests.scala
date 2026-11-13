@@ -51,6 +51,7 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
     language: String,
     projectName: String,
     writeProject: BFile => Unit,
+    perfReport: Option[BFile] = None,
     extraArgs: Seq[String] = Seq.empty
   ): Seq[ujson.Value] =
     val projectDir = workspace / projectName
@@ -58,20 +59,19 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
     writeProject(projectDir)
     val atomFile  = workspace / s"$projectName.atom"
     val sliceFile = workspace / s"$projectName-slices.json"
+    val perfArgs  = perfReport.map(p => Seq("--perf-report", p.pathAsString)).getOrElse(Seq.empty)
     val result = Atom.run(
-      (
-        Seq(
-          "reachables",
-          "--cache",
-          "none",
-          "-l",
-          language,
-          "-o",
-          atomFile.pathAsString,
-          "-s",
-          sliceFile.pathAsString
-        ) ++ extraArgs :+ projectDir.pathAsString
-      ).toArray
+      (Seq(
+        "reachables",
+        "--cache",
+        "none",
+        "-l",
+        language,
+        "-o",
+        atomFile.pathAsString,
+        "-s",
+        sliceFile.pathAsString
+      ) ++ perfArgs ++ extraArgs ++ Seq(projectDir.pathAsString)).toArray
     )
     result.isRight shouldBe true
     // reachables chunks at 1000 entries per file (`slices.json`, `slices_1.json`, ...): a
@@ -80,6 +80,13 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
     chunks should not be empty
     chunks.flatMap(f => ujson.read(f.contentAsString).arr.toSeq)
   end runReachables
+
+  /** The stage names a `--perf-report` run recorded, read back from its NDJSON. */
+  private def reportedStages(perfReport: BFile): Set[String] =
+      perfReport.lines.toList
+          .filter(_.nonEmpty)
+          .map(line => ujson.read(line).obj("stage").str)
+          .toSet
 
   /** The nodes of one flow entry, for identity assertions. */
   private def nodesOf(entry: ujson.Value): Seq[ujson.Value] =
@@ -157,6 +164,62 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
       }
   }
 
+  "reachables for c" should {
+      "emit source-to-sink flows and run none of the memory-safety overlay stages" in {
+          // The memory-safety overlay used to run for every dataflow-enhanced command and cost
+          // most of a C reachables run on real projects (atom#397: on google/brotli its eight
+          // stages were about 8.7 s of the 10 s regression against 3.2.1). The --perf-report
+          // stage list is the evidence: a reachables run may not execute a single one of them,
+          // and it stays as fast as the pinned flow count suggests. On main this assertion fails
+          // with the overlay stages present in the report.
+          val perfReport = workspace / "c-project-perf.ndjson"
+          try
+            val flows = runReachables(
+              "c",
+              "c-project",
+              perfReport = Some(perfReport),
+              writeProject = dir =>
+                (dir / "src").createDirectories()
+                (dir / "src" / "main.c").write(
+                  """void store_input(const char *in) {
+                        |    (void)in;
+                        |}
+                        |
+                        |int main(int argc, char **argv) {
+                        |    if (argc > 1) {
+                        |        const char *name = argv[1];
+                        |        store_input(name);
+                        |        curl_free(name);
+                        |    }
+                        |    return 0;
+                        |}
+                        |""".stripMargin
+                )
+            )
+            // Pinned at 1: the flow from the argv parameter into the curl_free call, whose
+            // argument the C taggers mark library-call, one of the fixed sink categories
+            // atom#404 collects. This fixture's earlier shape reached the store_input call,
+            // whose argument carries the event tag, a source mark the old vocabulary pick
+            // queried as a sink; under the fixed list it correctly is not a sink, so the
+            // fixture's flow now ends at a contract sink. curl_free stays undeclared for the
+            // same reason as the c-cdt-project fixture's callees: a prototype written into
+            // the project makes chen mark the callee internal and leaves the library-call
+            // tagger nothing to fire on. While the memory-safety overlay ran here, its tags
+            // flooded the C default-sink vocabulary and the count rose with the overlay's
+            // passes instead of with the program.
+            flows.length should be(1)
+            // The command-line argument reaches the external library call's parameter, the
+            // node the taggers mark library-call (p1, as the c-cdt-project fixture's p3).
+            assertSourceToSinkFlow(flows, "c", "argv", "p1", "library-call")
+            val stages = reportedStages(perfReport)
+            stages should not be empty
+            stages should contain("slicing.reachables")
+            stages.intersect(MemorySafetyOverlayStages) shouldBe empty
+          finally System.clearProperty("chen.perf.report")
+          end try
+      }
+  }
+
   "reachables for javascript" should {
       "emit source-to-sink flows for an express-style project" in {
           requireAstgen()
@@ -187,6 +250,74 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
           // The request data must reach the framework output sink. The flow is rooted at the read
           // `req.query` that `.name` is taken from: a read of a read now carries the value.
           assertSourceToSinkFlow(flows, "javascript", "req.query", "send", "framework-output")
+      }
+
+      "sink the calls a project makes into its npm dependencies, with the SBOM's purl" in {
+          requireAstgen()
+          // The dependency boundary (atom#402): jssrc2cpg leaves `node_modules` out, so a call
+          // into an imported package resolves to an external stub (`axios:get`) and, before this
+          // fixture, no JS arm tagged one - a flow crossing the boundary had no sink to end on.
+          // JsDependencySinkTagger tags the axios call http-client and the log call
+          // library-call (`get` is absent from EasyTagsPass's SDK-verb list, so nothing else
+          // tags either), and chen's PackageAttribution layers the SBOM's purl for axios onto
+          // the http-client sink. On main both assertions fail: the axios call carries only
+          // service-ingress, a source tag, so no entry ends on it, and no node carries
+          // library-call or a purl.
+          val flows = runReachables(
+            "javascript",
+            "js-axios-project",
+            dir =>
+              (dir / "package.json").write("""{ "dependencies": { "axios": "^1.7.0" } }""")
+              (dir / "bom.json").write(
+                """{
+                    |  "bomFormat": "CycloneDX",
+                    |  "specVersion": "1.4",
+                    |  "components": [
+                    |    {
+                    |      "type": "library",
+                    |      "name": "axios",
+                    |      "version": "1.7.0",
+                    |      "purl": "pkg:npm/axios@1.7.0"
+                    |    }
+                    |  ]
+                    |}
+                    |""".stripMargin
+              )
+              (dir / "src").createDirectories()
+              (dir / "src" / "app.js").write(
+                """const axios = require("axios");
+                    |const express = require("express");
+                    |const winston = require("winston");
+                    |const app = express();
+                    |
+                    |app.get("/fetch", function (req, res) {
+                    |    const target = req.query.url;
+                    |    winston.info("fetching " + target);
+                    |    axios.get(target).then(function (response) {
+                    |        res.json(response.data);
+                    |    });
+                    |});
+                    |""".stripMargin
+              )
+          )
+          // Three entries: the boundary flows and, through the axios result, the response call
+          // the fixture had on its own. The request data reaches the axios call, which is the
+          // sink itself: http-client, because axios is a request client, with the purl the SBOM
+          // gives the package (rendered on the `target` value the call receives).
+          flows.length should be(3)
+          val boundary = flows.filter { entry =>
+              nodesOf(entry).lastOption.exists { node =>
+                  node.obj("name").str == "target" && tagSet(node).contains("http-client") &&
+                  tagSet(node).contains("pkg:npm/axios@1.7.0")
+              }
+          }
+          boundary should not be empty
+          // A dependency call outside the request-client list is a library-call sink the same
+          // way. winston is named by no component in the BOM, so its sink carries no purl: the
+          // SBOM owns package identity.
+          flows.exists(entry =>
+              nodesOf(entry).exists(n => tagSet(n).contains("library-call"))
+          ) shouldBe true
       }
 
       "emit source-to-sink flows for a react-router component" in {
@@ -586,7 +717,11 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
             ,
             extraArgs = Seq("--c-frontend", "edg", "--edga-path", edga)
           )
-          flows.length should be(4)
+          // Pinned at 2 under the fixed C sink list of atom#404 (4 under the vocabulary-derived
+          // pick this fixture was first calibrated against, whose two extra entries ended on fact
+          // tags the old pick queried as sinks). The two remaining entries end on the
+          // library-call-tagged parameters of the external curl_easy_setopt, the contract sink.
+          flows.length should be(2)
           // Secondary check on the slices JSON: at least one emitted path runs from main's argv
           // through the pick_option macro call into the library-call sink. The dispatch type is
           // only visible on the graph, so the macro mechanism itself is asserted there below.
@@ -624,6 +759,61 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
                 cpg.call.methodFullName(""".*proj\.h:\d+:\d+:curl_easy_setopt:3""").l
             sinkMacroCall.map(c => c.dispatchType).toSet shouldBe Set(DispatchTypes.INLINED)
           finally cpg.close()
+      }
+  }
+
+  "reachables for c" should {
+      "emit the argv flow into an undeclared library call as the only entry" in {
+          // RELEASE ORDERING: the count below is calibrated against chen 4.0.1 (c2cpg_3 4.0.1 from
+          // the local ivy repository, built from clean chen main 20162e8a). chen is consumed at an
+          // exact version, so chen must be published BEFORE atom's CI runs this - a clean machine
+          // resolving the previously published chen fails this fixture. The gate reads the running
+          // build the way `atom --version` prints it, so a different chen cancels with re-pin
+          // instructions instead of failing on an opaque count mismatch.
+          ToolVersions.current().chen match
+            case v if v == chenCalibratedAgainst => ()
+            case other =>
+                cancel(
+                  s"chen $other is running, but this fixture's count is calibrated against " +
+                      s"chen $chenCalibratedAgainst; re-pin the number against the new build and " +
+                      "record why in the commit"
+                )
+          val flows = runReachables(
+            "c",
+            "c-cdt-project",
+            dir =>
+                (dir / "main.c").write(
+                  """int main(int argc, char **argv) {
+                    |  char buf[16];
+                    |  if (argc > 1) {
+                    |    char *val = argv[1];
+                    |    unicode_fold(buf, val);
+                    |    curl_easy_setopt(0, 42, val);
+                    |  }
+                    |  return 0;
+                    |}
+                    |""".stripMargin
+                )
+          )
+          // The command line must reach the argument of the undeclared library call: argv flows
+          // into val, val reaches curl_easy_setopt, and chen tags the parameters of external
+          // curl_* methods library-call. The callees stay undeclared on purpose: chen marks
+          // source-parsed methods internal, so prototypes written into the fixture would turn
+          // both callees internal and leave nothing for the library-call tagger to fire on.
+          assertSourceToSinkFlow(flows, "c", "argv", "p3", "library-call")
+          // The fixed sink list leaves exactly one entry, the library-call flow above, and every
+          // emitted entry ends on a node carrying one of the five C sink categories. This
+          // property is specific to this minimal fixture and must NOT be generalised to the EDG
+          // fixture or to larger C projects: there the collectors legitimately leave entries
+          // whose last node carries a bookkeeping tag (kept whole by the terminus normalisation
+          // when no sink-tagged call lies on the path).
+          flows.length should be(1)
+          flows.foreach { entry =>
+              withClue(
+                s"entry ${nodesOf(entry).map(_.obj("name").str).mkString("->")} does not end on a C sink category: "
+              ):
+                (tagSet(nodesOf(entry).last) & C_CONTRACT_SINK_TAGS) should not be empty
+          }
       }
   }
 
@@ -685,7 +875,32 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
       }
   }
 
+  // ------------------------------------------------------------------ calibration references
+
+  /** The chen build the C fixture's count is calibrated against, read the way `atom --version`
+    * prints it: the Implementation-Version of the chen jars on this suite's classpath.
+    */
+  private val chenCalibratedAgainst = "4.0.1"
+
+  /** The sink categories the C default sink list queries, in the order the slicer fixes them. */
+  private val C_CONTRACT_SINK_TAGS = Set("library-call", "http", "cloud", "rpc", "device-driver")
+
   // ------------------------------------------------------------------ generator gates
+
+  /** The eight memory-safety overlay stages (atom#397). Only the `memory-safety` command runs them;
+    * a reachables perf report naming any of them means the gating regressed and the run paid for
+    * passes nothing in its output reads.
+    */
+  private val MemorySafetyOverlayStages = Set(
+    "taggers.MemorySemanticsPass",
+    "taggers.MemoryApiPass",
+    "taggers.ExtentPass",
+    "taggers.GuardPass",
+    "taggers.ValueOriginPass",
+    "taggers.IntegerWidthPass",
+    "taggers.AllocationStatePass",
+    "taggers.MemorySafetyFindingPass"
+  )
 
   /** astgen binary the way jssrc2cpg's `AstGenRunner` resolves it: plain `astgen` from `PATH` (the
     * frontend honours no environment override). The probe is the frontend's own: it also runs

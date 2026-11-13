@@ -47,6 +47,20 @@ object ReachableSlicing:
   private val CRYPTO_ALGORITHM_TAG = "crypto-algorithm"
   private val PURL_PREFIX          = "pkg.*"
 
+  // The C default sink categories, fixed and ordered by what the reachables contract wants to
+  // catch. All five are written by chen's C tagger (EasyTagsPass.tagCPatterns): `library-call`
+  // marks the arguments and parameters of external library calls (the json, glibc, regex, decode,
+  // wasm, execution, unicode and utf8 name fragments plus the (cuda|curl_|BIO_).* parameters),
+  // `http` the parameters of external HTTP methods ((Pistache|Http|Rest|oatpp|HttpClient|
+  // HttpRequest|WebSocketClient|HttpResponse|drogon|chrono|httplib|web)(::|\.).* and
+  // (kore_|onion_|coro_).*), `cloud` the (Aws|Azure|google|cloud)(::|\.).* parameters, `rpc` the
+  // (RpcServer)(::|\.).* parameters and `device-driver` the (CDevice|CDriver)(::|\.).* parameters.
+  // A tag absent from a project's graph matches nothing and costs nothing, so the query below is
+  // built unconditionally from this list: its cost and its results stay independent of how many
+  // unrelated tag names the frontend writes.
+  private val C_DEFAULT_SINK_TAGS =
+      Seq(LIBRARY_CALL_TAG, HTTP_TAG, "cloud", "rpc", "device-driver")
+
   // JVM/Android privacy egress: sensitive data on the device flowing out to known
   // trackers, adware and internet-facing services (cloud, AI/LLM, social, ...), or
   // into a local/on-device AI model (on-device-ai).
@@ -979,23 +993,10 @@ object ReachableSlicing:
       )
 
   private def collectCDefaultFlows(atom: Cpg, config: ReachablesConfig): List[Iterator[Path]] =
-    val atomSemanticTags =
-        atom.tag.name.filterNot(t => t.startsWith("pkg:") || t.toUpperCase().equals(t)).toSet
-    val atomPossibleSinkTags = atomSemanticTags.filterNot(t =>
-        t.contains("source") || t.contains("input") || t.contains("route")
-    )
-
-    // With the default sink tags on C graphs, the sink categories here are the first five
-    // lowercase tag names the atom carries, not a fixed sink list. EDG graphs carry macro-fact
-    // tags (macro-origin, macro-invocation, macro-argument-copy) and memory-safety-overlay tags
-    // (memory-safety, extent), so entries can be sink-labeled with them; on CDT graphs most
-    // entries already carry overlay-tag labels.
-    val sinkFlows = if atomPossibleSinkTags.nonEmpty then
-      List(atom.tag.name(s"(${atomPossibleSinkTags.slice(0, 5).mkString("|")})")
-          .identifier.reachableByFlows(atom.tag.name(
-            s"($EVENT_TAG|$CLI_SOURCE_TAG|$HTTP_TAG|$FRAMEWORK_INPUT_TAG)"
-          ).parameter))
-    else List.empty
+    val sinkFlows = List(atom.tag.name(s"(${C_DEFAULT_SINK_TAGS.mkString("|")})")
+        .identifier.reachableByFlows(atom.tag.name(
+          s"($EVENT_TAG|$CLI_SOURCE_TAG|$HTTP_TAG|$FRAMEWORK_INPUT_TAG)"
+        ).parameter))
 
     println("Collecting additional slices with Reverse Reachability.")
     val reverseFlows = List(

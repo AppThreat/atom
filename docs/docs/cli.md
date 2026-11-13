@@ -40,6 +40,7 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
   --delombok-mode <value>  Delombok strategy: no-delombok|default|types-only|run-delombok. (Java only)
   --jdk-path <value>       JDK used to resolve builtin Java types. (Java, JVM bytecode and Scala)
   --fetch-deps             Fetch dependency jars for extra type information. (Java only)
+  --no-build-tools         Never run the project's build tools: no Maven or Gradle dependency fetch and no delombok for Java sources, and no scalasem (sbt) for Scala. Overrides --fetch-deps, --delombok-mode and the same keys from --frontend-args or a config file.
   --ts-types <value>       Resolve types from TypeScript declarations (default: true). (JS/TS only)
   --flow                   Enable Flow mode. (JS only)
   --venv-dir <value>       Virtual-environment directory (default: .venv). (Python only)
@@ -55,10 +56,11 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
   --with-data-deps         generate the atom with data-dependencies - defaults to `false`
   --remove-atom            do not persist the atom file - defaults to `false`
   -x, --export-atom        export the atom file with data-dependencies to graphml - defaults to `false`
-  --reuse-atom             reuse existing atom file - defaults to `false`
+  --reuse-atom             reuse existing atom file - defaults to `false`. The memory-safety command reuses only an atom that a memory-safety build wrote; any other atom carries no memory-safety overlay tags and the command reports that instead of zero findings.
   --export-dir <value>     export directory. Default: atom-exports
   --export-format <value>  export format graphml or dot. Default: graphml
-  --config <value>         path to a JSON config file for the export and algorithms commands
+  --config <value>         path to a JSON config file with frontend options and settings for the export and algorithms commands. An empty file sets nothing.
+  --project-config         read atom.json, .atom/atom.json or .atom/config.json from the input directory when --config is not given. Off by default, since that file comes from the analysed project.
   --memory-api-config <value>
                            path to a JSON file (memory-apis.json schema) merged over the built-in memory-API inventory by API name, declaring in-house wrappers or platform argument roles. (C/C++ only)
   --validation-config <value>
@@ -98,7 +100,7 @@ Extract reachable data-flow slices based on automated framework tags
   --include-crypto         includes crypto library flows - defaults to false.
   --profile <value>        reduce false positives with a flow-filtering profile: appsec, generic. Defaults to generic (no extra filtering).
 Command: memory-safety [options]
-Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF
+Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF. The overlay tags are written only by this command, so --reuse-atom works only on an atom a memory-safety build wrote.
   --min-confidence <value>
                            drop findings below this confidence: high, medium or low. Defaults to keeping all.
   --format <value>         output format: json or sarif (SARIF 2.1.0). Default: json.
@@ -199,8 +201,8 @@ frontend. There are three complementary ways to do this, in increasing order of 
 1. **`--frontend-args`** — a comma-separated list of `key=value` pairs, applied to every frontend.
 2. **First-class flags** — a curated set of named options (e.g. `--cpp-standard`, `--delombok-mode`)
    that are easier to discover via `--help` and tab-completion.
-3. **A configuration file** — a JSON `atom.json` checked into the project root for repeatable,
-   team-wide settings.
+3. **A configuration file** — a JSON file passed with `--config`, or an `atom.json` checked into
+   the project root and read with `--project-config`, for repeatable, team-wide settings.
 
 All three feed the same channel, so the precedence is simple: a value supplied on the command line
 always wins over the file, which wins over the built-in default.
@@ -355,6 +357,7 @@ spelling of the equivalent key.
 | `--delombok-mode <m>`  | Java           | `no-delombok` \| `default` \| `types-only` \| `run-delombok`. |
 | `--jdk-path <path>`    | Java, JVM      | JDK used to resolve builtin Java types (also jar/scala/apk).  |
 | `--fetch-deps`         | Java           | Fetch dependency jars for type information.                   |
+| `--no-build-tools`     | Java, Scala    | Never run Maven, Gradle, delombok or scalasem (sbt) in the project; overrides the keys above. |
 | `--ts-types <bool>`    | JS/TS          | Resolve types from TypeScript declarations (default: true).   |
 | `--flow`               | JS             | Enable Flow mode.                                             |
 | `--venv-dir <dir>`     | Python         | Virtual-environment directory (default: `.venv`).             |
@@ -375,14 +378,20 @@ atom -l java --delombok-mode run-delombok --jdk-path /opt/jdk17 ./my-app
 
 ## Configuration file
 
-For repeatable, project-level settings, drop a JSON file next to the source tree. atom
-discovers it automatically — no flag required. Discovery order (first match wins):
+For repeatable settings, pass a JSON file with `--config <path>`. Discovery order (first match
+wins):
 
 1. an explicit `--config <path>`;
-2. `atom.json` at the root of the analysed input;
-3. `.atom/config.json` (or `atom.json`) under that root;
-4. the path in the `ATOM_CONFIG_FILE` environment variable;
-5. `~/.config/atom/config.json` for user-wide defaults.
+2. with `--project-config` only, `atom.json` at the root of the analysed input, then
+   `.atom/config.json` (or `.atom/atom.json`) under that root;
+3. the path in the `ATOM_CONFIG_FILE` environment variable;
+4. `~/.config/atom/config.json` for user-wide defaults.
+
+atom does not read a config file from the analysed input unless `--project-config` is given,
+because that input is often a repository under review, and several frontend options name programs
+or paths that atom hands to its helper processes. When such a file is present and not read, atom
+says so on stderr. An empty file, like `{}`, sets nothing, so `--config` with an empty file also
+keeps the environment variable and the user-wide file out of the run.
 
 The `frontend` object holds universal knobs and an optional `frontend.<language>` sub-object
 for language-specific knobs. Both are flattened into `--frontend-args`, so the file is just another

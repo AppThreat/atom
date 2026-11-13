@@ -164,6 +164,7 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
   --delombok-mode <value>  Delombok strategy: no-delombok|default|types-only|run-delombok. (Java only)
   --jdk-path <value>       JDK used to resolve builtin Java types. (Java, JVM bytecode and Scala)
   --fetch-deps             Fetch dependency jars for extra type information. (Java only)
+  --no-build-tools         Never run the project's build tools: no Maven or Gradle dependency fetch and no delombok for Java sources, and no scalasem (sbt) for Scala. Overrides --fetch-deps, --delombok-mode and the same keys from --frontend-args or a config file.
   --ts-types <value>       Resolve types from TypeScript declarations (default: true). (JS/TS only)
   --flow                   Enable Flow mode. (JS only)
   --venv-dir <value>       Virtual-environment directory (default: .venv). (Python only)
@@ -179,10 +180,11 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
   --with-data-deps         generate the atom with data-dependencies - defaults to `false`
   --remove-atom            do not persist the atom file - defaults to `false`
   -x, --export-atom        export the atom file with data-dependencies to graphml - defaults to `false`
-  --reuse-atom             reuse existing atom file - defaults to `false`
+  --reuse-atom             reuse existing atom file - defaults to `false`. The memory-safety command reuses only an atom that a memory-safety build wrote; any other atom carries no memory-safety overlay tags and the command reports that instead of zero findings.
   --export-dir <value>     export directory. Default: atom-exports
   --export-format <value>  export format graphml or dot. Default: graphml
-  --config <value>         path to a JSON config file for the export and algorithms commands
+  --config <value>         path to a JSON config file with frontend options and settings for the export and algorithms commands. An empty file sets nothing.
+  --project-config         read atom.json, .atom/atom.json or .atom/config.json from the input directory when --config is not given. Off by default, since that file comes from the analysed project.
   --memory-api-config <value>
                            path to a JSON file (memory-apis.json schema) merged over the built-in memory-API inventory by API name, declaring in-house wrappers or platform argument roles. (C/C++ only)
   --validation-config <value>
@@ -222,7 +224,7 @@ Extract reachable data-flow slices based on automated framework tags
   --include-crypto         includes crypto library flows - defaults to false.
   --profile <value>        reduce false positives with a flow-filtering profile: appsec, generic. Defaults to generic (no extra filtering).
 Command: memory-safety [options]
-Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF
+Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF. The overlay tags are written only by this command, so --reuse-atom works only on an atom a memory-safety build wrote.
   --min-confidence <value>
                            drop findings below this confidence: high, medium or low. Defaults to keeping all.
   --format <value>         output format: json or sarif (SARIF 2.1.0). Default: json.
@@ -611,7 +613,7 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 | **ANDROID_HOME**                        | Android SDK directory, used to find `android.jar` for APK, DEX and split-bundle inputs when `--android-sdk` is not given.                                   |
 | **GEM_HOME**, **BUNDLE_PATH**           | Where installed gems are found, for package URLs in the Ruby callsites slice.                                                                              |
 | **GRADLE_USER_HOME**                    | Gradle cache used, with the local Maven repository, to attribute JVM bytecode callsites to packages. Nothing is downloaded.                                 |
-| **ATOM_CONFIG_FILE**                    | JSON config file for the export and algorithms commands, when `--config` is not given.                                                                     |
+| **ATOM_CONFIG_FILE**                    | JSON config file for frontend options and the export and algorithms commands, when `--config` is not given.                                                |
 | **ATOM_TOOLS_OPENAPI_FORMAT**           | OpenAPI format for atom-tools. Default: `openapi3.1.0`; alternative: `openapi3.0.1`.                                                                       |
 | **ATOM_TOOLS_WORK_DIR**                 | Working directory for atom-tools. Defaults to atom input path.                                                                                             |
 | **ATOM_SCALASEM_WORK_DIR**              | Working directory for scalasem. Defaults to atom input path.                                                                                               |
