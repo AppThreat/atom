@@ -40,6 +40,7 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
   --delombok-mode <value>  Delombok strategy: no-delombok|default|types-only|run-delombok. (Java only)
   --jdk-path <value>       JDK used to resolve builtin Java types. (Java, JVM bytecode and Scala)
   --fetch-deps             Fetch dependency jars for extra type information. (Java only)
+  --no-build-tools         Never run the project's build tools: no Maven or Gradle dependency fetch and no delombok for Java sources, and no scalasem (sbt) for Scala. Overrides --fetch-deps, --delombok-mode and the same keys from --frontend-args or a config file.
   --ts-types <value>       Resolve types from TypeScript declarations (default: true). (JS/TS only)
   --flow                   Enable Flow mode. (JS only)
   --venv-dir <value>       Virtual-environment directory (default: .venv). (Python only)
@@ -356,6 +357,7 @@ spelling of the equivalent key.
 | `--delombok-mode <m>`  | Java           | `no-delombok` \| `default` \| `types-only` \| `run-delombok`. |
 | `--jdk-path <path>`    | Java, JVM      | JDK used to resolve builtin Java types (also jar/scala/apk).  |
 | `--fetch-deps`         | Java           | Fetch dependency jars for type information.                   |
+| `--no-build-tools`     | Java, Scala    | Never run Maven, Gradle, delombok or scalasem (sbt) in the project; overrides the keys above. |
 | `--ts-types <bool>`    | JS/TS          | Resolve types from TypeScript declarations (default: true).   |
 | `--flow`               | JS             | Enable Flow mode.                                             |
 | `--venv-dir <dir>`     | Python         | Virtual-environment directory (default: `.venv`).             |

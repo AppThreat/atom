@@ -627,6 +627,17 @@ object Atom:
               case config: AtomConfig => config.withFrontendArg("fetch-dependencies", "true")
               case _                  => c
         )
+    opt[Unit]("no-build-tools")
+        .text(
+          "Never run the project's build tools: no Maven or Gradle dependency fetch and no " +
+              "delombok for Java sources, and no scalasem (sbt) for Scala. Overrides --fetch-deps, " +
+              "--delombok-mode and the same keys from --frontend-args or a config file."
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withBuildTools(false)
+              case _                  => c
+        )
     opt[Boolean]("ts-types")
         .text("Resolve types from TypeScript declarations (default: true). (JS/TS only)")
         .action((x, c) =>
@@ -1881,11 +1892,23 @@ object Atom:
         .withInputPath(config.inputPath.pathAsString)
         .withIgnoredFilesRegex(ignoredFilesRegex(JAVA_IGNORE_REGEX, "CHEN_JAVA_IGNORE_DIRS"))
         .withOutputPath(outputAtomFile)
-    val finalConfig = FrontendArgsApplier.applyJava(baseConfig, config.frontendArgs)
+    val finalConfig = javaBuildToolsConfig(
+      FrontendArgsApplier.applyJava(baseConfig, config.frontendArgs),
+      config.buildTools
+    )
     new JavaSrc2Cpg().createCpgWithOverlays(finalConfig)
 
+  /** The Java source frontend runs `mvn dependency:build-classpath` (or Gradle) in the project when
+    * it fetches dependencies, and delombok forks `java` with the class path that fetch produced.
+    * Without build tools both are off, whatever the frontend arguments asked for.
+    */
+  private[atom] def javaBuildToolsConfig(config: JavaConfig, buildTools: Boolean): JavaConfig =
+      if buildTools then config
+      else config.withFetchDependencies(false).withDelombokMode("no-delombok")
+
   private def createScalaCpg(config: AtomConfig, outputAtomFile: String): Try[Cpg] =
-    handleScalaSemantics(config)
+    if config.buildTools then handleScalaSemantics(config)
+    else println("scalasem not run: --no-build-tools keeps atom from starting sbt.")
     val baseConfig = JimpleConfig(scalaSdk = Option(System.getProperty("java.class.path")))
         .withInputPath(config.inputPath.pathAsString)
         .withOutputPath(outputAtomFile)
