@@ -63,7 +63,6 @@ import io.appthreat.x2cpg.passes.taggers.{
     ValueOriginPass
 }
 import io.appthreat.x2cpg.passes.taggers.python.PythonFrameworkRecognizersPass
-import io.appthreat.x2cpg.utils.ExternalCommand
 import io.shiftleft.codepropertygraph.cpgloading.CpgLoaderConfig
 import io.shiftleft.codepropertygraph.generated.{Cpg, Languages}
 import io.shiftleft.codepropertygraph.generated.nodes.NewConfigFile
@@ -1490,26 +1489,33 @@ object Atom:
                   .toSeq
                   .headOption
                   .map(_.pathAsString)
-        val extraArgs = semanticsPath match
-          case Some(path) => s" -e $path"
-          case None       => ""
-
-        println(
-          s"atom-tools convert -i ${config.outputSliceFile}$extraArgs -t ${config
-                  .language} -f $openapiFormat -o $atomToolsWorkDir${java.io.File.separator}$openapiFileName"
+        val toolArgs = atomToolsConvertArgs(
+          config.outputSliceFile.pathAsString,
+          semanticsPath,
+          config.language,
+          openapiFormat,
+          s"$atomToolsWorkDir${java.io.File.separator}$openapiFileName"
         )
-
-        ExternalCommand.run(
-          s"atom-tools convert -i ${config.outputSliceFile}$extraArgs -t ${config
-                  .language} -f $openapiFormat -o $atomToolsWorkDir${java.io.File.separator}$openapiFileName",
-          atomToolsWorkDir
-        ) match
+        println(("atom-tools" +: toolArgs).mkString(" "))
+        HelperCommand.run("atom-tools", toolArgs, atomToolsWorkDir) match
           case Success(_) =>
               println(s"$openapiFileName created successfully.")
           case Failure(exception) =>
               println(
                 s"Failed to run atom-tools. Use the atom container image or perform 'pip install atom-tools' and re-run this command. Exception: ${exception.getMessage}"
               )
+
+  /** The arguments of `atom-tools convert`, one element per argument. */
+  private[atom] def atomToolsConvertArgs(
+    slicesFile: String,
+    semanticsFile: Option[String],
+    language: String,
+    openapiFormat: String,
+    outputFile: String
+  ): Seq[String] =
+      Seq("convert", "-i", slicesFile) ++
+          semanticsFile.toSeq.flatMap(path => Seq("-e", path)) ++
+          Seq("-t", language, "-f", openapiFormat, "-o", outputFile)
 
   private def generateReachablesSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
     println("Slicing the atom for reachables. This might take a few minutes ...")
@@ -1886,7 +1892,7 @@ object Atom:
     if isScalaSemanticsSliceReusable(semanticSlicesFile, workDir) then
       println(s"Semantic slices file '$semanticSlicesFile' reused.")
     else
-      ExternalCommand.run(s"scalasem $workDir $semanticSlicesFile", workDir) match
+      HelperCommand.run("scalasem", Seq(workDir, semanticSlicesFile), workDir) match
         case Success(_) =>
             if File(semanticSlicesFile).exists then
               println(s"Semantic slices file '$semanticSlicesFile' created successfully.")
