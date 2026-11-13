@@ -182,21 +182,28 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
                         |    if (argc > 1) {
                         |        const char *name = argv[1];
                         |        store_input(name);
+                        |        curl_free(name);
                         |    }
                         |    return 0;
                         |}
                         |""".stripMargin
                 )
             )
-            // Pinned at 1: the flow from the argv parameter into the store_input call, whose
-            // argument the taggers mark with the event tag. While the memory-safety overlay
-            // ran here, its tags flooded the C default-sink vocabulary (the collector takes
-            // the whole tag vocabulary minus source-like tags) and the count rose with the
-            // overlay's passes instead of with the program.
+            // Pinned at 1: the flow from the argv parameter into the curl_free call, whose
+            // argument the C taggers mark library-call, one of the fixed sink categories
+            // atom#404 collects. This fixture's earlier shape reached the store_input call,
+            // whose argument carries the event tag, a source mark the old vocabulary pick
+            // queried as a sink; under the fixed list it correctly is not a sink, so the
+            // fixture's flow now ends at a contract sink. curl_free stays undeclared for the
+            // same reason as the c-cdt-project fixture's callees: a prototype written into
+            // the project makes chen mark the callee internal and leaves the library-call
+            // tagger nothing to fire on. While the memory-safety overlay ran here, its tags
+            // flooded the C default-sink vocabulary and the count rose with the overlay's
+            // passes instead of with the program.
             flows.length should be(1)
-            // The command-line argument reaches the helper call the taggers marked as event
-            // input.
-            assertSourceToSinkFlow(flows, "c", "argv", "store_input", "event")
+            // The command-line argument reaches the external library call's parameter, the
+            // node the taggers mark library-call (p1, as the c-cdt-project fixture's p3).
+            assertSourceToSinkFlow(flows, "c", "argv", "p1", "library-call")
             val stages = reportedStages(perfReport)
             stages should not be empty
             stages should contain("slicing.reachables")
