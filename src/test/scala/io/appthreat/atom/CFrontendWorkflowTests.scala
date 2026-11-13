@@ -155,6 +155,79 @@ class CFrontendWorkflowTests extends AnyWordSpec with Matchers:
       }
   }
 
+  "memory-safety over a reused atom" should {
+      // The overlay tags exist only where the overlay ran, and a C graph without them is exactly
+      // what a finding-free program looks like. atom#397 therefore marks overlaid atoms; a reuse
+      // of anything else must fail loudly instead of exiting 0 with an empty report.
+      "refuse an atom another command built" in {
+          project { (dir, src) =>
+            val atomFile = dir / "app.atom"
+            atom(
+              "usages",
+              "-l",
+              "c",
+              "--cache",
+              "none",
+              "-o",
+              atomFile.pathAsString,
+              "-s",
+              (dir / "usages.json").pathAsString,
+              src.pathAsString
+            ).isRight shouldBe true
+            val result = atom(
+              "memory-safety",
+              "-l",
+              "c",
+              "--cache",
+              "none",
+              "--reuse-atom",
+              "-o",
+              atomFile.pathAsString,
+              "-s",
+              (dir / "findings.json").pathAsString,
+              src.pathAsString
+            )
+            result.isLeft shouldBe true
+            result.left.toOption.getOrElse("") should include("Rebuild the atom")
+          }
+      }
+
+      "reuse an atom a memory-safety build wrote" in {
+          project { (dir, src) =>
+            val atomFile = dir / "app.atom"
+            atom(
+              "memory-safety",
+              "-l",
+              "c",
+              "--cache",
+              "none",
+              "-o",
+              atomFile.pathAsString,
+              "-s",
+              (dir / "findings.json").pathAsString,
+              src.pathAsString
+            ).isRight shouldBe true
+            atom(
+              "memory-safety",
+              "-l",
+              "c",
+              "--cache",
+              "none",
+              "--reuse-atom",
+              "-o",
+              atomFile.pathAsString,
+              "-s",
+              (dir / "findings-reused.json").pathAsString,
+              src.pathAsString
+            ).isRight shouldBe true
+            // the double free of release_twice renders both times
+            parse((dir / "findings-reused.json").contentAsString).toOption.flatMap(_.asArray)
+                .toList.flatten.flatMap(f => f.hcursor.get[String]("kind").toOption) should
+                contain("double-free")
+          }
+      }
+  }
+
   "an unknown --c-frontend" should {
       "be refused" in {
           project { (dir, src) =>
