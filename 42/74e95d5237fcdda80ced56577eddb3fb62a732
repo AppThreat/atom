@@ -1,0 +1,21 @@
+build.sbt
+  s_1846f821068a7f::t_c1677b17524930 3
+wrapper/nodejs/packages/atom/package.json
+  s_1846f821068a7f::t_63210e1a257932 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4274e95d5237fcdda80ced56577eddb3fb62a732",
+  "prompts": {},
+  "sessions": {
+    "s_1846f821068a7f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_30c45490-22f6-4ee2-98ab-7dcf58d25deb",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
