@@ -238,6 +238,74 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
           assertSourceToSinkFlow(flows, "javascript", "req.query", "send", "framework-output")
       }
 
+      "sink the calls a project makes into its npm dependencies, with the SBOM's purl" in {
+          requireAstgen()
+          // The dependency boundary (atom#402): jssrc2cpg leaves `node_modules` out, so a call
+          // into an imported package resolves to an external stub (`axios:get`) and, before this
+          // fixture, no JS arm tagged one - a flow crossing the boundary had no sink to end on.
+          // JsDependencySinkTagger tags the axios call http-client and the log call
+          // library-call (`get` is absent from EasyTagsPass's SDK-verb list, so nothing else
+          // tags either), and chen's PackageAttribution layers the SBOM's purl for axios onto
+          // the http-client sink. On main both assertions fail: the axios call carries only
+          // service-ingress, a source tag, so no entry ends on it, and no node carries
+          // library-call or a purl.
+          val flows = runReachables(
+            "javascript",
+            "js-axios-project",
+            dir =>
+              (dir / "package.json").write("""{ "dependencies": { "axios": "^1.7.0" } }""")
+              (dir / "bom.json").write(
+                """{
+                    |  "bomFormat": "CycloneDX",
+                    |  "specVersion": "1.4",
+                    |  "components": [
+                    |    {
+                    |      "type": "library",
+                    |      "name": "axios",
+                    |      "version": "1.7.0",
+                    |      "purl": "pkg:npm/axios@1.7.0"
+                    |    }
+                    |  ]
+                    |}
+                    |""".stripMargin
+              )
+              (dir / "src").createDirectories()
+              (dir / "src" / "app.js").write(
+                """const axios = require("axios");
+                    |const express = require("express");
+                    |const winston = require("winston");
+                    |const app = express();
+                    |
+                    |app.get("/fetch", function (req, res) {
+                    |    const target = req.query.url;
+                    |    winston.info("fetching " + target);
+                    |    axios.get(target).then(function (response) {
+                    |        res.json(response.data);
+                    |    });
+                    |});
+                    |""".stripMargin
+              )
+          )
+          // Three entries: the boundary flows and, through the axios result, the response call
+          // the fixture had on its own. The request data reaches the axios call, which is the
+          // sink itself: http-client, because axios is a request client, with the purl the SBOM
+          // gives the package (rendered on the `target` value the call receives).
+          flows.length should be(3)
+          val boundary = flows.filter { entry =>
+              nodesOf(entry).lastOption.exists { node =>
+                  node.obj("name").str == "target" && tagSet(node).contains("http-client") &&
+                  tagSet(node).contains("pkg:npm/axios@1.7.0")
+              }
+          }
+          boundary should not be empty
+          // A dependency call outside the request-client list is a library-call sink the same
+          // way. winston is named by no component in the BOM, so its sink carries no purl: the
+          // SBOM owns package identity.
+          flows.exists(entry =>
+              nodesOf(entry).exists(n => tagSet(n).contains("library-call"))
+          ) shouldBe true
+      }
+
       "emit source-to-sink flows for a react-router component" in {
           requireAstgen()
           // RELEASE ORDERING: this fixture and the usages one below depend on the chen framework
