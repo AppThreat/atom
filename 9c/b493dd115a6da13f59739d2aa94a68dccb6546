@@ -1,0 +1,24 @@
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  s_f502def1bf5f36::t_986fb43d698703 515-534,537-545,547-564,566-569
+  s_f502def1bf5f36::t_53e2650bccdc0b 535-536,546,565
+  s_f502def1bf5f36::t_4b95cf2f49856d 628-637
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  s_f502def1bf5f36::t_c9aceabbc96665 996-999
+  s_f502def1bf5f36::t_bbaefe2a7c7904 50-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9cb493dd115a6da13f59739d2aa94a68dccb6546",
+  "prompts": {},
+  "sessions": {
+    "s_f502def1bf5f36": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-ac8c0873-1e4f-4a69-8725-04b1b7b0a4ea-actor_3_6",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
