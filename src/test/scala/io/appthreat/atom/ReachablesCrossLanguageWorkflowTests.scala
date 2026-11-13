@@ -1,9 +1,14 @@
 package io.appthreat.atom
 
 import better.files.File as BFile
+import io.appthreat.edg2atom.parser.EdgaRunner
+import io.shiftleft.codepropertygraph.cpgloading.{CpgLoader, CpgLoaderConfig}
+import io.shiftleft.codepropertygraph.generated.DispatchTypes
+import io.shiftleft.semanticcpg.language.*
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import overflowdb.Config as OdbConfig
 
 import scala.util.Try
 
@@ -29,7 +34,8 @@ import scala.util.Try
   * fail) when the generator is missing or too old, exactly like [[PhpAtomWorkflowTests]] and
   * [[RubyAtomWorkflowTests]]. Without the gate a missing `astgen` surfaces as a frontend that
   * "succeeds" with an empty graph, and the fixture then fails with an opaque count mismatch instead
-  * of canceling with the reason.
+  * of canceling with the reason. The C fixture runs the EDG frontend and needs the `edga` binary;
+  * it also cancels when the running edga is not the release its count was calibrated against.
   */
 class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
@@ -45,7 +51,8 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
     language: String,
     projectName: String,
     writeProject: BFile => Unit,
-    perfReport: Option[BFile] = None
+    perfReport: Option[BFile] = None,
+    extraArgs: Seq[String] = Seq.empty
   ): Seq[ujson.Value] =
     val projectDir = workspace / projectName
     projectDir.createDirectories()
@@ -64,7 +71,7 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
         atomFile.pathAsString,
         "-s",
         sliceFile.pathAsString
-      ) ++ perfArgs ++ Seq(projectDir.pathAsString)).toArray
+      ) ++ perfArgs ++ extraArgs ++ Seq(projectDir.pathAsString)).toArray
     )
     result.isRight shouldBe true
     // reachables chunks at 1000 entries per file (`slices.json`, `slices_1.json`, ...): a
@@ -645,6 +652,117 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
   }
 
   "reachables for c" should {
+      "emit flows from argv through project-header macros into an external library call" in {
+          requireEdga()
+          val edga = EdgaRunner.locate().get
+          // The emitted count depends on the edga build (this fixture measured 4 entries with the
+          // edga 0.2.0 release and 3 with the pre-0.2.0 build, because resolving the enumerator
+          // constant is what connects part of the paths), so the pin below names the release it
+          // was calibrated against and the running binary's identity is read first: a different
+          // release cancels the fixture instead of moving the number silently.
+          edgaReportedVersion(edga) match
+            case Some(v) if v == edgaCalibratedAgainst => ()
+            case other =>
+                cancel(
+                  s"edga ${other.getOrElse("of unrecognizable version")} is running, but this " +
+                      s"fixture's count is calibrated against edga $edgaCalibratedAgainst; " +
+                      "re-pin the number against the new release and record why in the commit"
+                )
+          // argv flows through the project-header identity macros in proj.h into the parser
+          // functions and from there into a parameter of the external curl_easy_setopt function
+          // (chen tags the parameters of external `curl_*` methods `library-call`, the sink family
+          // the reachables collector reads on C). The sink call itself expands through an identity
+          // macro defined in the same project header, the shape real curl headers use: without the
+          // expansion, the arguments do not reach the library-call-tagged parameters. The
+          // INLINED macro-use calls edg2atom writes for the expansions are what carry the data
+          // across the macros.
+          val flows = runReachables(
+            "c",
+            "c-edg-project",
+            dir =>
+              val src = (dir / "src").createDirectories()
+              (src / "proj.h").write(
+                """#ifndef PROJ_H
+                    |#define PROJ_H
+                    |#define pass_through(p) (p)
+                    |#define pick_option(o) (o)
+                    |#define curl_easy_setopt(handle, opt, param) curl_easy_setopt(handle, opt, param)
+                    |enum option { CURLOPT_URL = 10000 };
+                    |#endif
+                    |""".stripMargin
+              )
+              (src / "main.c").write(
+                """#include <stdlib.h>
+                    |#include <string.h>
+                    |#include "proj.h"
+                    |
+                    |extern int curl_easy_setopt(void *handle, int option, const char *value);
+                    |
+                    |static char *parse_arg(char *a) {
+                    |  return pass_through(a);
+                    |}
+                    |
+                    |static char *find_option(char *o) {
+                    |  return pick_option(o);
+                    |}
+                    |
+                    |int main(int argc, char **argv) {
+                    |  char *value = parse_arg(argv[1]);
+                    |  char *opt = find_option(value);
+                    |  curl_easy_setopt(0, CURLOPT_URL, opt);
+                    |  return (int)strlen(value);
+                    |}
+                    |""".stripMargin
+              )
+            ,
+            extraArgs = Seq("--c-frontend", "edg", "--edga-path", edga)
+          )
+          // Pinned at 2 under the fixed C sink list of atom#404 (4 under the vocabulary-derived
+          // pick this fixture was first calibrated against, whose two extra entries ended on fact
+          // tags the old pick queried as sinks). The two remaining entries end on the
+          // library-call-tagged parameters of the external curl_easy_setopt, the contract sink.
+          flows.length should be(2)
+          // Secondary check on the slices JSON: at least one emitted path runs from main's argv
+          // through the pick_option macro call into the library-call sink. The dispatch type is
+          // only visible on the graph, so the macro mechanism itself is asserted there below.
+          flows.exists { entry =>
+            val ns = nodesOf(entry)
+            ns.nonEmpty &&
+            ns.head.obj("name").str == "argv" &&
+            ns.head.obj("parentMethodName").str == "main" &&
+            ns.last.obj("parentMethodName").str == "curl_easy_setopt" &&
+            tagSet(ns.last).contains("library-call") &&
+            ns.tail.dropRight(1).exists(n =>
+                n.obj("label").str == "CALL" && n.obj("name").str == "pick_option"
+            )
+          } shouldBe true
+          // On the graph: the macro-use calls keep the dispatch type edg2atom gives them (INLINED)
+          // and the definition-site fullName shape it writes
+          // (<definition file>:<first line>:<last line>:<NAME>:<parameter count>). The sink call
+          // carries the same shape for its identity macro, while the ordinary call the expansion
+          // contains keeps the plain callee name.
+          val odb = OdbConfig.withoutOverflow()
+              .withStorageLocation((workspace / "c-edg-project.atom").pathAsString)
+          val cpg = CpgLoader.loadFromOverflowDb(
+            CpgLoaderConfig().withOverflowConfig(odb).doNotCreateIndexesOnLoad
+          )
+          try
+            val parserMacroCalls = cpg.call.nameExact("pick_option", "pass_through").l
+            parserMacroCalls should not be empty
+            parserMacroCalls.map(c => c.dispatchType).toSet shouldBe Set(DispatchTypes.INLINED)
+            parserMacroCalls.map(_.methodFullName).foreach { fullName =>
+                (fullName should fullyMatch).regex(
+                  """.*proj\.h:\d+:\d+:(pick_option|pass_through):\d+"""
+                )
+            }
+            val sinkMacroCall =
+                cpg.call.methodFullName(""".*proj\.h:\d+:\d+:curl_easy_setopt:3""").l
+            sinkMacroCall.map(c => c.dispatchType).toSet shouldBe Set(DispatchTypes.INLINED)
+          finally cpg.close()
+      }
+  }
+
+  "reachables for c" should {
       "emit the argv flow into an undeclared library call as the only entry" in {
           // RELEASE ORDERING: the count below is calibrated against chen 4.0.1 (c2cpg_3 4.0.1 from
           // the local ivy repository, built from clean chen main 20162e8a). chen is consumed at an
@@ -801,6 +919,27 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
         cancel(
           s"astgen 'astgen' unavailable or too old; JavaScript reachables fixture needs the astgen from @appthreat/atom-parsetools on PATH"
         )
+
+  // ------------------------------------------------------------------ edga gate
+
+  /** The edga release the C fixture's count is calibrated against: the release atom's CI installs
+    * (`.github/actions/edga` defaults to it).
+    */
+  private val edgaCalibratedAgainst = "0.2.0"
+
+  /** The version the running edga reports for `--edga-version` ("edga 0.2.0 / EDG commit ..."). */
+  private def edgaReportedVersion(edga: String): Option[String] =
+      Try(scala.sys.process.Process(Seq(edga, "--edga-version")).lazyLines_!)
+          .toOption
+          .flatMap(_.find(_.startsWith("edga ")))
+          .map(_.split("\\s+")(1))
+          .filter(_.nonEmpty)
+
+  private def requireEdga(): Unit =
+      assume(
+        EdgaRunner.locate().isDefined,
+        "edga unavailable; the C reachables fixture needs the edga binary from the AppThreat/edga release on PATH or EDGA_PATH"
+      )
 
   /** phpastgen binary resolved the way php2atom does (env override, then PATH). */
   private val phpastgen: String =
