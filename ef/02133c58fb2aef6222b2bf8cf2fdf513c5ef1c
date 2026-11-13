@@ -1,0 +1,19 @@
+.github/workflows/release.yml
+  s_1846f821068a7f::t_ada6fc016c3de4 364-365
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ef02133c58fb2aef6222b2bf8cf2fdf513c5ef1c",
+  "prompts": {},
+  "sessions": {
+    "s_1846f821068a7f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_30c45490-22f6-4ee2-98ab-7dcf58d25deb",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
