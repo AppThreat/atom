@@ -512,6 +512,61 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
       }
   }
 
+  "reachables for c" should {
+      "emit the argv flow into an undeclared library call as the only entry" in {
+          // RELEASE ORDERING: the count below is calibrated against chen 4.0.1 (c2cpg_3 4.0.1 from
+          // the local ivy repository, built from clean chen main 20162e8a). chen is consumed at an
+          // exact version, so chen must be published BEFORE atom's CI runs this - a clean machine
+          // resolving the previously published chen fails this fixture. The gate reads the running
+          // build the way `atom --version` prints it, so a different chen cancels with re-pin
+          // instructions instead of failing on an opaque count mismatch.
+          ToolVersions.current().chen match
+            case v if v == chenCalibratedAgainst => ()
+            case other =>
+                cancel(
+                  s"chen $other is running, but this fixture's count is calibrated against " +
+                      s"chen $chenCalibratedAgainst; re-pin the number against the new build and " +
+                      "record why in the commit"
+                )
+          val flows = runReachables(
+            "c",
+            "c-cdt-project",
+            dir =>
+                (dir / "main.c").write(
+                  """int main(int argc, char **argv) {
+                    |  char buf[16];
+                    |  if (argc > 1) {
+                    |    char *val = argv[1];
+                    |    unicode_fold(buf, val);
+                    |    curl_easy_setopt(0, 42, val);
+                    |  }
+                    |  return 0;
+                    |}
+                    |""".stripMargin
+                )
+          )
+          // The command line must reach the argument of the undeclared library call: argv flows
+          // into val, val reaches curl_easy_setopt, and chen tags the parameters of external
+          // curl_* methods library-call. The callees stay undeclared on purpose: chen marks
+          // source-parsed methods internal, so prototypes written into the fixture would turn
+          // both callees internal and leave nothing for the library-call tagger to fire on.
+          assertSourceToSinkFlow(flows, "c", "argv", "p3", "library-call")
+          // The fixed sink list leaves exactly one entry, the library-call flow above, and every
+          // emitted entry ends on a node carrying one of the five C sink categories. This
+          // property is specific to this minimal fixture and must NOT be generalised to the EDG
+          // fixture or to larger C projects: there the collectors legitimately leave entries
+          // whose last node carries a bookkeeping tag (kept whole by the terminus normalisation
+          // when no sink-tagged call lies on the path).
+          flows.length should be(1)
+          flows.foreach { entry =>
+              withClue(
+                s"entry ${nodesOf(entry).map(_.obj("name").str).mkString("->")} does not end on a C sink category: "
+              ):
+                (tagSet(nodesOf(entry).last) & C_CONTRACT_SINK_TAGS) should not be empty
+          }
+      }
+  }
+
   "reachables for php" should {
       "emit source-to-sink flows for a routed controller" in {
           requirePhpGenerator()
@@ -569,6 +624,16 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
           assertSourceToSinkFlow(flows, "ruby", "user_id", "get", "http-client")
       }
   }
+
+  // ------------------------------------------------------------------ calibration references
+
+  /** The chen build the C fixture's count is calibrated against, read the way `atom --version`
+    * prints it: the Implementation-Version of the chen jars on this suite's classpath.
+    */
+  private val chenCalibratedAgainst = "4.0.1"
+
+  /** The sink categories the C default sink list queries, in the order the slicer fixes them. */
+  private val C_CONTRACT_SINK_TAGS = Set("library-call", "http", "cloud", "rpc", "device-driver")
 
   // ------------------------------------------------------------------ generator gates
 
