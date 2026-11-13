@@ -182,7 +182,8 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
   --reuse-atom             reuse existing atom file - defaults to `false`
   --export-dir <value>     export directory. Default: atom-exports
   --export-format <value>  export format graphml or dot. Default: graphml
-  --config <value>         path to a JSON config file for the export and algorithms commands
+  --config <value>         path to a JSON config file with frontend options and settings for the export and algorithms commands. An empty file sets nothing.
+  --project-config         read atom.json, .atom/atom.json or .atom/config.json from the input directory when --config is not given. Off by default, since that file comes from the analysed project.
   --memory-api-config <value>
                            path to a JSON file (memory-apis.json schema) merged over the built-in memory-API inventory by API name, declaring in-house wrappers or platform argument roles. (C/C++ only)
   --validation-config <value>
@@ -611,7 +612,7 @@ atom -o app.atom -l java --export-atom --export-dir <export dir> --with-data-dep
 | **ANDROID_HOME**                        | Android SDK directory, used to find `android.jar` for APK, DEX and split-bundle inputs when `--android-sdk` is not given.                                   |
 | **GEM_HOME**, **BUNDLE_PATH**           | Where installed gems are found, for package URLs in the Ruby callsites slice.                                                                              |
 | **GRADLE_USER_HOME**                    | Gradle cache used, with the local Maven repository, to attribute JVM bytecode callsites to packages. Nothing is downloaded.                                 |
-| **ATOM_CONFIG_FILE**                    | JSON config file for the export and algorithms commands, when `--config` is not given.                                                                     |
+| **ATOM_CONFIG_FILE**                    | JSON config file for frontend options and the export and algorithms commands, when `--config` is not given.                                                |
 | **ATOM_TOOLS_OPENAPI_FORMAT**           | OpenAPI format for atom-tools. Default: `openapi3.1.0`; alternative: `openapi3.0.1`.                                                                       |
 | **ATOM_TOOLS_WORK_DIR**                 | Working directory for atom-tools. Defaults to atom input path.                                                                                             |
 | **ATOM_SCALASEM_WORK_DIR**              | Working directory for scalasem. Defaults to atom input path.                                                                                               |

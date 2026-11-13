@@ -767,10 +767,23 @@ object Atom:
               case _                  => c
         )
     opt[String]("config")
-        .text("path to a JSON config file for the export and algorithms commands")
+        .text(
+          "path to a JSON config file with frontend options and settings for the export and " +
+              "algorithms commands. An empty file sets nothing."
+        )
         .action((x, c) =>
             c match
               case config: AtomConfig => config.withConfigFile(Option(File(x)))
+              case _                  => c
+        )
+    opt[Unit]("project-config")
+        .text(
+          "read atom.json, .atom/atom.json or .atom/config.json from the input directory when " +
+              "--config is not given. Off by default, since that file comes from the analysed project."
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withProjectConfig(true)
               case _                  => c
         )
     opt[String]("memory-api-config")

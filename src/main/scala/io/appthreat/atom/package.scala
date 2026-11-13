@@ -38,6 +38,10 @@ package object atom:
     // Optional config file (JSON) for the verbose, repeatable parameters of the graph-level
     // commands. CLI flags always take precedence over values read from this file.
     var configFile: Option[File] = None
+    // Whether `atom.json`, `.atom/atom.json` and `.atom/config.json` in the analysed input are read
+    // when no `--config` is given. Off unless `--project-config` is passed: the input is often a
+    // repository that atom is asked to analyse, not one that should configure atom.
+    var projectConfig: Boolean = false
     // Optional validators/sanitisers config (the chennai.json schema). Calls to the declared
     // methods are tagged as sanitisers so reachable flows passing through them can be dropped.
     var validationConfigFile: Option[File] = None
@@ -134,6 +138,10 @@ package object atom:
 
     def withConfigFile(x: Option[File]): AtomConfig =
       this.configFile = x
+      this
+
+    def withProjectConfig(x: Boolean): AtomConfig =
+      this.projectConfig = x
       this
 
     def withValidationConfigFile(x: Option[File]): AtomConfig =

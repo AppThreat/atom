@@ -13,10 +13,14 @@ import io.circe.{Json, parser}
   * one-off override.
   *
   * Discovery order (first match wins):
-  *   1. an explicit `--config <path>`; 2. `atom.json` at the root of the analysed input; 3.
-  *      `.atom/config.json` (or `atom.json`) under that same root; 4. the path in the
-  *      `ATOM_CONFIG_FILE` environment variable; 5. `~/.config/atom/config.json` for user-wide
-  *      defaults.
+  *   1. an explicit `--config <path>`; 2. with `--project-config` only, `atom.json` at the root of
+  *      the analysed input, then `.atom/config.json` (or `atom.json`) under that same root; 3. the
+  *      path in the `ATOM_CONFIG_FILE` environment variable; 4. `~/.config/atom/config.json` for
+  *      user-wide defaults.
+  *
+  * The files inside the analysed input are read only on request because that input is usually a
+  * repository under analysis, and several frontend options name programs or output paths that the
+  * frontends hand to helper processes. An empty or whitespace-only file is read as `{}`.
   *
   * The `frontend` object holds universal knobs (e.g. `exclude`, `no-dummy-types`) and an optional
   * `frontend.<language>` sub-object for language-specific knobs. Both are flattened into the same
@@ -32,21 +36,36 @@ object AtomConfigLoader:
 
   /** Resolves the config file to load. An explicit `--config` always wins and is returned even when
     * the file is missing (the caller reports the error); auto-discovery skips absent candidates.
+    * The input directory is searched only when `includeProject` is set.
     */
-  def discover(inputPath: String, explicit: Option[File]): Option[File] =
+  def discover(
+    inputPath: String,
+    explicit: Option[File],
+    includeProject: Boolean = false,
+    env: Map[String, String] = sys.env,
+    home: File = File.home
+  ): Option[File] =
       explicit match
         case Some(file) => Some(file)
-        case None       => autoDiscover(inputPath)
+        case None       => autoDiscover(inputPath, includeProject, env, home)
 
-  private def autoDiscover(inputPath: String): Option[File] =
-    val input            = File(inputPath)
-    val root             = if input.isDirectory then input else input.parent
-    val dotDirCandidates = DotDirConfigNames.map(root / ".atom" / _)
-    InputConfigNames.map(root / _).find(_.exists)
-        .orElse(dotDirCandidates.find(_.exists))
-        .orElse(sys.env.get("ATOM_CONFIG_FILE").filter(_.nonEmpty).map(File(_)).filter(_.exists))
+  /** The first config file present in the analysed input, read only with `--project-config`. */
+  private[atom] def projectConfigFile(inputPath: String): Option[File] =
+    val input = File(inputPath)
+    val root  = if input.isDirectory then input else input.parent
+    (InputConfigNames.map(root / _) ++ DotDirConfigNames.map(root / ".atom" / _)).find(_.exists)
+
+  private def autoDiscover(
+    inputPath: String,
+    includeProject: Boolean,
+    env: Map[String, String],
+    home: File
+  ): Option[File] =
+    val fromProject = if includeProject then projectConfigFile(inputPath) else None
+    fromProject
+        .orElse(env.get("ATOM_CONFIG_FILE").filter(_.nonEmpty).map(File(_)).filter(_.exists))
         .orElse {
-            val global = File.home / ".config" / "atom" / "config.json"
+            val global = home / ".config" / "atom" / "config.json"
             if global.exists then Some(global) else None
         }
 
@@ -55,25 +74,35 @@ object AtomConfigLoader:
     * silent no-op.
     */
   def apply(config: AtomConfig): Either[String, AtomConfig] =
-      discover(config.inputPath.pathAsString, config.configFile) match
-        case None => Right(config)
-        case Some(file) =>
-            if !file.exists then
-              if config.configFile.isDefined then
-                Left(s"Config file does not exist: ${file.pathAsString}")
-              else Right(config)
-            else if file.isDirectory then Left(s"Config path is a directory: ${file.pathAsString}")
-            else
-              parser.parse(file.contentAsString) match
-                case Left(err) =>
-                    Left(s"Could not parse config file ${file.pathAsString}: ${err.message}")
-                case Right(json) =>
-                    mergeFrontendArgs(config, json)
-                    config match
-                      case e: AtomExportConfig     => applyExport(e, json)
-                      case a: AtomAlgorithmsConfig => applyAlgorithms(a, json)
-                      case _                       => ()
-                    Right(config)
+    if config.configFile.isEmpty && !config.projectConfig then
+      projectConfigFile(config.inputPath.pathAsString).foreach(file =>
+          System.err.println(
+            s"atom: ${file.pathAsString} is not read. Pass --project-config to use it, or " +
+                "--config <file>."
+          )
+      )
+    discover(config.inputPath.pathAsString, config.configFile, config.projectConfig) match
+      case None => Right(config)
+      case Some(file) =>
+          if !file.exists then
+            if config.configFile.isDefined then
+              Left(s"Config file does not exist: ${file.pathAsString}")
+            else Right(config)
+          else if file.isDirectory then Left(s"Config path is a directory: ${file.pathAsString}")
+          else
+            val content = file.contentAsString
+            parser.parse(if content.isBlank then "{}" else content) match
+              case Left(err) =>
+                  Left(s"Could not parse config file ${file.pathAsString}: ${err.message}")
+              case Right(json) =>
+                  mergeFrontendArgs(config, json)
+                  config match
+                    case e: AtomExportConfig     => applyExport(e, json)
+                    case a: AtomAlgorithmsConfig => applyAlgorithms(a, json)
+                    case _                       => ()
+                  Right(config)
+    end match
+  end apply
 
   /** Flattens the `frontend` (universal) and `frontend.<language>` objects into a flat key=value
     * map. Arrays become CSV so they flow into the same channel as `--frontend-args`.
