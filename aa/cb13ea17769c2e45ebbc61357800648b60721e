@@ -1,0 +1,19 @@
+build.sbt
+  s_8950c336d0c2f0::t_3147b1853420f9 183-192,213
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "aacb13ea17769c2e45ebbc61357800648b60721e",
+  "prompts": {},
+  "sessions": {
+    "s_8950c336d0c2f0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cfedab78-c7b7-4b32-9628-25f43b85122b",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
