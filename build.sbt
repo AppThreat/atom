@@ -180,6 +180,16 @@ credentials +=
 // GraalVM CE builds are released under version 2 of the GNU General Public License with the "Classpath" Exception (GPLv2+CPE)
 val libcOptions =
     if (sys.env.getOrElse("ATOM_GRAALVM_LIBC", "glibc") == "musl") Seq("--libc=musl") else Seq.empty
+// Native Image on Windows moves the stack pointer down by a whole frame, or by a whole resumed
+// virtual-thread continuation, without touching the guard pages, and the default exe header
+// commits only 4096 bytes for each thread stack. A write past the committed part then faults with
+// 0xC0000005. Committing 512 KB covers the depths chen's parallel solver reaches. The 1 MB
+// reservation is the default and stays. See https://github.com/oracle/graal/issues/12764
+// This is an MSVC linker option, so it must not reach Linux or macOS builds.
+val windowsLinkerOptions =
+    if (sys.props.getOrElse("os.name", "").toLowerCase.contains("windows"))
+      Seq("-H:NativeLinkerOption=/STACK:1048576,524288")
+    else Seq.empty
 val niOpt   = sys.env.getOrElse("ATOM_NI_OPT", "-O2")
 val niMarch = sys.env.getOrElse("ATOM_NI_MARCH", "compatibility")
 val niGc    = sys.env.getOrElse("ATOM_NI_GC", "serial")
@@ -200,7 +210,7 @@ graalVMNativeImageOptions := Seq(
   // with a jar: URL; without the protocol no class in a dependency jar is ever found
   "--enable-url-protocols=jar",
   "--no-fallback"
-) ++ libcOptions
+) ++ libcOptions ++ windowsLinkerOptions
 
 // Requires Oracle Enterprise License to use G1 and pgo
 // graalVMNativeImageOptions := Seq("-H:+UnlockExperimentalVMOptions", "-H:-UseCompressedReferences", "-march=native", "--enable-preview", "--gc=G1", "--initialize-at-build-time=io.appthreat.*", "--no-fallback")
