@@ -1,0 +1,18 @@
+src/main/scala/io/appthreat/atom/Atom.scala
+  h_0926447d100ad2 1071-1077,2327-2328
+src/main/scala/io/appthreat/atom/package.scala
+  h_0926447d100ad2 226-228,243
+src/test/scala/io/appthreat/atom/MemorySafetyCommandTests.scala
+  h_0926447d100ad2 233-239
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a5defabd313e29324f84d86999fb1ed6d4a40a6e",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
