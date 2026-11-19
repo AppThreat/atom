@@ -1,0 +1,20 @@
+src/test/scala/io/appthreat/atom/MemorySafetyCommandTests.scala
+  s_000e4234adb03e::t_7dcef312f5a552 920-1013,1669-1697
+  s_000e4234adb03e::t_eb9e282aad5534 1698-1700
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0245dfec90a6199d899cb1de24fdc8f3f9fc61d0",
+  "prompts": {},
+  "sessions": {
+    "s_000e4234adb03e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "02037648-4bba-493b-a180-b7ddf3261a96",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
