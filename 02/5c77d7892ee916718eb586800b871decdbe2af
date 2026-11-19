@@ -1,0 +1,19 @@
+build.sbt
+  s_fdf9a24d9025d9::t_10ed529b357ebb 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "025c77d7892ee916718eb586800b871decdbe2af",
+  "prompts": {},
+  "sessions": {
+    "s_fdf9a24d9025d9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_36b61c0f-1be7-4af7-80de-484ef3a453fe",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
