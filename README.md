@@ -228,6 +228,8 @@ Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, f
   --min-confidence <value>
                            drop findings below this confidence: high, medium or low. Defaults to keeping all.
   --format <value>         output format: json or sarif (SARIF 2.1.0). Default: json.
+  --memory-api-profiles <value>
+                           which declared memory-API library profiles the overlay applies: auto selects per translation unit by the headers it includes, none turns profiles off, or a comma list of profile names forces exactly those. Default: auto. (C/C++ only)
 Command: export [options]
 Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)
   --format <value>         export format: dot, graphml, gexf, graphson, neo4jcsv or gnn

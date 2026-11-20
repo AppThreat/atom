@@ -104,6 +104,8 @@ Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, f
   --min-confidence <value>
                            drop findings below this confidence: high, medium or low. Defaults to keeping all.
   --format <value>         output format: json or sarif (SARIF 2.1.0). Default: json.
+  --memory-api-profiles <value>
+                           which declared memory-API library profiles the overlay applies: auto selects per translation unit by the headers it includes, none turns profiles off, or a comma list of profile names forces exactly those. Default: auto. (C/C++ only)
 Command: export [options]
 Export the atom to a graph format (dot, graphml, gexf, graphson, neo4jcsv, gnn)
   --format <value>         export format: dot, graphml, gexf, graphson, neo4jcsv or gnn
@@ -149,6 +151,410 @@ atom memory-safety -l c --format sarif -s findings.sarif /path/to/project
 - each rule that has a finding is listed under `runs[0].tool.driver.rules`, with its CWE as a tag and `helpUri`, its severity as the default `level`, and its confidence as `precision`;
 - each finding is a result with its rule, its level, and its location. A path inside the project is relative to `%SRCROOT%` (the analysed directory), and a path outside it (a system header) is an absolute `file:` URI;
 - the evidence the rule read becomes the result's `codeFlows`, one location per fact.
+
+## The memory-safety command
+
+`memory-safety` builds the atom, runs chen's memory-safety overlay (eight passes that read what
+the C and C++ frontends recorded, conclude per-method memory semantics, track each pointer's
+state through the control flow, and report) and writes the findings. Every finding names a rule
+(`MS-ALLOC-001` double free, `MS-ALLOC-002` use after free, `MS-ALLOC-003` leak, `MS-ALLOC-004`
+double close, `MS-ALLOC-005` free of non-heap storage, `MS-ALLOC-006` free of an offset pointer,
+`MS-ALLOC-007` mismatched deallocation, beside the `MS-BOUND-*`, `MS-INT-*` and other families),
+its CWE, a confidence (`high`, `medium` or `low`) and the flow of facts that produced it.
+`--min-confidence medium` keeps the findings whose evidence earned at least `medium`.
+
+A rule carries a default confidence, and where the evidence makes a weaker claim the finding
+reports below it: a use after a region reset, after a release that reached zero, a use of a block
+a destroy may not have reached, and a block stored into storage that outlives a scope whose
+cleanup releases it, all report at `medium`, while the use after a borrowed release reports at
+`low`. The leak rule reports at `low`.
+
+### Allocation styles the overlay reads
+
+The overlay knows the allocation styles C code is written in, from three kinds of evidence:
+declared attributes (`malloc`, `alloc_size`, `malloc(dealloc)`, `nonnull`, `access`, and the GCC
+`cleanup` attribute both frontends read off a declarator, however a macro spells it), bodies
+inferred to a bounded fixpoint (allocators, free wrappers, destroy functions, offset families,
+region allocators, reference releases), and the declared inventory in `memory-apis.json` with
+the library profiles below. Nothing is decided from a function's name; the name-level guess that
+remains reports its findings at `low`.
+
+**Scope cleanup.** Both C frontends place a call to a variable's `cleanup` function at every exit
+of the variable's scope: where the block ends, before each `return`, and at a `goto`, `break` or
+`continue` that leaves the scope, inner scopes first and in reverse declaration order. The call
+is `fn(&var)`, tagged `compiler-generated` and `lifetime-end` with the variable's name. A
+variable a cleanup call releases never reports a leak; one already freed and not reset that
+reaches its cleanup call is a double free, `MS-ALLOC-001` at `high` on the compiler-placed call,
+with the hand-written free left out of the report. A method that returns or stores away a
+variable the cleanup goes on to release is summarised `returns-freed`, so the caller's use of the
+result is `MS-ALLOC-002` at `high` and the store `MS-ALLOC-002` at `medium`.
+
+```c
+static void freep(void *pp) { free(*(void **)pp); }
+
+int bad(int n)
+{
+    __attribute__((cleanup(freep))) char *buf = malloc(n);
+    if (!buf) return -1;
+    if (n > 4)
+    {
+        free(buf);
+        return n;   /* MS-ALLOC-001, high, at the freep(&buf) call the scope exit places */
+    }
+    return 0;       /* no leak finding here: the cleanup releases buf */
+}
+
+int good(int n)
+{
+    __attribute__((cleanup(freep))) char *buf = malloc(n);
+    if (!buf) return -1;
+    if (n > 4)
+    {
+        free(buf);
+        buf = NULL; /* the reset leaves the cleanup call nothing to release */
+        return n;
+    }
+    return 0;
+}
+```
+
+**Destroy functions.** A method that frees its parameter on a path only the parameter's own NULL
+tests control is summarised as freeing it, even when it frees members first, calls callees that
+neither free nor allocate, or assigns to fields, provided it returns no value and frees the
+parameter itself. A free gated by a flag or a counter yields no summary. A call to the destroy
+moves an argument the method tracks, one holding an allocation that method can see (its own
+allocation, or a call summarised as allocating its result), to `freed`; a later use of it is
+`MS-ALLOC-002` at `high` and a second call is `MS-ALLOC-001` at `high`. An argument the method
+does not track, a bare parameter it only passes on, changes no state the rules read.
+
+```c
+#include <stdlib.h>
+#include <string.h>
+
+struct acct { char *name; int id; };
+
+static void acct_free(struct acct *a)
+{
+    if (!a) return;
+    free(a->name);
+    free(a);
+}
+
+int bad(void)
+{
+    struct acct *a = malloc(sizeof *a);
+    if (!a) return -1;
+    memset(a, 0, sizeof *a);
+    acct_free(a);
+    return a->id;   /* MS-ALLOC-002, high: a use after the destroy */
+}
+
+int good(void)
+{
+    struct acct *a = malloc(sizeof *a);
+    if (!a) return -1;
+    memset(a, 0, sizeof *a);
+    int id = 0;
+    if (a) id = a->id;
+    acct_free(a);
+    return id;      /* the value is read before the destroy: no finding */
+}
+```
+
+**Offset and header-prefix allocator families.** A method whose every non-NULL value return is a
+known allocation advanced by one constant amount is an allocator of a family named after it
+(`offset:<method>`), normalised to bytes where the types allow, and a method that releases its
+parameter moved back by the same amount is that family's free. The pair is matched through the
+amount and the underlying family, never through names; a wrapper returning an allocation unchanged
+stays in the underlying family. Within one method, a release of a pointer that arithmetic moved off
+its block's start is `MS-ALLOC-006` at `high`, reported at the move. A pointer moved back from a
+parameter's value is how a header-prefixed allocator frees its own block, and a pointer moved back
+by exactly what advanced it in the same method is the block's own start; neither is reported.
+
+```c
+typedef struct { long size; } hdr_t;
+
+void bad(void)
+{
+    char *p = malloc(64);
+    free(p + sizeof(hdr_t));   /* MS-ALLOC-006, high: a release off the block's start */
+}
+
+void good(void *p)
+{
+    free((hdr_t *)p - 1);      /* the header-prefix free itself: moved back from a
+                                  parameter, so no finding */
+}
+```
+
+**Declared library profiles.** A file that includes a profiled library's header follows that
+library's declared memory management, so `PyMem_Malloc` memory released with `free` is a family
+mismatch (`MS-ALLOC-007` at `high`) and released with `PyMem_Free` is correct. The profiles and
+the option that selects them are the next section.
+
+```c
+#include <pymem.h>
+
+void bad(void)
+{
+    char *p = PyMem_Malloc(16);
+    free(p);          /* MS-ALLOC-007, high: PyMem_Malloc memory goes back to PyMem_Free */
+}
+
+void good(void)
+{
+    char *p = PyMem_Malloc(16);
+    PyMem_Free(p);    /* no finding */
+}
+```
+
+**Regions.** A region is a pool, a context or a device: one handle owns every block handed out
+from it. A region allocation is inferred from a body that hands out pointer arithmetic over a
+field of one parameter with no allocation behind it, or declared by a profile entry's `region`
+role (`create`, `allocate`, `reset`, `destroy`). Region memory is never reported as a leak; a
+destroy moves every same-region pointer to `freed` and a reset to `maybe-freed`, so a use after
+an unconditional destroy is `MS-ALLOC-002` at `high` and a use after a reset is `MS-ALLOC-002`
+at `medium`. A heap free of region memory is a wrong deallocation, `MS-ALLOC-005` at `high` where
+the allocator declares only the region role and `MS-ALLOC-007` at `high` where the family
+comparison decides, so `pfree` of `palloc` memory is correct while `pfree` of `malloc` memory
+and `free` of pool memory are mismatches.
+
+```c
+#include <apr_pools.h>
+#include <string.h>
+
+int bad(apr_pool_t *pool)
+{
+    char *p = apr_palloc(pool, 32);
+    memset(p, 0, 32);
+    apr_pool_destroy(pool);
+    return p[0];   /* MS-ALLOC-002, high: a use after the pool's destroy */
+}
+
+int good(apr_pool_t *pool)
+{
+    char *p = apr_palloc(pool, 32);
+    memset(p, 0, 32);
+    int first = p[0];
+    apr_pool_clear(pool);  /* the block goes with the reset, the pool stays */
+    return first;          /* no finding, and no leak either: the region owns the block */
+}
+```
+
+**Reference counting.** For each variable the overlay tracks, it counts the references the
+method owns: a new allocation owns one, an acquire adds one, a release drops one. The declared
+roles are a profile's `release` and `acquire`; the inferred twins conclude from bodies that grow
+or shrink a counter field of one parameter, the release freeing the object under the condition
+that the count reached zero, directly or through a callback argument (the kernel's
+`kref_put(&o->refs, release)` shape). A release that reaches zero frees the object, so a use
+after it is `MS-ALLOC-002` at `medium`; a release of unknown ownership leaves the object maybe
+freed, and a use after it is `MS-ALLOC-002` at `low`; a second release below zero is
+`MS-ALLOC-001` at `medium`.
+
+```c
+/* acct_new, acct_unref and acct_ref are the declarations of the example configuration;
+   acct_put and acct_get are inferred, concluded from their bodies. */
+
+struct acct { int refs; int id; };
+
+static void acct_put(struct acct *a)
+{
+    a->refs -= 1;
+    if (a->refs == 0) free(a);
+}
+
+static void acct_get(struct acct *a)
+{
+    a->refs += 1;
+}
+
+int bad(void)
+{
+    struct acct *a = acct_new(sizeof(struct acct)); /* the method owns one reference */
+    acct_unref(a);  /* the count reaches zero: freed */
+    return a->id;   /* MS-ALLOC-002, medium: a use after the zero-reaching release */
+}
+
+int worse(void)
+{
+    struct acct *a = acct_new(sizeof(struct acct));
+    acct_unref(a);  /* reaches zero: freed */
+    acct_unref(a);  /* MS-ALLOC-001, medium: a second release below zero */
+    return 0;
+}
+
+int borrowed(struct acct *a)
+{
+    acct_put(a);    /* a is a parameter: ownership unknown, so the release is the borrowed kind */
+    return a->id;   /* MS-ALLOC-002, low */
+}
+
+int good(struct acct *a)
+{
+    acct_get(a);    /* the acquire and its matching release net out: no finding */
+    acct_put(a);
+    return 0;
+}
+```
+
+### Library profiles and `--memory-api-profiles`
+
+The built-in inventory declares seven profiles, one per library whose memory management lives in
+headers outside the analysed tree. Every profile entry cites the header or documentation page
+that states its behaviour.
+
+| Profile | Selected by a translation unit including | Entries declare |
+|---|---|---|
+| glib | `glib.h`, `gmem.h`, `glib-object.h`, `gio/gio.h`, `gtk/gtk.h` | `g_new0` (heap, the element count is argument 2), `g_free` (heap; `g_free` is `free` on every platform glib supports), `g_steal_pointer` (steal), `g_autoptr_cleanup_generic_gfree` (the cleanup `g_autofree` attaches) |
+| linux | `linux/slab.h`, `linux/kref.h`, `linux/gfp.h`, `linux/vmalloc.h`, `linux/device.h` | `kmalloc`, `kzalloc`, `kcalloc`, `kmalloc_array` (the `slab` family, released by `kfree`), `vmalloc` (the `vmalloc` family, released by `vfree`), `kvmalloc`, `kvzalloc` (the `kvmalloc` family), `kvfree` (releases all three families), `devm_kzalloc`, `devm_kcalloc` (region allocations owned by argument 1, the device), `kref_put` (releases the object of argument 1, calling the callback of argument 2 at zero) |
+| postgresql | `postgres.h`, `utils/palloc.h`, `utils/memutils.h` | `palloc`, `palloc0` (the `pgmem` family, allocated from the `CurrentMemoryContext` global), `pfree`, `MemoryContextReset` (reset), `MemoryContextDelete` (destroy), `AllocSetContextCreate` (create) |
+| apr | `apr_pools.h`, `httpd.h` | `apr_palloc` (the `aprpool` family, region argument 1), `apr_pool_create` (create through the out-pointer argument 1), `apr_pool_clear` (reset), `apr_pool_destroy` (destroy) |
+| nginx | `ngx_core.h`, `ngx_palloc.h` | `ngx_alloc`, `ngx_free` (plain heap wrappers), `ngx_palloc` (the `ngxpool` family, region argument 1), `ngx_create_pool` (create), `ngx_destroy_pool` (destroy) |
+| cpython | `Python.h`, `object.h`, `pymem.h` | `PyMem_Malloc`, `PyMem_Free` (the `pymem` family), `Py_DECREF` (release of argument 1), `Py_INCREF` (acquire of argument 1) |
+| php | `php.h`, `zend.h`, `zend_API.h`, `zend_alloc.h`, `zend_string.h` | `emalloc`, `efree` (the `zendmm` request heap), `zend_string_release` (release of argument 1) |
+
+The builtin descriptors are inventoried the same way: `open`, `openat`, `creat`, `socket`,
+`accept`, `accept4`, `dup` and `dup2` allocate the `fd` family, released by `close` and
+`closesocket`; `fopen`, `fdopen`, `freopen`, `tmpfile` and `opendir` allocate the `file` family,
+released by `fclose` and `closedir`. A second close of either family is `MS-ALLOC-004` at `high`,
+and a release of one family's handle with the other family's function (a `close` of a `FILE *`,
+an `fclose` of a descriptor) is `MS-ALLOC-007` at `high`.
+
+A translation unit selects a profile when its primary source file includes one of the profile's
+headers, compared by basename, whatever path the include spelled. Precedence is fixed: an
+inventory entry (built-in or from `--memory-api-config`) wins for the names it declares; a body
+in the analysed tree wins over a profile entry of the same name, whatever the body says; a
+profile entry stands above the name-level conclusions; and a call the graph resolves to a method
+is judged by that method's own body.
+
+`--memory-api-profiles <auto|none|name,name>` selects how units choose: `auto` (the default) by
+the includes each unit carries, `none` turns profiles off, and a comma list (compared without
+case) forces those profiles onto every file whose calls name their entries, reporting a name no
+profile carries on stderr so a typo'd list cannot analyse quietly as `none`. atom prints the
+profiles it followed, with a per-profile file count, beside the function-summary counts, for
+example `MemoryApiPass: memory-api profiles: cpython (2 files), linux (1 file)`. The profiles and
+`--memory-api-config` apply when the atom is built: `--reuse-atom` keeps the ones the reused atom
+was built with, and the command says so on stderr when this run asks for others.
+
+### Declaring in-house APIs with `--memory-api-config`
+
+`--memory-api-config` passes a JSON file of the same schema as `memory-apis.json`. Its `apis` array
+is merged over the built-in inventory by API name, an external entry replacing the built-in entry
+of the same name, and its `profiles` array is merged by profile name. An unreadable document is
+reported on stderr and ignored rather than failing the run, and an unreadable entry inside a
+readable document is dropped with its own note; every declared-role field is optional, so an
+existing configuration file still decodes. Two family names changed when sockets and files were
+split by handle type: a `socket` family in an existing file is read as `fd`, and an entry that
+declared an integer-descriptor function with the `file` family must now say `fd`, or a `close` of
+its result is reported as a mismatch. A `free` may list several families for a release that accepts
+blocks of each, as `kvfree` does: `"free": ["slab", "vmalloc", "kvmalloc"]`.
+
+The declared roles an entry can carry beside the long-standing ones are `release` and `acquire`
+(the 1-based index of the argument whose reference count the call drops or takes), `retains` (the
+argument whose resource the call's result takes over, as `fdopen` takes its descriptor), `steal`
+(the pointer-to-pointer argument the call empties and returns), `cleanup` (true for a function that
+takes the address of a variable and releases what it points to), and `region` with one of the roles
+`create`, `allocate`, `reset` or `destroy`. The vocabulary validates what nothing in the analysed
+tree can confirm: a role index must be a number 1 or greater (a quoted number is a string and is
+rejected), a `region` allocate names exactly one of `arg` and `context`, a `create` names no
+`context`, and every profile entry needs its `source` citation. A rejected entry is dropped with a
+note naming it, and the rest of the file still applies. The `release`, `acquire`, `retains` and
+`region` roles reach the call sites as tags; a declared `steal` moves the block out of the slot it
+is handed the address of, as the body-inferred steal summary does, and a declared `cleanup`
+function releases the block its argument points to, which is what the cleanup calls the frontends
+place then do.
+
+The file below declares a small in-house library; chen's c2cpg test suite loads this exact
+document from its documentation, so the example tracks what the vocabulary accepts.
+
+```json
+{
+  "version": 1,
+  "apis": [
+    {
+      "name": "acct_new",
+      "alloc": "acctmem",
+      "len": 1,
+      "nullableReturn": true,
+      "source": "acct/core.h:41"
+    },
+    {
+      "name": "acct_del",
+      "free": "acctmem",
+      "source": "acct/core.h:52"
+    }
+  ],
+  "profiles": [
+    {
+      "name": "acct",
+      "headers": ["acct/pool.h"],
+      "entries": [
+        {
+          "name": "acct_pool_new",
+          "region": { "role": "create", "arg": 1 },
+          "source": "acct/pool.h:23"
+        },
+        {
+          "name": "acct_pool_alloc",
+          "region": { "role": "allocate", "arg": 1 },
+          "len": 2,
+          "nullableReturn": true,
+          "source": "acct/pool.h:34"
+        },
+        {
+          "name": "acct_pool_clear",
+          "region": { "role": "reset", "arg": 1 },
+          "source": "acct/pool.h:45"
+        },
+        {
+          "name": "acct_pool_delete",
+          "region": { "role": "destroy", "arg": 1 },
+          "source": "acct/pool.h:56"
+        },
+        {
+          "name": "acct_pool_get",
+          "region": { "role": "allocate", "context": "acct_current_pool" },
+          "len": 1,
+          "source": "acct/pool.h:67"
+        },
+        {
+          "name": "acct_unref",
+          "release": 1,
+          "source": "acct/object.h:70"
+        },
+        {
+          "name": "acct_ref",
+          "acquire": 1,
+          "source": "acct/object.h:81"
+        },
+        {
+          "name": "acct_take",
+          "steal": 1,
+          "source": "acct/object.h:92"
+        },
+        {
+          "name": "acct_cleanup",
+          "cleanup": true,
+          "source": "acct/object.h:103"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### What the memory-safety overlay does not report
+
+The cpython profile declares `Py_DECREF` as a release and `Py_INCREF` as an acquire; `Py_XDECREF`
+and `Py_CLEAR` have no declared entries, because their NULL-guard and reset shapes are not
+expressible as a plain release role, so releases written with them are not tracked. The selecting
+headers are matched against a unit's own `#include` lines, not the headers those include in turn,
+so a unit that reaches a library only through a header of its own selects no profile. A missing
+reference release is not reported by design: the count model reports the uses after a release and
+the second releases below zero, never an omission. A release does not compose through a wrapper: a
+function whose body only calls the inferred releaser draws no summary, so the use after the
+wrapper-spent reference draws no finding and the block still reads as live at the exit, reporting
+the leak the wrapper actually released at `low`.
 
 ## Environment variables
 

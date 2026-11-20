@@ -1060,6 +1060,26 @@ object Atom:
                   c match
                     case c: AtomMemorySafetyConfig => c.withFormat(x)
                     case _                         => c
+              ),
+          opt[String]("memory-api-profiles")
+              .text(
+                "which declared memory-API library profiles the overlay applies: auto selects " +
+                    "per translation unit by the headers it includes, none turns profiles off, " +
+                    "or a comma list of profile names forces exactly those. Default: auto. (C/C++ only)"
+              )
+              .validate(x =>
+                val mode = x.trim
+                if mode == "auto" || mode == "none" then success
+                else if mode.nonEmpty && mode.split(",").forall(_.trim.nonEmpty) then success
+                else
+                  failure(
+                    s"`memory-api-profiles` must be `auto`, `none` or a comma list of profile names."
+                  )
+              )
+              .action((x, c) =>
+                  c match
+                    case c: AtomMemorySafetyConfig => c.withMemoryApiProfiles(x)
+                    case _                         => c
               )
         )
     cmd("export")
@@ -1698,6 +1718,16 @@ object Atom:
     // otherwise build a fresh atom from the input. New graph-level commands (export, algorithms)
     // share this path so they never require a manual pre-build step.
     val reusing = shouldReuseExistingAtom(config, outputAtomFile)
+    // the overlay runs when the atom is built: a reused atom keeps the profiles and the memory
+    // API config it was built with, whatever this run asks for
+    config match
+      case ms: AtomMemorySafetyConfig
+          if reusing && (ms.memoryApiProfiles.trim != "auto" || ms.memoryApiConfigFile.isDefined) =>
+          System.err.println(
+            "warn: --memory-api-profiles and --memory-api-config apply when the atom is built; " +
+                "the reused atom keeps the ones it was built with. Run without --reuse-atom to apply them."
+          )
+      case _ => ()
     getOrCreateAtom(language, config, outputAtomFile, reusing) match
       case Failure(exception) =>
           // The message first: a frontend failure a script can grep for - the
@@ -2301,9 +2331,16 @@ object Atom:
                     ).createAndApply()
                 }
                 PerfReporter.stage("taggers.MemoryApiPass", "analysis") {
+                    // The profiles the run follows, as the memory-safety command chose them
+                    // (`auto` for every other caller): printed with the files that selected each.
+                    val profilesMode = x match
+                      case memorySafety: AtomMemorySafetyConfig => memorySafety.memoryApiProfiles
+                      case _                                    => "auto"
                     new MemoryApiPass(
                       atom,
-                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString),
+                      profilesMode,
+                      reportProfiles = x.isInstanceOf[AtomMemorySafetyConfig]
                     )
                         .createAndApply()
                 }
