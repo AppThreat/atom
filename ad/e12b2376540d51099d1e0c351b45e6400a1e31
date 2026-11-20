@@ -1,0 +1,73 @@
+src/main/scala/io/appthreat/atom/Atom.scala
+  h_0926447d100ad2 1063-1082,2334-2338,2341
+  s_f4248adf62ddd8::t_5bdac970950aba 1721-1730,2342-2343
+src/main/scala/io/appthreat/atom/package.scala
+  h_0926447d100ad2 226-231,240-244
+docs/docs/cli.md
+  h_0926447d100ad2 107-108,155-552
+  s_f4248adf62ddd8::t_b962e56569fba9 553-558
+build.sbt
+  s_fdf9a24d9025d9::t_10ed529b357ebb 6
+src/test/scala/io/appthreat/atom/MemorySafetyCommandTests.scala
+  s_8bf531d441928a::t_106f6c789af0b3 484-572,1808-1816,1822-1832,1838-1871
+  h_0926447d100ad2 5,16-18,203-483,599,608-609,617,623-625,633-697,701-729,732-764,767-789,792-812,815-823,827,831-854,1143-1187,1212,1378-1390,1526-1574,1701-1807,1872-1883,1899-1900,1904,1913-1920,1927-1934,1941-1948,1960-1971,1980,2071-2084
+  s_000e4234adb03e::t_d716d4b3051bbb 1284-1337,1896-1897,1981-1982,2109-2121
+  s_000e4234adb03e::t_2f111321704695 1063,1066-1142,2050-2070
+  s_000e4234adb03e::t_eb9e282aad5534 2031-2033
+  s_fdf9a24d9025d9::t_75558ff930f693 600-607,610-615,618-622,626-632,698-700,730-731,765-766,790-791,813-814,824-825,828-830,855-861,1061-1062,1064-1065,1188-1189,1204-1208,1817-1821,1833-1837,1884-1895,1905-1912,1921-1926,1935-1940,1949-1959,1972-1979,2100
+  s_000e4234adb03e::t_7dcef312f5a552 826,863-1060,1338-1377,1983-2030,2034-2049
+  s_000e4234adb03e::t_9a0c22614b927a 1190-1203,1209-1211,1213-1283,2085-2099,2101-2108
+  s_fdf9a24d9025d9::t_5e59d7f8834981 1901-1903
+  s_f4248adf62ddd8::t_e42ba7106c78b5 616,862,1575,1898,2122
+README.md
+  s_f4248adf62ddd8::t_3e87d3f8fba5bc 231-232
+src/test/scala/io/appthreat/atom/CFrontendWorkflowTests.scala
+  s_f4248adf62ddd8::t_15460019988f4d 229-298
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  s_f4248adf62ddd8::t_ef3779f5016ded 883
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ade12b2376540d51099d1e0c351b45e6400a1e31",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  },
+  "sessions": {
+    "s_000e4234adb03e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "02037648-4bba-493b-a180-b7ddf3261a96",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_8bf531d441928a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "52048f93-72ee-4a3d-a58c-dd328ee0eb8b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_f4248adf62ddd8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "25bbb232-7e05-4fd5-84a8-3e20a9f11228",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_fdf9a24d9025d9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_36b61c0f-1be7-4af7-80de-484ef3a453fe",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
