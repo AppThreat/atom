@@ -223,6 +223,12 @@ package object atom:
     var minConfidence: String = ""
     var format: String        = "json"
 
+    /** How the overlay picks the declared memory-API library profiles: `auto` lets each translation
+      * unit follow the profiles its includes select, `none` turns profiles off, a comma list of
+      * profile names forces exactly those (C/C++ only).
+      */
+    var memoryApiProfiles: String = "auto"
+
     def withMinConfidence(x: String): AtomMemorySafetyConfig =
       this.minConfidence = x
       this
@@ -230,6 +236,11 @@ package object atom:
     def withFormat(x: String): AtomMemorySafetyConfig =
       this.format = x
       this
+
+    def withMemoryApiProfiles(x: String): AtomMemorySafetyConfig =
+      this.memoryApiProfiles = x
+      this
+  end AtomMemorySafetyConfig
 
   /** Export the whole atom, or a per-method subgraph of it, to one of the supported graph formats.
     * `scope` is either "whole" or "methods". The output format is taken from `exportFormat` and the

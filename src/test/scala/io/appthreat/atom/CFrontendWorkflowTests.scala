@@ -226,6 +226,76 @@ class CFrontendWorkflowTests extends AnyWordSpec with Matchers:
                 contain("double-free")
           }
       }
+
+      "print the profiles the run followed" in {
+          project { (dir, src) =>
+            val out      = new java.io.ByteArrayOutputStream()
+            val original = System.out
+            System.setOut(new java.io.PrintStream(out, true, "UTF-8"))
+            val built =
+                try
+                    scala.Console.withOut(System.out) {
+                        atom(
+                          "memory-safety",
+                          "-l",
+                          "c",
+                          "--cache",
+                          "none",
+                          "--memory-api-profiles",
+                          "none",
+                          "-o",
+                          (dir / "app.atom").pathAsString,
+                          "-s",
+                          (dir / "findings.json").pathAsString,
+                          src.pathAsString
+                        )
+                    }
+                finally System.setOut(original)
+            built.isRight shouldBe true
+            out.toString("UTF-8") should include("MemoryApiPass: memory-api profiles: none")
+          }
+      }
+
+      "say that a reused atom keeps the profiles it was built with" in {
+          project { (dir, src) =>
+            val atomFile = dir / "app.atom"
+            atom(
+              "memory-safety",
+              "-l",
+              "c",
+              "--cache",
+              "none",
+              "-o",
+              atomFile.pathAsString,
+              "-s",
+              (dir / "findings.json").pathAsString,
+              src.pathAsString
+            ).isRight shouldBe true
+            val err      = new java.io.ByteArrayOutputStream()
+            val original = System.err
+            System.setErr(new java.io.PrintStream(err, true, "UTF-8"))
+            val reused =
+                try
+                    atom(
+                      "memory-safety",
+                      "-l",
+                      "c",
+                      "--cache",
+                      "none",
+                      "--reuse-atom",
+                      "--memory-api-profiles",
+                      "none",
+                      "-o",
+                      atomFile.pathAsString,
+                      "-s",
+                      (dir / "findings-reused.json").pathAsString,
+                      src.pathAsString
+                    )
+                finally System.setErr(original)
+            reused.isRight shouldBe true
+            err.toString("UTF-8") should include("the reused atom keeps the ones it was built with")
+          }
+      }
   }
 
   "an unknown --c-frontend" should {
