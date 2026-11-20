@@ -1,0 +1,26 @@
+wrapper/nodejs/packages/atom/package.json
+  s_f4248adf62ddd8::t_bc0361712e280d 3
+build.sbt
+  s_f4248adf62ddd8::t_bc0361712e280d 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9b59988d81265e61ac05d952dd9bf560fdb40769",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  },
+  "sessions": {
+    "s_f4248adf62ddd8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "25bbb232-7e05-4fd5-84a8-3e20a9f11228",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
