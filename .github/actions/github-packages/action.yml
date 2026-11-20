@@ -9,10 +9,9 @@ description: >-
 inputs:
   chen-ref:
     description: >-
-      The chen branch to build and publish locally, or empty to use the released chen. Temporary:
-      chen main until chen 4.0.2, which carries AppThreat/chen#340, is released.
+      The chen branch to build and publish locally, or empty to use the released chen.
     required: false
-    default: 'main'
+    default: ''
   ivy-home:
     description: Ivy home to publish chen into, for builds that mount their own. Defaults to sbt's.
     required: false
