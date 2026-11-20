@@ -10,9 +10,9 @@ inputs:
   chen-ref:
     description: >-
       The chen branch to build and publish locally, or empty to use the released chen. Temporary:
-      set while atom needs AppThreat/chen#340, which chen 4.0.2 will release.
+      chen main until chen 4.0.2, which carries AppThreat/chen#340, is released.
     required: false
-    default: 'memsafe/alloc-styles'
+    default: 'main'
   ivy-home:
     description: Ivy home to publish chen into, for builds that mount their own. Defaults to sbt's.
     required: false
