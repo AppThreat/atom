@@ -1,0 +1,21 @@
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_8a4433d1784041::t_394411cb1e499f 44,1199,1224-1230
+src/main/scala/io/appthreat/atom/ParseReport.scala
+  s_8a4433d1784041::t_ac3165242cc167 20-21,28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "053216c2a3367633d7aee2824ba6f905522fe631",
+  "prompts": {},
+  "sessions": {
+    "s_8a4433d1784041": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ef82bff-b756-4a5d-8551-a808005aa216",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
