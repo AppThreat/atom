@@ -1,0 +1,90 @@
+src/main/scala/io/appthreat/atom/frontends/FrontendArgsApplier.scala
+  s_8a4433d1784041::t_67048685854972 318-332,556-561
+  s_8a4433d1784041::t_632a7ef67665c2 122-123
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  s_8a4433d1784041::t_2605d7d9e07593 567-675
+  s_8a4433d1784041::t_74072070d0647f 5-6,251-255,259,676-682
+build.sbt
+  s_8a4433d1784041::t_e95e6673dd532b 3
+  s_8a4433d1784041::t_ee9b9c47ae30bd 6
+docs/docs/cli.md
+  s_8a4433d1784041::t_0bf360ecb8abc8 180-184
+  s_8a4433d1784041::t_91300f138a4007 37-39,175-179,185,573-598,690-691,801-802
+src/test/scala/io/appthreat/atom/slicing/InstanceGroupingUnitTests.scala
+  s_8a4433d1784041::t_4941a529ab34f7 1-120
+src/test/scala/io/appthreat/atom/FrontendArgsApplierTests.scala
+  s_8a4433d1784041::t_7c90a9691381b8 366-374
+.github/actions/github-packages/action.yml
+  s_8a4433d1784041::t_e95e6673dd532b 12-13,15
+src/test/scala/io/appthreat/atom/TemplateInstanceGroupingTests.scala
+  s_8a4433d1784041::t_2de687c1722144 202-211,214-344,347,446
+  s_8a4433d1784041::t_493f6984626ebe 1-201,212-213,345-346,348-445,447-501
+src/test/scala/io/appthreat/atom/MemorySafetyGroupingUnitTests.scala
+  s_8a4433d1784041::t_866c2878bda13d 76
+  s_8a4433d1784041::t_62bc57241dc779 1-75
+wrapper/nodejs/packages/atom/package.json
+  s_8a4433d1784041::t_35296dd5d0b5f7 3
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  s_8a4433d1784041::t_c7062a7f00d76b 883
+  s_8a4433d1784041::t_b683b12e15344e 928
+.github/actions/edga/action.yml
+  s_8a4433d1784041::t_b683b12e15344e 9
+README.md
+  s_8a4433d1784041::t_ee60520124e759 46
+  s_8a4433d1784041::t_81d468c1940ded 161-163
+src/main/resources/META-INF/native-image/resource-config.json
+  s_8a4433d1784041::t_45c868e8bd1df9 1
+ci/Dockerfile-sle
+  s_8a4433d1784041::t_3fad03c20ebeb4 5
+src/main/scala/io/appthreat/atom/ParseReport.scala
+  s_8a4433d1784041::t_ac3165242cc167 20-22,27-28
+  s_8a4433d1784041::t_5cb3f69205b014 3,9-13,30-58,60,62-63,65,67-101,107-109,112-117
+ci/Dockerfile
+  s_8a4433d1784041::t_1d205679905b3d 5
+docs/docs/c-frontends.md
+  s_8a4433d1784041::t_76ca89442c5e4e 102
+  s_8a4433d1784041::t_3a0c433b537afb 30-31,63-90
+docs/docs/slicing.md
+  s_8a4433d1784041::t_4d4f0f7afad0b4 47-48
+  s_8a4433d1784041::t_c1d073092ef631 46,49-52,242-246
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_8a4433d1784041::t_8b7445ac7e4aaf 145-199
+  s_8a4433d1784041::t_122c548306c651 4-5,88,120,123-124,141-144,200-202
+src/main/scala/io/appthreat/atom/slicing/UsageSlicing.scala
+  s_8a4433d1784041::t_b406fcb2a3133b 3,107-119,123-174
+  s_8a4433d1784041::t_27f50725f59e50 175
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_8a4433d1784041::t_e0a7c4bde6aa7f 44,597-619,1199,1224-1230
+src/main/scala/io/appthreat/atom/MemorySafetySarif.scala
+  s_8788a01b4477b0::t_ccec68d770b550 86-91,102-114,120
+src/main/scala/io/appthreat/atom/slicing/package.scala
+  s_8788a01b4477b0::t_18e9a3ecf2c74e 228-250,368-371,388-389,407-420,423-437,440-441
+src/test/scala/io/appthreat/atom/ParseReportTests.scala
+  s_8788a01b4477b0::t_4bee3ed7524321 4-9,137-332
+src/test/scala/io/appthreat/atom/ParseReportUnitsSectionTests.scala
+  s_8788a01b4477b0::t_5878360a34b33c 1-194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f3117167f122fc28f540bf0d7c9ea1c1cc2f7328",
+  "prompts": {},
+  "sessions": {
+    "s_8788a01b4477b0": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_c41334aa-2343-4dc4-8b07-1cbbaab93edf",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_8a4433d1784041": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ef82bff-b756-4a5d-8551-a808005aa216",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
