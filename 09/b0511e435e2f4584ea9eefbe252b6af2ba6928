@@ -1,0 +1,27 @@
+wrapper/nodejs/packages/atom/package.json
+  s_8a4433d1784041::t_ab95815646e127 3
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  s_8a4433d1784041::t_5af4f63777c602 883
+.github/actions/github-packages/action.yml
+  s_8a4433d1784041::t_ed05f18dbda4c7 13,15
+build.sbt
+  s_8a4433d1784041::t_e3eaf5c3267130 3,6
+docs/docs/cli.md
+  s_8a4433d1784041::t_49c3fe8e8b1cd5 792-801
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "09b0511e435e2f4584ea9eefbe252b6af2ba6928",
+  "prompts": {},
+  "sessions": {
+    "s_8a4433d1784041": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ef82bff-b756-4a5d-8551-a808005aa216",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
