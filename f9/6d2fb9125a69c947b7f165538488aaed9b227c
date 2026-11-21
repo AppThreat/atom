@@ -1,0 +1,19 @@
+src/test/scala/io/appthreat/atom/ParseReportUnitsSectionTests.scala
+  s_8788a01b4477b0::t_47e509420191ab 47-52,190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f96d2fb9125a69c947b7f165538488aaed9b227c",
+  "prompts": {},
+  "sessions": {
+    "s_8788a01b4477b0": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_c41334aa-2343-4dc4-8b07-1cbbaab93edf",
+        "model": "unknown"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
