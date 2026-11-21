@@ -1084,6 +1084,17 @@ object Atom:
                     case c: AtomMemorySafetyConfig => c.withFormat(x)
                     case _                         => c
               ),
+          opt[Unit]("include-system-headers")
+              .text(
+                "keep findings located in a file outside the analysed directory, such as a header " +
+                    "from a system include directory. They are dropped by default; kept ones print " +
+                    "their absolute path."
+              )
+              .action((_, c) =>
+                  c match
+                    case c: AtomMemorySafetyConfig => c.withIncludeSystemHeaders(true)
+                    case _                         => c
+              ),
           opt[String]("memory-api-profiles")
               .text(
                 "which declared memory-API library profiles the overlay applies: auto selects " +

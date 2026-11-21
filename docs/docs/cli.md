@@ -107,6 +107,8 @@ Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, f
   --min-confidence <value>
                            drop findings below this confidence: high, medium or low. Defaults to keeping all.
   --format <value>         output format: json or sarif (SARIF 2.1.0). Default: json.
+  --include-system-headers
+                           keep findings located in a file outside the analysed directory, such as a header from a system include directory. They are dropped by default; kept ones print their absolute path.
   --memory-api-profiles <value>
                            which declared memory-API library profiles the overlay applies: auto selects per translation unit by the headers it includes, none turns profiles off, or a comma list of profile names forces exactly those. Default: auto. (C/C++ only)
 Command: export [options]
@@ -171,6 +173,14 @@ reports below it: a use after a region reset, after a release that reached zero,
 a destroy may not have reached, and a block stored into storage that outlives a scope whose
 cleanup releases it, all report at `medium`, while the use after a borrowed release reports at
 `low`. The leak rule reports at `low`.
+
+### Findings outside the analysed directory
+
+A finding is located in the file of the code it points at. Some of that code is not the project's: a macro or inline function from a system header (`_ctype.h`, `sys/_types/_fd_def.h` in the macOS SDK, a header under `/usr/include`, an MSVC or Homebrew include directory) is found through an include path, and its index or size contract is the platform's to keep. The command decides by the file's path, not by the name of any SDK: a file under the analysed directory is project code, even when an include path also covers it, and a file anywhere else is not.
+
+By default the findings in files outside the analysed directory are dropped. Only the reported location counts: a finding in project code stays when its flow passes through a system header. `--include-system-headers` keeps the others.
+
+Every path in the output is relative to the analysed directory, written with the directory's name in front (`src/core/ngx_string.c`), or absolute (`/usr/include/sys/_types/_fd_def.h`, `C:/Program Files/.../include/string.h`). A path outside the directory is never joined to the directory's name. In `--format sarif`, a path under the directory is relative to `%SRCROOT%` and a path outside it is an absolute `file:` URI. The `file` of each `flow` row follows the same rule, without the directory's name in front of a path under it.
 
 ### Findings of template instances
 
