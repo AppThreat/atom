@@ -10,9 +10,9 @@ inputs:
   chen-ref:
     description: >-
       The chen branch to build and publish locally, or empty to use the released chen. Temporary:
-      set while atom needs the chen change on cfc/frontend-contexts, which chen 4.0.4 will release.
+      set while atom needs chen main, which chen 4.0.4 will release.
     required: false
-    default: 'cfc/frontend-contexts'
+    default: 'main'
   ivy-home:
     description: Ivy home to publish chen into, for builds that mount their own. Defaults to sbt's.
     required: false
