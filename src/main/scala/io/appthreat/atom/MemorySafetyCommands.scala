@@ -67,6 +67,7 @@ object MemorySafetyCommands:
       )
     val minConfidence = confidenceOrder.getOrElse(requested, 0)
     val inputRoot     = config.inputPath.name
+    val root          = ReportedPaths.Root(config.inputPath.path)
 
     // The findings are tags only the overlay writes, and a graph without them is exactly what a
     // finding-free program looks like - so when the marker Atom writes alongside the overlay is
@@ -113,11 +114,24 @@ object MemorySafetyCommands:
             confidenceOrder.getOrElse(confidence.toLowerCase, 0) >= minConfidence
         }
         .toList
-        .sortBy { (node, _, _) =>
-            (filenameOf(node), node.lineNumber.map(_.toInt).getOrElse(0): Int)
+        .map { (node, rule, confidence) => (node, rule, confidence, root.locate(filenameOf(node))) }
+        // the reported location decides: a finding in a file outside the input (a system header)
+        // is code the user cannot change, whatever flow led to it, and a finding in project code
+        // stays even when its flow passes through such a header
+        .filter { (_, _, _, location) =>
+            config.includeSystemHeaders || location.isInstanceOf[ReportedPaths.Location.Inside]
         }
-        .map { (node, rule, confidence) =>
-            (render(cpg, atomFile, inputRoot, confidence)(node, rule), instanceOf(node))
+        .sortBy { (node, _, _, location) =>
+            (
+              ReportedPaths.printed(location, inputRoot),
+              node.lineNumber.map(_.toInt).getOrElse(0): Int
+            )
+        }
+        .map { (node, rule, confidence, location) =>
+            (
+              render(atomFile, inputRoot, root, confidence)(node, rule, location),
+              instanceOf(node)
+            )
         }
 
     val findings = groupTemplateInstances(rendered)
@@ -220,12 +234,17 @@ object MemorySafetyCommands:
     * the analysed input, and consumers of this JSON (a scorer matching on `c/`/`cpp/` prefixes, a
     * script re-rooting paths into a checkout) match on paths that carry that root.
     */
-  private def render(cpg: Cpg, atomFile: File, inputRoot: String, confidence: String)(
+  private def render(
+    atomFile: File,
+    inputRoot: String,
+    root: ReportedPaths.Root,
+    confidence: String
+  )(
     node: AstNode,
-    rule: MemorySafetyFindingPass.MemorySafetyRule
+    rule: MemorySafetyFindingPass.MemorySafetyRule,
+    location: ReportedPaths.Location
   ): Json =
-    val relative = filenameOf(node)
-    val file   = if inputRoot.isEmpty || inputRoot == "." then relative else s"$inputRoot/$relative"
+    val file   = ReportedPaths.printed(location, inputRoot)
     val line   = node.lineNumber.map(_.toInt).getOrElse(0)
     val column = node.columnNumber.map(_.toInt).getOrElse(0)
 
@@ -240,7 +259,7 @@ object MemorySafetyCommands:
       "confidence" -> confidence.asJson,
       "message" -> s"${node.code}: ${rule.message}${debugGuardNote(node)}${reentrantCallNote(node)}"
           .asJson,
-      "flow" -> flowOf(node).asJson,
+      "flow" -> flowOf(node, root).asJson,
       "atom" -> atomFile.pathAsString.asJson
     ).asJson
   end render
@@ -267,15 +286,23 @@ object MemorySafetyCommands:
                                                    else ".")
         case None => ""
 
+  /** The file of a flow row: a path under the input stays relative to it, without the input's name,
+    * and a file outside the input prints as its absolute path.
+    */
+  private def flowFile(n: AstNode, root: ReportedPaths.Root): String =
+      root.locate(n.file.name.headOption.getOrElse("")) match
+        case ReportedPaths.Location.Inside(relative)  => relative
+        case ReportedPaths.Location.Outside(absolute) => absolute
+
   /** The evidence chain: the offending argument, the memory operation it bounds, the origin and
     * guard facts the rule read, and the definitions that produced the value (the REACHING_DEF walk
     * backwards - where `df` would be paying for a solve this does not need).
     */
-  private def flowOf(node: AstNode): List[Json] =
+  private def flowOf(node: AstNode, root: ReportedPaths.Root): List[Json] =
     val entries = mutable.ListBuffer.empty[JsonObject]
     def entry(n: AstNode, role: String): Unit =
         entries += JsonObject(
-          "file" -> n.file.name.headOption.getOrElse("").asJson,
+          "file" -> flowFile(n, root).asJson,
           "line" -> n.lineNumber.map(_.toInt).getOrElse(0).asJson,
           "code" -> n.code.asJson,
           "role" -> role.asJson

@@ -229,6 +229,15 @@ package object atom:
       */
     var memoryApiProfiles: String = "auto"
 
+    /** Keep findings whose location is in a file outside the analysed input, such as a system
+      * header. They are dropped by default: the user cannot change that code.
+      */
+    var includeSystemHeaders: Boolean = false
+
+    def withIncludeSystemHeaders(x: Boolean): AtomMemorySafetyConfig =
+      this.includeSystemHeaders = x
+      this
+
     def withMinConfidence(x: String): AtomMemorySafetyConfig =
       this.minConfidence = x
       this

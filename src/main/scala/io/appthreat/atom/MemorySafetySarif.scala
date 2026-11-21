@@ -41,7 +41,7 @@ object MemorySafetySarif:
           "originalUriBaseIds" -> Json.obj(
             "%SRCROOT%" -> Json.obj("uri" -> directoryUri(inputPath).asJson)
           ),
-          "results" -> findings.map(f => resultJson(f, ruleIndex)).asJson
+          "results" -> findings.map(f => resultJson(f, ruleIndex, inputName(inputPath))).asJson
         )
       )
     )
@@ -63,9 +63,24 @@ object MemorySafetySarif:
         )
       )
 
-  private def resultJson(finding: Json, ruleIndex: Map[String, Int]): Json =
+  /** The name the findings' `file` fields put in front of a path under the input, which SARIF
+    * expresses through `%SRCROOT%` instead.
+    */
+  private def inputName(inputPath: String): String =
+      java.nio.file.Paths.get(inputPath).toAbsolutePath.normalize.getFileName match
+        case null => ""
+        case name => name.toString
+
+  /** A finding's file as an artifact path: the input's name in front of a relative path is dropped,
+    * because `%SRCROOT%` is the input itself.
+    */
+  private def underSourceRoot(file: String, inputName: String): String =
+      if inputName.nonEmpty && file.startsWith(s"$inputName/") then file.drop(inputName.length + 1)
+      else file
+
+  private def resultJson(finding: Json, ruleIndex: Map[String, Int], inputName: String): Json =
     val ruleId     = stringField(finding, "rule").getOrElse("")
-    val file       = stringField(finding, "file").getOrElse("")
+    val file       = underSourceRoot(stringField(finding, "file").getOrElse(""), inputName)
     val severity   = stringField(finding, "severity").getOrElse("")
     val confidence = stringField(finding, "confidence").getOrElse("")
     val location   = physicalLocation(file, intField(finding, "line"), intField(finding, "column"))
