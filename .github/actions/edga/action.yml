@@ -6,7 +6,7 @@ description: >-
 inputs:
   version:
     description: The edga release to install, without the leading v.
-    default: '0.2.0'
+    default: '0.4.0'
 outputs:
   path:
     description: The edga binary.

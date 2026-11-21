@@ -41,7 +41,7 @@ import io.appthreat.pysrc2cpg.{
 }
 import io.appthreat.ruby2atom.{Ruby2Atom, Config as RubyConfig}
 import io.appthreat.x2cpg.passes.base.AstLinkerPass
-import io.appthreat.x2cpg.parse.ParseReporter
+import io.appthreat.x2cpg.parse.{ParseReporter, UnitSettingsReporter}
 import io.appthreat.x2cpg.perf.PerfReporter
 import io.appthreat.x2cpg.passes.frontend.{XTypeRecovery, XTypeRecoveryConfig}
 import io.appthreat.x2cpg.passes.taggers.{
@@ -592,6 +592,29 @@ object Atom:
         .action((_, c) =>
             c match
               case config: AtomConfig => config.withFrontendArg("compile-commands-only", "true")
+              case _                  => c
+        )
+    opt[String]("c-build-contexts")
+        .valueName("<first|all>")
+        .text(
+          "With a compilation database that compiles one file more than once: analyse the first entry's build context (first, the default) or every distinct one (all, a function whose body differs keeps one copy per context). (C/C++ only)"
+        )
+        .validate(x =>
+            if Set("first", "all").contains(x.trim.toLowerCase) then success
+            else failure(s"unknown --c-build-contexts `$x`; expected first or all")
+        )
+        .action((x, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("c-build-contexts", x)
+              case _                  => c
+        )
+    opt[Unit]("c-isolate")
+        .text(
+          "Parse each translation unit in a worker process of its own; a unit whose worker exits, hangs or runs out of memory is reported with the reason and retried once in a fresh worker. (C/C++ only)"
+        )
+        .action((_, c) =>
+            c match
+              case config: AtomConfig => config.withFrontendArg("c-isolate", "true")
               case _                  => c
         )
     opt[String]("c-frontend")
@@ -1173,6 +1196,7 @@ object Atom:
       else
         // one report per run: the collector starts from empty however often this process runs
         ParseReporter.reset()
+        UnitSettingsReporter.reset()
         parseReportContext = None
         try
           val result = runParsed(args.toList)
@@ -1197,7 +1221,13 @@ object Atom:
         val records               = ParseReporter.records
         ParseReport.write(
           path,
-          ParseReport.document(ToolVersions.current().atom, language, inputRoot, records)
+          ParseReport.document(
+            ToolVersions.current().atom,
+            language,
+            inputRoot,
+            records,
+            UnitSettingsReporter.records
+          )
         ) match
           case Failure(err) =>
               System.err.println(

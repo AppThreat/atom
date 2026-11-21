@@ -2,7 +2,7 @@
 # release, checked against the release's SHA-256 file
 FROM alpine:3.22 AS edga
 ARG TARGETARCH
-ARG EDGA_VERSION=0.2.0
+ARG EDGA_VERSION=0.4.0
 RUN apk add --no-cache curl \
     && mkdir /edga && cd /edga \
     && base="https://github.com/AppThreat/edga/releases/download/v${EDGA_VERSION}" \

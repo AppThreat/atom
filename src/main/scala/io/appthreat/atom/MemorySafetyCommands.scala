@@ -1,6 +1,8 @@
 package io.appthreat.atom
 
 import better.files.File
+import io.appthreat.x2cpg.Defines.TemplateArgsTag
+import io.appthreat.x2cpg.Defines.TemplateTag
 import io.circe.syntax.EncoderOps
 import io.circe.{Json, JsonObject}
 import io.shiftleft.codepropertygraph.generated.Cpg
@@ -83,7 +85,7 @@ object MemorySafetyCommands:
       )
 
     val seen = mutable.LinkedHashSet.empty[(Long, String)]
-    val findings = cpg.tag
+    val rendered = cpg.tag
         .name(MemorySafetyFindingPass.TagFinding)
         .l
         .flatMap { tag =>
@@ -115,8 +117,10 @@ object MemorySafetyCommands:
             (filenameOf(node), node.lineNumber.map(_.toInt).getOrElse(0): Int)
         }
         .map { (node, rule, confidence) =>
-            render(cpg, atomFile, inputRoot, confidence)(node, rule)
+            (render(cpg, atomFile, inputRoot, confidence)(node, rule), instanceOf(node))
         }
+
+    val findings = groupTemplateInstances(rendered)
 
     val outFile = config.outputSliceFile.createFileIfNotExists(createParents = true)
     val document =
@@ -133,6 +137,68 @@ object MemorySafetyCommands:
     )
     Right("Memory-safety findings generated successfully")
   end runMemorySafety
+
+  /** The template instance a finding belongs to, when its METHOD is the instance of a template: the
+    * template's full name and the template declaration's position, which every instance of one
+    * template carries, and the arguments this instance was written with.
+    */
+  private[atom] final case class TemplateInstance(
+    template: String,
+    line: Int,
+    column: Int,
+    args: String
+  )
+
+  /** The instance a finding sits in: its METHOD's `template` tag names the template's METHOD, and
+    * every instance of one template carries the same tag value and the same position. A finding
+    * outside an instance METHOD has none.
+    */
+  private def instanceOf(node: AstNode): Option[TemplateInstance] =
+    def methodOf(n: AstNode): Option[Method] = n match
+      case e: Expression   => Some(e.method)
+      case m: MethodReturn => Some(m.method)
+      case _               => None
+    for
+      m        <- methodOf(node)
+      template <- m.tag.nameExact(TemplateTag).value.headOption
+      args = m.tag.nameExact(TemplateArgsTag).value.headOption.getOrElse("")
+    yield TemplateInstance(
+      template,
+      m.lineNumber.map(_.toInt).getOrElse(0),
+      m.columnNumber.map(_.toInt).getOrElse(0),
+      args
+    )
+
+  /** The instances of one template print their shared findings once: the finding every
+    * instantiation has is one entry with an `instances` list naming each instance's
+    * `template-args`, and a finding only some instances have lists only those. Findings are the
+    * same finding when their METHODs share the template's tag and position and the rendered entries
+    * are equal in every field (rule, place, confidence, message, flow), so the entry printed is any
+    * one of them. An instance that carries no `template-args` adds no name to the list. A finding
+    * outside an instance METHOD is printed as rendered, each on its own.
+    */
+  private[atom] def groupTemplateInstances(
+    rendered: List[(Json, Option[TemplateInstance])]
+  ): List[Json] =
+    val indexed = rendered.toVector
+    val groups =
+        mutable.LinkedHashMap.empty[Either[((String, Int, Int), Json), Int], mutable.ArrayBuffer[
+          String
+        ]]
+    rendered.zipWithIndex.foreach { case ((json, instance), occurrence) =>
+        // a finding outside an instance is its own group, keyed by its occurrence: two findings
+        // that render identically still print both
+        val key = instance match
+          case Some(i) => Left(((i.template, i.line, i.column), json))
+          case None    => Right(occurrence)
+        groups.getOrElseUpdate(key, mutable.ArrayBuffer.empty) ++= instance.map(_.args)
+    }
+    groups.toList.map {
+        case (Left((_, json)), args) =>
+            json.deepMerge(Json.obj("instances" -> args.filter(_.nonEmpty).distinct.sorted.asJson))
+        case (Right(occurrence), _) => indexed(occurrence)._1
+    }
+  end groupTemplateInstances
 
   /** The FILE the finding sits in, relative to the analysed input. The file edge is what the path
     * is rooted at; the enclosing method's filename is the fallback, and it has to be reached per

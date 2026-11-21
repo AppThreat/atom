@@ -363,4 +363,13 @@ class FrontendArgsApplierTests extends AnyFunSuite with Matchers with Inside:
     val rendered = FrontendArgsApplier.renderKeys("python")
     rendered should include("key")
     rendered should include("venv-dir")
+
+  test("the C build-context keys are listed and their values checked"):
+    FrontendArgsApplier.renderKeys("c") should (include("c-build-contexts").and(
+      include("c-isolate")
+    ))
+    FrontendArgsApplier.parseFrontendArgs("c-build-contexts=ALL") shouldBe Right(
+      Map("c-build-contexts" -> "ALL")
+    )
+    FrontendArgsApplier.parseFrontendArgs("c-build-contexts=bogus").isLeft shouldBe true
 end FrontendArgsApplierTests

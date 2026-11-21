@@ -43,7 +43,7 @@ The [slices specification](./specification/docs/slices.md) and the
 
 | Language | `-l` | Notes |
 | --- | --- | --- |
-| C and C++ | `c`, `cpp` | With the Eclipse CDT parser (default) or the EDG front end (`--c-frontend edg`, needs [edga](https://github.com/AppThreat/edga) 0.2.0). Compilation databases, headers and preprocessed `.i` files (`h`, `i`). See [C/C++ frontends](./docs/docs/c-frontends.md). |
+| C and C++ | `c`, `cpp` | With the Eclipse CDT parser (default) or the EDG front end (`--c-frontend edg`, needs [edga](https://github.com/AppThreat/edga) 0.4.0). Compilation databases, headers and preprocessed `.i` files (`h`, `i`). See [C/C++ frontends](./docs/docs/c-frontends.md). |
 | Java | `java` | Java 8 to Java 26 syntax, Lombok, and the encoding the build declares. Spring, JAX-RS, Micronaut, servlets, Vert.x, gRPC, JDBC/JPA/MyBatis, AI SDKs, MCP tools, cloud SDKs, messaging and JNI/FFM boundaries are tagged automatically. |
 | JVM bytecode | `jar`, `jimple` | JARs and class directories. Reads JDK classes from an installed JDK 8 or later. |
 | Android | `apk`, `dex` | APKs and split bundles (`.apkm`, `.apks`, `.xapk`). Needs the Android SDK (`ANDROID_HOME` or `--android-sdk`) or the container image. |
@@ -158,6 +158,9 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
   --compile-commands <file|dir>
                            Parse the translation units of a JSON compilation database (compile_commands.json, or a directory holding one) with their own flags. (C/C++ only)
   --compile-commands-only  With --compile-commands, parse only the database's translation units. (C/C++ only)
+  --c-build-contexts <first|all>
+                           With a compilation database that compiles one file more than once: analyse the first entry's build context (first, the default) or every distinct one (all, a function whose body differs keeps one copy per context). (C/C++ only)
+  --c-isolate              Parse each translation unit in a worker process of its own; a unit whose worker exits, hangs or runs out of memory is reported with the reason and retried once in a fresh worker. (C/C++ only)
   --c-frontend <cdt|edg|edg-fallback>
                            The C/C++ frontend: cdt (default, the Eclipse CDT parser), edg (the EDG front end, through the edga exporter), or edg-fallback (edg, with cdt for the files edga cannot export). (C/C++ only)
   --edga-path <file>       The edga binary for the edg frontends (default: EDGA_PATH, then the PATH). (C/C++ only)

@@ -119,6 +119,8 @@ object FrontendArgsApplier:
     r = r.withCppStandard(str(args, "cpp-standard", r.cppStandard))
     r = r.withCompileCommands(str(args, "compile-commands", r.compileCommands))
     r = r.withCompileCommandsOnly(bool(args, "compile-commands-only", r.compileCommandsOnly))
+    r = r.withBuildContexts(str(args, "c-build-contexts", r.buildContexts))
+    r = r.withCIsolate(bool(args, "c-isolate", r.cIsolate))
     r = r.withIncludeComments(bool(args, "include-comments", r.includeComments))
     r = r.withLogProblems(bool(args, "log-problems", r.logProblems))
     r = r.withLogPreprocessor(bool(args, "log-preprocessor", r.logPreprocessor))
@@ -311,6 +313,21 @@ object FrontendArgsApplier:
       "bool",
       "false",
       "With `compile-commands`, parse only the database's translation units.",
+      CLike
+    ),
+    KeyDoc(
+      "c-build-contexts",
+      "string",
+      "first",
+      "With a compilation database that compiles one file more than once: analyse the first " +
+          "entry's build context (`first`) or every distinct one (`all`).",
+      CLike
+    ),
+    KeyDoc(
+      "c-isolate",
+      "bool",
+      "false",
+      "Parse each translation unit in a worker process of its own.",
       CLike
     ),
     KeyDoc(
@@ -536,6 +553,12 @@ object FrontendArgsApplier:
                 else Left(s"Expected a key=value pair, got '$segment'")
         }
         .map(_.toMap)
+        .flatMap(args =>
+            args.get("c-build-contexts") match
+              case Some(v) if !Set("first", "all").contains(v.trim.toLowerCase) =>
+                  Left(s"unknown c-build-contexts `$v`; expected first or all")
+              case _ => Right(args)
+        )
   end parseFrontendArgs
 
   /** The other `-l` spellings atom accepts, by the name [[allKeys]] lists them under. */
