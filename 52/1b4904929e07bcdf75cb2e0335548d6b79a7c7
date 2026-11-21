@@ -1,0 +1,19 @@
+docs/docs/cli.md
+  s_e6dfd4b0f04eb8::t_fa5c909d0302d6 177-182
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "521b4904929e07bcdf75cb2e0335548d6b79a7c7",
+  "prompts": {},
+  "sessions": {
+    "s_e6dfd4b0f04eb8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-045e7d81-3ecf-44a8-85dc-43b649bad715-actor_1_1",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": null
+    }
+  }
+}
