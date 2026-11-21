@@ -1,0 +1,34 @@
+src/main/scala/io/appthreat/atom/ReportedPaths.scala
+  s_8a4433d1784041::t_8b4b66a9784556 1-142
+  s_8a4433d1784041::t_3adf14c81cfd15 143-145
+docs/docs/cli.md
+  s_8a4433d1784041::t_4024e361ed631f 110-111,177-184
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_8a4433d1784041::t_bf26fb32a17a87 1087-1097
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_8a4433d1784041::t_8c1f3baf04e1c8 70,117-122,124-134,237-242,244-245,247,262,289-296,301,305
+src/main/scala/io/appthreat/atom/MemorySafetySarif.scala
+  s_8a4433d1784041::t_69529a9fcdf7d9 44,66-81,83
+src/main/scala/io/appthreat/atom/package.scala
+  s_8a4433d1784041::t_d4337065a0e1d7 232-240
+src/test/scala/io/appthreat/atom/MemorySafetySystemHeaderTests.scala
+  s_8a4433d1784041::t_2e7ac72a8385a5 1-194
+src/test/scala/io/appthreat/atom/ReportedPathsTests.scala
+  s_8a4433d1784041::t_0b264a2cd8a1a2 1-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "05abdfe41d1e8082e01eb2a9bed18ef0af751bc0",
+  "prompts": {},
+  "sessions": {
+    "s_8a4433d1784041": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ef82bff-b756-4a5d-8551-a808005aa216",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
