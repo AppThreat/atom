@@ -231,6 +231,8 @@ Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, f
   --min-confidence <value>
                            drop findings below this confidence: high, medium or low. Defaults to keeping all.
   --format <value>         output format: json or sarif (SARIF 2.1.0). Default: json.
+  --include-system-headers
+                           keep findings located in a file outside the analysed directory, such as a header from a system include directory. They are dropped by default; kept ones print their absolute path.
   --memory-api-profiles <value>
                            which declared memory-API library profiles the overlay applies: auto selects per translation unit by the headers it includes, none turns profiles off, or a comma list of profile names forces exactly those. Default: auto. (C/C++ only)
 Command: export [options]

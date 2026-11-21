@@ -99,8 +99,9 @@ private[atom] object ReportedPaths:
         else
           val parsed = parse(fileName)
           if !parsed.absolute && parsed.ups == 0 then
-            // the frontend relativised this name against the input; keep its spelling
-            Location.Inside(fileName)
+            // the frontend relativised this name against the input; keep its spelling, with `/` as
+            // the separator on every host
+            Location.Inside(fileName.replace('\\', '/'))
           else
             val absolute =
                 if parsed.absolute then parsed

@@ -60,8 +60,8 @@ class ReportedPathsTests extends AnyWordSpec with Matchers:
           windows.locate(share) shouldBe Outside(share)
       }
 
-      "keep a backslash relative name inside the input" in {
-          windows.locate("core\\a.h") shouldBe Inside("core\\a.h")
+      "write a backslash relative name inside the input with /" in {
+          windows.locate("core\\a.h") shouldBe Inside("core/a.h")
       }
 
       "not take a POSIX absolute path as inside" in {
