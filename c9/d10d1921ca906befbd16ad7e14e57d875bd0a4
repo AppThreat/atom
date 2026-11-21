@@ -1,0 +1,21 @@
+src/main/scala/io/appthreat/atom/frontends/FrontendArgsApplier.scala
+  s_06442807478409::t_36919b72f16e33 122
+src/test/scala/io/appthreat/atom/CBuildContextsTests.scala
+  s_06442807478409::t_55de0ac6abdccd 4-5,11-12,21-30,57-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c9d10d1921ca906befbd16ad7e14e57d875bd0a4",
+  "prompts": {},
+  "sessions": {
+    "s_06442807478409": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-1b53fdee-8a8b-41e4-b826-1c38c8523973-actor_3_1",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
