@@ -1,0 +1,24 @@
+docs/docs/cli.md
+  s_e6dfd4b0f04eb8::t_16e75d979eb476 800-801
+  s_e6dfd4b0f04eb8::t_38ba622709362e 37-39
+  s_e6dfd4b0f04eb8::t_027a42e454cea6 178-183
+  s_e6dfd4b0f04eb8::t_3873b265b8ea94 572-597
+  s_e6dfd4b0f04eb8::t_af1be945668bd5 689-690
+  s_e6dfd4b0f04eb8::t_9c3161c6f1d324 175-177,184
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d687270e435a083ece58c2b38f1296f54b81fb1e",
+  "prompts": {},
+  "sessions": {
+    "s_e6dfd4b0f04eb8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-045e7d81-3ecf-44a8-85dc-43b649bad715-actor_1_1",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
