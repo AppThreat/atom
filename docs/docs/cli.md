@@ -789,6 +789,16 @@ spelling of the equivalent key.
 | `--type-prop-iterations N` | int    | Maximum type-propagation iterations.                                                |
 | `--cache <mode>`           | enum   | Cache mode: `all` \| `none` \| `no-ast` \| `no-cpg` \| `no-astgen` \| `no-summary`. |
 
+The JavaScript, TypeScript, Flow and Ruby front ends cache the output of their parser (astgen and
+rbastgen) in `<input>/.chen/astgen`, keyed on a fingerprint of the project. With `--cache none`,
+`--cache no-astgen` or `--no-ast-cache` no fingerprint is computed and the parser's `--version` is
+not run. When the cache is on, the fingerprint reads the project's own files, skips `.git`, `.hg`,
+`.svn` and `.chen`, and describes each file under `node_modules` (and each file that
+`CHEN_JS_IGNORE_DIRS` and its aliases exclude) by path, size and modification time without reading
+it. A reinstall of the same packages therefore changes the key and parses again, which costs time
+but never serves a stale parse. Ruby leaves out the files its exclude pattern covers, which
+rbastgen never opens.
+
 ### Per-language
 
 | Flag                   | Languages      | Description                                                   |

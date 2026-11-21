@@ -1,9 +1,9 @@
 name                     := "atom"
 ThisBuild / organization := "io.appthreat"
-ThisBuild / version      := "4.0.4"
+ThisBuild / version      := "4.0.5"
 ThisBuild / scalaVersion := "3.10.0"
 
-val chenVersion = "4.0.3"
+val chenVersion = "4.0.4"
 
 lazy val atom = Projects.atom
 resolvers ++= Seq(
