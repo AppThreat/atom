@@ -1,0 +1,24 @@
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  s_59b4b587726841::t_df2598060d6449 567-577,580-642,645-666,668-679
+  s_59b4b587726841::t_800899b46a163f 251-255,259
+  s_59b4b587726841::t_3926cfca354630 5-6
+  s_59b4b587726841::t_6a628b758391b7 578-579,643-644,667
+src/main/scala/io/appthreat/atom/slicing/package.scala
+  s_59b4b587726841::t_932e12a8275bd4 228-246
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ae25ef513dccbc538ded6e278cc50049d5d2cc9d",
+  "prompts": {},
+  "sessions": {
+    "s_59b4b587726841": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-1b53fdee-8a8b-41e4-b826-1c38c8523973-actor_1_1",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
