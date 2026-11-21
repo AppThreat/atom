@@ -1,0 +1,22 @@
+docs/docs/cli.md
+  s_e6dfd4b0f04eb8::t_fa5c909d0302d6 177-182
+docs/docs/slicing.md
+  s_e6dfd4b0f04eb8::t_248f516b48dc33 46-51
+  s_e6dfd4b0f04eb8::t_3ca101d0d5e526 241-245
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f09c5cca134d7d3b3480eefdd464ba01722c18fa",
+  "prompts": {},
+  "sessions": {
+    "s_e6dfd4b0f04eb8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-045e7d81-3ecf-44a8-85dc-43b649bad715-actor_1_1",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": null
+    }
+  }
+}
