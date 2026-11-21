@@ -1,0 +1,30 @@
+.github/actions/edga/action.yml
+  s_8a4433d1784041::t_b683b12e15344e 9
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  s_8a4433d1784041::t_c7062a7f00d76b 883
+  s_8a4433d1784041::t_b683b12e15344e 928
+README.md
+  s_8a4433d1784041::t_ee60520124e759 46
+ci/Dockerfile
+  s_8a4433d1784041::t_1d205679905b3d 5
+ci/Dockerfile-sle
+  s_8a4433d1784041::t_3fad03c20ebeb4 5
+docs/docs/c-frontends.md
+  s_8a4433d1784041::t_76ca89442c5e4e 102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7130002b7c13473d886ac97b6f443010558983e9",
+  "prompts": {},
+  "sessions": {
+    "s_8a4433d1784041": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ef82bff-b756-4a5d-8551-a808005aa216",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
