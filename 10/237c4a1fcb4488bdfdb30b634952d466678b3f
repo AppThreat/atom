@@ -1,0 +1,20 @@
+src/test/scala/io/appthreat/atom/ParseReportUnitsSectionTests.scala
+  s_ab1dc0cf859b57::t_e76c800af40a46 1-50,52-193
+  s_ab1dc0cf859b57::t_2b4a9ad12c9762 51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "10237c4a1fcb4488bdfdb30b634952d466678b3f",
+  "prompts": {},
+  "sessions": {
+    "s_ab1dc0cf859b57": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-759a6a03-caf2-4680-a086-e13f36fc498b-actor_1_1",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
