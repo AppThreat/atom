@@ -1,0 +1,23 @@
+src/main/scala/io/appthreat/atom/ReportedPaths.scala
+  s_8a4433d1784041::t_bbfa9052af0c06 102-104
+src/test/scala/io/appthreat/atom/ReportedPathsTests.scala
+  s_8a4433d1784041::t_47dd7426622589 63-64
+README.md
+  s_8a4433d1784041::t_bbfa9052af0c06 234-235
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "483f86eea6ad83f9063b24a87cc62910142881e1",
+  "prompts": {},
+  "sessions": {
+    "s_8a4433d1784041": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ef82bff-b756-4a5d-8551-a808005aa216",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
