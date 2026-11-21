@@ -1,0 +1,19 @@
+src/test/scala/io/appthreat/atom/CBuildContextsTests.scala
+  s_06442807478409::t_91aa11219892a8 9-12,32-39,42-46,49-56,59-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f3bd099ac16c8d73dcc427de8def09b5d78ecc6e",
+  "prompts": {},
+  "sessions": {
+    "s_06442807478409": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-1b53fdee-8a8b-41e4-b826-1c38c8523973-actor_3_1",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
