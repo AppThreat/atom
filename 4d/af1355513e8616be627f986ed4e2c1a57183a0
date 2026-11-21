@@ -1,0 +1,29 @@
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_59b4b587726841::t_2972f93195e7e8 88
+  s_59b4b587726841::t_b83c717c8c11c9 4-5
+  s_59b4b587726841::t_ee06954e034597 141-211,220-227
+  s_59b4b587726841::t_cc38697efd34c3 212-213,216
+  s_59b4b587726841::t_1b403b32dd7058 120,123
+  s_59b4b587726841::t_9cbb27b0e3938f 214-215,217-219
+  s_59b4b587726841::t_20c0747985c860 124
+src/main/scala/io/appthreat/atom/MemorySafetySarif.scala
+  s_59b4b587726841::t_c68e1fb65a455c 120
+  s_59b4b587726841::t_87f5600835a7a5 102-114
+  s_59b4b587726841::t_4cfa81a07c1175 91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4daf1355513e8616be627f986ed4e2c1a57183a0",
+  "prompts": {},
+  "sessions": {
+    "s_59b4b587726841": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-1b53fdee-8a8b-41e4-b826-1c38c8523973-actor_1_1",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
