@@ -1,0 +1,25 @@
+src/test/scala/io/appthreat/atom/ParseReportTests.scala
+  s_a63ca1a933e39e::t_251396f199f965 137-218,220-246,248-258,260-292,294-332
+  s_a63ca1a933e39e::t_716375f745eeb5 219,259,293
+  s_a63ca1a933e39e::t_6dce35b9ff1020 4-9,247
+src/main/scala/io/appthreat/atom/ParseReport.scala
+  s_a63ca1a933e39e::t_6dce35b9ff1020 31-50,70-98,113-118
+  s_a63ca1a933e39e::t_91da67a4faf48e 3,9-13,20-23,28-29,52-59,61,63-64,66,68-69,99-102,108-110
+  s_a63ca1a933e39e::t_7ab94c6bb57ee0 51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d5141a9b368cfa1b8ac2f42ac8b92873ade00280",
+  "prompts": {},
+  "sessions": {
+    "s_a63ca1a933e39e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-dff6c13c-9cf7-4f2d-8356-c89990ebe677-actor_3_1",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
