@@ -225,7 +225,29 @@ package object slicing:
           Json.obj("nodes" -> nodes.asJson, "edges" -> edges.asJson)
       }
 
-  case class ReachableFlows(flows: List[SliceNode], purls: Set[String])
+  /** One reachable flow: the rendered path, the package URLs its elements resolve to, and for a
+    * flow the instances of one C++ template share, the `template-args` of every instantiation that
+    * produced an entry in its group.
+    */
+  case class ReachableFlows(
+    flows: List[SliceNode],
+    purls: Set[String],
+    instances: List[String] = Nil
+  )
+
+  implicit val encodeReachableFlows: Encoder[ReachableFlows] = Encoder.instance { r =>
+    // the instances list only appears on an entry that groups template instances
+    val base = List("flows" -> r.flows.asJson, "purls" -> r.purls.asJson)
+    Json.obj((if r.instances.isEmpty then base
+              else base :+ ("instances" -> r.instances.asJson))*)
+  }
+
+  implicit val decodeReachableFlows: Decoder[ReachableFlows] = (c: HCursor) =>
+      for
+        f <- c.downField("flows").as[List[SliceNode]]
+        p <- c.downField("purls").as[Set[String]]
+        i <- c.downField("instances").as[Option[List[String]]]
+      yield ReachableFlows(f, p, i.getOrElse(Nil))
 
   case class SliceNode(
     id: Long,
@@ -343,6 +365,10 @@ package object slicing:
     *   the file name.
     * @param slices
     *   the object usage slices.
+    * @param instances
+    *   the `template-args` of every instantiation the entry covers, when the method is the instance
+    *   of a C++ template; the entry is one for the whole template, and the field names the
+    *   instances it holds.
     */
   /** The usages in a method, or for a C/C++ `#include`, the include: `fullName` is the header as
     * written, `fileName` the file that includes it, `resolvedPath` the file it resolved to,
@@ -359,7 +385,8 @@ package object slicing:
     columnNumber: Option[Int] = None,
     resolvedPath: Option[String] = None,
     isSystem: Option[Boolean] = None,
-    importedSymbols: Option[List[String]] = None
+    importedSymbols: Option[List[String]] = None,
+    instances: Option[List[String]] = None
   )
 
   implicit val decodeMethodUsageSlice: Decoder[MethodUsageSlice] =
@@ -377,14 +404,41 @@ package object slicing:
             resolved <- c.downField("resolvedPath").as[Option[String]]
             system   <- c.downField("isSystem").as[Option[Boolean]]
             symbols  <- c.downField("importedSymbols").as[Option[List[String]]]
-          yield MethodUsageSlice(code, fn, signature, fln, ss, lin, col, resolved, system, symbols)
+            inst     <- c.downField("instances").as[Option[List[String]]]
+          yield MethodUsageSlice(
+            code,
+            fn,
+            signature,
+            fln,
+            ss,
+            lin,
+            col,
+            resolved,
+            system,
+            symbols,
+            inst
+          )
   implicit val encodeMethodUsageSlice: Encoder[MethodUsageSlice] =
       Encoder.instance {
-          case MethodUsageSlice(a, b, signature, c, d, e, f, resolved, system, symbols) =>
-              // the include fields only appear on include slices
+          case MethodUsageSlice(
+                a,
+                b,
+                signature,
+                c,
+                d,
+                e,
+                f,
+                resolved,
+                system,
+                symbols,
+                instances
+              ) =>
+              // the include fields only appear on include slices, and the
+              // instances list only on an entry that groups template instances
               val include = resolved.map(p => "resolvedPath" -> p.asJson).toList ++
                   system.map(v => "isSystem" -> v.asJson).toList ++
-                  symbols.filter(_.nonEmpty).map(v => "importedSymbols" -> v.asJson).toList
+                  symbols.filter(_.nonEmpty).map(v => "importedSymbols" -> v.asJson).toList ++
+                  instances.filter(_.nonEmpty).map(v => "instances" -> v.asJson).toList
               Json.fromFields(
                 List(
                   "code"         -> a.asJson,

@@ -2,6 +2,8 @@ package io.appthreat.atom.slicing
 
 import better.files.File
 import io.appthreat.atom.Atom.{DEFAULT_SINK_TAGS, DEFAULT_SOURCE_TAGS, FRAMEWORK_INPUT_TAG}
+import io.appthreat.x2cpg.Defines.TemplateArgsTag
+import io.appthreat.x2cpg.Defines.TemplateTag
 import io.appthreat.dataflowengineoss.DefaultSemantics
 import io.appthreat.dataflowengineoss.language.*
 import io.appthreat.dataflowengineoss.queryengine.{EngineConfig, EngineContext}
@@ -246,10 +248,15 @@ object ReachableSlicing:
     // Deduplicate on the canonical form (see deduplicateFlows) so each finding is emitted once.
     val canonicalFlows = deduplicateFlows(flowIterator.toVector, sinkTagPattern)
 
+    // Flows that live inside the instances of one template are the same finding
+    // seen once per instantiation: one entry, naming every instantiation's
+    // arguments.
+    val groupedFlows = groupInstanceFlows(canonicalFlows, instanceMethodsOf(atom))
+
     // Chunks of an earlier run into the same path would otherwise survive next to fewer new ones,
     // and consumers that read `<base>_N.json` until the first gap would pick up stale flows.
     removeChunkFiles(outputBasePath)
-    val chunkedIterator = canonicalFlows.grouped(chunkSize).zipWithIndex
+    val chunkedIterator = groupedFlows.grouped(chunkSize).zipWithIndex
     var hasFlows        = false
 
     chunkedIterator.foreach { case (chunk, index) =>
@@ -556,6 +563,122 @@ object ReachableSlicing:
       val cutAt = flows.lastIndexWhere { n => n.label == "CALL" && carriesSinkTag(n) }
       if cutAt <= 0 then Some(entry)
       else Some(entry.copy(flows = flows.take(cutAt + 1)))
+
+  /** What the grouping needs about the methods that are the instances of a template, by METHOD full
+    * name: the template's tag value and the position every instance of one template shares, with
+    * the arguments this instance was written with (empty when the instance carries none), and the
+    * template's tag value alone (what a rendered call names as its callee). `parentOf` names the
+    * full name of the method a slice node sits in, by the node's id.
+    */
+  private[slicing] final case class InstanceMethods(
+    byFullName: Map[String, ((String, Int, Int), String)],
+    parentOf: Long => Option[String]
+  ):
+    def templateOfFullName(fullName: String): Option[String] = byFullName.get(fullName).map(_._1._1)
+
+  private def instanceMethodsOf(atom: Cpg): InstanceMethods =
+    val byFullName =
+        atom.method.l.flatMap { m =>
+            m.tag.nameExact(TemplateTag).value.headOption.map { template =>
+              val args = m.tag.nameExact(TemplateArgsTag).value.headOption.getOrElse("")
+              m.fullName -> (
+                (
+                  template,
+                  m.lineNumber.map(_.toInt).getOrElse(0),
+                  m.columnNumber.map(_.toInt).getOrElse(0)
+                ),
+                args
+              )
+            }
+        }.toMap
+    val parentOf = (id: Long) =>
+        scala.util.Try(atom.graph.node(id)).toOption.flatMap(Option(_)).collect {
+            case node: CfgNode => node.method.fullName
+        }
+    InstanceMethods(byFullName, parentOf)
+  end instanceMethodsOf
+
+  /** The instance group of one entry: every node of the flow sits in the same instance of one
+    * template, which the full name of the node's method identifies. A flow that leaves the
+    * template's instances, or whose nodes disagree about the instance, has no group and is emitted
+    * as it is.
+    */
+  private def instanceGroupOf(
+    entry: ReachableFlows,
+    instances: InstanceMethods
+  ): Option[((String, Int, Int), String)] =
+    val parents = entry.flows.map(n => instances.parentOf(n.id))
+    val keys    = parents.map(_.flatMap(instances.byFullName.get))
+    if entry.flows.isEmpty || keys.exists(_.isEmpty) || parents.distinct.size != 1 then None
+    else keys.head
+
+  /** The rendered flow stripped of what only the instantiation knows: the node ids, the types the
+    * arguments wrote, and the parent method's signature. Two entries of one group differ in nothing
+    * else, and a call's resolved callee that is itself an instance names its template.
+    */
+  private final case class FlowShape(
+    label: String,
+    name: String,
+    fullName: String,
+    isExternal: Boolean,
+    code: String,
+    parentMethodName: String,
+    parentPackageName: String,
+    parentClassName: String,
+    parentFileName: String,
+    lineNumber: Int,
+    columnNumber: Int,
+    tags: String
+  )
+
+  private def shapeOf(entry: ReachableFlows, instances: InstanceMethods): List[FlowShape] =
+      entry.flows.map { n =>
+          FlowShape(
+            n.label,
+            n.name,
+            instances.templateOfFullName(n.fullName).getOrElse(n.fullName),
+            n.isExternal,
+            n.code,
+            n.parentMethodName,
+            n.parentPackageName,
+            n.parentClassName,
+            n.parentFileName,
+            n.lineNumber.map(_.intValue()).getOrElse(0),
+            n.columnNumber.map(_.intValue()).getOrElse(0),
+            n.tags
+          )
+      }
+
+  /** The instances of one template print their shared flows once: the flow every instantiation has
+    * is one entry with an `instances` list naming each instance's `template-args`, and a flow only
+    * some instances have lists only those. The entry shown is the one whose dash-joined node ids
+    * sort first as strings, so the choice does not follow arrival order. A flow outside the
+    * instances of a template, or one two instances route differently, is emitted as it is.
+    */
+  private[slicing] def groupInstanceFlows(
+    entries: Vector[ReachableFlows],
+    instances: InstanceMethods
+  ): Vector[ReachableFlows] =
+      if instances.byFullName.isEmpty then entries
+      else
+        val keyed = entries.map { entry =>
+            (instanceGroupOf(entry, instances), shapeOf(entry, instances), entry)
+        }
+        val membersByGroup = keyed.collect { case (Some(group), shape, entry) =>
+            ((group._1, shape), (group._2, entry))
+        }.groupMap(_._1)(_._2)
+        val emitted = scala.collection.mutable.HashSet.empty[((String, Int, Int), List[FlowShape])]
+        keyed.flatMap {
+            case (Some(group), shape, _) =>
+                if emitted.add((group._1, shape)) then
+                  val members        = membersByGroup((group._1, shape))
+                  val args           = members.map(_._1).filter(_.nonEmpty).distinct.sorted.toList
+                  val representative = members.minBy(_._2.flows.map(_.id).mkString("-"))
+                  Vector(representative._2.copy(instances = args))
+                else Vector.empty
+            case (None, _, entry) => Vector(entry)
+        }.toVector
+  end groupInstanceFlows
 
   /** Collects the ids of nodes that act as profile neutraliser barriers: calls carrying any of the
     * profile's tags, calls to methods carrying them, and the parameters/identifiers/returns of such

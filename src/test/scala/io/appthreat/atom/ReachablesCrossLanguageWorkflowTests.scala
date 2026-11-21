@@ -880,7 +880,7 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
   /** The chen build the C fixture's count is calibrated against, read the way `atom --version`
     * prints it: the Implementation-Version of the chen jars on this suite's classpath.
     */
-  private val chenCalibratedAgainst = "4.0.2"
+  private val chenCalibratedAgainst = "4.0.4"
 
   /** The sink categories the C default sink list queries, in the order the slicer fixes them. */
   private val C_CONTRACT_SINK_TAGS = Set("library-call", "http", "cloud", "rpc", "device-driver")
@@ -925,7 +925,7 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
   /** The edga release the C fixture's count is calibrated against: the release atom's CI installs
     * (`.github/actions/edga` defaults to it).
     */
-  private val edgaCalibratedAgainst = "0.2.0"
+  private val edgaCalibratedAgainst = "0.4.0"
 
   /** The version the running edga reports for `--edga-version` ("edga 0.2.0 / EDG commit ..."). */
   private def edgaReportedVersion(edga: String): Option[String] =

@@ -43,6 +43,13 @@ resolved to (absent when it did not resolve), `isSystem` `true` for a system inc
 bodies parsed: not in header mode). The resolved file says which package provides the header, which
 its name alone often cannot, and the symbols which of its API the code uses.
 
+On the C++ graphs the EDG frontend builds, the instances of one template share one entry. The
+instance METHODs carry the same `template` tag and sit at the same position in the same file, and
+the entry's fields are the first instance's
+spelling, its `usages` every instance's, and `instances` the `template-args` of every
+instantiation the entry covers (`int`, `Str`). An entry whose method is no template instance
+carries no `instances` field.
+
 ```json
 {
   "code": "#include <zlib.h>",
@@ -231,6 +238,11 @@ atom reachables -l js --bom-file /tmp/reports/sbom-js.cdx.json -o app.atom -s re
   }
 ]
 ```
+
+Flows that live inside the instances of one C++ template are the same finding seen once per
+instantiation, so they print as one entry. Its `instances` list names the `template-args` of
+every instantiation that produced an entry in its group; an entry no template grouping produced
+carries no `instances` field.
 
 ## Forwarded-header tags
 

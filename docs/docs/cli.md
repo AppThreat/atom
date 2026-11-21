@@ -34,6 +34,9 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
   --compile-commands <file|dir>
                            Parse the translation units of a JSON compilation database (compile_commands.json, or a directory holding one) with their own flags. (C/C++ only)
   --compile-commands-only  With --compile-commands, parse only the database's translation units. (C/C++ only)
+  --c-build-contexts <first|all>
+                           With a compilation database that compiles one file more than once: analyse the first entry's build context (first, the default) or every distinct one (all, a function whose body differs keeps one copy per context). (C/C++ only)
+  --c-isolate              Parse each translation unit in a worker process of its own; a unit whose worker exits, hangs or runs out of memory is reported with the reason and retried once in a fresh worker. (C/C++ only)
   --c-frontend <cdt|edg|edg-fallback>
                            The C/C++ frontend: cdt (default, the Eclipse CDT parser), edg (the EDG front end, through the edga exporter), or edg-fallback (edg, with cdt for the files edga cannot export). (C/C++ only)
   --edga-path <file>       The edga binary for the edg frontends (default: EDGA_PATH, then the PATH). (C/C++ only)
@@ -104,6 +107,8 @@ Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, f
   --min-confidence <value>
                            drop findings below this confidence: high, medium or low. Defaults to keeping all.
   --format <value>         output format: json or sarif (SARIF 2.1.0). Default: json.
+  --include-system-headers
+                           keep findings located in a file outside the analysed directory, such as a header from a system include directory. They are dropped by default; kept ones print their absolute path.
   --memory-api-profiles <value>
                            which declared memory-API library profiles the overlay applies: auto selects per translation unit by the headers it includes, none turns profiles off, or a comma list of profile names forces exactly those. Default: auto. (C/C++ only)
 Command: export [options]
@@ -168,6 +173,25 @@ reports below it: a use after a region reset, after a release that reached zero,
 a destroy may not have reached, and a block stored into storage that outlives a scope whose
 cleanup releases it, all report at `medium`, while the use after a borrowed release reports at
 `low`. The leak rule reports at `low`.
+
+### Findings outside the analysed directory
+
+A finding is located in the file of the code it points at. Some of that code is not the project's: a macro or inline function from a system header (`_ctype.h`, `sys/_types/_fd_def.h` in the macOS SDK, a header under `/usr/include`, an MSVC or Homebrew include directory) is found through an include path, and its index or size contract is the platform's to keep. The command decides by the file's path, not by the name of any SDK: a file under the analysed directory is project code, even when an include path also covers it, and a file anywhere else is not.
+
+By default the findings in files outside the analysed directory are dropped. Only the reported location counts: a finding in project code stays when its flow passes through a system header. `--include-system-headers` keeps the others.
+
+Every path in the output is relative to the analysed directory, written with the directory's name in front (`src/core/ngx_string.c`), or absolute (`/usr/include/sys/_types/_fd_def.h`, `C:/Program Files/.../include/string.h`). A path outside the directory is never joined to the directory's name. In `--format sarif`, a path under the directory is relative to `%SRCROOT%` and a path outside it is an absolute `file:` URI. The `file` of each `flow` row follows the same rule, without the directory's name in front of a path under it.
+
+### Findings of template instances
+
+The instances of one template can carry the same finding, and they print it once. The findings
+are grouped by the `template` tag and position of the METHOD they sit in: the finding every
+instantiation has is one entry, with an `instances` list naming each instance's `template-args`
+(`int`, `Str`), and a finding only some instances have lists only those. Two instances' findings
+merge only when they render identically apart from the instance (rule, place, confidence,
+message and flow); findings that differ in any of these stay separate entries. An instance without
+`template-args` adds no name to the list. A finding outside an instance METHOD is printed as
+rendered, with no `instances` list.
 
 ### Allocation styles the overlay reads
 
@@ -556,6 +580,32 @@ function whose body only calls the inferred releaser draws no summary, so the us
 wrapper-spent reference draws no finding and the block still reads as live at the exit, reporting
 the leak the wrapper actually released at `low`.
 
+## The parse report
+
+`--parse-report <file>` has atom write one JSON document naming every file the frontends left out
+or only partly read. The report is written even when the run fails, which is what separates a
+broken project from a quietly incomplete one.
+
+| Field | What it holds |
+|---|---|
+| `atomVersion` | The atom that wrote the report. |
+| `language` | The `--language` value the run analysed. |
+| `inputRoot` | The analysed input. |
+| `total` | The number of records. |
+| `counts` | The records counted `byOutcome` (`unparsed`, `dropped`, `partial`) and `byFrontend`. |
+| `records` | One record per file left out or partly read: `frontend`, `file`, `outcome`, `stage` (`parse`, `ast`) and `message`, the parser's reason. |
+
+When the frontends also collected how every translation unit was set up for parsing, the document
+gains a `units` section: a `total`, counts `byFrontend` and `byMacroSource` (`probed`, `table`,
+`host`, `unknown`), and one record per unit. A record names `frontend` (`c` or `edg`), `file`,
+`driver`, `entry` (`unknown` when the compiler table knows no such driver), `macroSource`,
+`language`, `standard`, `macroFingerprint`, `includeDirectories`, `forcedIncludes` and
+`ownedHeaders`. A file the compilation database names more than once also carries every command
+in `databaseCommands`, with the position of the one that was used in `usedDatabaseCommand`; a
+unit the EDG frontend exported carries `edgaCommandLine`, the exact command line that ran. A run
+that collects the units section reads no AST cache entry, so every unit is parsed and reaches the
+records.
+
 ## Environment variables
 
 | Variable                                | Description                                                                                                                                                |
@@ -647,6 +697,8 @@ default.
 | `cpp-standard`           | String  | The C++ standard version to use.                                                          | `cpp-standard=c++17`              |
 | `compile-commands`       | String  | A JSON compilation database (or a directory holding `compile_commands.json`): each translation unit is parsed with its own flags, and only its units and the project's headers are parsed. | `compile-commands=build`          |
 | `compile-commands-only`  | Boolean | With `compile-commands`, parse only the database's translation units.                     | `compile-commands-only=true`      |
+| `c-build-contexts`       | String  | With a database that compiles one file more than once: `first` (the default) analyses the first entry's build context, `all` every distinct one. | `c-build-contexts=all`            |
+| `c-isolate`              | Boolean | Parse each translation unit in a worker process of its own (CDT frontend).                | `c-isolate=true`                  |
 | `auto-defines`           | Boolean | Run the macro census and define the build-option macros it finds before parsing.          | `auto-defines=true`               |
 | `macro-census`           | String  | Write the macro census to `<file>.json` and `<file>.h`.                                   | `macro-census=/tmp/census`        |
 | `include-auto-discovery` | Boolean | Ask `gcc` and `clang` for the system include paths and guess the project's include dirs.  | `include-auto-discovery=true`     |
@@ -747,6 +799,16 @@ spelling of the equivalent key.
 | `--type-prop-iterations N` | int    | Maximum type-propagation iterations.                                                |
 | `--cache <mode>`           | enum   | Cache mode: `all` \| `none` \| `no-ast` \| `no-cpg` \| `no-astgen` \| `no-summary`. |
 
+The JavaScript, TypeScript, Flow and Ruby front ends cache the output of their parser (astgen and
+rbastgen) in `<input>/.chen/astgen`, keyed on a fingerprint of the project. With `--cache none`,
+`--cache no-astgen` or `--no-ast-cache` no fingerprint is computed and the parser's `--version` is
+not run. When the cache is on, the fingerprint reads the project's own files, skips `.git`, `.hg`,
+`.svn` and `.chen`, and describes each file under `node_modules` (and each file that
+`CHEN_JS_IGNORE_DIRS` and its aliases exclude) by path, size and modification time without reading
+it. A reinstall of the same packages therefore changes the key and parses again, which costs time
+but never serves a stale parse. Ruby leaves out the files its exclude pattern covers, which
+rbastgen never opens.
+
 ### Per-language
 
 | Flag                   | Languages      | Description                                                   |
@@ -756,6 +818,8 @@ spelling of the equivalent key.
 | `--include-path <dir>` | C/C++ (repeat) | Header include path.                                          |
 | `--compile-commands <file\|dir>` | C/C++ | Parse the units of a compilation database with their own flags. |
 | `--compile-commands-only` | C/C++      | With `--compile-commands`, parse only the database's units.   |
+| `--c-build-contexts <first\|all>` | C/C++ | With a database that compiles one file more than once: `first` (default) or every distinct context. |
+| `--c-isolate`          | C/C++          | Parse each translation unit in a worker process of its own.   |
 | `--c-frontend <name>`  | C/C++          | `cdt` (default), `edg` or `edg-fallback`.                     |
 | `--edga-path <file>`   | C/C++          | The edga binary for the EDG frontends (default: `EDGA_PATH`, then `PATH`). |
 | `--auto-defines`       | C/C++          | Define the build-option macros a macro census finds.          |

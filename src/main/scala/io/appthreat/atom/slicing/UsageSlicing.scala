@@ -1,5 +1,6 @@
 package io.appthreat.atom.slicing
 
+import scala.util.chaining.scalaUtilChainingOps
 import better.files.File
 import io.shiftleft.codepropertygraph.Cpg
 import io.shiftleft.codepropertygraph.generated.nodes.*
@@ -103,10 +104,74 @@ object UsageSlicing:
         .filterKeys(m => !isExcludedMethod(m))
         .toList
         .sortBy(_._1.fullName)
-        .map { case (method, sliceList) =>
-            createMethodUsageSlice(method, sliceList.map(_._2).toSet, language, root, config)
+        // The instances of one template carry the same template tag value and
+        // the same position, so the entries they would fill are one entry for
+        // the whole template (in one file): the first instance's spelling of the fields every
+        // instance shares, every instance's usages, and the instantiations
+        // named in `instances`.
+        .map { case (method, sliceList) => (method, sliceList.map(_._2).toList) }
+        .pipe(entries =>
+            groupInstanceEntries(entries, instanceGroupOf, instanceArgsOf, _.fullName)
+        )
+        .sortBy(_._1.fullName)
+        .map { (method, usages, instances) =>
+          val slice = createMethodUsageSlice(method, usages, language, root, config)
+          instances.fold(slice)(args => slice.copy(instances = Some(args)))
         }
   end computeSlices
+
+  /** The template group a method belongs to when it is the instance of a template: the METHOD's
+    * `template` tag names the template, and every instance of one template carries the same tag
+    * value, the same file and the same position. `None` for every other method.
+    */
+  private def instanceGroupOf(method: Method): Option[(String, String, Int, Int)] =
+      method.tag.nameExact(io.appthreat.x2cpg.Defines.TemplateTag).value.headOption.map(template =>
+          (
+            template,
+            method.filename,
+            method.lineNumber.map(_.toInt).getOrElse(0),
+            method.columnNumber.map(_.toInt).getOrElse(0)
+          )
+      )
+
+  /** The `template-args` a template instance was written with, as one entry; none when the instance
+    * carries no arguments.
+    */
+  private def instanceArgsOf(method: Method): List[String] =
+      method.tag.nameExact(io.appthreat.x2cpg.Defines.TemplateArgsTag).value.headOption
+          .filter(_.nonEmpty)
+          .toList
+
+  /** The entries of the instances of one template merged into one: the entry of the instance whose
+    * name sorts first, every instance's usages, and the instantiations' arguments, sorted, in
+    * `instances` (none when no instance carries arguments). An entry outside every template group
+    * is kept as it is, with no `instances`.
+    */
+  private[slicing] def groupInstanceEntries[M, U, K](
+    entries: List[(M, List[U])],
+    groupOf: M => Option[K],
+    argsOf: M => List[String],
+    nameOf: M => String
+  ): List[(M, Set[U], Option[List[String]])] =
+      entries
+          .groupBy((method, _) => groupOf(method))
+          .toList
+          .flatMap { (group, members) =>
+              group match
+                case None =>
+                    members.map((method, usages) => (method, usages.toSet, None))
+                case Some(_) =>
+                    val ordered = members.sortBy((method, _) => nameOf(method))
+                    val args =
+                        ordered.flatMap((method, _) => argsOf(method)).filter(_.nonEmpty)
+                            .distinct.sorted
+                    List((
+                      ordered.head._1,
+                      ordered.flatMap(_._2).toSet,
+                      Option.when(args.nonEmpty)(args)
+                    ))
+          }
+          .sortBy((method, _, _) => nameOf(method))
 
   /** Java source method references to external methods (`StringUtils::trim`, `Foo::new`), one entry
     * each in the slice of the enclosing method, at the reference's own position. The reference's
