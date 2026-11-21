@@ -1,0 +1,29 @@
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_59b4b587726841::t_f46da7c74914ad 141-142,176,196-201,203-213
+src/main/scala/io/appthreat/atom/MemorySafetySarif.scala
+  s_59b4b587726841::t_fb59f2b3334aa6 86-90,106-113,120
+src/main/scala/io/appthreat/atom/slicing/ReachableSlicing.scala
+  s_59b4b587726841::t_7ae24067acfb16 578-579,583-587,591-592,594-595,599,618-619,637-652,654-658,664-682
+src/main/scala/io/appthreat/atom/slicing/UsageSlicing.scala
+  s_59b4b587726841::t_fea5fa689a8cb8 131-132,142-146
+src/main/scala/io/appthreat/atom/slicing/package.scala
+  s_59b4b587726841::t_cdda90e1fb6445 232-236,239-242,369-371,423-435
+src/test/scala/io/appthreat/atom/TemplateInstanceGroupingTests.scala
+  s_59b4b587726841::t_0d297096493340 19-20,22-27,29-32,116-117,158-159,183-184,195-199,202-208,305,321-331,341-342,366-367,385-387,443-444,457-464
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "64b92918d2e70a71e08891ee0a52473ebf5f530a",
+  "prompts": {},
+  "sessions": {
+    "s_59b4b587726841": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_dwf-dwfrun-1b53fdee-8a8b-41e4-b826-1c38c8523973-actor_1_1",
+        "model": "GLM-5.3-Flash"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
