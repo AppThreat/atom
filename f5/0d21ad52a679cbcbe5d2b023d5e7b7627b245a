@@ -1,0 +1,14 @@
+docs/docs/lessons/callsites.md
+  h_0926447d100ad2 48-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f50d21ad52a679cbcbe5d2b023d5e7b7627b245a",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
