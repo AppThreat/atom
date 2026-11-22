@@ -42,6 +42,8 @@ Every record has these fields:
 | `builtin`         | `true` for the language's standard library (see "Builtin" below)                              |
 | `declaringModule` | the class that declares a called method when it differs from the receiver's static type; Java source only |
 | `purl`            | the package URL of the distribution the module belongs to, when atom knows one; left out while empty |
+| `resolvedPath`    | C and C++ only: the file the include of the record's header resolved to; left out when the record's own file did not include the header itself |
+| `isSystem`        | C and C++ only: `true` when that include was written as a system include (`<...>`); present only when true |
 
 `via` is the resolution story of the record:
 
@@ -305,7 +307,12 @@ Kinds: `call`, `new` (a constructor call or `new T`), `ref` (a global, an enumer
 named as a value), `macro` and `type` (a member read through a header's struct or class, with the
 member as `path`). A record is a reference from project code to something that a header outside the
 project declares or defines. The `module` is the header as the include root spells it
-(`openssl/ssl.h`). `via` is `type` for a member call, `macro` for macros and `binding` otherwise.
+(`openssl/ssl.h`). A record whose file includes the header itself also carries `resolvedPath`, the
+file that include resolved to, and `isSystem` for a system include (`<...>`): what the
+[usages](usages.md) slice's entry for the same include says, so a consumer can map the header to
+the package that ships it. A header the file reached only through another header carries neither,
+and so does a record whose `module` is a vendored directory rather than a header. `via` is `type`
+for a member call, `macro` for macros and `binding` otherwise.
 Macros are recorded at their invocation, a macro nested in another at the outermost invocation, and
 a library call inside a project macro's body at the macro's definition; nothing a library macro's
 body expands to is a separate use. The project is the input root and the build directories of the
