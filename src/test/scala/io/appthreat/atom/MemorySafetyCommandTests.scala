@@ -1682,6 +1682,49 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
               .downField("locations").as[List[io.circe.Json]].toOption.get should not be empty
       }
 
+      "carry each finding's fingerprint as a partial fingerprint the schema accepts" in {
+          val out = File.newTemporaryFile("memory-safety", ".sarif")
+          out.deleteOnExit()
+          val config = AtomMemorySafetyConfig().withFormat("sarif")
+          config.outputSliceFile = out
+          MemorySafetyCommands.runMemorySafety(cpg, config, out).isRight shouldBe true
+          val text     = out.contentAsString
+          val findings = render(AtomMemorySafetyConfig()).toOption.get
+          // the SARIF schema still accepts the document (the partialFingerprints property bag
+          // is part of result), and rejects what is not SARIF
+          val factory = com.networknt.schema.JsonSchemaFactory.getInstance(
+            com.networknt.schema.SpecVersion.VersionFlag.V4
+          )
+          val schema = factory.getSchema(
+            getClass.getResourceAsStream("/sarif/sarif-schema-2.1.0.json")
+          )
+          val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
+          schema.validate(mapper.readTree(text)).isEmpty shouldBe true
+          schema.validate(mapper.readTree("""{"runs": []}""")).isEmpty shouldBe false
+          // each result carries the JSON finding's fingerprint under the tool's key
+          val results = parse(text).toOption.get.hcursor.downField("runs").downArray
+              .downField("results").as[List[io.circe.Json]].toOption.get
+          results.size shouldBe findings.size
+          results.foreach { r =>
+              r.hcursor.downField("partialFingerprints")
+                  .get[String](MemorySafetySarif.FingerprintKey)
+                  .toOption
+                  .getOrElse("")
+                  .matches("[0-9a-f]{64}") shouldBe true
+          }
+          val sizeParam = results.find(
+            _.hcursor.get[String]("ruleId").toOption.contains(
+              MemorySafetyFindingPass.RuleSizeParamContract
+            )
+          ).get
+          sizeParam.hcursor.downField("partialFingerprints")
+              .get[String](MemorySafetySarif.FingerprintKey).toOption shouldBe findings
+              .find(_.hcursor.get[String]("rule").toOption.contains(
+                MemorySafetyFindingPass.RuleSizeParamContract
+              ))
+              .flatMap(_.hcursor.get[String]("fingerprint").toOption)
+      }
+
       "index SARIF results into the rules listed, and keep a file outside the input absolute" in {
           val known = MemorySafetyFindingPass.RuleSizeParamContract
           def finding(rule: String, file: String) = io.circe.Json.obj(
