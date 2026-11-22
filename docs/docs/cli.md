@@ -174,6 +174,16 @@ a destroy may not have reached, and a block stored into storage that outlives a 
 cleanup releases it, all report at `medium`, while the use after a borrowed release reports at
 `low`. The leak rule reports at `low`.
 
+Beside the rule, the CWE, the kind, the confidence and the flow, each finding carries the
+`function` it sits in, the `purl` of the BOM component that owns its file when a located
+component (`cdx:vendored:path`, `cdx:cmake:sourceDir`) owns it, and a `fingerprint`: SHA-256
+over `rule|function|file|apis`, where `apis` names the finding's memory-operation calls. The
+line is not part of it, so the fingerprint survives edits that move the finding within its
+function, which is what lets a report match a finding across builds. In `--format sarif` the
+same value rides under `partialFingerprints` as `atom/memorySafety/v1`. The field list and the
+exact fingerprint recipe are published as a
+[JSON Schema](https://github.com/AppThreat/atom/blob/main/specification/schemas/MemorySafetyFinding.json).
+
 ### Findings outside the analysed directory
 
 A finding is located in the file of the code it points at. Some of that code is not the project's: a macro or inline function from a system header (`_ctype.h`, `sys/_types/_fd_def.h` in the macOS SDK, a header under `/usr/include`, an MSVC or Homebrew include directory) is found through an include path, and its index or size contract is the platform's to keep. The command decides by the file's path, not by the name of any SDK: a file under the analysed directory is project code, even when an include path also covers it, and a file anywhere else is not.
@@ -189,7 +199,9 @@ are grouped by the `template` tag and position of the METHOD they sit in: the fi
 instantiation has is one entry, with an `instances` list naming each instance's `template-args`
 (`int`, `Str`), and a finding only some instances have lists only those. Two instances' findings
 merge only when they render identically apart from the instance (rule, place, confidence,
-message and flow); findings that differ in any of these stay separate entries. An instance without
+message and flow); findings that differ in any of these stay separate entries, while
+`function`, `purl` and `fingerprint`, which name the instance's own method, take no part in the
+comparison and the merged entry carries them from the entry it keeps. An instance without
 `template-args` adds no name to the list. A finding outside an instance METHOD is printed as
 rendered, with no `instances` list.
 

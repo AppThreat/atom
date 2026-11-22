@@ -1682,6 +1682,30 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
               .downField("locations").as[List[io.circe.Json]].toOption.get should not be empty
       }
 
+      "match the published JSON schema, purl optional, fingerprint required" in {
+          // specification/schemas/MemorySafetyFinding.json is the published contract of one
+          // finding; every element of the end-to-end render has to satisfy it, and a document
+          // without the fingerprint must not
+          val findings = render(AtomMemorySafetyConfig()).toOption.get
+          findings should not be empty
+          val factory = com.networknt.schema.JsonSchemaFactory.getInstance(
+            com.networknt.schema.SpecVersion.VersionFlag.V4
+          )
+          val schema = factory.getSchema(
+            File("specification/schemas/MemorySafetyFinding.json").contentAsString
+          )
+          val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
+          findings.foreach { f =>
+              schema.validate(mapper.readTree(f.noSpaces)).isEmpty shouldBe true
+          }
+          // the optional purl is accepted when a component owns the file
+          schema.validate(mapper.readTree(findings.head.noSpaces.replace(
+            "\"function\":",
+            "\"purl\": \"pkg:generic/vendlib@1.2.3\", \"function\":"
+          ))).isEmpty shouldBe true
+          schema.validate(mapper.readTree("""{"rule": "MS-BOUND-001"}""")).isEmpty shouldBe false
+      }
+
       "carry each finding's fingerprint as a partial fingerprint the schema accepts" in {
           val out = File.newTemporaryFile("memory-safety", ".sarif")
           out.deleteOnExit()

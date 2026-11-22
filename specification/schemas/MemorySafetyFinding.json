@@ -1,0 +1,123 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/MemorySafetyFinding",
+    "definitions": {
+        "MemorySafetyFinding": {
+            "properties": {
+                "rule": {
+                    "type": "string",
+                    "description": "The rule id, e.g. MS-BOUND-001 or MS-ALLOC-003"
+                },
+                "cwe": {
+                    "type": "string",
+                    "description": "The CWE the rule maps to, e.g. CWE-787"
+                },
+                "kind": {
+                    "type": "string",
+                    "description": "The rule's kind, e.g. size-param-contract-violation"
+                },
+                "file": {
+                    "type": "string",
+                    "description": "The finding's file: the analysed input's name in front of a path inside it, or an absolute path for a file outside it"
+                },
+                "line": {
+                    "type": "integer",
+                    "description": "The finding's line, 1-based; 0 when the node carries no position"
+                },
+                "column": {
+                    "type": "integer",
+                    "description": "The finding's column, 1-based; 0 when the node carries no position"
+                },
+                "severity": {
+                    "type": "string",
+                    "description": "One of critical, high, medium, low"
+                },
+                "confidence": {
+                    "type": "string",
+                    "description": "One of high, medium, low"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "The offending code and the rule's message, with the notes the rule adds"
+                },
+                "function": {
+                    "type": "string",
+                    "description": "The full name of the method the finding sits in; empty when there is none"
+                },
+                "purl": {
+                    "type": "string",
+                    "description": "The package URL of the BOM component that owns the finding's file (cdx:vendored:path, cdx:cmake:sourceDir). Present only when a located component owns the file; a path named only by the --external-paths pattern has no purl"
+                },
+                "flow": {
+                    "items": {
+                        "$ref": "#/definitions/MemorySafetyFinding.FlowStep"
+                    },
+                    "type": "array",
+                    "description": "The evidence chain: the offending node, its memory operation, the origin, guard and extent facts the rule read, and the definitions that produced the value"
+                },
+                "fingerprint": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "description": "SHA-256, as lowercase hex, over the UTF-8 bytes of the string rule|function|file|apis: the rule id, the rendered function and file values, and the ordered distinct names of the finding's memory-operation calls joined with , (empty when there are none). The line and the column are not part of it, so the fingerprint survives edits that move the finding within its function. In SARIF output the same value rides under partialFingerprints as atom/memorySafety/v1"
+                },
+                "atom": {
+                    "type": "string",
+                    "description": "The path of the atom file the finding was rendered from"
+                },
+                "instances": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "description": "The template-args of each instantiation that shares this finding, present only on a finding of a template instance that other instances share"
+                }
+            },
+            "required": [
+                "rule",
+                "cwe",
+                "kind",
+                "file",
+                "line",
+                "column",
+                "severity",
+                "confidence",
+                "message",
+                "function",
+                "flow",
+                "fingerprint",
+                "atom"
+            ],
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Memory-safety finding",
+            "description": "One finding of atom's memory-safety command, as the json format writes it. The command writes a JSON array of these objects"
+        },
+        "MemorySafetyFinding.FlowStep": {
+            "properties": {
+                "file": {
+                    "type": "string",
+                    "description": "The step's file: relative to the analysed input without its name in front, or absolute for a file outside it"
+                },
+                "line": {
+                    "type": "integer",
+                    "description": "The step's line, 1-based"
+                },
+                "code": {
+                    "type": "string",
+                    "description": "The step's code, or the text of a fact the rule read"
+                },
+                "role": {
+                    "type": "string",
+                    "description": "One of length-argument, memory-operation, exit, origin, guard, destination, definition"
+                }
+            },
+            "required": [
+                "code",
+                "role"
+            ],
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Memory-safety flow step"
+        }
+    }
+}
