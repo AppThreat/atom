@@ -158,8 +158,9 @@ class CFrontendWorkflowTests extends AnyWordSpec with Matchers:
   "memory-safety over a reused atom" should {
       // The overlay tags exist only where the overlay ran, and a C graph without them is exactly
       // what a finding-free program looks like. atom#397 therefore marks overlaid atoms; a reuse
-      // of anything else must fail loudly instead of exiting 0 with an empty report.
-      "refuse an atom another command built" in {
+      // of an unmarked atom runs the overlay over the loaded graph, in memory, following the
+      // current run's options, and the atom file on disk is not rewritten.
+      "run the overlay on an atom another command built" in {
           project { (dir, src) =>
             val atomFile = dir / "app.atom"
             atom(
@@ -174,7 +175,21 @@ class CFrontendWorkflowTests extends AnyWordSpec with Matchers:
               (dir / "usages.json").pathAsString,
               src.pathAsString
             ).isRight shouldBe true
-            val result = atom(
+            val freshFindings = dir / "findings-fresh.json"
+            atom(
+              "memory-safety",
+              "-l",
+              "c",
+              "--cache",
+              "none",
+              "-o",
+              (dir / "fresh.atom").pathAsString,
+              "-s",
+              freshFindings.pathAsString,
+              src.pathAsString
+            ).isRight shouldBe true
+            val reusedFindings = dir / "findings-reused.json"
+            atom(
               "memory-safety",
               "-l",
               "c",
@@ -184,11 +199,21 @@ class CFrontendWorkflowTests extends AnyWordSpec with Matchers:
               "-o",
               atomFile.pathAsString,
               "-s",
-              (dir / "findings.json").pathAsString,
+              reusedFindings.pathAsString,
               src.pathAsString
-            )
-            result.isLeft shouldBe true
-            result.left.toOption.getOrElse("") should include("Rebuild the atom")
+            ).isRight shouldBe true
+            reusedFindings.exists shouldBe true
+            // the overlay the reuse ran concludes what a fresh build's overlay concludes
+            def places(file: File): Set[(String, String, Int)] =
+                parse(file.contentAsString).toOption.flatMap(_.asArray).toList.flatten
+                    .flatMap { f =>
+                        for
+                          rule     <- f.hcursor.get[String]("rule").toOption
+                          location <- f.hcursor.get[String]("file").toOption
+                          line     <- f.hcursor.get[Int]("line").toOption
+                        yield (rule, location, line)
+                    }.toSet
+            places(reusedFindings) shouldBe places(freshFindings)
           }
       }
 
