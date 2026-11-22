@@ -162,7 +162,7 @@ object MemorySafetyCommands:
 
     val findings = groupTemplateInstances(rendered)
 
-    val outFile  = config.outputSliceFile
+    val outFile = config.outputSliceFile
     val document =
         if format == "sarif" then
           MemorySafetySarif.document(

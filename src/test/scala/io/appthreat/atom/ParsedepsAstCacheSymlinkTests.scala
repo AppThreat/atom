@@ -24,35 +24,35 @@ class ParsedepsAstCacheSymlinkTests extends AnyWordSpec with Matchers with Befor
   private var workspace: File = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit =
-      // Other suites in this forked JVM pass `--cache none`, which leaves the cache disabled for
-      // every later run in the same JVM; this reproducer needs the default `.chen` cache back.
-      System.clearProperty("chen.cache.disabled")
-      System.clearProperty("chen.cache.disabled.ast")
-      CacheControl.enableAll()
-      workspace = File.newTemporaryDirectory("atomAstCacheSymlink")
+    // Other suites in this forked JVM pass `--cache none`, which leaves the cache disabled for
+    // every later run in the same JVM; this reproducer needs the default `.chen` cache back.
+    System.clearProperty("chen.cache.disabled")
+    System.clearProperty("chen.cache.disabled.ast")
+    CacheControl.enableAll()
+    workspace = File.newTemporaryDirectory("atomAstCacheSymlink")
 
   override def afterAll(): Unit =
       if workspace != null then workspace.delete(swallowIOExceptions = true)
 
   private def writeProject(dir: File): Unit =
-      dir.createDirectories()
-      (dir / "app.py").write("import os\nprint(os.getcwd())\n")
+    dir.createDirectories()
+    (dir / "app.py").write("import os\nprint(os.getcwd())\n")
 
   private def runParsedeps(project: File, atomFile: File, slicesFile: File): Unit =
-      val result = Atom.run(
-        Array(
-          "parsedeps",
-          "-l",
-          "python",
-          "-o",
-          atomFile.pathAsString,
-          "-s",
-          slicesFile.pathAsString,
-          project.pathAsString
-        )
+    val result = Atom.run(
+      Array(
+        "parsedeps",
+        "-l",
+        "python",
+        "-o",
+        atomFile.pathAsString,
+        "-s",
+        slicesFile.pathAsString,
+        project.pathAsString
       )
-      withClue(s"parsedeps did not complete: $result"):
-          result.isRight shouldBe true
+    )
+    withClue(s"parsedeps did not complete: $result"):
+      result.isRight shouldBe true
 
   "parsedeps over a checkout with linked cache-entry temporaries" should {
 
@@ -66,7 +66,7 @@ class ParsedepsAstCacheSymlinkTests extends AnyWordSpec with Matchers with Befor
               .map(_.name)
               .filter(name => name.endsWith(".ast") || name.endsWith(".frag"))
           withClue("the private run stored no cache entries whose names could be learned"):
-              entries should not be empty
+            entries should not be empty
 
           // The repository as shipped: a link where the run writes each entry's temporary file,
           // pointing at a file outside the analysed tree.
@@ -93,10 +93,10 @@ class ParsedepsAstCacheSymlinkTests extends AnyWordSpec with Matchers with Befor
 
           notes.contentAsString shouldBe "operator data"
           entries.foreach { entry =>
-              val stored = victimChen / entry
-              withClue(s"cache entry $entry"):
-                  stored.isSymbolicLink shouldBe false
-                  stored.isRegularFile shouldBe true
+            val stored = victimChen / entry
+            withClue(s"cache entry $entry"):
+              stored.isSymbolicLink shouldBe false
+              stored.isRegularFile shouldBe true
           }
           // parsedeps builds the atom and removes it again by design (`withRemoveAtom`); the
           // slices file it leaves behind is the run's completed output.

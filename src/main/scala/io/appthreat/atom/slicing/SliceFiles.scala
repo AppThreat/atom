@@ -21,5 +21,3 @@ object SliceFiles:
   def writeAtomically(target: File)(write: File => Unit): Unit =
     Option(target.parent).foreach(_.createDirectoryIfNotExists(createParents = true))
     AtomicWrites.replace(target.path)(temp => write(File(temp)))
-  end writeAtomically
-end SliceFiles

@@ -23,8 +23,8 @@ import scala.util.{Failure, Success, Try}
   * scanned tree, so the tree's checkout decides the names there. The output path is chosen by the
   * caller, which is why no private run is needed to learn it: the link is planted at that exact
   * name before the command runs, pointing at a file outside the analysed tree. This is the case
-  * that fails when the findings file is opened by truncation and passes once the write goes
-  * through SliceFiles.writeAtomically, whose rename replaces a link at the final name.
+  * that fails when the findings file is opened by truncation and passes once the write goes through
+  * SliceFiles.writeAtomically, whose rename replaces a link at the final name.
   */
 class MemorySafetyOutputSymlinkTests extends DataFlowCodeToCpgSuite:
 
@@ -58,29 +58,29 @@ class MemorySafetyOutputSymlinkTests extends DataFlowCodeToCpgSuite:
 
       "leave the link target untouched and write a regular findings file" in {
           File.usingTemporaryDirectory("atomMsOutSymlink") { dir =>
-              val out   = dir / "findings.json"
-              val notes = dir / "notes.txt"
-              notes.write("operator data")
-              Try(Files.createSymbolicLink(out.path, notes.path)) match
-                case Failure(e) =>
-                    cancel(s"this platform refuses to create a symbolic link: ${e.getMessage}")
-                case Success(_) => ()
+            val out   = dir / "findings.json"
+            val notes = dir / "notes.txt"
+            notes.write("operator data")
+            Try(Files.createSymbolicLink(out.path, notes.path)) match
+              case Failure(e) =>
+                  cancel(s"this platform refuses to create a symbolic link: ${e.getMessage}")
+              case Success(_) => ()
 
-              val config = AtomMemorySafetyConfig()
-              config.outputSliceFile = out
-              val result = MemorySafetyCommands.runMemorySafety(cpg, config, out)
-              withClue(s"memory-safety did not complete: $result"):
-                  result.isRight shouldBe true
+            val config = AtomMemorySafetyConfig()
+            config.outputSliceFile = out
+            val result = MemorySafetyCommands.runMemorySafety(cpg, config, out)
+            withClue(s"memory-safety did not complete: $result"):
+              result.isRight shouldBe true
 
-              notes.contentAsString shouldBe "operator data"
-              withClue("the findings output"):
-                  out.isSymbolicLink shouldBe false
-                  out.isRegularFile shouldBe true
-              val findings = parse(out.contentAsString).toOption.flatMap(_.asArray).getOrElse(Nil)
-              findings should not be empty
-              findings.exists(f =>
-                  f.hcursor.get[String]("rule").toOption.contains("MS-BOUND-002")
-              ) shouldBe true
+            notes.contentAsString shouldBe "operator data"
+            withClue("the findings output"):
+              out.isSymbolicLink shouldBe false
+              out.isRegularFile shouldBe true
+            val findings = parse(out.contentAsString).toOption.flatMap(_.asArray).getOrElse(Nil)
+            findings should not be empty
+            findings.exists(f =>
+                f.hcursor.get[String]("rule").toOption.contains("MS-BOUND-002")
+            ) shouldBe true
           }
       }
   }

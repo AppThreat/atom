@@ -26,32 +26,32 @@ class ReachablesFlowSummarySymlinkTests extends AnyWordSpec with Matchers with B
   private var workspace: File = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit =
-      // Other suites in this forked JVM pass `--cache none` or `--cache no-summary`, which leaves
-      // the caches disabled for every later run in the same JVM; this reproducer needs the flow
-      // summary sidecar written.
-      System.clearProperty("chen.cache.disabled")
-      System.clearProperty("chen.cache.disabled.summary")
-      CacheControl.enableAll()
-      workspace = File.newTemporaryDirectory("atomFlowSummarySymlink")
+    // Other suites in this forked JVM pass `--cache none` or `--cache no-summary`, which leaves
+    // the caches disabled for every later run in the same JVM; this reproducer needs the flow
+    // summary sidecar written.
+    System.clearProperty("chen.cache.disabled")
+    System.clearProperty("chen.cache.disabled.summary")
+    CacheControl.enableAll()
+    workspace = File.newTemporaryDirectory("atomFlowSummarySymlink")
 
   override def afterAll(): Unit =
       if workspace != null then workspace.delete(swallowIOExceptions = true)
 
   private def runReachables(dir: File): Unit =
-      val result = Atom.run(
-        Array(
-          "reachables",
-          "-l",
-          "python",
-          "-o",
-          (dir / "app.atom").pathAsString,
-          "-s",
-          (dir / "reach.json").pathAsString,
-          dir.pathAsString
-        )
+    val result = Atom.run(
+      Array(
+        "reachables",
+        "-l",
+        "python",
+        "-o",
+        (dir / "app.atom").pathAsString,
+        "-s",
+        (dir / "reach.json").pathAsString,
+        dir.pathAsString
       )
-      withClue(s"reachables did not complete: $result"):
-          result.isRight shouldBe true
+    )
+    withClue(s"reachables did not complete: $result"):
+      result.isRight shouldBe true
 
   "reachables with a linked flow-summary temporary beside the slices" should {
 
@@ -67,7 +67,7 @@ class ReachablesFlowSummarySymlinkTests extends AnyWordSpec with Matchers with B
               .map(_.name)
               .filter(_.matches("flowsummary-.*\\.json"))
           withClue("the private run wrote no flow-summary sidecar whose name could be learned"):
-              sidecars should not be empty
+            sidecars should not be empty
 
           // The repository as shipped: a link where the run writes the sidecar's temporary file,
           // pointing at a file outside the analysed tree.
@@ -90,8 +90,8 @@ class ReachablesFlowSummarySymlinkTests extends AnyWordSpec with Matchers with B
           // through the link that sat at the temporary name.
           val sidecar = victim / sidecars.head
           withClue(s"flow-summary sidecar $sidecar"):
-              sidecar.isSymbolicLink shouldBe false
-              sidecar.isRegularFile shouldBe true
+            sidecar.isSymbolicLink shouldBe false
+            sidecar.isRegularFile shouldBe true
           val slices = victim / "reach.json"
           slices.exists shouldBe true
           noException should be thrownBy ujson.read(slices.contentAsString)
