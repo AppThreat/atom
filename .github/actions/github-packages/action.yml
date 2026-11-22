@@ -11,7 +11,7 @@ inputs:
     description: >-
       The chen branch to build and publish locally, or empty to use the released chen.
     required: false
-    default: 'rel/atom-4.0.4'
+    default: ''
   ivy-home:
     description: Ivy home to publish chen into, for builds that mount their own. Defaults to sbt's.
     required: false
