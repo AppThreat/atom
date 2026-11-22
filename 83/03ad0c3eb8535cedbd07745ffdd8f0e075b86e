@@ -1,0 +1,18 @@
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  h_0926447d100ad2 6,34-36,42-44,76-79,141,175-182,203-208,213-219,221,226,228-229,232-236,254-256,266,276-283,286-304,308-331
+src/test/scala/io/appthreat/atom/MemorySafetyCommandTests.scala
+  h_0926447d100ad2 203-217,608-616,1429-1611
+src/test/scala/io/appthreat/atom/MemorySafetyGroupingUnitTests.scala
+  h_0926447d100ad2 69-93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8303ad0c3eb8535cedbd07745ffdd8f0e075b86e",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
