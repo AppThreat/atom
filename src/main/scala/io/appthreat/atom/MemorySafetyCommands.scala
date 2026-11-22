@@ -3,6 +3,7 @@ package io.appthreat.atom
 import better.files.File
 import io.appthreat.x2cpg.Defines.TemplateArgsTag
 import io.appthreat.x2cpg.Defines.TemplateTag
+import io.appthreat.atom.slicing.callsites.VendoredCode
 import io.circe.syntax.EncoderOps
 import io.circe.{Json, JsonObject}
 import io.shiftleft.codepropertygraph.generated.Cpg
@@ -30,13 +31,17 @@ import scala.collection.mutable
   * drifting apart.
   *
   * Output contract (tools/score.py reads file/line/cwe/kind/confidence; flow is for humans, and
-  * becomes the code flow of `--format sarif`, see [[MemorySafetySarif]]):
+  * becomes the code flow of `--format sarif`, see [[MemorySafetySarif]]; `function`, `purl` and
+  * `fingerprint` identify the finding for tools that report it beside advisories, and are
+  * documented with the published schema, specification/schemas/MemorySafetyFinding.json):
   *
   * {{{
   * {"rule": "MS-BOUND-002", "cwe": "CWE-787", "kind": "unbounded-copy",
   *  "file": "c/cwe415_double_free.c", "line": 11, "column": 5,
   *  "severity": "high", "confidence": "medium",
-  *  "message": "...", "flow": [{"file": "...", "line": 12, "code": "...", "role": "..."}]}
+  *  "message": "...", "function": "cwe415_double_free", "purl": "pkg:generic/vendlib@1.2.3",
+  *  "flow": [{"file": "...", "line": 12, "code": "...", "role": "..."}],
+  *  "fingerprint": "sha256 hex", "atom": "/path/to/atom"}
   * }}}
   */
 object MemorySafetyCommands:
@@ -44,16 +49,23 @@ object MemorySafetyCommands:
   private val confidenceOrder = Map("high" -> 3, "medium" -> 2, "low" -> 1)
 
   /** The languages the C frontends produce. Only on these graphs does the overlay actually tag, so
-    * only on these does a missing overlay marker mean the findings cannot be there (see
+    * only on these does a missing overlay marker mean the overlay has to run before rendering (see
     * [[runMemorySafety]]); every other language legitimately reports zero findings.
     */
   private val OverlayLanguages = Set(Languages.C, Languages.NEWC, "CPP", "C++")
 
-  /** Render every finding and write it to `config.outputSliceFile`. */
+  /** Render every finding and write it to `config.outputSliceFile`.
+    *
+    * `reusing` says the atom was loaded with `--reuse-atom` (or by a command that reuses): it is
+    * what decides whether an atom that already carries the overlay marker consumed its build-time
+    * memory-api options, and it is false for every caller that renders a graph it just built or
+    * tagged itself.
+    */
   def runMemorySafety(
     cpg: Cpg,
     config: AtomMemorySafetyConfig,
-    atomFile: File
+    atomFile: File,
+    reusing: Boolean = false
   ): Either[String, String] =
     // Reject rather than silently ignore: a caller that asked for `--format sarif` and got JSON
     // named `.sarif`, or that misspelled a confidence and got every finding, has no way to tell.
@@ -68,21 +80,34 @@ object MemorySafetyCommands:
     val minConfidence = confidenceOrder.getOrElse(requested, 0)
     val inputRoot     = config.inputPath.name
     val root          = ReportedPaths.Root(config.inputPath.path)
+    // the vendored-code attribution a finding's `purl` comes from, decided once per run: what the
+    // build stored, else this run's --external-paths pattern and the atom's BOMs, the same lookup
+    // the callsites records use
+    val vendored = VendoredCode.forAtom(cpg, config.frontendArgs.get("external-paths"))
 
     // The findings are tags only the overlay writes, and a graph without them is exactly what a
-    // finding-free program looks like - so when the marker Atom writes alongside the overlay is
-    // missing on a C/C++ graph, refuse instead of rendering an empty (exit 0) report. This guards
-    // `--reuse-atom` against an atom built by another command, and atoms built by atom 4.0.x,
-    // where every dataflow-enhanced command embedded the overlay but nothing recorded it.
-    val language = cpg.metaData.language.headOption.getOrElse("")
-    if OverlayLanguages.contains(language) &&
-      cpg.configFile.name(Atom.MemorySafetyOverlayFileName).isEmpty
+    // finding-free program looks like - so a C/C++ graph without the marker Atom writes alongside
+    // the overlay needs the overlay run before anything is rendered, or the report would be an
+    // empty (exit 0) one for a program that may well have findings. That is the case for an atom
+    // built by another command and reused here, and for atoms built by atom 4.0.x, where every
+    // dataflow-enhanced command embedded the overlay but nothing recorded it. The passes run over
+    // the loaded graph, in memory, exactly as a fresh memory-safety build runs them, and follow
+    // THIS run's --memory-api-profiles and --memory-api-config; the atom file on disk is not
+    // rewritten (no marker is stored), so a later reuse of the same file simply runs them again.
+    val language    = cpg.metaData.language.headOption.getOrElse("")
+    val overlayDone = cpg.configFile.name(Atom.MemorySafetyOverlayFileName).nonEmpty
+    if OverlayLanguages.contains(language) && !overlayDone then
+      Atom.applyMemorySafetyOverlay(cpg, config)
+    // A marker-carrying reused atom was overlaid when it was built, so its build consumed the
+    // memory-api options and this run's would be silently ignored. (A run whose overlay just ran
+    // above follows the current options, and a fresh build ran them in enhanceCpg - neither
+    // warns.) The marker is only knowable after load, which is why the warning lives here.
+    if reusing && overlayDone &&
+      (config.memoryApiProfiles.trim != "auto" || config.memoryApiConfigFile.isDefined)
     then
-      return Left(
-        s"The atom at ${atomFile.pathAsString} does not carry memory-safety overlay tags: " +
-            "it was built by a command other than `memory-safety`, or by an atom build that " +
-            "predated overlay marking. Rebuild the atom by running the memory-safety command " +
-            "on the source, and pass --reuse-atom only to an atom that command built."
+      System.err.println(
+        "warn: --memory-api-profiles and --memory-api-config apply when the atom is built; " +
+            "the reused atom keeps the ones it was built with. Run without --reuse-atom to apply them."
       )
 
     val seen = mutable.LinkedHashSet.empty[(Long, String)]
@@ -129,7 +154,7 @@ object MemorySafetyCommands:
         }
         .map { (node, rule, confidence, location) =>
             (
-              render(atomFile, inputRoot, root, confidence)(node, rule, location),
+              render(atomFile, inputRoot, root, vendored, confidence)(node, rule, location),
               instanceOf(node)
             )
         }
@@ -163,54 +188,68 @@ object MemorySafetyCommands:
     args: String
   )
 
+  /** The method a finding's node belongs to, reached per node type: there is no `.method` step on
+    * AstNode, and an exit-node finding is a METHOD_RETURN rather than an Expression.
+    */
+  private def methodOf(node: AstNode): Option[Method] = node match
+    case e: Expression   => Some(e.method)
+    case m: MethodReturn => Some(m.method)
+    case _               => None
+
   /** The instance a finding sits in: its METHOD's `template` tag names the template's METHOD, and
     * every instance of one template carries the same tag value and the same position. A finding
     * outside an instance METHOD has none.
     */
   private def instanceOf(node: AstNode): Option[TemplateInstance] =
-    def methodOf(n: AstNode): Option[Method] = n match
-      case e: Expression   => Some(e.method)
-      case m: MethodReturn => Some(m.method)
-      case _               => None
-    for
-      m        <- methodOf(node)
-      template <- m.tag.nameExact(TemplateTag).value.headOption
-      args = m.tag.nameExact(TemplateArgsTag).value.headOption.getOrElse("")
-    yield TemplateInstance(
-      template,
-      m.lineNumber.map(_.toInt).getOrElse(0),
-      m.columnNumber.map(_.toInt).getOrElse(0),
-      args
-    )
+      for
+        m        <- methodOf(node)
+        template <- m.tag.nameExact(TemplateTag).value.headOption
+        args = m.tag.nameExact(TemplateArgsTag).value.headOption.getOrElse("")
+      yield TemplateInstance(
+        template,
+        m.lineNumber.map(_.toInt).getOrElse(0),
+        m.columnNumber.map(_.toInt).getOrElse(0),
+        args
+      )
 
   /** The instances of one template print their shared findings once: the finding every
     * instantiation has is one entry with an `instances` list naming each instance's
     * `template-args`, and a finding only some instances have lists only those. Findings are the
     * same finding when their METHODs share the template's tag and position and the rendered entries
-    * are equal in every field (rule, place, confidence, message, flow), so the entry printed is any
-    * one of them. An instance that carries no `template-args` adds no name to the list. A finding
-    * outside an instance METHOD is printed as rendered, each on its own.
+    * are equal in every compared field (rule, place, confidence, message, flow), so the entry
+    * printed is any one of them. The names an instance calls its own - `function`, `purl` and
+    * `fingerprint`, which key on the instance method's full name - are not compared, so instances
+    * still merge; the entry printed carries them from the entry kept. An instance that carries no
+    * `template-args` adds no name to the list. A finding outside an instance METHOD is printed as
+    * rendered, each on its own.
     */
   private[atom] def groupTemplateInstances(
     rendered: List[(Json, Option[TemplateInstance])]
   ): List[Json] =
-    val indexed = rendered.toVector
+    def compared(json: Json): Json =
+        json.asObject
+            .map(o => o.remove("function").remove("purl").remove("fingerprint").asJson)
+            .getOrElse(json)
+    // what a group keeps: its first entry as rendered (the new fields included - they were
+    // dropped from the comparison key only) and the instance names it collects
+    final case class Group(entry: Json, args: mutable.ArrayBuffer[String])
     val groups =
-        mutable.LinkedHashMap.empty[Either[((String, Int, Int), Json), Int], mutable.ArrayBuffer[
-          String
-        ]]
+        mutable.LinkedHashMap.empty[Either[((String, Int, Int), Json), Int], Group]
     rendered.zipWithIndex.foreach { case ((json, instance), occurrence) =>
         // a finding outside an instance is its own group, keyed by its occurrence: two findings
         // that render identically still print both
         val key = instance match
-          case Some(i) => Left(((i.template, i.line, i.column), json))
+          case Some(i) => Left(((i.template, i.line, i.column), compared(json)))
           case None    => Right(occurrence)
-        groups.getOrElseUpdate(key, mutable.ArrayBuffer.empty) ++= instance.map(_.args)
+        val group = groups.getOrElseUpdate(key, Group(json, mutable.ArrayBuffer.empty))
+        instance.foreach(i => group.args += i.args)
     }
     groups.toList.map {
-        case (Left((_, json)), args) =>
-            json.deepMerge(Json.obj("instances" -> args.filter(_.nonEmpty).distinct.sorted.asJson))
-        case (Right(occurrence), _) => indexed(occurrence)._1
+        case (Left(_), group) =>
+            group.entry.deepMerge(
+              Json.obj("instances" -> group.args.filter(_.nonEmpty).distinct.sorted.asJson)
+            )
+        case (Right(_), group) => group.entry
     }
   end groupTemplateInstances
 
@@ -228,7 +267,9 @@ object MemorySafetyCommands:
       )
 
   /** One finding: rule metadata from the registry, location from the offending node, flow from the
-    * node's own tags, its memory operation, and the definitions that produced the value.
+    * node's own tags, its memory operation, and the definitions that produced the value, plus the
+    * names a report keys the finding by: the enclosing function, the vendored component's purl when
+    * the finding sits in one, and the fingerprint.
     *
     * The file path is rooted at the input directory's name: c2cpg records FILE names relative to
     * the analysed input, and consumers of this JSON (a scorer matching on `c/`/`cpp/` prefixes, a
@@ -238,6 +279,7 @@ object MemorySafetyCommands:
     atomFile: File,
     inputRoot: String,
     root: ReportedPaths.Root,
+    vendored: VendoredCode,
     confidence: String
   )(
     node: AstNode,
@@ -247,22 +289,61 @@ object MemorySafetyCommands:
     val file   = ReportedPaths.printed(location, inputRoot)
     val line   = node.lineNumber.map(_.toInt).getOrElse(0)
     val column = node.columnNumber.map(_.toInt).getOrElse(0)
+    // the enclosing method's full name, resolved the way `instanceOf` resolves the method, and
+    // empty when the finding sits outside any method (as a defensive default; every finding node
+    // is an Expression or a MethodReturn)
+    val function = methodOf(node).map(_.fullName).getOrElse("")
+    // the component a BOM located on the finding's file, exactly the attribution a callsites
+    // record carries: a path only the --external-paths pattern names is vendored code without a
+    // purl, so the field is omitted, never written empty
+    val purl = vendored.of(filenameOf(node)).map(_.purl).filter(_.nonEmpty).getOrElse("")
 
     JsonObject(
-      "rule"       -> rule.id.asJson,
-      "cwe"        -> rule.cwe.asJson,
-      "kind"       -> rule.kind.asJson,
-      "file"       -> file.asJson,
-      "line"       -> line.asJson,
-      "column"     -> column.asJson,
-      "severity"   -> rule.severity.asJson,
-      "confidence" -> confidence.asJson,
-      "message" -> s"${node.code}: ${rule.message}${debugGuardNote(node)}${reentrantCallNote(node)}"
-          .asJson,
-      "flow" -> flowOf(node, root).asJson,
-      "atom" -> atomFile.pathAsString.asJson
+      (
+        List(
+          "rule"       -> rule.id.asJson,
+          "cwe"        -> rule.cwe.asJson,
+          "kind"       -> rule.kind.asJson,
+          "file"       -> file.asJson,
+          "line"       -> line.asJson,
+          "column"     -> column.asJson,
+          "severity"   -> rule.severity.asJson,
+          "confidence" -> confidence.asJson,
+          "message" -> s"${node.code}: ${rule.message}${debugGuardNote(node)}${reentrantCallNote(node)}"
+              .asJson,
+          "function" -> function.asJson
+        ) ++ Option.when(purl.nonEmpty)("purl" -> purl.asJson) ++ List(
+          "flow"        -> flowOf(node, root).asJson,
+          "fingerprint" -> fingerprintOf(rule.id, function, file, apisOf(node)).asJson,
+          "atom"        -> atomFile.pathAsString.asJson
+        )
+      )*
     ).asJson
   end render
+
+  /** The ordered distinct names of the finding's memory-operation calls: the finding node's own
+    * name when it is itself a Call, plus the call it is an argument of (the same call the flow
+    * renders with the `memory-operation` role). The names come from the graph nodes, never from the
+    * rendered `code` text, so what feeds the fingerprint is what the graph says was called.
+    */
+  private def apisOf(node: AstNode): String =
+    val own = node match
+      case c: Call => c.name :: Nil
+      case _       => Nil
+    val parent = node._astIn.collectFirst { case c: Call => c }.map(_.name).toList
+    (own ++ parent).distinct.mkString(",")
+
+  /** The finding's fingerprint: SHA-256, as lowercase hex, over the UTF-8 bytes of the string
+    * `rule|function|file|apis` - the rule id, the rendered `function` and `file` values, and the
+    * `apis` of [[apisOf]] joined with "," (empty when there are none). The line and column are
+    * deliberately out of the recipe, so an edit that moves the finding within its function keeps
+    * the fingerprint a report matches it by. The recipe is published with the output's schema
+    * (specification/schemas/MemorySafetyFinding.json) and must stay the same there.
+    */
+  private def fingerprintOf(rule: String, function: String, file: String, apis: String): String =
+    val digest = java.security.MessageDigest.getInstance("SHA-256")
+        .digest(s"$rule|$function|$file|$apis".getBytes("UTF-8"))
+    digest.map(b => f"${b & 0xff}%02x").mkString
 
   /** The note a finding carries when the index's only lower bound was an assert's check: the author
     * wrote a guard that a release build compiles out, which is worth saying in the message the

@@ -202,6 +202,21 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
       )
       .moreCode(
         """
+        |#include <string.h>
+        |
+        |/* Two findings of one rule in one function, a line apart: everything the fingerprint
+        |   names (rule, function, file, apis) is shared, so the two agree - the line is not an
+        |   ingredient of the recipe. */
+        |void twin_copies(unsigned char *buf, const unsigned char *src, int n)
+        |{
+        |    memcpy(buf, src, n);
+        |    memcpy(buf, src, n);
+        |}
+        |""".stripMargin,
+        "twin.c"
+      )
+      .moreCode(
+        """
         |#include <stdlib.h>
         |#include <string.h>
         |
@@ -578,8 +593,9 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
   new IntegerWidthPass(cpg).createAndApply()
   new AllocationStatePass(cpg).createAndApply()
   new MemorySafetyFindingPass(cpg).createAndApply()
-  // The pipeline writes this alongside the overlay (atom#397); without it the command refuses to
-  // render a C graph, since missing tags and a finding-free program look alike.
+  // The pipeline writes this alongside the overlay (atom#397); it is what tells runMemorySafety
+  // the tags are already on this graph, so it renders them instead of running the overlay again
+  // over the graph the fixture just tagged.
   Atom.storeMemorySafetyOverlayMarker(cpg)
 
   private def render(config: AtomMemorySafetyConfig): Either[String, List[io.circe.Json]] =
@@ -589,6 +605,15 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
     MemorySafetyCommands.runMemorySafety(cpg, config, out).map { _ =>
         parse(out.contentAsString).toOption.flatMap(_.asArray.map(_.toList)).getOrElse(Nil)
     }
+
+  /** The rendered findings with the input root fixed to a directory that need not exist, so a
+    * printed file path (and the fingerprint computed over it) does not depend on where the test
+    * runs: the file prints as `proj/copy.c` under `/work/proj`.
+    */
+  private def renderUnder(inputPath: String): List[io.circe.Json] =
+    val config = AtomMemorySafetyConfig()
+    config.inputPath = File(inputPath)
+    render(config).toOption.getOrElse(Nil)
 
   private def findingOf(rule: String): io.circe.Json =
       render(AtomMemorySafetyConfig()).toOption
@@ -1402,6 +1427,264 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
           f.get[Int]("line").toOption.exists(_ > 0) shouldBe true
       }
 
+      "carry function and fingerprint on every finding, in a fixed order, and purl only when there is one" in {
+          // the field order is part of the contract: function follows message, purl (present only
+          // when the finding's file belongs to a located component) follows function, and
+          // fingerprint follows flow. The fixtures carry no BOM and no external-path pattern, so
+          // no finding here has a purl.
+          val findings = render(AtomMemorySafetyConfig()).toOption.get
+          findings should not be empty
+          findings.foreach { f =>
+            f.asObject.map(_.keys.toList) shouldBe Some(
+              List(
+                "rule",
+                "cwe",
+                "kind",
+                "file",
+                "line",
+                "column",
+                "severity",
+                "confidence",
+                "message",
+                "function",
+                "flow",
+                "fingerprint",
+                "atom"
+              )
+            )
+            f.hcursor.get[String]("function").toOption.isDefined shouldBe true
+            f.hcursor.get[String]("fingerprint").toOption.exists(
+              _.matches("[0-9a-f]{64}")
+            ) shouldBe true
+          }
+          // the enclosing method's full name, the same method the instance grouping resolves
+          findingOf(MemorySafetyFindingPass.RuleSizeParamContract).hcursor
+              .get[String]("function").toOption shouldBe Some("overwrites_size_param")
+          // an exit-node finding is a METHOD_RETURN, and its function resolves through that too
+          render(AtomMemorySafetyConfig()).toOption.get
+              .filter(_.hcursor.get[String]("rule").toOption.contains(
+                MemorySafetyFindingPass.RuleLeak
+              ))
+              .map(_.hcursor.get[String]("function").toOption.get)
+              .toSet should contain("leaks_at_the_implicit_end")
+      }
+
+      "key the fingerprint on the rule, the function, the file and the memory operations" in {
+          // the recipe is published with the schema (specification/schemas/MemorySafetyFinding.json):
+          // SHA-256 over `rule|function|file|apis`. The inputs below are hand-checked against the
+          // fixture - the rule id, the function the graph names, the file as printed under the
+          // input root this render fixes, and the memory operation the finding bounds - and the
+          // digest is computed here, independently of the renderer.
+          def sha256(text: String): String =
+              java.security.MessageDigest.getInstance("SHA-256")
+                  .digest(text.getBytes("UTF-8")).map(b => f"${b & 0xff}%02x").mkString
+          val findings = renderUnder("/work/proj")
+          val sizeParam = findings
+              .find(_.hcursor.get[String]("rule").toOption.contains(
+                MemorySafetyFindingPass.RuleSizeParamContract
+              )).get
+          sizeParam.hcursor.get[String]("rule").toOption shouldBe Some("MS-BOUND-001")
+          sizeParam.hcursor.get[String]("function").toOption shouldBe Some(
+            "overwrites_size_param"
+          )
+          sizeParam.hcursor.get[String]("file").toOption shouldBe Some("proj/copy.c")
+          sizeParam.hcursor.get[String]("fingerprint").toOption shouldBe Some(
+            sha256("MS-BOUND-001|overwrites_size_param|proj/copy.c|memcpy")
+          )
+          // the stack escape's finding is anchored at the RETURN and bounds no memory operation
+          // of its own: the recipe's apis part is empty
+          val escape = findings
+              .find(_.hcursor.get[String]("rule").toOption.contains(
+                MemorySafetyFindingPass.RuleStackEscape
+              )).get
+          escape.hcursor.get[String]("function").toOption shouldBe Some("returns_stack_array")
+          escape.hcursor.get[String]("file").toOption shouldBe Some("proj/escape.c")
+          escape.hcursor.get[String]("fingerprint").toOption shouldBe Some(
+            sha256("MS-ESC-001|returns_stack_array|proj/escape.c|")
+          )
+          // the leak of leaks_at_the_implicit_end is anchored at the allocation call itself,
+          // inside the cast: the finding node is a Call with a Call parent, so the apis part is
+          // the node's own name first and the call it is an argument of second - the digest is
+          // computed over exactly that order
+          val mallocLeak = findings
+              .find(f =>
+                  f.hcursor.get[String]("rule").toOption.contains(
+                    MemorySafetyFindingPass.RuleLeak
+                  ) &&
+                      f.hcursor.get[String]("function").toOption.contains(
+                        "leaks_at_the_implicit_end"
+                      )
+              ).get
+          mallocLeak.hcursor.get[String]("file").toOption shouldBe Some("proj/alloc.c")
+          mallocLeak.hcursor.get[String]("fingerprint").toOption shouldBe Some(
+            sha256(
+              "MS-ALLOC-003|leaks_at_the_implicit_end|proj/alloc.c|malloc,<operator>.cast"
+            )
+          )
+          // the digest moves with each ingredient it names, and not with the line: the two
+          // memcpy findings in one function of twin.c agree although they sit a line apart, and
+          // the two leaks of alloc.c, one per function, do not
+          val twins = findings
+              .filter(_.hcursor.get[String]("rule").toOption.contains(
+                MemorySafetyFindingPass.RuleUnboundedCopy
+              ))
+              .filter(_.hcursor.get[String]("function").toOption.contains("twin_copies"))
+          twins should have size 2
+          twins.map(_.hcursor.get[Int]("line").toOption.get).toSet should have size 2
+          twins.map(_.hcursor.get[String]("fingerprint").toOption.get).toSet should have size 1
+          twins.head.hcursor.get[String]("fingerprint").toOption shouldBe Some(
+            sha256("MS-BOUND-002|twin_copies|proj/twin.c|memcpy")
+          )
+          val leaks = findings
+              .filter(_.hcursor.get[String]("rule").toOption.contains(
+                MemorySafetyFindingPass.RuleLeak
+              ))
+          // the two leak fixtures of alloc.c are one leak per function; offsetfree.c adds two
+          // more. Whatever the count, the leaks of one function share a fingerprint and two
+          // functions never share one
+          val printsByFunction = leaks
+              .groupBy(_.hcursor.get[String]("function").toOption.get)
+              .view
+              .mapValues(fs => fs.map(_.hcursor.get[String]("fingerprint").toOption.get).toSet)
+              .toMap
+          (printsByFunction should contain).key("leaks_at_the_implicit_end")
+          printsByFunction.values.foreach(_ should have size 1)
+          printsByFunction.values.toSet should have size printsByFunction.size
+          sha256("MS-BOUND-001|f|proj/a.c|memcpy") should not be sha256(
+            "MS-BOUND-002|f|proj/a.c|memcpy"
+          )
+          sha256("MS-BOUND-001|f|proj/a.c|memcpy") should not be sha256(
+            "MS-BOUND-001|g|proj/a.c|memcpy"
+          )
+          sha256("MS-BOUND-001|f|proj/a.c|memcpy") should not be sha256(
+            "MS-BOUND-001|f|proj/b.c|memcpy"
+          )
+      }
+
+      "carry the vendored component's purl on a finding inside its directory, and no purl elsewhere" in {
+          // the same attribution a callsites record carries: a BOM component located at
+          // third_party owns the findings in its files, with its purl; the project's own files
+          // carry no purl field at all
+          File.usingTemporaryDirectory("atom-ms-vendored") { dir =>
+            val src  = (dir / "src").createDirectory()
+            val vend = (src / "third_party" / "vend").createDirectories()
+            (vend / "vend.c").writeText(
+              """#include <string.h>
+                |void vend_copy(unsigned char *buf, const unsigned char *src, int n)
+                |{
+                |    memcpy(buf, src, n);
+                |}
+                |""".stripMargin
+            )
+            (src / "main.c").writeText(
+              """#include <string.h>
+                |void project_copy(unsigned char *buf, const unsigned char *src, int n)
+                |{
+                |    memcpy(buf, src, n);
+                |}
+                |""".stripMargin
+            )
+            val bom = dir / "bom.json"
+            bom.writeText(
+              """{"bomFormat":"CycloneDX","specVersion":"1.5","components":[
+                | {"type":"library","name":"vendlib","version":"1.2.3","purl":"pkg:generic/vendlib@1.2.3",
+                |  "properties":[{"name":"cdx:vendored","value":"true"},
+                |                {"name":"cdx:vendored:path","value":"third_party"}]}]}""".stripMargin
+            )
+            val findings = dir / "findings.json"
+            Atom.run(
+              Array(
+                "memory-safety",
+                "-l",
+                "c",
+                "--no-ast-cache",
+                "--bom-file",
+                bom.pathAsString,
+                "-o",
+                (dir / "out.atom").pathAsString,
+                "-s",
+                findings.pathAsString,
+                src.pathAsString
+              )
+            ) match
+              case Left(error) => fail(s"the memory-safety run failed: $error")
+              case Right(_) =>
+                  val parsed = parse(findings.contentAsString).toOption
+                      .flatMap(_.asArray).toList.flatten
+                  val inVendored = parsed.filter(
+                    _.hcursor.get[String]("file").toOption.exists(_.contains("third_party"))
+                  )
+                  inVendored should not be empty
+                  inVendored.foreach { f =>
+                      f.hcursor.get[String]("purl").toOption shouldBe Some(
+                        "pkg:generic/vendlib@1.2.3"
+                      )
+                  }
+                  val inProject = parsed.filterNot(
+                    _.hcursor.get[String]("file").toOption.exists(_.contains("third_party"))
+                  )
+                  inProject should not be empty
+                  inProject.foreach { f =>
+                      f.hcursor.downField("purl").focus.isEmpty shouldBe true
+                  }
+            end match
+          }
+      }
+
+      "omit purl on a vendored finding when only the --external-paths pattern names the file" in {
+          // the pattern marks the directory vendored the same way, but no component owns it, so
+          // there is no purl to name: the field is never written empty, in the project's files
+          // or in the vendored one
+          File.usingTemporaryDirectory("atom-ms-pattern") { dir =>
+            val src  = (dir / "src").createDirectory()
+            val vend = (src / "third_party" / "vend").createDirectories()
+            (vend / "vend.c").writeText(
+              """#include <string.h>
+                |void vend_copy(unsigned char *buf, const unsigned char *src, int n)
+                |{
+                |    memcpy(buf, src, n);
+                |}
+                |""".stripMargin
+            )
+            (src / "main.c").writeText(
+              """#include <string.h>
+                |void project_copy(unsigned char *buf, const unsigned char *src, int n)
+                |{
+                |    memcpy(buf, src, n);
+                |}
+                |""".stripMargin
+            )
+            val findings = dir / "findings.json"
+            Atom.run(
+              Array(
+                "memory-safety",
+                "-l",
+                "c",
+                "--no-ast-cache",
+                "--external-paths",
+                "third_party",
+                "-o",
+                (dir / "out.atom").pathAsString,
+                "-s",
+                findings.pathAsString,
+                src.pathAsString
+              )
+            ) match
+              case Left(error) => fail(s"the memory-safety run failed: $error")
+              case Right(_) =>
+                  val parsed = parse(findings.contentAsString).toOption
+                      .flatMap(_.asArray).toList.flatten
+                  val inVendored = parsed.filter(
+                    _.hcursor.get[String]("file").toOption.exists(_.contains("third_party"))
+                  )
+                  inVendored should not be empty
+                  parsed.foreach { f =>
+                      f.hcursor.downField("purl").focus.isEmpty shouldBe true
+                  }
+            end match
+          }
+      }
+
       "carry the evidence the rule read, one row per fact" in {
           val flow = findingOf(MemorySafetyFindingPass.RuleSizeParamContract).hcursor
               .downField("flow")
@@ -1473,6 +1756,73 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
           location.downField("region").get[Int]("startLine").toOption.get should be > 0
           sizeParam.hcursor.downField("codeFlows").downArray.downField("threadFlows").downArray
               .downField("locations").as[List[io.circe.Json]].toOption.get should not be empty
+      }
+
+      "match the published JSON schema, purl optional, fingerprint required" in {
+          // specification/schemas/MemorySafetyFinding.json is the published contract of one
+          // finding; every element of the end-to-end render has to satisfy it, and a document
+          // without the fingerprint must not
+          val findings = render(AtomMemorySafetyConfig()).toOption.get
+          findings should not be empty
+          val factory = com.networknt.schema.JsonSchemaFactory.getInstance(
+            com.networknt.schema.SpecVersion.VersionFlag.V4
+          )
+          val schema = factory.getSchema(
+            File("specification/schemas/MemorySafetyFinding.json").contentAsString
+          )
+          val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
+          findings.foreach { f =>
+              schema.validate(mapper.readTree(f.noSpaces)).isEmpty shouldBe true
+          }
+          // the optional purl is accepted when a component owns the file
+          schema.validate(mapper.readTree(findings.head.noSpaces.replace(
+            "\"function\":",
+            "\"purl\": \"pkg:generic/vendlib@1.2.3\", \"function\":"
+          ))).isEmpty shouldBe true
+          schema.validate(mapper.readTree("""{"rule": "MS-BOUND-001"}""")).isEmpty shouldBe false
+      }
+
+      "carry each finding's fingerprint as a partial fingerprint the schema accepts" in {
+          val out = File.newTemporaryFile("memory-safety", ".sarif")
+          out.deleteOnExit()
+          val config = AtomMemorySafetyConfig().withFormat("sarif")
+          config.outputSliceFile = out
+          MemorySafetyCommands.runMemorySafety(cpg, config, out).isRight shouldBe true
+          val text     = out.contentAsString
+          val findings = render(AtomMemorySafetyConfig()).toOption.get
+          // the SARIF schema still accepts the document (the partialFingerprints property bag
+          // is part of result), and rejects what is not SARIF
+          val factory = com.networknt.schema.JsonSchemaFactory.getInstance(
+            com.networknt.schema.SpecVersion.VersionFlag.V4
+          )
+          val schema = factory.getSchema(
+            getClass.getResourceAsStream("/sarif/sarif-schema-2.1.0.json")
+          )
+          val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
+          schema.validate(mapper.readTree(text)).isEmpty shouldBe true
+          schema.validate(mapper.readTree("""{"runs": []}""")).isEmpty shouldBe false
+          // each result carries the JSON finding's fingerprint under the tool's key
+          val results = parse(text).toOption.get.hcursor.downField("runs").downArray
+              .downField("results").as[List[io.circe.Json]].toOption.get
+          results.size shouldBe findings.size
+          results.foreach { r =>
+              r.hcursor.downField("partialFingerprints")
+                  .get[String](MemorySafetySarif.FingerprintKey)
+                  .toOption
+                  .getOrElse("")
+                  .matches("[0-9a-f]{64}") shouldBe true
+          }
+          val sizeParam = results.find(
+            _.hcursor.get[String]("ruleId").toOption.contains(
+              MemorySafetyFindingPass.RuleSizeParamContract
+            )
+          ).get
+          sizeParam.hcursor.downField("partialFingerprints")
+              .get[String](MemorySafetySarif.FingerprintKey).toOption shouldBe findings
+              .find(_.hcursor.get[String]("rule").toOption.contains(
+                MemorySafetyFindingPass.RuleSizeParamContract
+              ))
+              .flatMap(_.hcursor.get[String]("fingerprint").toOption)
       }
 
       "index SARIF results into the rules listed, and keep a file outside the input absolute" in {
