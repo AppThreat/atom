@@ -12,7 +12,9 @@ import org.scalatest.wordspec.AnyWordSpec
   * line, module, path, kind, via, builtin). The expected records are the clang oracle's rows for
   * the same fixture (`oracle_c.py <proj> --compile-commands <db> --cpp`, with the library outside
   * the project and `-I externlib`), so the fixture and this suite agree with the ground truth the
-  * slice is scored against, not with a remembered list.
+  * slice is scored against, not with a remembered list. The records both frontends write also
+  * validate against `specification/schemas/CallSitesRecord.json`, which covers the fields the
+  * oracle rows leave out, a header's resolved path above all.
   *
   * The library lives outside the analysed input, reached through `--include-path`, as a real
   * dependency is. The bad twins must produce nothing: the project's own same-named function, its
@@ -26,6 +28,9 @@ class CCallSitesTests extends AnyWordSpec with Matchers with AppendedClues with 
   private var workspace: BFile            = scala.compiletime.uninitialized
   private var cdt: List[Expected]         = Nil
   private var edg: Option[List[Expected]] = None
+
+  /** Each frontend's slice as written, for the checks that read the JSON itself. */
+  private var written: Map[String, String] = Map.empty
 
   override protected def beforeAll(): Unit =
     workspace = BFile.newTemporaryDirectory("atomCCallsites")
@@ -61,6 +66,7 @@ class CCallSitesTests extends AnyWordSpec with Matchers with AppendedClues with 
           )).toArray
     )
     (result.isRight shouldBe true).withClue(s"the $frontend run failed: $result")
+    written += frontend -> slice.contentAsString
     decode[Slice](slice.contentAsString).fold(
       e => fail(s"the $frontend slice is not JSON: $e"),
       s =>
@@ -114,6 +120,44 @@ class CCallSitesTests extends AnyWordSpec with Matchers with AppendedClues with 
       "emit the oracle's records exactly, and nothing else" in {
           assume(edg.isDefined, "edga is not installed (set EDGA_PATH)")
           edg.get shouldBe oracleRows
+      }
+  }
+
+  "the records of both frontends" should {
+
+      "match the CallSitesRecord schema, and carry the header's resolved path" in {
+          val factory = com.networknt.schema.JsonSchemaFactory.getInstance(
+            com.networknt.schema.SpecVersion.VersionFlag.V4
+          )
+          val schema = factory.getSchema(
+            BFile("specification/schemas/CallSitesRecord.json").newInputStream
+          )
+          val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
+          ("cdt" :: edg.map(_ => "edg").toList).foreach { frontend =>
+            val records = mapper.readTree(written(frontend)).get("callsites").elements()
+            while records.hasNext do
+              val record = records.next()
+              val errors = schema.validate(record)
+              if !errors.isEmpty then
+                fail(s"the $frontend record $record does not match the schema: $errors")
+          }
+          // the schema does reject what is not a record: an unknown field, a wrong type
+          schema.validate(mapper.readTree("""{"file":"main.c","noSuchField":1}""")).isEmpty shouldBe
+              false
+          schema.validate(mapper.readTree("""{"file":"main.c","isSystem":"yes"}""")).isEmpty shouldBe
+              false
+          // every record whose file includes the library header itself names where it resolved,
+          // and the one record of proj.h, which the header reached through main.c's include, does
+          // not (the same rule CCallSiteResolvedPathTests spells out)
+          val records = ujson.read(written("cdt")).obj("callsites").arr
+          records.filter(r => r.obj("file").str == "main.c" && r.obj("module").str == "lib.h")
+              .foreach(r => r.obj.get("resolvedPath").exists(_.str.nonEmpty) shouldBe true)
+          records.filter(r => r.obj("file").str == "klass.cpp").foreach(r =>
+              r.obj.get("resolvedPath").exists(_.str.nonEmpty) shouldBe true
+          )
+          records.filter(r => r.obj("file").str == "proj.h").foreach(r =>
+              r.obj.contains("resolvedPath") shouldBe false
+          )
       }
   }
 

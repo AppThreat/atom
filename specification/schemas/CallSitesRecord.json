@@ -1,0 +1,70 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/CallSitesRecord",
+    "definitions": {
+        "CallSitesRecord": {
+            "properties": {
+                "file": {
+                    "type": "string",
+                    "description": "File of the use, relative to the input (for bytecode, the source file the class names)"
+                },
+                "line": {
+                    "type": "integer",
+                    "description": "Line of the use itself"
+                },
+                "col": {
+                    "type": "integer",
+                    "description": "Column of the use itself, -1 where the frontend has no column"
+                },
+                "method": {
+                    "type": "string",
+                    "description": "The enclosing method's full name, empty where the use sits outside any method"
+                },
+                "module": {
+                    "type": "string",
+                    "description": "What the use belongs to: an npm package, a Python module, a Java class, a PHP class, a Ruby constant, a C header"
+                },
+                "path": {
+                    "type": "string",
+                    "description": "What is used inside the module: an export, a member, a method, a macro, a field (empty for a use of the module itself)"
+                },
+                "kind": {
+                    "type": "string",
+                    "description": "What the use is: call, new, jsx, arg, ref, decorator, extends, implements, tag, import, decltype, annotation, attribute, methodref, macro or type"
+                },
+                "via": {
+                    "type": "string",
+                    "description": "How the module was found: binding, type, name or macro"
+                },
+                "resolvedMethod": {
+                    "type": "string",
+                    "description": "The callee's full name when the frontend resolved one, else empty; its spelling is the frontend's, so do not parse it"
+                },
+                "builtin": {
+                    "type": "boolean",
+                    "description": "True for the language's standard library"
+                },
+                "declaringModule": {
+                    "type": "string",
+                    "description": "The class that declares a called method when it differs from the receiver's static type; Java source only"
+                },
+                "purl": {
+                    "type": "string",
+                    "description": "The package URL of the distribution the module belongs to, when atom knows one; left out while empty"
+                },
+                "resolvedPath": {
+                    "type": "string",
+                    "description": "C and C++ only: the file the include of the record's header resolved to; left out when the record's own file did not include the header itself"
+                },
+                "isSystem": {
+                    "type": "boolean",
+                    "description": "C and C++ only: true for a system include (<...>); present only when true"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Call Sites Record",
+            "description": "One record per external use site of an imported module, class, function or header: where the use is, what is used and how the module was found. One entry of the callsites array of the callsites slice."
+        }
+    }
+}
