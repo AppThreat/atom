@@ -1,0 +1,19 @@
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  s_7afdebcf182184::t_35cadcbb774a68 767-768
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fea7bc6691911e0372f8dcfd129955b0f0c4935e",
+  "prompts": {},
+  "sessions": {
+    "s_7afdebcf182184": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_c8af1a80-6dae-48aa-9140-0ea5633e29af",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
