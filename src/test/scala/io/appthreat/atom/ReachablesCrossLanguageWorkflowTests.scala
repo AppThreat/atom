@@ -257,12 +257,12 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
           // The dependency boundary (atom#402): jssrc2cpg leaves `node_modules` out, so a call
           // into an imported package resolves to an external stub (`axios:get`) and, before this
           // fixture, no JS arm tagged one - a flow crossing the boundary had no sink to end on.
-          // JsDependencySinkTagger tags the axios call http-client and the log call
+          // chen's dependency boundary tags the axios call http-client and the log call
           // library-call (`get` is absent from EasyTagsPass's SDK-verb list, so nothing else
           // tags either), and chen's PackageAttribution layers the SBOM's purl for axios onto
-          // the http-client sink. On main both assertions fail: the axios call carries only
-          // service-ingress, a source tag, so no entry ends on it, and no node carries
-          // library-call or a purl.
+          // the http-client sink. Without the boundary both assertions fail: the axios call
+          // carries only service-ingress, a source tag, so no entry ends on it, and no node
+          // carries library-call or a purl.
           val flows = runReachables(
             "javascript",
             "js-axios-project",

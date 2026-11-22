@@ -195,7 +195,7 @@ class MemorySafetyReuseAtomTests extends AnyWordSpec with Matchers:
               reusedFindings.pathAsString,
               src.pathAsString
             ) shouldBe a[Right[?, ?]]
-            val fresh = findingsOf(freshFindings)
+            val fresh          = findingsOf(freshFindings)
             val freshFunctions = fresh.flatMap(_.hcursor.get[String]("function").toOption)
             freshFunctions should contain("unguarded")
             (freshFunctions should not).contain("guarded")

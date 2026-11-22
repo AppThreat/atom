@@ -8,7 +8,7 @@ import io.appthreat.dataflowengineoss.semanticsloader.FlowSemantic
 import io.appthreat.atom.frontends.FrontendArgsApplier
 import io.appthreat.atom.frontends.clike.C2Atom
 import io.appthreat.atom.parsedeps.parseDependencies
-import io.appthreat.atom.passes.{JsDependencySinkTagger, PhpDependencySinkTagger, TypeHintPass}
+import io.appthreat.atom.passes.{PhpDependencySinkTagger, TypeHintPass}
 import io.appthreat.atom.slicing.*
 import io.appthreat.edg2atom.Edg2Atom
 import io.appthreat.c2cpg.parser.ProjectSources
@@ -2443,15 +2443,9 @@ object Atom:
               PerfReporter.stage("taggers.PhpDependencySinkTagger", "analysis") {
                   new PhpDependencySinkTagger(atom).createAndApply()
               }
-              // The JavaScript counterpart (atom#402): calls into the npm packages the project
-              // imports (`node_modules` left out) resolve to external stubs and carried no sink,
-              // so flows that cross the dependency boundary came out without a sink. They become
-              // library-call and http-client sinks here; the SBOM's purls follow from chen's
-              // PackageAttribution, which ChennaiTagsPass applies below. A no-op on every other
-              // language.
-              PerfReporter.stage("taggers.JsDependencySinkTagger", "analysis") {
-                  new JsDependencySinkTagger(atom).createAndApply()
-              }
+              // The JavaScript counterpart (atom#402) is chen's: ChennaiTagsPass, below, tags the
+              // calls into the npm packages the project imports as library-call and http-client
+              // sinks and layers the SBOM's purls on them (chen#318).
               // Unicode that hides what the code does (look-alike names, bidi controls)
               PerfReporter.stage("taggers.SourceIntegrityPass", "analysis") {
                   new SourceIntegrityPass(atom).createAndApply()
