@@ -45,6 +45,9 @@ Every record has these fields:
 | `resolvedPath`    | C and C++ only: the file the include of the record's header resolved to; left out when the record's own file did not include the header itself |
 | `isSystem`        | C and C++ only: `true` when that include was written as a system include (`<...>`); present only when true |
 
+The field list is published as a
+[JSON Schema](https://github.com/AppThreat/atom/blob/main/specification/schemas/CallSitesRecord.json).
+
 `via` is the resolution story of the record:
 
 - `binding`: the name resolves, scope-correctly, to an import, a static member or a declaration the
