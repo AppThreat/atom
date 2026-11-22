@@ -1,9 +1,7 @@
 package io.appthreat.atom.slicing
 
 import better.files.File
-
-import java.nio.file.{AtomicMoveNotSupportedException, Files, StandardCopyOption}
-import scala.util.control.NonFatal
+import io.appthreat.x2cpg.utils.AtomicWrites
 
 /** Writing slices files so that a reader never sees half of one. */
 object SliceFiles:
@@ -13,25 +11,15 @@ object SliceFiles:
     * A run stopped while writing (a timeout, a kill) otherwise leaves a truncated JSON file at the
     * final path, which consumers take for a finished slice and then fail to parse. The rename is
     * atomic where the filesystem supports it, and a plain replace where it does not.
+    *
+    * Slice outputs are written beside the scanned tree, whose checkout decides the names in that
+    * directory before the run does. The temporary sibling and the rename are therefore chen's
+    * [[AtomicWrites.replace]], whose temporary name no checkout can predict: a symbolic link
+    * committed at that name, or at the final one, is replaced by the rename rather than written
+    * through, so the file a link points at outside the tree keeps its bytes.
     */
   def writeAtomically(target: File)(write: File => Unit): Unit =
     Option(target.parent).foreach(_.createDirectoryIfNotExists(createParents = true))
-    val temp = target.sibling(s".${target.name}.${ProcessHandle.current().pid()}.tmp")
-    try
-      write(temp)
-      try
-        Files.move(
-          temp.path,
-          target.path,
-          StandardCopyOption.REPLACE_EXISTING,
-          StandardCopyOption.ATOMIC_MOVE
-        )
-      catch
-        case _: AtomicMoveNotSupportedException =>
-            Files.move(temp.path, target.path, StandardCopyOption.REPLACE_EXISTING)
-    catch
-      case NonFatal(e) =>
-          temp.delete(swallowIOExceptions = true)
-          throw e
+    AtomicWrites.replace(target.path)(temp => write(File(temp)))
   end writeAtomically
 end SliceFiles
