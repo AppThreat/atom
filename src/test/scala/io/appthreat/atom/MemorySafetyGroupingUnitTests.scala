@@ -66,6 +66,31 @@ class MemorySafetyGroupingUnitTests extends AnyWordSpec with Matchers:
           grouped.map(instancesOf) shouldBe List(Some(List("int")))
       }
 
+      "merge instances whose findings differ only in function, purl and fingerprint" in {
+          // those three name the instance's own method and the component its file belongs to, so
+          // they are not compared: two instances of one template with otherwise identical
+          // findings print one entry, carrying the fields of the entry kept (the first), while
+          // the instances list still names both
+          def templated(function: String, purl: String, fingerprint: String) =
+              finding("high").deepMerge(
+                Json.obj(
+                  "function"    -> function.asJson,
+                  "purl"        -> purl.asJson,
+                  "fingerprint" -> fingerprint.asJson
+                )
+              )
+          val grouped = MemorySafetyCommands.groupTemplateInstances(
+            List(
+              templated("Box<int>.get", "", "aa") -> instance("int"),
+              templated("Box<char>.get", "pkg:generic/vendlib@1.2.3", "bb") -> instance("char")
+            )
+          )
+          grouped should have size 1
+          grouped.head.hcursor.get[String]("function").toOption shouldBe Some("Box<int>.get")
+          grouped.head.hcursor.get[String]("fingerprint").toOption shouldBe Some("aa")
+          instancesOf(grouped.head) shouldBe Some(List("char", "int"))
+      }
+
       "print findings outside a template as rendered, each on its own" in {
           val plain = finding("high")
           val grouped =
