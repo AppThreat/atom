@@ -1,0 +1,14 @@
+src/main/scala/io/appthreat/atom/slicing/SliceFiles.scala
+  h_0926447d100ad2 16-19,23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "45ea198d9b8da824f870e0a30c543b175edd304d",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
