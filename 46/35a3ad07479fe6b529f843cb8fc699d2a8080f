@@ -1,0 +1,25 @@
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_7afdebcf182184::t_c2679ace76baf7 165
+src/test/scala/io/appthreat/atom/ReachablesFlowSummarySymlinkTests.scala
+  s_7afdebcf182184::t_c2679ace76baf7 29-35,41-50,52-54,70,93-94
+src/test/scala/io/appthreat/atom/MemorySafetyOutputSymlinkTests.scala
+  s_7afdebcf182184::t_c2679ace76baf7 26-27,61-67,69-73,75-83
+src/test/scala/io/appthreat/atom/ParsedepsAstCacheSymlinkTests.scala
+  s_7afdebcf182184::t_c2679ace76baf7 27-32,38-39,42-51,53-55,69,96-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4635a3ad07479fe6b529f843cb8fc699d2a8080f",
+  "prompts": {},
+  "sessions": {
+    "s_7afdebcf182184": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_c8af1a80-6dae-48aa-9140-0ea5633e29af",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
