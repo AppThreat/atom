@@ -1,0 +1,14 @@
+src/test/scala/io/appthreat/atom/ParsedepsAstCacheSymlinkTests.scala
+  h_0926447d100ad2 1-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "78368d264e1f931f2d3695c579f90726e0314ad6",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
