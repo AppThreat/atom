@@ -3,6 +3,7 @@ package io.appthreat.atom
 import better.files.File
 import io.appthreat.x2cpg.Defines.TemplateArgsTag
 import io.appthreat.x2cpg.Defines.TemplateTag
+import io.appthreat.atom.dataflows.OssDataFlow
 import io.appthreat.atom.slicing.SliceFiles
 import io.appthreat.atom.slicing.callsites.VendoredCode
 import io.circe.syntax.EncoderOps
@@ -55,6 +56,19 @@ object MemorySafetyCommands:
     */
   private val OverlayLanguages = Set(Languages.C, Languages.NEWC, "CPP", "C++")
 
+  private def hasMarker(cpg: Cpg): Boolean =
+      cpg.configFile.name(Atom.MemorySafetyOverlayFileName).nonEmpty
+
+  /** Tags only the overlay's passes write, whatever the program contains: their presence on a graph
+    * without the marker means an earlier build overlaid it without recording that.
+    */
+  private def hasOverlayTags(cpg: Cpg): Boolean =
+      cpg.tag.nameExact(
+        MemorySafetyFindingPass.TagFinding,
+        MemoryApiPass.TagDst,
+        ExtentPass.TagExtent
+      ).nonEmpty
+
   /** Render every finding and write it to `config.outputSliceFile`.
     *
     * `reusing` says the atom was loaded with `--reuse-atom` (or by a command that reuses): it is
@@ -84,20 +98,30 @@ object MemorySafetyCommands:
     // the vendored-code attribution a finding's `purl` comes from, decided once per run: what the
     // build stored, else this run's --external-paths pattern and the atom's BOMs, the same lookup
     // the callsites records use
-    val vendored = VendoredCode.forAtom(cpg, config.frontendArgs.get("external-paths"))
+    lazy val vendored = VendoredCode.forAtom(cpg, config.frontendArgs.get("external-paths"))
 
     // The findings are tags only the overlay writes, and a graph without them is exactly what a
     // finding-free program looks like - so a C/C++ graph without the marker Atom writes alongside
     // the overlay needs the overlay run before anything is rendered, or the report would be an
     // empty (exit 0) one for a program that may well have findings. That is the case for an atom
-    // built by another command and reused here, and for atoms built by atom 4.0.x, where every
-    // dataflow-enhanced command embedded the overlay but nothing recorded it. The passes run over
-    // the loaded graph, in memory, exactly as a fresh memory-safety build runs them, and follow
-    // THIS run's --memory-api-profiles and --memory-api-config; the atom file on disk is not
-    // rewritten (no marker is stored), so a later reuse of the same file simply runs them again.
+    // built by another command and reused here: the passes run over the loaded graph, in memory,
+    // exactly as a fresh memory-safety build runs them, after the data-flow layer their rules read
+    // when the atom was built without it, and follow THIS run's --memory-api-profiles and
+    // --memory-api-config. The atom file on disk is not rewritten (the caller loaded it through a
+    // copy and no marker is stored), so a later reuse of the same file simply runs them again.
+    // An atom built by atom 4.0.x carries the overlay's tags without the marker; running the passes
+    // again would add today's tags beside the old ones, so it is refused, as before.
     val language    = cpg.metaData.language.headOption.getOrElse("")
-    val overlayDone = cpg.configFile.name(Atom.MemorySafetyOverlayFileName).nonEmpty
+    val overlayDone = hasMarker(cpg)
     if OverlayLanguages.contains(language) && !overlayDone then
+      if hasOverlayTags(cpg) then
+        return Left(
+          s"The atom at ${atomFile.pathAsString} carries memory-safety overlay tags from an atom " +
+              "build that predated overlay marking. Rebuild the atom by running the memory-safety " +
+              "command on the source."
+        )
+      if !cpg.metaData.overlays.contains(OssDataFlow.overlayName) then
+        Atom.applyDataFlowLayer(config, cpg)
       Atom.applyMemorySafetyOverlay(cpg, config)
     // A marker-carrying reused atom was overlaid when it was built, so its build consumed the
     // memory-api options and this run's would be silently ignored. (A run whose overlay just ran
@@ -150,17 +174,26 @@ object MemorySafetyCommands:
         .sortBy { (node, _, _, location) =>
             (
               ReportedPaths.printed(location, inputRoot),
-              node.lineNumber.map(_.toInt).getOrElse(0): Int
+              node.lineNumber.map(_.toInt).getOrElse(0): Int,
+              node.columnNumber.map(_.toInt).getOrElse(0): Int
             )
         }
         .map { (node, rule, confidence, location) =>
-            (
-              render(atomFile, inputRoot, root, vendored, confidence)(node, rule, location),
-              instanceOf(node)
-            )
+          val instance = instanceOf(node)
+          val function = functionOf(node, instance)
+          (
+            render(atomFile, inputRoot, root, vendored, confidence)(
+              node,
+              rule,
+              location,
+              function
+            ),
+            instance,
+            FingerprintInputs(rule.id, function, fingerprintPath(location), apisOf(node))
+          )
         }
 
-    val findings = groupTemplateInstances(rendered)
+    val findings = withFingerprints(groupTemplateInstances(rendered))
 
     val outFile = config.outputSliceFile
     val document =
@@ -215,44 +248,50 @@ object MemorySafetyCommands:
         args
       )
 
+  /** The function a finding is reported in: the enclosing method's full name, or for a method
+    * generated from a template instance, the template it came from (its `template` tag), so the
+    * instances of one template report one function and the finding they share merges into one entry
+    * with one fingerprint. Backslashes are written as forward slashes, so a full name that spells a
+    * file (the `<global>` method of a file) reads the same on every platform. Empty when the
+    * finding sits outside any method, a defensive default: every finding node is an Expression or a
+    * MethodReturn.
+    */
+  private def functionOf(node: AstNode, instance: Option[TemplateInstance]): String =
+      instance.map(_.template).orElse(methodOf(node).map(_.fullName)).getOrElse("").replace(
+        '\\',
+        '/'
+      )
+
   /** The instances of one template print their shared findings once: the finding every
     * instantiation has is one entry with an `instances` list naming each instance's
     * `template-args`, and a finding only some instances have lists only those. Findings are the
     * same finding when their METHODs share the template's tag and position and the rendered entries
-    * are equal in every compared field (rule, place, confidence, message, flow), so the entry
-    * printed is any one of them. The names an instance calls its own - `function`, `purl` and
-    * `fingerprint`, which key on the instance method's full name - are not compared, so instances
-    * still merge; the entry printed carries them from the entry kept. An instance that carries no
-    * `template-args` adds no name to the list. A finding outside an instance METHOD is printed as
-    * rendered, each on its own.
+    * are equal in every field (rule, place, function, confidence, message, flow), so the entry
+    * printed is any one of them, carried with the `extra` value of the first. An instance that
+    * carries no `template-args` adds no name to the list. A finding outside an instance METHOD is
+    * printed as rendered, each on its own.
     */
-  private[atom] def groupTemplateInstances(
-    rendered: List[(Json, Option[TemplateInstance])]
-  ): List[Json] =
-    def compared(json: Json): Json =
-        json.asObject
-            .map(o => o.remove("function").remove("purl").remove("fingerprint").asJson)
-            .getOrElse(json)
-    // what a group keeps: its first entry as rendered (the new fields included - they were
-    // dropped from the comparison key only) and the instance names it collects
-    final case class Group(entry: Json, args: mutable.ArrayBuffer[String])
+  private[atom] def groupTemplateInstances[A](
+    rendered: List[(Json, Option[TemplateInstance], A)]
+  ): List[(Json, A)] =
+    final case class Group(entry: Json, extra: A, args: mutable.ArrayBuffer[String])
     val groups =
         mutable.LinkedHashMap.empty[Either[((String, Int, Int), Json), Int], Group]
-    rendered.zipWithIndex.foreach { case ((json, instance), occurrence) =>
+    rendered.zipWithIndex.foreach { case ((json, instance, extra), occurrence) =>
         // a finding outside an instance is its own group, keyed by its occurrence: two findings
         // that render identically still print both
         val key = instance match
-          case Some(i) => Left(((i.template, i.line, i.column), compared(json)))
+          case Some(i) => Left(((i.template, i.line, i.column), json))
           case None    => Right(occurrence)
-        val group = groups.getOrElseUpdate(key, Group(json, mutable.ArrayBuffer.empty))
+        val group = groups.getOrElseUpdate(key, Group(json, extra, mutable.ArrayBuffer.empty))
         instance.foreach(i => group.args += i.args)
     }
     groups.toList.map {
         case (Left(_), group) =>
             group.entry.deepMerge(
               Json.obj("instances" -> group.args.filter(_.nonEmpty).distinct.sorted.asJson)
-            )
-        case (Right(_), group) => group.entry
+            ) -> group.extra
+        case (Right(_), group) => group.entry -> group.extra
     }
   end groupTemplateInstances
 
@@ -287,15 +326,12 @@ object MemorySafetyCommands:
   )(
     node: AstNode,
     rule: MemorySafetyFindingPass.MemorySafetyRule,
-    location: ReportedPaths.Location
+    location: ReportedPaths.Location,
+    function: String
   ): Json =
     val file   = ReportedPaths.printed(location, inputRoot)
     val line   = node.lineNumber.map(_.toInt).getOrElse(0)
     val column = node.columnNumber.map(_.toInt).getOrElse(0)
-    // the enclosing method's full name, resolved the way `instanceOf` resolves the method, and
-    // empty when the finding sits outside any method (as a defensive default; every finding node
-    // is an Expression or a MethodReturn)
-    val function = methodOf(node).map(_.fullName).getOrElse("")
     // the component a BOM located on the finding's file, exactly the attribution a callsites
     // record carries: a path only the --external-paths pattern names is vendored code without a
     // purl, so the field is omitted, never written empty
@@ -316,9 +352,8 @@ object MemorySafetyCommands:
               .asJson,
           "function" -> function.asJson
         ) ++ Option.when(purl.nonEmpty)("purl" -> purl.asJson) ++ List(
-          "flow"        -> flowOf(node, root).asJson,
-          "fingerprint" -> fingerprintOf(rule.id, function, file, apisOf(node)).asJson,
-          "atom"        -> atomFile.pathAsString.asJson
+          "flow" -> flowOf(node, root).asJson,
+          "atom" -> atomFile.pathAsString.asJson
         )
       )*
     ).asJson
@@ -336,17 +371,55 @@ object MemorySafetyCommands:
     val parent = node._astIn.collectFirst { case c: Call => c }.map(_.name).toList
     (own ++ parent).distinct.mkString(",")
 
-  /** The finding's fingerprint: SHA-256, as lowercase hex, over the UTF-8 bytes of the string
-    * `rule|function|file|apis` - the rule id, the rendered `function` and `file` values, and the
-    * `apis` of [[apisOf]] joined with "," (empty when there are none). The line and column are
-    * deliberately out of the recipe, so an edit that moves the finding within its function keeps
-    * the fingerprint a report matches it by. The recipe is published with the output's schema
-    * (specification/schemas/MemorySafetyFinding.json) and must stay the same there.
+  /** What a finding's fingerprint is computed from: the rule id, the reported function, the file as
+    * [[fingerprintPath]] spells it and the memory-operation names of [[apisOf]].
     */
-  private def fingerprintOf(rule: String, function: String, file: String, apis: String): String =
-    val digest = java.security.MessageDigest.getInstance("SHA-256")
-        .digest(s"$rule|$function|$file|$apis".getBytes("UTF-8"))
-    digest.map(b => f"${b & 0xff}%02x").mkString
+  private[atom] final case class FingerprintInputs(
+    rule: String,
+    function: String,
+    path: String,
+    apis: String
+  )
+
+  /** The file as the fingerprint spells it: the path relative to the analysed input, without the
+    * input directory's own name, so two checkouts of one project in differently named directories
+    * agree; a file outside the input keeps its absolute path, with forward slashes.
+    */
+  private def fingerprintPath(location: ReportedPaths.Location): String = location match
+    case ReportedPaths.Location.Inside(relative)  => relative.replace('\\', '/')
+    case ReportedPaths.Location.Outside(absolute) => absolute.replace('\\', '/')
+
+  /** Adds each finding's `fingerprint` after its `flow`: SHA-256, as lowercase hex, over the UTF-8
+    * bytes of `rule|function|path|apis|occurrence`. `occurrence` counts, from 0, the findings
+    * before this one that share the other four values, in the order the findings are printed (by
+    * file, line and column), so two findings of one rule in one function get two fingerprints. The
+    * line and column are not part of the recipe, so an edit that moves a finding within its
+    * function keeps the fingerprint a report matches it by. The recipe is published with the
+    * output's schema (specification/schemas/MemorySafetyFinding.json.md) and must stay the same
+    * there.
+    */
+  private[atom] def withFingerprints(findings: List[(Json, FingerprintInputs)]): List[Json] =
+    val seen = mutable.HashMap.empty[FingerprintInputs, Int]
+    findings.map { (json, inputs) =>
+      val occurrence = seen.getOrElse(inputs, 0)
+      seen(inputs) = occurrence + 1
+      val fingerprint = fingerprintOf(inputs, occurrence)
+      json.asObject.map { o =>
+        // keep the published field order: the fingerprint goes right after the flow
+        val fields = o.toList.flatMap { case (k, v) =>
+            if k == "flow" then List(k -> v, "fingerprint" -> fingerprint.asJson) else List(k -> v)
+        }
+        Json.fromFields(fields)
+      }.getOrElse(json)
+    }
+
+  private[atom] def fingerprintOf(inputs: FingerprintInputs, occurrence: Int): String =
+    val text =
+        s"${inputs.rule}|${inputs.function}|${inputs.path}|${inputs.apis}|$occurrence"
+    java.security.MessageDigest.getInstance("SHA-256")
+        .digest(text.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+        .map(b => f"${b & 0xff}%02x")
+        .mkString
 
   /** The note a finding carries when the index's only lower bound was an assert's check: the author
     * wrote a guard that a release build compiles out, which is worth saying in the message the

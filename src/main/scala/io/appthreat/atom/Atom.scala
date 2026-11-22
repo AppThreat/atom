@@ -1765,40 +1765,59 @@ object Atom:
           // The message first: a frontend failure a script can grep for - the
           // no-source diagnostic lives in the message, and a bare stack trace hides it.
           Left(describeFailure(exception))
-      case Success(ag) =>
-          if onlyAstCache then
-            closeCpg(ag)
-            Try(File(outputAtomFile).delete(true))
-            Right("AST cache generated successfully. Skipped CPG enhancement and slicing.")
-          else
-            for
-              _ <- storeBoms(config, ag)
-              _ <- storeAppBoundary(config, ag)
-              _ <- storeCProjectLayout(config, ag)
-              _ <- storeVendoredCode(config, ag)
-              _ <- enhanceCpg(config, ag, reusing)
-              _ <- generateSlice(config, ag, reusing)
-              _ <- PerfReporter.stage("verification.persist", "verification")(closeCpg(ag))
-            yield "Atom generation successful"
-    end match
+      case Success((ag, Some(scratch))) =>
+          // a reused memory-safety atom loaded through a scratch copy: the copy absorbs what the
+          // session writes on close, and is removed once the run is over, whatever its outcome
+          try generateFromAtom(config, ag, reusing, onlyAstCache, outputAtomFile)
+          finally
+            if !ag.graph.isClosed then Try(ag.close())
+            Try(scratch.delete(swallowIOExceptions = true))
+      case Success((ag, None)) =>
+          generateFromAtom(config, ag, reusing, onlyAstCache, outputAtomFile)
   end generateForLanguage
 
+  private def generateFromAtom(
+    config: AtomConfig,
+    ag: Cpg,
+    reusing: Boolean,
+    onlyAstCache: Boolean,
+    outputAtomFile: String
+  ): Either[String, String] =
+      if onlyAstCache then
+        closeCpg(ag)
+        Try(File(outputAtomFile).delete(true))
+        Right("AST cache generated successfully. Skipped CPG enhancement and slicing.")
+      else
+        for
+          _ <- storeBoms(config, ag)
+          _ <- storeAppBoundary(config, ag)
+          _ <- storeCProjectLayout(config, ag)
+          _ <- storeVendoredCode(config, ag)
+          _ <- enhanceCpg(config, ag, reusing)
+          _ <- generateSlice(config, ag, reusing)
+          _ <- PerfReporter.stage("verification.persist", "verification")(closeCpg(ag))
+        yield "Atom generation successful"
+
+  /** The atom this run works on, and the scratch copy it was loaded through when there is one. */
   private def getOrCreateAtom(
     language: String,
     config: AtomConfig,
     outputAtomFile: String,
     reusing: Boolean
-  ): Try[Cpg] =
+  ): Try[(Cpg, Option[File])] =
       if reusing then
         config match
-          // A reused memory-safety atom is loaded through a copy of the file: this run may run the
-          // overlay over the loaded graph, and OverflowDb persists a session's changes into the
-          // file it was loaded from on close. The copy takes those writes, so the atom the user
-          // passed stays byte-for-byte as it was, and a later reuse of the same file simply runs
-          // the overlay again. The findings still name the atom the user passed.
-          case _: AtomMemorySafetyConfig => loadExistingAtomCopy(outputAtomFile)
-          case _                         => loadExistingAtom(outputAtomFile)
-      else createNewAtom(language, config, outputAtomFile)
+          // A reused memory-safety atom is loaded through a copy of the file: this run may run
+          // the data-flow layer and the overlay over the loaded graph, and OverflowDb persists a
+          // session's changes into the file it was loaded from on close (even an unchanged
+          // graph's, so the file could not even be opened to look first). The copy takes those
+          // writes, so the atom the user passed stays byte for byte as it was, and a later reuse
+          // of the same file simply runs the overlay again. The findings still name the atom the
+          // user passed.
+          case _: AtomMemorySafetyConfig =>
+              loadExistingAtomCopy(outputAtomFile).map((copy, scratch) => copy -> Some(scratch))
+          case _ => loadExistingAtom(outputAtomFile).map(_ -> None)
+      else createNewAtom(language, config, outputAtomFile).map(_ -> None)
 
   private def shouldReuseExistingAtom(config: AtomConfig, outputAtomFile: String): Boolean =
       (config.isInstanceOf[AtomUsagesConfig] ||
@@ -1808,21 +1827,29 @@ object Atom:
           config.exportAtom || config.reuseAtom) &&
           File(outputAtomFile).exists
 
-  /** The atom file copied beside the original it loads, so this session's writes never reach the
-    * atom on disk. The copy is removed when the JVM exits; a load failure leaves the original
-    * untouched rather than deleting it.
+  /** The atom file copied to a fresh hidden name beside the original, on the same file system, and
+    * loaded from there, so this session's writes never reach the atom on disk. The caller removes
+    * the copy when the run ends; a load failure removes it at once and leaves the original
+    * untouched.
     */
-  private def loadExistingAtomCopy(outputAtomFile: String): Try[Cpg] =
+  private def loadExistingAtomCopy(outputAtomFile: String): Try[(Cpg, File)] =
     val original = File(outputAtomFile)
     Try {
-        val copy = File.newTemporaryFile(
-          "atom-memory-safety-reuse",
-          original.extension.getOrElse(".atom")
+        val copy = File(
+          java.nio.file.Files.createTempFile(original.parent.path, s".${original.name}.", ".tmp")
         )
-        copy.deleteOnExit()
-        original.copyTo(copy, overwrite = true)
+        try original.copyTo(copy, overwrite = true)
+        catch
+          case e: Throwable =>
+              copy.delete(swallowIOExceptions = true)
+              throw e
         copy
-    }.flatMap(copy => loadFromOdb(copy.pathAsString))
+    }.flatMap { copy =>
+        loadFromOdb(copy.pathAsString).map(_ -> copy).recoverWith { case e =>
+            copy.delete(swallowIOExceptions = true)
+            Failure(e)
+        }
+    }
 
   private def loadExistingAtom(outputAtomFile: String): Try[Cpg] =
       try
@@ -2355,6 +2382,20 @@ object Atom:
     }
   end applyMemorySafetyOverlay
 
+  /** The data-flow layer (REACHING_DEF edges and the rest of OssDataFlow) with the run's options. A
+    * fresh build that needs data flow runs it in [[enhanceCpg]]; a reused memory-safety atom that
+    * was built without it runs it before the overlay, whose rules read those edges.
+    */
+  private[atom] def applyDataFlowLayer(config: AtomConfig, atom: Cpg): Unit =
+      PerfReporter.stage("dataflow.OssDataFlow", "analysis") {
+          new OssDataFlow(new OssDataFlowOptions(
+            maxNumberOfDefinitions = config.maxNumDef,
+            useFluxEngine = config.useFluxEngine,
+            extraFlows = dependencySemantics(atom)
+          ))
+              .run(new LayerCreatorContext(atom))
+      }
+
   private def enhanceCpg(config: AtomConfig, atom: Cpg, reusing: Boolean): Either[String, Unit] =
       config match
         case x: AtomConfig if needsDataFlowEnhancement(x, reusing) =>
@@ -2365,14 +2406,7 @@ object Atom:
             else
               println("Generating data-flow dependencies from atom. Please wait ...")
             try
-              PerfReporter.stage("dataflow.OssDataFlow", "analysis") {
-                  new OssDataFlow(new OssDataFlowOptions(
-                    maxNumberOfDefinitions = x.maxNumDef,
-                    useFluxEngine = x.useFluxEngine,
-                    extraFlows = dependencySemantics(atom)
-                  ))
-                      .run(new LayerCreatorContext(atom))
-              }
+              applyDataFlowLayer(x, atom)
               // t-string renderer bridges - REACHING_DEF edges from a template's
               // interpolation values to a renderer call consuming that template, so `str(t"..")`
               // propagates the interpolations' taint while the direct-consumption boundary holds.

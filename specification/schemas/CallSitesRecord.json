@@ -61,6 +61,19 @@
                     "description": "C and C++ only: true for a system include (<...>); present only when true"
                 }
             },
+            "required": [
+                "file",
+                "line",
+                "col",
+                "method",
+                "module",
+                "path",
+                "kind",
+                "via",
+                "resolvedMethod",
+                "builtin",
+                "declaringModule"
+            ],
             "additionalProperties": false,
             "type": "object",
             "title": "Call Sites Record",

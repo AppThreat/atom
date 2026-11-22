@@ -177,9 +177,10 @@ cleanup releases it, all report at `medium`, while the use after a borrowed rele
 Beside the rule, the CWE, the kind, the confidence and the flow, each finding carries the
 `function` it sits in, the `purl` of the BOM component that owns its file when a located
 component (`cdx:vendored:path`, `cdx:cmake:sourceDir`) owns it, and a `fingerprint`: SHA-256
-over `rule|function|file|apis`, where `apis` names the finding's memory-operation calls. The
-line is not part of it, so the fingerprint survives edits that move the finding within its
-function, which is what lets a report match a finding across builds. In `--format sarif` the
+over the rule, the function, the file relative to the input, the finding's memory-operation
+calls and the finding's place among the findings that share those four. The line is not part
+of it, so the fingerprint survives edits that move the finding within its function, which is
+what lets a report match a finding across builds. In `--format sarif` the
 same value rides under `partialFingerprints` as `atom/memorySafety/v1`. The field list and the
 exact fingerprint recipe are published as a
 [JSON Schema](https://github.com/AppThreat/atom/blob/main/specification/schemas/MemorySafetyFinding.json).
@@ -189,13 +190,13 @@ exact fingerprint recipe are published as a
 `memory-safety --reuse-atom` works on an atom any command built. An atom that carries the
 overlay marker a memory-safety build wrote renders its findings as they are; this run's
 `--memory-api-profiles` and `--memory-api-config` are ignored with a warning, because the
-build consumed them. An atom without the marker (built by `usages`, `callsites`, or by atom
-4.0.x, which embedded the overlay without recording it) gets the overlay's passes run over the
-loaded graph, in memory, following the current run's options; the atom file on disk is not
-rewritten, so a later reuse of the same file simply runs them again. The rules read
-data-dependency facts, so an atom built without them still reports the same rules and places,
-with fewer definition rows in each flow; build the atom to reuse with `--with-data-deps` for
-flows identical to a fresh memory-safety run. Languages other than C and C++ report zero
+build consumed them. An atom without the marker (built by `usages` or `callsites`) gets the
+overlay's passes run over the loaded graph, in memory, following the current run's options,
+after the data-flow layer the rules read when the atom was built without `--with-data-deps`.
+The atom is loaded through a temporary copy beside it, removed when the command ends, so the
+atom file on disk is not rewritten and a later reuse of the same file simply runs the passes
+again. An atom built by atom 4.0.x carries the overlay's tags without the marker and is
+refused; rebuild it with the memory-safety command. Languages other than C and C++ report zero
 findings, as before.
 
 ### Findings outside the analysed directory
@@ -212,10 +213,10 @@ The instances of one template can carry the same finding, and they print it once
 are grouped by the `template` tag and position of the METHOD they sit in: the finding every
 instantiation has is one entry, with an `instances` list naming each instance's `template-args`
 (`int`, `Str`), and a finding only some instances have lists only those. Two instances' findings
-merge only when they render identically apart from the instance (rule, place, confidence,
-message and flow); findings that differ in any of these stay separate entries, while
-`function`, `purl` and `fingerprint`, which name the instance's own method, take no part in the
-comparison and the merged entry carries them from the entry it keeps. An instance without
+merge only when they render identically apart from the instance (rule, place, function,
+confidence, message and flow); findings that differ in any of these stay separate entries. The
+`function` of a finding in an instance names the template, not the instance, so the merged
+entry has one function and one fingerprint whichever instance it was kept from. An instance without
 `template-args` adds no name to the list. A finding outside an instance METHOD is printed as
 rendered, with no `instances` list.
 

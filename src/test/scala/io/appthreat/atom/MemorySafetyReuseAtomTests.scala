@@ -138,6 +138,73 @@ class MemorySafetyReuseAtomTests extends AnyWordSpec with Matchers:
           }
       }
 
+      "build the data-flow layer for an atom built without data dependencies, and leave no copy behind" in {
+          // the overlay's guard and origin facts read REACHING_DEF edges: over an atom without
+          // them the guarded copy below would be reported, where a fresh build stays silent
+          File.usingTemporaryDirectory("atom-ms-reuse-nodeps") { dir =>
+            val src = (dir / "src").createDirectory()
+            (src / "guard.c").writeText(
+              """#include <string.h>
+                |
+                |void guarded(unsigned char *buf, const unsigned char *src, int n)
+                |{
+                |    if (n > 16) return;
+                |    memcpy(buf, src, n);
+                |}
+                |
+                |void unguarded(unsigned char *buf, const unsigned char *src, int n)
+                |{
+                |    memcpy(buf, src, n);
+                |}
+                |""".stripMargin
+            )
+            val atom = dir / "plain.atom"
+            run(
+              "usages",
+              "-l",
+              "c",
+              "--no-ast-cache",
+              "-o",
+              atom.pathAsString,
+              "-s",
+              (dir / "usages.json").pathAsString,
+              src.pathAsString
+            ) shouldBe a[Right[?, ?]]
+            val freshFindings = dir / "fresh.json"
+            run(
+              "memory-safety",
+              "-l",
+              "c",
+              "--no-ast-cache",
+              "-o",
+              (dir / "fresh.atom").pathAsString,
+              "-s",
+              freshFindings.pathAsString,
+              src.pathAsString
+            ) shouldBe a[Right[?, ?]]
+            val reusedFindings = dir / "reused.json"
+            run(
+              "memory-safety",
+              "--reuse-atom",
+              "-l",
+              "c",
+              "--no-ast-cache",
+              "-o",
+              atom.pathAsString,
+              "-s",
+              reusedFindings.pathAsString,
+              src.pathAsString
+            ) shouldBe a[Right[?, ?]]
+            val fresh = findingsOf(freshFindings)
+            val freshFunctions = fresh.flatMap(_.hcursor.get[String]("function").toOption)
+            freshFunctions should contain("unguarded")
+            (freshFunctions should not).contain("guarded")
+            findingsOf(reusedFindings).map(withoutAtom) shouldBe fresh.map(withoutAtom)
+            // the scratch copy the overlay ran in is gone once the command returns
+            dir.list.map(_.name).filter(_.startsWith(".plain.atom")).toList shouldBe empty
+          }
+      }
+
       "report zero findings for a non-C reused atom, as it always did" in {
           File.usingTemporaryDirectory("atom-ms-reuse-py") { dir =>
             val src = (dir / "src").createDirectory()

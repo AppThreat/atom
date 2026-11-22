@@ -42,7 +42,7 @@
                 },
                 "function": {
                     "type": "string",
-                    "description": "The full name of the method the finding sits in; empty when there is none"
+                    "description": "The full name of the method the finding sits in, with forward slashes; for a method generated from a template instance, the template it came from, so the instances of one template report one function. Empty when there is none"
                 },
                 "purl": {
                     "type": "string",
@@ -58,7 +58,7 @@
                 "fingerprint": {
                     "type": "string",
                     "pattern": "^[0-9a-f]{64}$",
-                    "description": "SHA-256, as lowercase hex, over the UTF-8 bytes of the string rule|function|file|apis: the rule id, the rendered function and file values, and the ordered distinct names of the finding's memory-operation calls joined with , (empty when there are none). The line and the column are not part of it, so the fingerprint survives edits that move the finding within its function. In SARIF output the same value rides under partialFingerprints as atom/memorySafety/v1"
+                    "description": "SHA-256, as lowercase hex, over the UTF-8 bytes of the string rule|function|path|apis|occurrence: the rule id, the rendered function, the file relative to the analysed input without the input directory's name (absolute for a file outside it, forward slashes always), the ordered distinct names of the finding's memory-operation calls joined with , (empty when there are none), and the number of earlier findings in the output that share the other four values, counted from 0. The line and the column are not part of it, so the fingerprint survives edits that move the finding within its function. In SARIF output the same value rides under partialFingerprints as atom/memorySafety/v1"
                 },
                 "atom": {
                     "type": "string",
@@ -69,7 +69,7 @@
                         "type": "string"
                     },
                     "type": "array",
-                    "description": "The template-args of each instantiation that shares this finding, present only on a finding of a template instance that other instances share"
+                    "description": "The template-args of each instantiation that has this finding, sorted; present on every finding inside a template instance, and empty when no instance carries template-args"
                 }
             },
             "required": [

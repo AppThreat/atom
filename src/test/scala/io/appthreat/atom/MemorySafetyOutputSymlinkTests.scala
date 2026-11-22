@@ -2,15 +2,6 @@ package io.appthreat.atom
 
 import better.files.File
 import io.appthreat.c2cpg.testfixtures.{DataFlowCodeToCpgSuite, DataFlowTestCpg}
-import io.appthreat.x2cpg.passes.taggers.{
-    AllocationStatePass,
-    ExtentPass,
-    GuardPass,
-    IntegerWidthPass,
-    MemoryApiPass,
-    MemorySafetyFindingPass,
-    ValueOriginPass
-}
 import io.circe.parser.parse
 
 import java.nio.file.Files
@@ -43,15 +34,9 @@ class MemorySafetyOutputSymlinkTests extends DataFlowCodeToCpgSuite:
         "copy.c"
       )
 
-  // The overlay as Atom.applyMemorySafetyOverlay applies it, with the marker that tells
-  // runMemorySafety the tags are already on this graph, exactly as a built atom would carry them.
-  new MemoryApiPass(cpg).createAndApply()
-  new ExtentPass(cpg).createAndApply()
-  new GuardPass(cpg).createAndApply()
-  new ValueOriginPass(cpg).createAndApply()
-  new IntegerWidthPass(cpg).createAndApply()
-  new AllocationStatePass(cpg).createAndApply()
-  new MemorySafetyFindingPass(cpg).createAndApply()
+  // The overlay with the marker that tells runMemorySafety the tags are already on this graph,
+  // exactly as a built atom would carry them.
+  Atom.applyMemorySafetyOverlay(cpg, AtomMemorySafetyConfig())
   Atom.storeMemorySafetyOverlayMarker(cpg)
 
   "the memory-safety command with a link at the findings output name" should {

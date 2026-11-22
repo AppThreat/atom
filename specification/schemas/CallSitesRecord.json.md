@@ -2,7 +2,7 @@
 
 ## Definitions
 
-- <a id="definitions/CallSitesRecord"></a>**`CallSitesRecord`** *(object)*: One record per external use site of an imported module, class, function or header: where the use is, what is used and how the module was found. One entry of the callsites array of the callsites slice. Cannot contain additional properties.
+- <a id="definitions/CallSitesRecord"></a>**`CallSitesRecord`** *(object)*: One record per external use site of an imported module, class, function or header: where the use is, what is used and how the module was found. One entry of the callsites array of the callsites slice. Cannot contain additional properties. Every record carries `file`, `line`, `col`, `method`, `module`, `path`, `kind`, `via`, `resolvedMethod`, `builtin` and `declaringModule`; the others are left out when they have no value.
   - <a id="definitions/CallSitesRecord/properties/file"></a>**`file`** *(string)*: File of the use, relative to the input (for bytecode, the source file the class names).
   - <a id="definitions/CallSitesRecord/properties/line"></a>**`line`** *(integer)*: Line of the use itself.
   - <a id="definitions/CallSitesRecord/properties/col"></a>**`col`** *(integer)*: Column of the use itself, -1 where the frontend has no column.

@@ -32,22 +32,31 @@ class SliceFilesTests extends AnyFunSuite with Matchers:
       dir.list.map(_.name).toList shouldBe List("python-reachables.slices.json")
     }
 
-  test("a symbolic link at the final name is replaced, not followed"):
+  test("a symbolic link at the old predictable temporary name is never written through"):
     File.usingTemporaryDirectory("atom-slice-files") { dir =>
       val outside = dir / "notes.txt"
       outside.write("operator data")
       val target = dir / "python-usages.slices.json"
-      // The checkout, not the run, decides what sits at the name atom writes to: a link there
-      // must be replaced, and the file it points at outside the tree must keep its bytes.
-      Try(Files.createSymbolicLink(target.path, outside.path)) match
+      // The checkout, not the run, decides what sits beside the name atom writes to: the
+      // temporary used to be `.<name>.<pid>.tmp`, a name a checkout could commit as a link
+      val oldTemp = dir / s".${target.name}.${ProcessHandle.current().pid()}.tmp"
+      Try(Files.createSymbolicLink(oldTemp.path, outside.path)) match
         case Failure(e) =>
             cancel(s"this platform refuses to create a symbolic link: ${e.getMessage}")
         case Success(_) =>
             SliceFiles.writeAtomically(target)(_.writeText("""{"objectSlices":[]}"""))
             outside.contentAsString shouldBe "operator data"
-            target.isSymbolicLink shouldBe false
             target.isRegularFile shouldBe true
             target.contentAsString shouldBe """{"objectSlices":[]}"""
-            dir.children.map(_.name).toSet shouldBe Set("notes.txt", "python-usages.slices.json")
+    }
+
+  test("a slices file gets the permissions of a file created in place"):
+    File.usingTemporaryDirectory("atom-slice-perms") { dir =>
+      assume(Files.getFileStore(dir.path).supportsFileAttributeView("posix"), "POSIX only")
+      val reference = (dir / "reference.json").createFile()
+      val target    = dir / "python-usages.slices.json"
+      SliceFiles.writeAtomically(target)(_.writeText("[]"))
+      Files.getPosixFilePermissions(target.path) shouldBe
+          Files.getPosixFilePermissions(reference.path)
     }
 end SliceFilesTests

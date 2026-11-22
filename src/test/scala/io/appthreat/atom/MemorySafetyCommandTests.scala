@@ -204,8 +204,8 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
         """
         |#include <string.h>
         |
-        |/* Two findings of one rule in one function, a line apart: everything the fingerprint
-        |   names (rule, function, file, apis) is shared, so the two agree - the line is not an
+        |/* Two findings of one rule in one function, a line apart: rule, function, file and apis
+        |   are shared, so only the occurrence tells their fingerprints apart - the line is not an
         |   ingredient of the recipe. */
         |void twin_copies(unsigned char *buf, const unsigned char *src, int n)
         |{
@@ -607,8 +607,8 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
     }
 
   /** The rendered findings with the input root fixed to a directory that need not exist, so a
-    * printed file path (and the fingerprint computed over it) does not depend on where the test
-    * runs: the file prints as `proj/copy.c` under `/work/proj`.
+    * printed file path does not depend on where the test runs: the file prints as `proj/copy.c`
+    * under `/work/proj`.
     */
   private def renderUnder(inputPath: String): List[io.circe.Json] =
     val config = AtomMemorySafetyConfig()
@@ -1471,10 +1471,11 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
 
       "key the fingerprint on the rule, the function, the file and the memory operations" in {
           // the recipe is published with the schema (specification/schemas/MemorySafetyFinding.json):
-          // SHA-256 over `rule|function|file|apis`. The inputs below are hand-checked against the
-          // fixture - the rule id, the function the graph names, the file as printed under the
-          // input root this render fixes, and the memory operation the finding bounds - and the
-          // digest is computed here, independently of the renderer.
+          // SHA-256 over `rule|function|path|apis|occurrence`. The inputs below are hand-checked
+          // against the fixture - the rule id, the function the graph names, the file relative to
+          // the input (without the input directory's name the printed file carries), the memory
+          // operation the finding bounds, and the count of earlier findings sharing the rest -
+          // and the digest is computed here, independently of the renderer.
           def sha256(text: String): String =
               java.security.MessageDigest.getInstance("SHA-256")
                   .digest(text.getBytes("UTF-8")).map(b => f"${b & 0xff}%02x").mkString
@@ -1489,7 +1490,7 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
           )
           sizeParam.hcursor.get[String]("file").toOption shouldBe Some("proj/copy.c")
           sizeParam.hcursor.get[String]("fingerprint").toOption shouldBe Some(
-            sha256("MS-BOUND-001|overwrites_size_param|proj/copy.c|memcpy")
+            sha256("MS-BOUND-001|overwrites_size_param|copy.c|memcpy|0")
           )
           // the stack escape's finding is anchored at the RETURN and bounds no memory operation
           // of its own: the recipe's apis part is empty
@@ -1500,7 +1501,7 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
           escape.hcursor.get[String]("function").toOption shouldBe Some("returns_stack_array")
           escape.hcursor.get[String]("file").toOption shouldBe Some("proj/escape.c")
           escape.hcursor.get[String]("fingerprint").toOption shouldBe Some(
-            sha256("MS-ESC-001|returns_stack_array|proj/escape.c|")
+            sha256("MS-ESC-001|returns_stack_array|escape.c||0")
           )
           // the leak of leaks_at_the_implicit_end is anchored at the allocation call itself,
           // inside the cast: the finding node is a Call with a Call parent, so the apis part is
@@ -1518,12 +1519,12 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
           mallocLeak.hcursor.get[String]("file").toOption shouldBe Some("proj/alloc.c")
           mallocLeak.hcursor.get[String]("fingerprint").toOption shouldBe Some(
             sha256(
-              "MS-ALLOC-003|leaks_at_the_implicit_end|proj/alloc.c|malloc,<operator>.cast"
+              "MS-ALLOC-003|leaks_at_the_implicit_end|alloc.c|malloc,<operator>.cast|0"
             )
           )
           // the digest moves with each ingredient it names, and not with the line: the two
-          // memcpy findings in one function of twin.c agree although they sit a line apart, and
-          // the two leaks of alloc.c, one per function, do not
+          // memcpy findings in one function of twin.c differ only in their occurrence, counted in
+          // line order, and no two findings share a fingerprint
           val twins = findings
               .filter(_.hcursor.get[String]("rule").toOption.contains(
                 MemorySafetyFindingPass.RuleUnboundedCopy
@@ -1531,34 +1532,20 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
               .filter(_.hcursor.get[String]("function").toOption.contains("twin_copies"))
           twins should have size 2
           twins.map(_.hcursor.get[Int]("line").toOption.get).toSet should have size 2
-          twins.map(_.hcursor.get[String]("fingerprint").toOption.get).toSet should have size 1
-          twins.head.hcursor.get[String]("fingerprint").toOption shouldBe Some(
-            sha256("MS-BOUND-002|twin_copies|proj/twin.c|memcpy")
+          twins.sortBy(_.hcursor.get[Int]("line").toOption.get).map(
+            _.hcursor.get[String]("fingerprint").toOption.get
+          ) shouldBe List(
+            sha256("MS-BOUND-002|twin_copies|twin.c|memcpy|0"),
+            sha256("MS-BOUND-002|twin_copies|twin.c|memcpy|1")
           )
-          val leaks = findings
-              .filter(_.hcursor.get[String]("rule").toOption.contains(
-                MemorySafetyFindingPass.RuleLeak
-              ))
-          // the two leak fixtures of alloc.c are one leak per function; offsetfree.c adds two
-          // more. Whatever the count, the leaks of one function share a fingerprint and two
-          // functions never share one
-          val printsByFunction = leaks
-              .groupBy(_.hcursor.get[String]("function").toOption.get)
-              .view
-              .mapValues(fs => fs.map(_.hcursor.get[String]("fingerprint").toOption.get).toSet)
-              .toMap
-          (printsByFunction should contain).key("leaks_at_the_implicit_end")
-          printsByFunction.values.foreach(_ should have size 1)
-          printsByFunction.values.toSet should have size printsByFunction.size
-          sha256("MS-BOUND-001|f|proj/a.c|memcpy") should not be sha256(
-            "MS-BOUND-002|f|proj/a.c|memcpy"
-          )
-          sha256("MS-BOUND-001|f|proj/a.c|memcpy") should not be sha256(
-            "MS-BOUND-001|g|proj/a.c|memcpy"
-          )
-          sha256("MS-BOUND-001|f|proj/a.c|memcpy") should not be sha256(
-            "MS-BOUND-001|f|proj/b.c|memcpy"
-          )
+          val allPrints = findings.map(_.hcursor.get[String]("fingerprint").toOption.get)
+          allPrints.toSet should have size allPrints.size
+          // a checkout of the same code in a directory with another name prints other files but
+          // the same fingerprints
+          val elsewhere = renderUnder("/elsewhere/proj-1.2")
+          elsewhere.map(_.hcursor.get[String]("file").toOption.get).toSet should not be
+              findings.map(_.hcursor.get[String]("file").toOption.get).toSet
+          elsewhere.map(_.hcursor.get[String]("fingerprint").toOption.get) shouldBe allPrints
       }
 
       "carry the vendored component's purl on a finding inside its directory, and no purl elsewhere" in {

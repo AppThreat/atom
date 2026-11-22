@@ -31,7 +31,9 @@ below is normative for the `fingerprint` field and is implemented once, in
   - <a id="definitions/MemorySafetyFinding/properties/message"></a>**`message`** *(string)*:
     The offending code and the rule's message, with the notes the rule adds.
   - <a id="definitions/MemorySafetyFinding/properties/function"></a>**`function`** *(string)*:
-    The full name of the method the finding sits in; empty when there is none.
+    The full name of the method the finding sits in, with forward slashes; for a method
+    generated from a template instance, the template it came from (its `template` tag), so the
+    instances of one template report one function. Empty when there is none.
   - <a id="definitions/MemorySafetyFinding/properties/purl"></a>**`purl`** *(string)*: The
     package URL of the BOM component that owns the finding's file (`cdx:vendored:path`,
     `cdx:cmake:sourceDir`). Present only when a located component owns the file; a path named
@@ -44,22 +46,28 @@ below is normative for the `fingerprint` field and is implemented once, in
     *(string)*: SHA-256, as lowercase hex, over the UTF-8 bytes of the string
 
     ```
-    rule + "|" + function + "|" + file + "|" + apis
+    rule + "|" + function + "|" + path + "|" + apis + "|" + occurrence
     ```
 
-    where `rule` is the finding's rule id; `function` and `file` are the rendered values of
-    those two fields (`file` exactly as the `file` field prints it); and `apis` is the ordered
-    distinct names of the finding's memory-operation calls, joined with `,` and empty when
-    there are none: the finding node's own name when the node is a Call, plus the Call parent
-    the node is an argument of, read from the graph nodes and never parsed from `code` text.
-    The line and the column are not part of the recipe, so the fingerprint survives edits that
-    move the finding within its function. In SARIF output the same value rides under
-    `partialFingerprints` as `atom/memorySafety/v1`.
+    where `rule` is the finding's rule id; `function` is the rendered `function` field; `path`
+    is the finding's file relative to the analysed input, without the input directory's name
+    that the `file` field puts in front (so checkouts in differently named directories agree),
+    or the absolute path for a file outside the input, always with forward slashes; `apis` is
+    the ordered distinct names of the finding's memory-operation calls, joined with `,` and
+    empty when there are none: the finding node's own name when the node is a Call, plus the
+    Call parent the node is an argument of, read from the graph nodes and never parsed from
+    `code` text; and `occurrence` is the number, from 0, of findings before this one in the
+    output that share the other four values (findings are printed by file, line and column), so
+    two findings of one rule in one function get two fingerprints. The line and the column are
+    not part of the recipe, so the fingerprint survives edits that move the finding within its
+    function. In SARIF output the same value rides under `partialFingerprints` as
+    `atom/memorySafety/v1`.
   - <a id="definitions/MemorySafetyFinding/properties/atom"></a>**`atom`** *(string)*: The path
     of the atom file the finding was rendered from.
   - <a id="definitions/MemorySafetyFinding/properties/instances"></a>**`instances`** *(array
-    of strings)*: The `template-args` of each instantiation that shares this finding, present
-    only on a finding of a template instance that other instances share.
+    of strings)*: The `template-args` of each instantiation that has this finding, sorted;
+    present on every finding inside a template instance, and empty when no instance carries
+    `template-args`.
 - <a id="definitions/MemorySafetyFinding.FlowStep"></a>**`MemorySafetyFinding.FlowStep`**
   *(object)*: One row of the evidence chain. Cannot contain additional properties.
   - <a id="definitions/MemorySafetyFinding.FlowStep/properties/file"></a>**`file`**

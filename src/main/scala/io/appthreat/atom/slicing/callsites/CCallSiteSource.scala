@@ -114,7 +114,8 @@ final class CCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
   private def isExternal(header: String): Boolean = moduleOf(header).isDefined
 
   /** Every file's includes by the path they resolved to: the resolved path as the frontend wrote it
-    * and whether it was a system include, the tags the usages slice reads for an include's entry. A
+    * and whether it was a system include, the tags the usages slice reads for an include's entry.
+    * When a file includes one header twice, the first include decides, as in the usages slice. A
     * file that reaches a header only through another header has no entry of its own for it, which
     * is why a record's include fields can be absent.
     */
@@ -127,7 +128,7 @@ final class CCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
               (resolved, i.tag.nameExact(IncludeSystem).nonEmpty)
             )
         )
-      }.toMap
+      }.toList.reverse.toMap
 
   /** The include fields of a record whose module is a header: the file the include of that header
     * in the record's own file resolved to, and `true` only for a system include, both left out when

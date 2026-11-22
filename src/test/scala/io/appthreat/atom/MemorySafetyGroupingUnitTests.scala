@@ -24,6 +24,10 @@ class MemorySafetyGroupingUnitTests extends AnyWordSpec with Matchers:
   private def instance(args: String) =
       Some(MemorySafetyCommands.TemplateInstance("Box.get", 3, 1, args))
 
+  /** Groups findings that carry no extra value, the way the command groups them. */
+  private def group(rendered: List[(Json, Option[MemorySafetyCommands.TemplateInstance])]) =
+      MemorySafetyCommands.groupTemplateInstances(rendered.map((j, i) => (j, i, ()))).map(_._1)
+
   private def instancesOf(json: Json): Option[List[String]] =
       json.hcursor.get[List[String]]("instances").toOption
 
@@ -33,14 +37,14 @@ class MemorySafetyGroupingUnitTests extends AnyWordSpec with Matchers:
   "the finding grouping" should {
 
       "print a finding every instance has once, naming each instance" in {
-          val grouped = MemorySafetyCommands.groupTemplateInstances(
+          val grouped = group(
             List(finding("high") -> instance("int"), finding("high") -> instance("char"))
           )
           grouped.map(instancesOf) shouldBe List(Some(List("char", "int")))
       }
 
       "keep findings that differ in confidence apart" in {
-          val grouped = MemorySafetyCommands.groupTemplateInstances(
+          val grouped = group(
             List(finding("medium") -> instance("int"), finding("high") -> instance("char"))
           )
           grouped.map(g => (confidenceOf(g), instancesOf(g))) shouldBe List(
@@ -50,7 +54,7 @@ class MemorySafetyGroupingUnitTests extends AnyWordSpec with Matchers:
       }
 
       "keep findings whose flows differ apart" in {
-          val grouped = MemorySafetyCommands.groupTemplateInstances(
+          val grouped = group(
             List(
               finding("high", flow = "p") -> instance("int"),
               finding("high", flow = "q") -> instance("char")
@@ -60,42 +64,74 @@ class MemorySafetyGroupingUnitTests extends AnyWordSpec with Matchers:
       }
 
       "name no instance for an instance without arguments" in {
-          val grouped = MemorySafetyCommands.groupTemplateInstances(
+          val grouped = group(
             List(finding("high") -> instance(""), finding("high") -> instance("int"))
           )
           grouped.map(instancesOf) shouldBe List(Some(List("int")))
       }
 
-      "merge instances whose findings differ only in function, purl and fingerprint" in {
-          // those three name the instance's own method and the component its file belongs to, so
-          // they are not compared: two instances of one template with otherwise identical
-          // findings print one entry, carrying the fields of the entry kept (the first), while
-          // the instances list still names both
-          def templated(function: String, purl: String, fingerprint: String) =
-              finding("high").deepMerge(
-                Json.obj(
-                  "function"    -> function.asJson,
-                  "purl"        -> purl.asJson,
-                  "fingerprint" -> fingerprint.asJson
-                )
-              )
+      "keep the extra value of the first finding of a group" in {
           val grouped = MemorySafetyCommands.groupTemplateInstances(
             List(
-              templated("Box<int>.get", "", "aa")                           -> instance("int"),
-              templated("Box<char>.get", "pkg:generic/vendlib@1.2.3", "bb") -> instance("char")
+              (finding("high"), instance("int"), "first"),
+              (finding("high"), instance("char"), "second")
             )
           )
-          grouped should have size 1
-          grouped.head.hcursor.get[String]("function").toOption shouldBe Some("Box<int>.get")
-          grouped.head.hcursor.get[String]("fingerprint").toOption shouldBe Some("aa")
-          instancesOf(grouped.head) shouldBe Some(List("char", "int"))
+          grouped.map(_._2) shouldBe List("first")
       }
 
       "print findings outside a template as rendered, each on its own" in {
           val plain = finding("high")
           val grouped =
-              MemorySafetyCommands.groupTemplateInstances(List(plain -> None, plain -> None))
+              group(List(plain -> None, plain -> None))
           grouped shouldBe List(plain, plain)
+      }
+  }
+
+  "the finding fingerprint" should {
+
+      def inputs(function: String = "copy", path: String = "src/a.c") =
+          MemorySafetyCommands.FingerprintInputs("MS-BOUND-002", function, path, "memcpy")
+
+      def sha256(text: String): String =
+          java.security.MessageDigest.getInstance("SHA-256")
+              .digest(text.getBytes("UTF-8"))
+              .map(b => f"${b & 0xff}%02x")
+              .mkString
+
+      def fingerprintOf(json: Json): String =
+          json.hcursor.get[String]("fingerprint").getOrElse("")
+
+      "hash rule, function, path, apis and the occurrence among findings sharing them" in {
+          val fingerprinted = MemorySafetyCommands.withFingerprints(
+            List(
+              finding("high", line = 7)  -> inputs(),
+              finding("high", line = 9)  -> inputs(),
+              finding("high", line = 12) -> inputs(function = "other")
+            )
+          )
+          fingerprinted.map(fingerprintOf) shouldBe List(
+            sha256("MS-BOUND-002|copy|src/a.c|memcpy|0"),
+            sha256("MS-BOUND-002|copy|src/a.c|memcpy|1"),
+            sha256("MS-BOUND-002|other|src/a.c|memcpy|0")
+          )
+      }
+
+      "place the fingerprint right after the flow" in {
+          val fingerprinted =
+              MemorySafetyCommands.withFingerprints(List(finding("high") -> inputs()))
+          fingerprinted.head.asObject.map(_.keys.toList) shouldBe Some(
+            List(
+              "rule",
+              "file",
+              "line",
+              "column",
+              "confidence",
+              "message",
+              "flow",
+              "fingerprint"
+            )
+          )
       }
   }
 end MemorySafetyGroupingUnitTests
