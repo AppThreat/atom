@@ -1,0 +1,41 @@
+README.md
+  s_176e793652cadb::t_b42517b2e5ca6d 186,230
+docs/docs/cli.md
+  s_176e793652cadb::t_bfe8aca857fb55 62,106,187-200
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_7afdebcf182184::t_4a167785ec2de1 791-793,1067-1068,1429,1462,1780,1792-1800,1811-1826,2303-2357,2435
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_7afdebcf182184::t_3c4fa9c91b2373 52,57-63,67-68,89-106,108-110,195-197,204-213,271-272,316,318,326-327
+src/main/scala/io/appthreat/atom/MemorySafetySarif.scala
+  s_7afdebcf182184::t_cdb8887f2b106b 111-115
+src/test/scala/io/appthreat/atom/MemorySafetyCommandTests.scala
+  s_7afdebcf182184::t_3512683e48a445 1437-1451,1453-1457,1530
+src/test/scala/io/appthreat/atom/MemorySafetyGroupingUnitTests.scala
+  s_7afdebcf182184::t_65dce60309a82a 84
+src/test/scala/io/appthreat/atom/MemorySafetyReuseAtomTests.scala
+  s_7afdebcf182184::t_e7bd0f60adce15 1-245
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ea232b1b0ab7c9be96173eaf7f707b33fc5e9646",
+  "prompts": {},
+  "sessions": {
+    "s_176e793652cadb": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_fd474a86-6a93-4254-931d-1cbc54ea0216",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    },
+    "s_7afdebcf182184": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "sess_c8af1a80-6dae-48aa-9140-0ea5633e29af",
+        "model": "GLM-5.3"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
