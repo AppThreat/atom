@@ -764,8 +764,8 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
 
   "reachables for c" should {
       "emit the argv flow into an undeclared library call as the only entry" in {
-          // RELEASE ORDERING: the count below is calibrated against chen 4.0.1 (c2cpg_3 4.0.1 from
-          // the local ivy repository, built from clean chen main 20162e8a). chen is consumed at an
+          // RELEASE ORDERING: the count below is calibrated against chen 4.0.5 (c2cpg_3 4.0.5 from
+          // the local ivy repository, built from chen ecf94b36). chen is consumed at an
           // exact version, so chen must be published BEFORE atom's CI runs this - a clean machine
           // resolving the previously published chen fails this fixture. The gate reads the running
           // build the way `atom --version` prints it, so a different chen cancels with re-pin
