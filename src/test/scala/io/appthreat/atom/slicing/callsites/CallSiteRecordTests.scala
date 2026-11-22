@@ -145,6 +145,24 @@ class CallSiteRecordTests extends AnyWordSpec with Matchers:
               include(""""declaringModule":"","purl":"pkg:npm/%40nestjs/common@10.0.0"}""")
       }
 
+      "write a header's resolved path and system flag after the purl" in {
+          // a C record whose file includes the header itself (CCallSiteSource)
+          val header = base.copy(
+            module = "lib.h",
+            kind = "call",
+            via = "binding",
+            resolvedMethod = "lib_func",
+            resolvedPath = Some("/opt/externlib/libdir/lib.h"),
+            isSystem = Some(true)
+          )
+          ProgramCallSites(List(header)).toJson shouldBe
+              """{"callsites":[{"file":"src/cats.ts","line":14,"col":2,""" +
+              """"method":"src/cats.ts::program:CatsController:findOne",""" +
+              """"module":"lib.h","path":"Get","kind":"call","via":"binding",""" +
+              """"resolvedMethod":"lib_func","builtin":false,"declaringModule":"",""" +
+              """"resolvedPath":"/opt/externlib/libdir/lib.h","isSystem":true}]}"""
+      }
+
       "write the bytecode metadata after the records, its fields in one order" in {
           val metadata = CallSitesMetadata(List("me.app"), false, "jar-manifest", 0, 0, "source", 1)
           ProgramCallSites(Nil, Some(metadata)).toJson shouldBe
