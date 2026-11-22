@@ -593,8 +593,9 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
   new IntegerWidthPass(cpg).createAndApply()
   new AllocationStatePass(cpg).createAndApply()
   new MemorySafetyFindingPass(cpg).createAndApply()
-  // The pipeline writes this alongside the overlay (atom#397); without it the command refuses to
-  // render a C graph, since missing tags and a finding-free program look alike.
+  // The pipeline writes this alongside the overlay (atom#397); it is what tells runMemorySafety
+  // the tags are already on this graph, so it renders them instead of running the overlay again
+  // over the graph the fixture just tagged.
   Atom.storeMemorySafetyOverlayMarker(cpg)
 
   private def render(config: AtomMemorySafetyConfig): Either[String, List[io.circe.Json]] =
@@ -1501,6 +1502,25 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
           escape.hcursor.get[String]("fingerprint").toOption shouldBe Some(
             sha256("MS-ESC-001|returns_stack_array|proj/escape.c|")
           )
+          // the leak of leaks_at_the_implicit_end is anchored at the allocation call itself,
+          // inside the cast: the finding node is a Call with a Call parent, so the apis part is
+          // the node's own name first and the call it is an argument of second - the digest is
+          // computed over exactly that order
+          val mallocLeak = findings
+              .find(f =>
+                  f.hcursor.get[String]("rule").toOption.contains(
+                    MemorySafetyFindingPass.RuleLeak
+                  ) &&
+                      f.hcursor.get[String]("function").toOption.contains(
+                        "leaks_at_the_implicit_end"
+                      )
+              ).get
+          mallocLeak.hcursor.get[String]("file").toOption shouldBe Some("proj/alloc.c")
+          mallocLeak.hcursor.get[String]("fingerprint").toOption shouldBe Some(
+            sha256(
+              "MS-ALLOC-003|leaks_at_the_implicit_end|proj/alloc.c|malloc,<operator>.cast"
+            )
+          )
           // the digest moves with each ingredient it names, and not with the line: the two
           // memcpy findings in one function of twin.c agree although they sit a line apart, and
           // the two leaks of alloc.c, one per function, do not
@@ -1605,6 +1625,60 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
                   )
                   inProject should not be empty
                   inProject.foreach { f =>
+                      f.hcursor.downField("purl").focus.isEmpty shouldBe true
+                  }
+            end match
+          }
+      }
+
+      "omit purl on a vendored finding when only the --external-paths pattern names the file" in {
+          // the pattern marks the directory vendored the same way, but no component owns it, so
+          // there is no purl to name: the field is never written empty, in the project's files
+          // or in the vendored one
+          File.usingTemporaryDirectory("atom-ms-pattern") { dir =>
+            val src  = (dir / "src").createDirectory()
+            val vend = (src / "third_party" / "vend").createDirectories()
+            (vend / "vend.c").writeText(
+              """#include <string.h>
+                |void vend_copy(unsigned char *buf, const unsigned char *src, int n)
+                |{
+                |    memcpy(buf, src, n);
+                |}
+                |""".stripMargin
+            )
+            (src / "main.c").writeText(
+              """#include <string.h>
+                |void project_copy(unsigned char *buf, const unsigned char *src, int n)
+                |{
+                |    memcpy(buf, src, n);
+                |}
+                |""".stripMargin
+            )
+            val findings = dir / "findings.json"
+            Atom.run(
+              Array(
+                "memory-safety",
+                "-l",
+                "c",
+                "--no-ast-cache",
+                "--external-paths",
+                "third_party",
+                "-o",
+                (dir / "out.atom").pathAsString,
+                "-s",
+                findings.pathAsString,
+                src.pathAsString
+              )
+            ) match
+              case Left(error) => fail(s"the memory-safety run failed: $error")
+              case Right(_) =>
+                  val parsed = parse(findings.contentAsString).toOption
+                      .flatMap(_.asArray).toList.flatten
+                  val inVendored = parsed.filter(
+                    _.hcursor.get[String]("file").toOption.exists(_.contains("third_party"))
+                  )
+                  inVendored should not be empty
+                  parsed.foreach { f =>
                       f.hcursor.downField("purl").focus.isEmpty shouldBe true
                   }
             end match
