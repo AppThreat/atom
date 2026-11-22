@@ -59,7 +59,7 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
   --with-data-deps         generate the atom with data-dependencies - defaults to `false`
   --remove-atom            do not persist the atom file - defaults to `false`
   -x, --export-atom        export the atom file with data-dependencies to graphml - defaults to `false`
-  --reuse-atom             reuse existing atom file - defaults to `false`. The memory-safety command reuses only an atom that a memory-safety build wrote; any other atom carries no memory-safety overlay tags and the command reports that instead of zero findings.
+  --reuse-atom             reuse existing atom file - defaults to `false`. The memory-safety command reuses an atom any command built: when the atom carries no memory-safety overlay tags, the overlay runs over the loaded graph in memory and the atom file itself is not changed.
   --export-dir <value>     export directory. Default: atom-exports
   --export-format <value>  export format graphml or dot. Default: graphml
   --config <value>         path to a JSON config file with frontend options and settings for the export and algorithms commands. An empty file sets nothing.
@@ -103,7 +103,7 @@ Extract reachable data-flow slices based on automated framework tags
   --include-crypto         includes crypto library flows - defaults to false.
   --profile <value>        reduce false positives with a flow-filtering profile: appsec, generic. Defaults to generic (no extra filtering).
 Command: memory-safety [options]
-Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF. The overlay tags are written only by this command, so --reuse-atom works only on an atom a memory-safety build wrote.
+Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF. With --reuse-atom the overlay runs over the loaded graph when the reused atom carries no overlay tags; the atom file itself is not changed.
   --min-confidence <value>
                            drop findings below this confidence: high, medium or low. Defaults to keeping all.
   --format <value>         output format: json or sarif (SARIF 2.1.0). Default: json.
@@ -174,6 +174,31 @@ a destroy may not have reached, and a block stored into storage that outlives a 
 cleanup releases it, all report at `medium`, while the use after a borrowed release reports at
 `low`. The leak rule reports at `low`.
 
+Beside the rule, the CWE, the kind, the confidence and the flow, each finding carries the
+`function` it sits in, the `purl` of the BOM component that owns its file when a located
+component (`cdx:vendored:path`, `cdx:cmake:sourceDir`) owns it, and a `fingerprint`: SHA-256
+over the rule, the function, the file relative to the input, the finding's memory-operation
+calls and the finding's place among the findings that share those four. The line is not part
+of it, so the fingerprint survives edits that move the finding within its function, which is
+what lets a report match a finding across builds. In `--format sarif` the
+same value rides under `partialFingerprints` as `atom/memorySafety/v1`. The field list and the
+exact fingerprint recipe are published as a
+[JSON Schema](https://github.com/AppThreat/atom/blob/main/specification/schemas/MemorySafetyFinding.json).
+
+### Reusing an atom
+
+`memory-safety --reuse-atom` works on an atom any command built. An atom that carries the
+overlay marker a memory-safety build wrote renders its findings as they are; this run's
+`--memory-api-profiles` and `--memory-api-config` are ignored with a warning, because the
+build consumed them. An atom without the marker (built by `usages` or `callsites`) gets the
+overlay's passes run over the loaded graph, in memory, following the current run's options,
+after the data-flow layer the rules read when the atom was built without `--with-data-deps`.
+The atom is loaded through a temporary copy beside it, removed when the command ends, so the
+atom file on disk is not rewritten and a later reuse of the same file simply runs the passes
+again. An atom built by atom 4.0.x carries the overlay's tags without the marker and is
+refused; rebuild it with the memory-safety command. Languages other than C and C++ report zero
+findings, as before.
+
 ### Findings outside the analysed directory
 
 A finding is located in the file of the code it points at. Some of that code is not the project's: a macro or inline function from a system header (`_ctype.h`, `sys/_types/_fd_def.h` in the macOS SDK, a header under `/usr/include`, an MSVC or Homebrew include directory) is found through an include path, and its index or size contract is the platform's to keep. The command decides by the file's path, not by the name of any SDK: a file under the analysed directory is project code, even when an include path also covers it, and a file anywhere else is not.
@@ -188,8 +213,10 @@ The instances of one template can carry the same finding, and they print it once
 are grouped by the `template` tag and position of the METHOD they sit in: the finding every
 instantiation has is one entry, with an `instances` list naming each instance's `template-args`
 (`int`, `Str`), and a finding only some instances have lists only those. Two instances' findings
-merge only when they render identically apart from the instance (rule, place, confidence,
-message and flow); findings that differ in any of these stay separate entries. An instance without
+merge only when they render identically apart from the instance (rule, place, function,
+confidence, message and flow); findings that differ in any of these stay separate entries. The
+`function` of a finding in an instance names the template, not the instance, so the merged
+entry has one function and one fingerprint whichever instance it was kept from. An instance without
 `template-args` adds no name to the list. A finding outside an instance METHOD is printed as
 rendered, with no `instances` list.
 

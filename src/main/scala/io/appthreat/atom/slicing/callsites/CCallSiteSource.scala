@@ -20,6 +20,10 @@ import scala.util.Try
   *   - an identifier that reads a global or an enumerator, and a method ref for a function named as
   *     a value, carry `ref-declared-in`;
   *   - a `p->f` member access through a header's struct or class carries `type-declared-in`;
+  *   - an `#include`'s IMPORT node carries the file the include resolved to and whether it was a
+  *     system include (`include-resolved-path`, `include-system`), the same tags the usages slice
+  *     reads for an include's entry; a record whose module is that header carries them as
+  *     `resolvedPath` and `isSystem`;
   *   - a macro invocation is an INLINED call whose method full name spells its definition
   *     (`<file>:<line>:<last line>:<NAME>:<params>`), and names every macro its expansion invokes
   *     besides its own in `nested-macro` tags. Every node of an expansion carries the invocation's
@@ -49,6 +53,8 @@ final class CCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
   private val CalleeDeclaredIn = "callee-declared-in"
   private val RefDeclaredIn    = "ref-declared-in"
   private val TypeDeclaredIn   = "type-declared-in"
+  private val IncludeResolved  = "include-resolved-path"
+  private val IncludeSystem    = "include-system"
   private val NestedMacro      = "nested-macro"
   private val MacroOrigin      = "macro-origin"
   private val MacroInvocation  = "macro-invocation"
@@ -91,16 +97,50 @@ final class CCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
         .getOrElse(header)
 
   /** What a declaring or defining header is to the project: `None` for its own (under the root or a
-    * build directory, unless the vendored pattern names it), else the module and builtin flag.
+    * build directory, unless the vendored pattern names it), else the module, the builtin flag and
+    * whether the module is the header itself. A header outside the project spells the module; the
+    * vendored code a pattern or a BOM component names is a directory or a component name, so its
+    * records carry no include fields.
     */
-  private def moduleOf(header: String): Option[(String, Boolean)] =
+  private def moduleOf(header: String): Option[(String, Boolean, Boolean)] =
       if header.isEmpty || header.startsWith("<") || !Paths.get(header).isAbsolute then None
       else if CHeaders.under(header, roots) then
-        vendored.of(projectRelative(header)).map(v => v.module -> false)
+        vendored.of(projectRelative(header)).map(v => (v.module, false, false))
       else if CHeaders.under(header, buildDirs) then None
-      else Some(CHeaders.external(header))
+      else
+        val (module, builtin) = CHeaders.external(header)
+        Some((module, builtin, true))
 
   private def isExternal(header: String): Boolean = moduleOf(header).isDefined
+
+  /** Every file's includes by the path they resolved to: the resolved path as the frontend wrote it
+    * and whether it was a system include, the tags the usages slice reads for an include's entry.
+    * When a file includes one header twice, the first include decides, as in the usages slice. A
+    * file that reaches a header only through another header has no entry of its own for it, which
+    * is why a record's include fields can be absent.
+    */
+  private lazy val includesByFileAndPath: Map[(String, String), (String, Boolean)] =
+      atom.imports.flatMap { i =>
+        val file = i.file.map(_.name).headOption.getOrElse("")
+        i.tag.nameExact(IncludeResolved).value.headOption.filter(_.nonEmpty).map(resolved =>
+            (
+              (CHeaders.slashes(file), CHeaders.slashes(resolved)),
+              (resolved, i.tag.nameExact(IncludeSystem).nonEmpty)
+            )
+        )
+      }.toList.reverse.toMap
+
+  /** The include fields of a record whose module is a header: the file the include of that header
+    * in the record's own file resolved to, and `true` only for a system include, both left out when
+    * the file does not include the header itself. The header path, which the record's declaring
+    * tags spell, is how the file's own include is found: it is the very path that include resolved
+    * to, whatever spelling the include was written with.
+    */
+  private def includeFields(file: String, header: String): (Option[String], Option[Boolean]) =
+      includesByFileAndPath
+          .get((CHeaders.slashes(file), CHeaders.slashes(header)))
+          .map((resolved, system) => Some(resolved) -> Option.when(system)(true))
+          .getOrElse((None, None))
 
   // ------------------------------------------------------------------------------ the macro context
   /** The file of the method a node sits in, which with its index names a macro invocation. */
@@ -218,11 +258,13 @@ final class CCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
         m.tag.nameExact(MacroUse).value.foreach {
             case s"$name@$line:$col@$file" =>
                 for
-                  (module, builtin) <- moduleOf(file)
-                  at                <- line.toIntOption
+                  (module, builtin, isHeader) <- moduleOf(file)
+                  at                          <- line.toIntOption
                   if at > 0 && isProjectFile(m.filename)
                 do
                   val enclosing = methodAt(m.filename, at).getOrElse(m)
+                  val (resolvedPath, isSystem) =
+                      if isHeader then includeFields(m.filename, file) else (None, None)
                   collector.add(m) {
                       CallSiteRecord(
                         m.filename,
@@ -234,7 +276,9 @@ final class CCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
                         "macro",
                         "macro",
                         s"$file:$name",
-                        builtin = builtin
+                        builtin = builtin,
+                        resolvedPath = resolvedPath,
+                        isSystem = isSystem
                       )
                   }
             case _ =>
@@ -254,42 +298,47 @@ final class CCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
   private def invocationCalls(): Unit =
       atom.call.dispatchType(DispatchTypes.INLINED).foreach { c =>
           MacroFullName.unapplySeq(c.methodFullName) match
-            case Some(Seq(file, _, _, name, _)) =>
+            case Some(Seq(file, _, _, _, _)) =>
                 // the macros this invocation's expansion names are uses at its own site,
                 // whatever file the invocation's own macro is defined in
                 c.tag.nameExact(NestedMacro).value.foreach {
-                    case s"$nested@$nestedFile" =>
-                        moduleOf(nestedFile).foreach((m, b) => addMacroRecord(c, m, nested, b))
-                    case _ =>
+                    case s"$nested@$nestedFile" => addMacroRecord(c, nestedFile, nested)
+                    case _                      =>
                 }
-                moduleOf(file).foreach((module, builtin) =>
-                    addMacroRecord(c, module, c.name, builtin)
-                )
+                addMacroRecord(c, file, c.name)
             case _ =>
       }
 
-  private def addMacroRecord(c: Call, module: String, member: String, builtin: Boolean): Unit =
-      methodOf(c) match
-        case None => collector.skip(c)
-        case Some(method) =>
-            val file = method.filename
-            val line = c.lineNumber.map(_.intValue).getOrElse(-1)
-            if !isProjectFile(file) || line <= 0 then collector.skip(c)
-            else
-              collector.add(c) {
-                  CallSiteRecord(
-                    file,
-                    line,
-                    c.columnNumber.getOrElse(-1),
-                    method.fullName,
-                    module,
-                    member,
-                    "macro",
-                    "macro",
-                    c.methodFullName,
-                    builtin = builtin
-                  )
-              }
+  private def addMacroRecord(c: Call, header: String, member: String): Unit =
+      moduleOf(header) match
+        case None =>
+        case Some((module, builtin, isHeader)) =>
+            methodOf(c) match
+              case None => collector.skip(c)
+              case Some(method) =>
+                  val file = method.filename
+                  val line = c.lineNumber.map(_.intValue).getOrElse(-1)
+                  if !isProjectFile(file) || line <= 0 then collector.skip(c)
+                  else
+                    val (resolvedPath, isSystem) =
+                        if isHeader then includeFields(file, header) else (None, None)
+                    collector.add(c) {
+                        CallSiteRecord(
+                          file,
+                          line,
+                          c.columnNumber.getOrElse(-1),
+                          method.fullName,
+                          module,
+                          member,
+                          "macro",
+                          "macro",
+                          c.methodFullName,
+                          builtin = builtin,
+                          resolvedPath = resolvedPath,
+                          isSystem = isSystem
+                        )
+                    }
+                  end if
 
   /** One record for `node` at the place its text was written, when that is a project file. */
   private def record(
@@ -303,12 +352,14 @@ final class CCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
     resolved: String
   ): Unit =
       (moduleOf(header), writtenAt(node, line), methodOf(node)) match
-        case (Some((module, builtin)), Some((file, at)), Some(method))
+        case (Some((module, builtin, isHeader)), Some((file, at)), Some(method))
             if isProjectFile(file) && at > 0 =>
             // inside a project macro's body the column is the invocation's, not the spelling's
             val col = if file == methodFile(node) && line.exists(_.intValue == at) then
               column.getOrElse(Integer.valueOf(-1))
             else Integer.valueOf(-1)
+            val (resolvedPath, isSystem) =
+                if isHeader then includeFields(file, header) else (None, None)
             collector.add(node) {
                 CallSiteRecord(
                   file,
@@ -322,7 +373,9 @@ final class CCallSiteSource(atom: Cpg, externalPaths: Option[String] = None)
                   kind,
                   via,
                   resolved,
-                  builtin = builtin
+                  builtin = builtin,
+                  resolvedPath = resolvedPath,
+                  isSystem = isSystem
                 )
             }
         case _ => collector.skip(node)

@@ -15,7 +15,9 @@ read atom's output need to know.
 
 - **`callsites`** writes one record per use of an imported module, class, function or header, at
   the position of the use: `file`, `line`, `col`, `method`, `module`, `path`, `kind`, `via`,
-  `resolvedMethod`, `builtin`, `declaringModule` and, when known, `purl`. It covers JavaScript and
+  `resolvedMethod`, `builtin`, `declaringModule` and, when known, `purl`; a C or C++ record whose
+  module is a header also carries `resolvedPath` and `isSystem`, saying where the include of that
+  header resolved (AppThreat/atom#399). It covers JavaScript and
   TypeScript, Python, Java source, PHP, Ruby, JVM bytecode (jars, class directories, DEX and APKs)
   and C and C++. Package URLs come from a CycloneDX BOM, `java-classpath.json`, Composer's
   `installed.json`, `Gemfile.lock` and installed gems, or the local Gradle and Maven caches,

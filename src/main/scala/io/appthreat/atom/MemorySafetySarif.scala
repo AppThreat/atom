@@ -13,6 +13,11 @@ object MemorySafetySarif:
   private val SchemaUri =
       "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json"
 
+  /** The key each result's fingerprint rides under in `partialFingerprints`: one tool, one key,
+    * versioned so a future recipe can travel beside this one.
+    */
+  val FingerprintKey = "atom/memorySafety/v1"
+
   /** atom's version, from its jar's manifest; None when run from classes. */
   lazy val toolVersion: Option[String] =
       Option(getClass.getPackage).flatMap(p => Option(p.getImplementationVersion))
@@ -84,6 +89,11 @@ object MemorySafetySarif:
     val severity   = stringField(finding, "severity").getOrElse("")
     val confidence = stringField(finding, "confidence").getOrElse("")
     val location   = physicalLocation(file, intField(finding, "line"), intField(finding, "column"))
+    // the finding's fingerprint as a partial fingerprint, under this tool's key, so a SARIF
+    // reader matches results across runs the way the JSON format's consumers do
+    val partialFingerprints = stringField(finding, "fingerprint").filter(_.nonEmpty).map { fp =>
+        "partialFingerprints" -> Json.obj(FingerprintKey -> fp.asJson)
+    }.toList
     val flow = finding.hcursor.downField("flow").as[List[Json]].getOrElse(Nil).map { step =>
       val text    = stringField(step, "code").getOrElse("")
       val role    = stringField(step, "role").getOrElse("")
@@ -98,13 +108,12 @@ object MemorySafetySarif:
       Json.obj("location" -> stepLocation)
     }
     val base = List(
-      "ruleId"     -> ruleId.asJson,
-      "ruleIndex"  -> ruleIndex.getOrElse(ruleId, -1).asJson,
-      "level"      -> levelOf(severity).asJson,
-      "message"    -> Json.obj("text" -> stringField(finding, "message").getOrElse(ruleId).asJson),
-      "locations"  -> Json.arr(location),
-      "properties" -> Json.obj(properties(finding)*)
-    )
+      "ruleId"    -> ruleId.asJson,
+      "ruleIndex" -> ruleIndex.getOrElse(ruleId, -1).asJson,
+      "level"     -> levelOf(severity).asJson,
+      "message"   -> Json.obj("text" -> stringField(finding, "message").getOrElse(ruleId).asJson),
+      "locations" -> Json.arr(location)
+    ) ++ partialFingerprints :+ ("properties" -> Json.obj(properties(finding)*))
     val withFlow =
         if flow.isEmpty then base
         else

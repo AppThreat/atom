@@ -16,8 +16,12 @@ package io.appthreat.atom.slicing.callsites
   * `builtin` marks uses of the language's standard library, and `declaringModule` carries the
   * module of the class that declares the callee when it differs from the receiver's static type
   * (decision 0001, P2). `purl` carries the distribution the module maps to when atom knows one (a
-  * BOM's ImportedModules or the python-deps index); it is left out of the JSON while empty. These
-  * are new in v4; atom and cdxgen change together, so there is no schema versioning.
+  * BOM's ImportedModules or the python-deps index); it is left out of the JSON while empty. A C or
+  * C++ record whose module is a header also carries what the include that brought it says:
+  * `resolvedPath` the file the include resolved to and `isSystem` `true` for a system include, both
+  * left out when the record's own file did not include the header itself, and never an empty string
+  * (the same tags the usages slice's include entries read). These are new in v4; atom and cdxgen
+  * change together, so there is no schema versioning.
   */
 final case class CallSiteRecord(
   file: String,
@@ -31,17 +35,28 @@ final case class CallSiteRecord(
   resolvedMethod: String,
   builtin: Boolean = false,
   declaringModule: String = "",
-  purl: String = ""
+  purl: String = "",
+  resolvedPath: Option[String] = None,
+  isSystem: Option[Boolean] = None
 )
 
 object CallSiteRecord:
 
   implicit val encoder: io.circe.Encoder[CallSiteRecord] =
       io.circe.generic.semiauto.deriveEncoder[CallSiteRecord].mapJsonObject { json =>
-          // an absent purl says "no mapping", not "the empty purl"
-          if json("purl").exists(_.isNull) || json("purl").exists(_.asString.exists(_.isEmpty))
-          then json.remove("purl")
-          else json
+        // an absent purl says "no mapping", not "the empty purl"; an absent resolvedPath and
+        // isSystem say the record's own file did not include the header itself
+        val withoutPurl =
+            if json("purl").exists(_.isNull) || json("purl").exists(_.asString.exists(_.isEmpty))
+            then json.remove("purl")
+            else json
+        val withoutPath =
+            if withoutPurl("resolvedPath").exists(v => v.isNull || v.asString.exists(_.isEmpty))
+            then withoutPurl.remove("resolvedPath")
+            else withoutPurl
+        if withoutPath("isSystem").exists(v => v.isNull || v.asBoolean.contains(false))
+        then withoutPath.remove("isSystem")
+        else withoutPath
       }
 
   /** The most specific kind wins when one use site (a position and a module) carries several
@@ -71,7 +86,9 @@ object CallSiteRecord:
     * and the order a source walks the graph in (node ids, completion order) cannot reach the
     * output. The rest is a rule, not a preference: an empty `method` (text no method owns) before a
     * named one, then the names in order; `false` before `true`; an empty `declaringModule` and
-    * `purl` before a filled one.
+    * `purl` before a filled one. `resolvedPath` and `isSystem` take no part: both derive from the
+    * module, which the key already contains, so they cannot order two records of one site
+    * differently.
     */
   private def winnerKey(r: CallSiteRecord): (
     Int,

@@ -183,7 +183,7 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
   --with-data-deps         generate the atom with data-dependencies - defaults to `false`
   --remove-atom            do not persist the atom file - defaults to `false`
   -x, --export-atom        export the atom file with data-dependencies to graphml - defaults to `false`
-  --reuse-atom             reuse existing atom file - defaults to `false`. The memory-safety command reuses only an atom that a memory-safety build wrote; any other atom carries no memory-safety overlay tags and the command reports that instead of zero findings.
+  --reuse-atom             reuse existing atom file - defaults to `false`. The memory-safety command reuses an atom any command built: when the atom carries no memory-safety overlay tags, the overlay runs over the loaded graph in memory and the atom file itself is not changed.
   --export-dir <value>     export directory. Default: atom-exports
   --export-format <value>  export format graphml or dot. Default: graphml
   --config <value>         path to a JSON config file with frontend options and settings for the export and algorithms commands. An empty file sets nothing.
@@ -227,7 +227,7 @@ Extract reachable data-flow slices based on automated framework tags
   --include-crypto         includes crypto library flows - defaults to false.
   --profile <value>        reduce false positives with a flow-filtering profile: appsec, generic. Defaults to generic (no extra filtering).
 Command: memory-safety [options]
-Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF. The overlay tags are written only by this command, so --reuse-atom works only on an atom a memory-safety build wrote.
+Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF. With --reuse-atom the overlay runs over the loaded graph when the reused atom carries no overlay tags; the atom file itself is not changed.
   --min-confidence <value>
                            drop findings below this confidence: high, medium or low. Defaults to keeping all.
   --format <value>         output format: json or sarif (SARIF 2.1.0). Default: json.

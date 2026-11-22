@@ -257,12 +257,12 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
           // The dependency boundary (atom#402): jssrc2cpg leaves `node_modules` out, so a call
           // into an imported package resolves to an external stub (`axios:get`) and, before this
           // fixture, no JS arm tagged one - a flow crossing the boundary had no sink to end on.
-          // JsDependencySinkTagger tags the axios call http-client and the log call
+          // chen's dependency boundary tags the axios call http-client and the log call
           // library-call (`get` is absent from EasyTagsPass's SDK-verb list, so nothing else
           // tags either), and chen's PackageAttribution layers the SBOM's purl for axios onto
-          // the http-client sink. On main both assertions fail: the axios call carries only
-          // service-ingress, a source tag, so no entry ends on it, and no node carries
-          // library-call or a purl.
+          // the http-client sink. Without the boundary both assertions fail: the axios call
+          // carries only service-ingress, a source tag, so no entry ends on it, and no node
+          // carries library-call or a purl.
           val flows = runReachables(
             "javascript",
             "js-axios-project",
@@ -764,8 +764,8 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
 
   "reachables for c" should {
       "emit the argv flow into an undeclared library call as the only entry" in {
-          // RELEASE ORDERING: the count below is calibrated against chen 4.0.1 (c2cpg_3 4.0.1 from
-          // the local ivy repository, built from clean chen main 20162e8a). chen is consumed at an
+          // RELEASE ORDERING: the count below is calibrated against chen 4.0.5 (c2cpg_3 4.0.5 from
+          // the local ivy repository, built from chen ecf94b36). chen is consumed at an
           // exact version, so chen must be published BEFORE atom's CI runs this - a clean machine
           // resolving the previously published chen fails this fixture. The gate reads the running
           // build the way `atom --version` prints it, so a different chen cancels with re-pin
@@ -880,7 +880,7 @@ class ReachablesCrossLanguageWorkflowTests extends AnyWordSpec with Matchers wit
   /** The chen build the C fixture's count is calibrated against, read the way `atom --version`
     * prints it: the Implementation-Version of the chen jars on this suite's classpath.
     */
-  private val chenCalibratedAgainst = "4.0.4"
+  private val chenCalibratedAgainst = "4.0.5"
 
   /** The sink categories the C default sink list queries, in the order the slicer fixes them. */
   private val C_CONTRACT_SINK_TAGS = Set("library-call", "http", "cloud", "rpc", "device-driver")
