@@ -20,8 +20,11 @@ import scala.util.{Try, Using}
   * of a fixture, `javac` and `jar` for the jar example) and this suite does the same preparation by
   * itself. The `json` block that follows the command is the excerpt: each of its lines is a record
   * (or, for the `metadata` marker, the metadata object) that must be in the slice the command
-  * wrote, compared as JSON so the order of fields does not matter. An example whose tool is missing
-  * (astgen, php, rbastgen) is cancelled with the reason.
+  * wrote, compared as JSON so the order of fields does not matter. A field whose value names a
+  * place on the machine the example runs on cannot be spelled on the page: a C record's
+  * `resolvedPath` is the absolute file its header's include resolved to, under this suite's
+  * workspace, so the comparison drops it. An example whose tool is missing (astgen, php, rbastgen)
+  * is cancelled with the reason.
   */
 class CallSitesLessonTests extends AnyWordSpec with Matchers with BeforeAndAfterAll:
 
@@ -133,8 +136,12 @@ class CallSitesLessonTests extends AnyWordSpec with Matchers with BeforeAndAfter
               val slice = tokens(tokens.indexOf("-s") + 1)
               Atom.run(tokens.toArray).isRight shouldBe true
               val written = ujson.read(BFile(slice).contentAsString)
-              // compared as written: every source names files with `/` on every platform
-              val real  = written.obj("callsites").arr.toSet
+              // compared as written: every source names files with `/` on every platform; the
+              // resolvedPath of a C record is dropped, as the suite's comment says
+              val real = written.obj("callsites").arr.map { record =>
+                record.obj.remove("resolvedPath")
+                record
+              }.toSet
               val shown = block(example.name, "output").filter(_.trim.nonEmpty).map(ujson.read(_))
               shown should not be empty
               shown.foreach { record =>
