@@ -1,0 +1,18 @@
+specification/schemas/CallSitesRecord.json
+  h_0926447d100ad2 1-70
+specification/schemas/CallSitesRecord.json.md
+  h_0926447d100ad2 1-19
+src/test/scala/io/appthreat/atom/CCallSitesTests.scala
+  h_0926447d100ad2 15-17,32-34,69,126-163
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "39050ea477a038bece86c07fe504c6784604881c",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
