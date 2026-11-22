@@ -108,11 +108,11 @@ object MemorySafetySarif:
       Json.obj("location" -> stepLocation)
     }
     val base = List(
-      "ruleId"     -> ruleId.asJson,
-      "ruleIndex"  -> ruleIndex.getOrElse(ruleId, -1).asJson,
-      "level"      -> levelOf(severity).asJson,
-      "message"    -> Json.obj("text" -> stringField(finding, "message").getOrElse(ruleId).asJson),
-      "locations"  -> Json.arr(location)
+      "ruleId"    -> ruleId.asJson,
+      "ruleIndex" -> ruleIndex.getOrElse(ruleId, -1).asJson,
+      "level"     -> levelOf(severity).asJson,
+      "message"   -> Json.obj("text" -> stringField(finding, "message").getOrElse(ruleId).asJson),
+      "locations" -> Json.arr(location)
     ) ++ partialFingerprints :+ ("properties" -> Json.obj(properties(finding)*))
     val withFlow =
         if flow.isEmpty then base

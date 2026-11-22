@@ -59,7 +59,7 @@ Usage: atom [parsedeps|data-flow|usages|callsites|reachables|memory-safety|expor
   --with-data-deps         generate the atom with data-dependencies - defaults to `false`
   --remove-atom            do not persist the atom file - defaults to `false`
   -x, --export-atom        export the atom file with data-dependencies to graphml - defaults to `false`
-  --reuse-atom             reuse existing atom file - defaults to `false`. The memory-safety command reuses only an atom that a memory-safety build wrote; any other atom carries no memory-safety overlay tags and the command reports that instead of zero findings.
+  --reuse-atom             reuse existing atom file - defaults to `false`. The memory-safety command reuses an atom any command built: when the atom carries no memory-safety overlay tags, the overlay runs over the loaded graph in memory and the atom file itself is not changed.
   --export-dir <value>     export directory. Default: atom-exports
   --export-format <value>  export format graphml or dot. Default: graphml
   --config <value>         path to a JSON config file with frontend options and settings for the export and algorithms commands. An empty file sets nothing.
@@ -103,7 +103,7 @@ Extract reachable data-flow slices based on automated framework tags
   --include-crypto         includes crypto library flows - defaults to false.
   --profile <value>        reduce false positives with a flow-filtering profile: appsec, generic. Defaults to generic (no extra filtering).
 Command: memory-safety [options]
-Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF. The overlay tags are written only by this command, so --reuse-atom works only on an atom a memory-safety build wrote.
+Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF. With --reuse-atom the overlay runs over the loaded graph when the reused atom carries no overlay tags; the atom file itself is not changed.
   --min-confidence <value>
                            drop findings below this confidence: high, medium or low. Defaults to keeping all.
   --format <value>         output format: json or sarif (SARIF 2.1.0). Default: json.
@@ -183,6 +183,20 @@ function, which is what lets a report match a finding across builds. In `--forma
 same value rides under `partialFingerprints` as `atom/memorySafety/v1`. The field list and the
 exact fingerprint recipe are published as a
 [JSON Schema](https://github.com/AppThreat/atom/blob/main/specification/schemas/MemorySafetyFinding.json).
+
+### Reusing an atom
+
+`memory-safety --reuse-atom` works on an atom any command built. An atom that carries the
+overlay marker a memory-safety build wrote renders its findings as they are; this run's
+`--memory-api-profiles` and `--memory-api-config` are ignored with a warning, because the
+build consumed them. An atom without the marker (built by `usages`, `callsites`, or by atom
+4.0.x, which embedded the overlay without recording it) gets the overlay's passes run over the
+loaded graph, in memory, following the current run's options; the atom file on disk is not
+rewritten, so a later reuse of the same file simply runs them again. The rules read
+data-dependency facts, so an atom built without them still reports the same rules and places,
+with fewer definition rows in each flow; build the atom to reuse with `--with-data-deps` for
+flows identical to a fresh memory-safety run. Languages other than C and C++ report zero
+findings, as before.
 
 ### Findings outside the analysed directory
 

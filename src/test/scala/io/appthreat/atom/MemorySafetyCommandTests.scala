@@ -1434,25 +1434,27 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
           val findings = render(AtomMemorySafetyConfig()).toOption.get
           findings should not be empty
           findings.foreach { f =>
-              f.asObject.map(_.keys.toList) shouldBe Some(
-                List(
-                  "rule",
-                  "cwe",
-                  "kind",
-                  "file",
-                  "line",
-                  "column",
-                  "severity",
-                  "confidence",
-                  "message",
-                  "function",
-                  "flow",
-                  "fingerprint",
-                  "atom"
-                )
+            f.asObject.map(_.keys.toList) shouldBe Some(
+              List(
+                "rule",
+                "cwe",
+                "kind",
+                "file",
+                "line",
+                "column",
+                "severity",
+                "confidence",
+                "message",
+                "function",
+                "flow",
+                "fingerprint",
+                "atom"
               )
-              f.hcursor.get[String]("function").toOption.isDefined shouldBe true
-              f.hcursor.get[String]("fingerprint").toOption.exists(_.matches("[0-9a-f]{64}")) shouldBe true
+            )
+            f.hcursor.get[String]("function").toOption.isDefined shouldBe true
+            f.hcursor.get[String]("fingerprint").toOption.exists(
+              _.matches("[0-9a-f]{64}")
+            ) shouldBe true
           }
           // the enclosing method's full name, the same method the instance grouping resolves
           findingOf(MemorySafetyFindingPass.RuleSizeParamContract).hcursor
@@ -1525,7 +1527,7 @@ class MemorySafetyCommandTests extends DataFlowCodeToCpgSuite:
               .view
               .mapValues(fs => fs.map(_.hcursor.get[String]("fingerprint").toOption.get).toSet)
               .toMap
-          printsByFunction should contain key "leaks_at_the_implicit_end"
+          (printsByFunction should contain).key("leaks_at_the_implicit_end")
           printsByFunction.values.foreach(_ should have size 1)
           printsByFunction.values.toSet should have size printsByFunction.size
           sha256("MS-BOUND-001|f|proj/a.c|memcpy") should not be sha256(

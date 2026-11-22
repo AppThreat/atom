@@ -788,9 +788,9 @@ object Atom:
         )
     opt[Unit]("reuse-atom")
         .text(
-          "reuse existing atom file - defaults to `false`. The memory-safety command reuses only " +
-              "an atom that a memory-safety build wrote; any other atom carries no memory-safety " +
-              "overlay tags and the command reports that instead of zero findings."
+          "reuse existing atom file - defaults to `false`. The memory-safety command reuses an " +
+              "atom any command built: when the atom carries no memory-safety overlay tags, the " +
+              "overlay runs over the loaded graph in memory and the atom file itself is not changed."
         )
         .action((_, c) =>
             c match
@@ -1064,7 +1064,8 @@ object Atom:
     cmd("memory-safety")
         .text(
           "Run the memory-safety overlay and write findings (rule, cwe, kind, confidence, flow) as JSON or SARIF. " +
-              "The overlay tags are written only by this command, so --reuse-atom works only on an atom a memory-safety build wrote."
+              "With --reuse-atom the overlay runs over the loaded graph when the reused atom carries no overlay tags; " +
+              "the atom file itself is not changed."
         )
         .action((_, _) => AtomMemorySafetyConfig().withDataDependencies(true))
         .children(
@@ -1425,7 +1426,7 @@ object Atom:
     else
       s"Atom created successfully at $absolutePath\n"
 
-  private def generateSlice(config: AtomConfig, ag: Cpg): Either[String, String] =
+  private def generateSlice(config: AtomConfig, ag: Cpg, reusing: Boolean): Either[String, String] =
       try
         migrateAtomConfigToSliceConfig(config) match
           case e: AtomExportConfig =>
@@ -1458,7 +1459,7 @@ object Atom:
               )
           case msConfig: AtomMemorySafetyConfig =>
               PerfReporter.stage("slicing.memorySafety", "slicing")(
-                MemorySafetyCommands.runMemorySafety(ag, msConfig, config.outputAtomFile)
+                MemorySafetyCommands.runMemorySafety(ag, msConfig, config.outputAtomFile, reusing)
               )
           case _ =>
               Right("No slice generation required")
@@ -1759,16 +1760,6 @@ object Atom:
     // otherwise build a fresh atom from the input. New graph-level commands (export, algorithms)
     // share this path so they never require a manual pre-build step.
     val reusing = shouldReuseExistingAtom(config, outputAtomFile)
-    // the overlay runs when the atom is built: a reused atom keeps the profiles and the memory
-    // API config it was built with, whatever this run asks for
-    config match
-      case ms: AtomMemorySafetyConfig
-          if reusing && (ms.memoryApiProfiles.trim != "auto" || ms.memoryApiConfigFile.isDefined) =>
-          System.err.println(
-            "warn: --memory-api-profiles and --memory-api-config apply when the atom is built; " +
-                "the reused atom keeps the ones it was built with. Run without --reuse-atom to apply them."
-          )
-      case _ => ()
     getOrCreateAtom(language, config, outputAtomFile, reusing) match
       case Failure(exception) =>
           // The message first: a frontend failure a script can grep for - the
@@ -1786,7 +1777,7 @@ object Atom:
               _ <- storeCProjectLayout(config, ag)
               _ <- storeVendoredCode(config, ag)
               _ <- enhanceCpg(config, ag, reusing)
-              _ <- generateSlice(config, ag)
+              _ <- generateSlice(config, ag, reusing)
               _ <- PerfReporter.stage("verification.persist", "verification")(closeCpg(ag))
             yield "Atom generation successful"
     end match
@@ -1798,7 +1789,15 @@ object Atom:
     outputAtomFile: String,
     reusing: Boolean
   ): Try[Cpg] =
-      if reusing then loadExistingAtom(outputAtomFile)
+      if reusing then
+        config match
+          // A reused memory-safety atom is loaded through a copy of the file: this run may run the
+          // overlay over the loaded graph, and OverflowDb persists a session's changes into the
+          // file it was loaded from on close. The copy takes those writes, so the atom the user
+          // passed stays byte-for-byte as it was, and a later reuse of the same file simply runs
+          // the overlay again. The findings still name the atom the user passed.
+          case _: AtomMemorySafetyConfig => loadExistingAtomCopy(outputAtomFile)
+          case _                         => loadExistingAtom(outputAtomFile)
       else createNewAtom(language, config, outputAtomFile)
 
   private def shouldReuseExistingAtom(config: AtomConfig, outputAtomFile: String): Boolean =
@@ -1808,6 +1807,22 @@ object Atom:
           config.isInstanceOf[AtomAlgorithmsConfig] ||
           config.exportAtom || config.reuseAtom) &&
           File(outputAtomFile).exists
+
+  /** The atom file copied beside the original it loads, so this session's writes never reach the
+    * atom on disk. The copy is removed when the JVM exits; a load failure leaves the original
+    * untouched rather than deleting it.
+    */
+  private def loadExistingAtomCopy(outputAtomFile: String): Try[Cpg] =
+    val original = File(outputAtomFile)
+    Try {
+        val copy = File.newTemporaryFile(
+          "atom-memory-safety-reuse",
+          original.extension.getOrElse(".atom")
+        )
+        copy.deleteOnExit()
+        original.copyTo(copy, overwrite = true)
+        copy
+    }.flatMap(copy => loadFromOdb(copy.pathAsString))
 
   private def loadExistingAtom(outputAtomFile: String): Try[Cpg] =
       try
@@ -2285,6 +2300,61 @@ object Atom:
     )
     BatchedUpdate.applyDiff(atom.graph, diff)
 
+  /** The memory-safety overlay's passes over a graph, with the options the run carries: what chen
+    * concludes about memory on its own, the memory-API inventory and the profiles the memory-safety
+    * command chose, and the fact and finding passes that follow (Extent reads MemoryApi's argument
+    * tags, Guard reads Extent's; each pass no-ops on non-C/C++ graphs, so one pipeline serves every
+    * language the command accepts).
+    *
+    * A fresh `memory-safety` build runs these in [[enhanceCpg]] and records the overlay marker
+    * after them. A reused atom without the marker runs them in memory over the loaded graph, in
+    * [[MemorySafetyCommands.runMemorySafety]], following the CURRENT run's options; the marker is
+    * deliberately not written there, because the reused atom's file on disk must stay as it is, so
+    * a later reuse of the same file simply runs them again. Both paths share this method, so the
+    * two runs apply exactly the same passes.
+    */
+  private[atom] def applyMemorySafetyOverlay(atom: Cpg, config: AtomConfig): Unit =
+    val memoryApiConfig = config.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
+    PerfReporter.stage("taggers.MemorySemanticsPass", "analysis") {
+        new MemorySemanticsPass(atom, memoryApiConfig).createAndApply()
+    }
+    PerfReporter.stage("taggers.MemoryApiPass", "analysis") {
+        // The profiles the run follows, as the memory-safety command chose them (`auto` for
+        // every other caller): printed with the files that selected each.
+        val profilesMode = config match
+          case memorySafety: AtomMemorySafetyConfig => memorySafety.memoryApiProfiles
+          case _                                    => "auto"
+        new MemoryApiPass(
+          atom,
+          memoryApiConfig,
+          profilesMode,
+          reportProfiles = config.isInstanceOf[AtomMemorySafetyConfig]
+        ).createAndApply()
+    }
+    PerfReporter.stage("taggers.ExtentPass", "analysis") {
+        new ExtentPass(atom).createAndApply()
+    }
+    PerfReporter.stage("taggers.GuardPass", "analysis") {
+        new GuardPass(atom, memoryApiConfig).createAndApply()
+    }
+    PerfReporter.stage("taggers.ValueOriginPass", "analysis") {
+        new ValueOriginPass(atom).createAndApply()
+    }
+    // Integer width facts - narrowing, sign-changing casts and attacker-influenced arithmetic
+    // feeding lengths. Facts only; the integer rules read them.
+    PerfReporter.stage("taggers.IntegerWidthPass", "analysis") {
+        new IntegerWidthPass(atom).createAndApply()
+    }
+    // Per-allocation state facts - allocated/freed/maybe-freed/null/
+    // escaped at each program point. Facts only; the ALLOC rules read them.
+    PerfReporter.stage("taggers.AllocationStatePass", "analysis") {
+        new AllocationStatePass(atom).createAndApply()
+    }
+    PerfReporter.stage("taggers.MemorySafetyFindingPass", "analysis") {
+        new MemorySafetyFindingPass(atom, memoryApiConfig).createAndApply()
+    }
+  end applyMemorySafetyOverlay
+
   private def enhanceCpg(config: AtomConfig, atom: Cpg, reusing: Boolean): Either[String, Unit] =
       config match
         case x: AtomConfig if needsDataFlowEnhancement(x, reusing) =>
@@ -2362,63 +2432,8 @@ object Atom:
               // 3.2.1). Every other dataflow-enhanced command - reachables, data-flow, export,
               // algorithms - now skips it.
               if needsMemorySafetyOverlay(x) then
-                // What chen concludes about memory on its own - declared GCC attributes, wrapper
-                // bodies, nullable returns, variable storage - so MemoryApiPass needs no
-                // hand-written project inventory to see a project's allocator layer
-                PerfReporter.stage("taggers.MemorySemanticsPass", "analysis") {
-                    new MemorySemanticsPass(
-                      atom,
-                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
-                    ).createAndApply()
-                }
-                PerfReporter.stage("taggers.MemoryApiPass", "analysis") {
-                    // The profiles the run follows, as the memory-safety command chose them
-                    // (`auto` for every other caller): printed with the files that selected each.
-                    val profilesMode = x match
-                      case memorySafety: AtomMemorySafetyConfig => memorySafety.memoryApiProfiles
-                      case _                                    => "auto"
-                    new MemoryApiPass(
-                      atom,
-                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString),
-                      profilesMode,
-                      reportProfiles = x.isInstanceOf[AtomMemorySafetyConfig]
-                    )
-                        .createAndApply()
-                }
-                // The rest of the overlay: Extent reads MemoryApi's
-                // argument tags, Guard reads Extent's. Each pass no-ops on non-C/C++ graphs, so one
-                // pipeline serves every language the command accepts.
-                PerfReporter.stage("taggers.ExtentPass", "analysis") {
-                    new ExtentPass(atom).createAndApply()
-                }
-                PerfReporter.stage("taggers.GuardPass", "analysis") {
-                    new GuardPass(
-                      atom,
-                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
-                    )
-                        .createAndApply()
-                }
-                PerfReporter.stage("taggers.ValueOriginPass", "analysis") {
-                    new ValueOriginPass(atom).createAndApply()
-                }
-                // Integer width facts - narrowing, sign-changing casts and attacker-influenced
-                // arithmetic feeding lengths. Facts only; the integer rules read them.
-                PerfReporter.stage("taggers.IntegerWidthPass", "analysis") {
-                    new IntegerWidthPass(atom).createAndApply()
-                }
-                // Per-allocation state facts - allocated/freed/maybe-freed/null/
-                // escaped at each program point. Facts only; the ALLOC rules read them.
-                PerfReporter.stage("taggers.AllocationStatePass", "analysis") {
-                    new AllocationStatePass(atom).createAndApply()
-                }
-                PerfReporter.stage("taggers.MemorySafetyFindingPass", "analysis") {
-                    new MemorySafetyFindingPass(
-                      atom,
-                      x.memoryApiConfigFile.filter(_.exists).map(_.contentAsString)
-                    ).createAndApply()
-                }
+                applyMemorySafetyOverlay(atom, x)
                 storeMemorySafetyOverlayMarker(atom)
-              end if
               PerfReporter.stage("taggers.JvmTaggers", "analysis")(applyJvmTaggers(atom))
               Right(())
             catch

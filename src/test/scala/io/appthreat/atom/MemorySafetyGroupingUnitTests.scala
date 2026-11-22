@@ -81,7 +81,7 @@ class MemorySafetyGroupingUnitTests extends AnyWordSpec with Matchers:
               )
           val grouped = MemorySafetyCommands.groupTemplateInstances(
             List(
-              templated("Box<int>.get", "", "aa") -> instance("int"),
+              templated("Box<int>.get", "", "aa")                           -> instance("int"),
               templated("Box<char>.get", "pkg:generic/vendlib@1.2.3", "bb") -> instance("char")
             )
           )

@@ -49,16 +49,23 @@ object MemorySafetyCommands:
   private val confidenceOrder = Map("high" -> 3, "medium" -> 2, "low" -> 1)
 
   /** The languages the C frontends produce. Only on these graphs does the overlay actually tag, so
-    * only on these does a missing overlay marker mean the findings cannot be there (see
+    * only on these does a missing overlay marker mean the overlay has to run before rendering (see
     * [[runMemorySafety]]); every other language legitimately reports zero findings.
     */
   private val OverlayLanguages = Set(Languages.C, Languages.NEWC, "CPP", "C++")
 
-  /** Render every finding and write it to `config.outputSliceFile`. */
+  /** Render every finding and write it to `config.outputSliceFile`.
+    *
+    * `reusing` says the atom was loaded with `--reuse-atom` (or by a command that reuses): it is
+    * what decides whether an atom that already carries the overlay marker consumed its build-time
+    * memory-api options, and it is false for every caller that renders a graph it just built or
+    * tagged itself.
+    */
   def runMemorySafety(
     cpg: Cpg,
     config: AtomMemorySafetyConfig,
-    atomFile: File
+    atomFile: File,
+    reusing: Boolean = false
   ): Either[String, String] =
     // Reject rather than silently ignore: a caller that asked for `--format sarif` and got JSON
     // named `.sarif`, or that misspelled a confidence and got every finding, has no way to tell.
@@ -79,19 +86,28 @@ object MemorySafetyCommands:
     val vendored = VendoredCode.forAtom(cpg, config.frontendArgs.get("external-paths"))
 
     // The findings are tags only the overlay writes, and a graph without them is exactly what a
-    // finding-free program looks like - so when the marker Atom writes alongside the overlay is
-    // missing on a C/C++ graph, refuse instead of rendering an empty (exit 0) report. This guards
-    // `--reuse-atom` against an atom built by another command, and atoms built by atom 4.0.x,
-    // where every dataflow-enhanced command embedded the overlay but nothing recorded it.
-    val language = cpg.metaData.language.headOption.getOrElse("")
-    if OverlayLanguages.contains(language) &&
-      cpg.configFile.name(Atom.MemorySafetyOverlayFileName).isEmpty
+    // finding-free program looks like - so a C/C++ graph without the marker Atom writes alongside
+    // the overlay needs the overlay run before anything is rendered, or the report would be an
+    // empty (exit 0) one for a program that may well have findings. That is the case for an atom
+    // built by another command and reused here, and for atoms built by atom 4.0.x, where every
+    // dataflow-enhanced command embedded the overlay but nothing recorded it. The passes run over
+    // the loaded graph, in memory, exactly as a fresh memory-safety build runs them, and follow
+    // THIS run's --memory-api-profiles and --memory-api-config; the atom file on disk is not
+    // rewritten (no marker is stored), so a later reuse of the same file simply runs them again.
+    val language    = cpg.metaData.language.headOption.getOrElse("")
+    val overlayDone = cpg.configFile.name(Atom.MemorySafetyOverlayFileName).nonEmpty
+    if OverlayLanguages.contains(language) && !overlayDone then
+      Atom.applyMemorySafetyOverlay(cpg, config)
+    // A marker-carrying reused atom was overlaid when it was built, so its build consumed the
+    // memory-api options and this run's would be silently ignored. (A run whose overlay just ran
+    // above follows the current options, and a fresh build ran them in enhanceCpg - neither
+    // warns.) The marker is only knowable after load, which is why the warning lives here.
+    if reusing && overlayDone &&
+      (config.memoryApiProfiles.trim != "auto" || config.memoryApiConfigFile.isDefined)
     then
-      return Left(
-        s"The atom at ${atomFile.pathAsString} does not carry memory-safety overlay tags: " +
-            "it was built by a command other than `memory-safety`, or by an atom build that " +
-            "predated overlay marking. Rebuild the atom by running the memory-safety command " +
-            "on the source, and pass --reuse-atom only to an atom that command built."
+      System.err.println(
+        "warn: --memory-api-profiles and --memory-api-config apply when the atom is built; " +
+            "the reused atom keeps the ones it was built with. Run without --reuse-atom to apply them."
       )
 
     val seen = mutable.LinkedHashSet.empty[(Long, String)]
@@ -176,25 +192,25 @@ object MemorySafetyCommands:
     * AstNode, and an exit-node finding is a METHOD_RETURN rather than an Expression.
     */
   private def methodOf(node: AstNode): Option[Method] = node match
-      case e: Expression   => Some(e.method)
-      case m: MethodReturn => Some(m.method)
-      case _               => None
+    case e: Expression   => Some(e.method)
+    case m: MethodReturn => Some(m.method)
+    case _               => None
 
   /** The instance a finding sits in: its METHOD's `template` tag names the template's METHOD, and
     * every instance of one template carries the same tag value and the same position. A finding
     * outside an instance METHOD has none.
     */
   private def instanceOf(node: AstNode): Option[TemplateInstance] =
-    for
-      m        <- methodOf(node)
-      template <- m.tag.nameExact(TemplateTag).value.headOption
-      args = m.tag.nameExact(TemplateArgsTag).value.headOption.getOrElse("")
-    yield TemplateInstance(
-      template,
-      m.lineNumber.map(_.toInt).getOrElse(0),
-      m.columnNumber.map(_.toInt).getOrElse(0),
-      args
-    )
+      for
+        m        <- methodOf(node)
+        template <- m.tag.nameExact(TemplateTag).value.headOption
+        args = m.tag.nameExact(TemplateArgsTag).value.headOption.getOrElse("")
+      yield TemplateInstance(
+        template,
+        m.lineNumber.map(_.toInt).getOrElse(0),
+        m.columnNumber.map(_.toInt).getOrElse(0),
+        args
+      )
 
   /** The instances of one template print their shared findings once: the finding every
     * instantiation has is one entry with an `instances` list naming each instance's
@@ -252,8 +268,8 @@ object MemorySafetyCommands:
 
   /** One finding: rule metadata from the registry, location from the offending node, flow from the
     * node's own tags, its memory operation, and the definitions that produced the value, plus the
-    * names a report keys the finding by: the enclosing function, the vendored component's purl
-    * when the finding sits in one, and the fingerprint.
+    * names a report keys the finding by: the enclosing function, the vendored component's purl when
+    * the finding sits in one, and the fingerprint.
     *
     * The file path is rooted at the input directory's name: c2cpg records FILE names relative to
     * the analysed input, and consumers of this JSON (a scorer matching on `c/`/`cpp/` prefixes, a
@@ -297,9 +313,9 @@ object MemorySafetyCommands:
               .asJson,
           "function" -> function.asJson
         ) ++ Option.when(purl.nonEmpty)("purl" -> purl.asJson) ++ List(
-          "flow"       -> flowOf(node, root).asJson,
+          "flow"        -> flowOf(node, root).asJson,
           "fingerprint" -> fingerprintOf(rule.id, function, file, apisOf(node)).asJson,
-          "atom"       -> atomFile.pathAsString.asJson
+          "atom"        -> atomFile.pathAsString.asJson
         )
       )*
     ).asJson
@@ -307,8 +323,8 @@ object MemorySafetyCommands:
 
   /** The ordered distinct names of the finding's memory-operation calls: the finding node's own
     * name when it is itself a Call, plus the call it is an argument of (the same call the flow
-    * renders with the `memory-operation` role). The names come from the graph nodes, never from
-    * the rendered `code` text, so what feeds the fingerprint is what the graph says was called.
+    * renders with the `memory-operation` role). The names come from the graph nodes, never from the
+    * rendered `code` text, so what feeds the fingerprint is what the graph says was called.
     */
   private def apisOf(node: AstNode): String =
     val own = node match
