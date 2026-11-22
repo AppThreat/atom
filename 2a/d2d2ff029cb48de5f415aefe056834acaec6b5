@@ -1,0 +1,54 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/CCallSiteSource.scala
+  s_8a4433d1784041::t_70aaa935b8e7e1 117-118,131
+src/test/scala/io/appthreat/atom/MemorySafetyReuseAtomTests.scala
+  s_8a4433d1784041::t_ad6eef3331b3f5 199-201
+  s_8a4433d1784041::t_e5f346faf51c5e 141-198,202-207
+src/test/scala/io/appthreat/atom/MemorySafetyOutputSymlinkTests.scala
+  s_8a4433d1784041::t_c664e4a637c39f 37-39
+specification/schemas/CallSitesRecord.json.md
+  s_8a4433d1784041::t_15d84826f1bf1a 5
+src/test/scala/io/appthreat/atom/slicing/SliceFilesTests.scala
+  s_8a4433d1784041::t_06578a4718b55c 35,40-43,51-60
+src/main/scala/io/appthreat/atom/MemorySafetyCommands.scala
+  s_8a4433d1784041::t_4500a87ee1fdd1 182-193,253-257,374-375,395-396,408-409,411-412
+  s_8a4433d1784041::t_70aaa935b8e7e1 6,101
+  s_8a4433d1784041::t_68a1a7cce9b0eb 251-252,258-264,269-272,274-277,280,284,286,293-294,377-394,397-407,410,413-422
+  s_8a4433d1784041::t_882deb25f4060f 59-71,107-113,115,117-124
+  s_8a4433d1784041::t_58998208ad90dd 177-178,196,329-330,355-356
+src/test/scala/io/appthreat/atom/MemorySafetyCommandTests.scala
+  s_8a4433d1784041::t_6dcc5de770c5a1 207-208,1474-1478,1493,1504,1522,1526-1527,1535-1539,1541-1542
+  s_8a4433d1784041::t_cb4948cb25020b 610-611,1543-1548
+docs/docs/cli.md
+  s_8a4433d1784041::t_56d9d378b46e83 216-219
+  s_8a4433d1784041::t_092f8dd3f862da 180-183,193-199
+src/test/scala/io/appthreat/atom/MemorySafetyGroupingUnitTests.scala
+  s_8a4433d1784041::t_df69b821b405ed 27-30,40,47,57,67,73,76-77,80,86,90-135
+  s_8a4433d1784041::t_3426617cb6d2cf 136
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_8a4433d1784041::t_6051d93095ba2f 1768-1776,1779-1785,1801,1807,1817,1819-1820,1830-1833,1835,1838-1845,1847-1852,2387-2398,2409
+  s_8a4433d1784041::t_4500a87ee1fdd1 1786-1799,2385-2386
+  s_8a4433d1784041::t_1fe9510e0ee30b 1810-1816,1818
+  s_8a4433d1784041::t_31cf8ba1b52f59 1800
+specification/schemas/MemorySafetyFinding.json
+  s_8a4433d1784041::t_092f8dd3f862da 45,61,72
+specification/schemas/MemorySafetyFinding.json.md
+  s_8a4433d1784041::t_092f8dd3f862da 34-36,49,52-64,68-70
+specification/schemas/CallSitesRecord.json
+  s_8a4433d1784041::t_809f81147a3ad1 64-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2ad2d2ff029cb48de5f415aefe056834acaec6b5",
+  "prompts": {},
+  "sessions": {
+    "s_8a4433d1784041": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ef82bff-b756-4a5d-8551-a808005aa216",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
