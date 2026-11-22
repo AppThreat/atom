@@ -3,6 +3,7 @@ package io.appthreat.atom
 import better.files.File
 import io.appthreat.x2cpg.Defines.TemplateArgsTag
 import io.appthreat.x2cpg.Defines.TemplateTag
+import io.appthreat.atom.slicing.SliceFiles
 import io.appthreat.atom.slicing.callsites.VendoredCode
 import io.circe.syntax.EncoderOps
 import io.circe.{Json, JsonObject}
@@ -161,7 +162,7 @@ object MemorySafetyCommands:
 
     val findings = groupTemplateInstances(rendered)
 
-    val outFile = config.outputSliceFile.createFileIfNotExists(createParents = true)
+    val outFile  = config.outputSliceFile
     val document =
         if format == "sarif" then
           MemorySafetySarif.document(
@@ -170,7 +171,9 @@ object MemorySafetyCommands:
             MemorySafetySarif.toolVersion
           )
         else findings.asJson
-    outFile.write(document.noSpaces)
+    // The findings file lands beside the slices, where the scanned tree's checkout decides the
+    // names: the write goes through SliceFiles so a link at its name is replaced, not followed.
+    SliceFiles.writeAtomically(outFile)(_.writeText(document.noSpaces))
     println(
       s"Memory-safety analysis complete. ${findings.size} findings written to ${outFile.pathAsString}"
     )
