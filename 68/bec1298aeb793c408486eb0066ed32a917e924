@@ -1,0 +1,32 @@
+src/main/scala/io/appthreat/atom/slicing/callsites/CCallSiteSource.scala
+  h_0926447d100ad2 23-26,56-57,100-103,105,108,110-112,116-143,260-261,265-266,278-280,300,304-305,307,311-340,354,360-361,375-377
+src/main/scala/io/appthreat/atom/slicing/callsites/CallSiteRecord.scala
+  h_0926447d100ad2 19-24,38-40,47-59,89-91
+src/test/resources/c-callsites-includes/externlib/extdir/exth.h
+  h_0926447d100ad2 1-4
+src/test/resources/c-callsites-includes/externlib/extdir/exth2.h
+  h_0926447d100ad2 1-4
+src/test/resources/c-callsites-includes/externlib/extdir/other.h
+  h_0926447d100ad2 1-4
+src/test/resources/c-callsites-includes/proj/main.c
+  h_0926447d100ad2 1-6
+src/test/resources/c-callsites-includes/proj/wrap.h
+  h_0926447d100ad2 1-4
+src/test/scala/io/appthreat/atom/CCallSiteResolvedPathTests.scala
+  h_0926447d100ad2 1-192
+src/test/scala/io/appthreat/atom/CallSitesLessonTests.scala
+  h_0926447d100ad2 23-27,139-144
+src/test/scala/io/appthreat/atom/slicing/callsites/CallSiteRecordTests.scala
+  h_0926447d100ad2 148-165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "68bec1298aeb793c408486eb0066ed32a917e924",
+  "prompts": {},
+  "humans": {
+    "h_0926447d100ad2": {
+      "author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
