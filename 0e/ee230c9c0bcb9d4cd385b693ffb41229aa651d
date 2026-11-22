@@ -1,0 +1,23 @@
+src/test/scala/io/appthreat/atom/ReachablesCrossLanguageWorkflowTests.scala
+  s_8a4433d1784041::t_399b0fefbbe714 260,263-265
+src/main/scala/io/appthreat/atom/Atom.scala
+  s_8a4433d1784041::t_169745edeaf3e9 11,2446-2448
+src/test/scala/io/appthreat/atom/MemorySafetyReuseAtomTests.scala
+  s_8a4433d1784041::t_399b0fefbbe714 198
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0eee230c9c0bcb9d4cd385b693ffb41229aa651d",
+  "prompts": {},
+  "sessions": {
+    "s_8a4433d1784041": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ef82bff-b756-4a5d-8551-a808005aa216",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prabhu Subramanian <prabhu@appthreat.com>"
+    }
+  }
+}
